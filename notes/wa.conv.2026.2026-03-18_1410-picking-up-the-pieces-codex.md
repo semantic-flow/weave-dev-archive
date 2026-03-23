@@ -3188,3 +3188,29 @@ were you able to do the riot validation?
 Yes. `riot --validate` passed cleanly on [semantic-flow-core-ontology.ttl](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/ontology/semantic-flow-core-ontology.ttl).
 
 I also still have `python3 -m json.tool` passing on [sflo-core-shacl.jsonld](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/ontology/sflo-core-shacl.jsonld). I have not run a full SHACL engine yet.
+
+# djradon_2026-03-21_0539_16
+
+We left [ont.purpose.md](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/ontology/notes/ont.purpose.md) with your draft. Let's change it into a concise prose draft based mostly on my purpose.
+
+# gpt-5.4_2026-03-21_0539_25
+
+I’m reviewing the current purpose note and the local guidance first, then I’ll rewrite it into a short prose version that leans on your stated purpose rather than the earlier feature-ish draft.
+
+# gpt-5.4_2026-03-21_0539_33
+
+I’ve got the current note and the live core vocabulary in front of me. I’m rewriting `ont.purpose` into a short prose statement that keeps your emphasis on human-dereferenceable identifiers and artifact history, while staying aligned with the current `Nomen`/`Knop` model.
+
+# gpt-5.4_2026-03-21_0539_41
+
+The rewrite is in. I’m giving it one quick pass for tone and to make sure it stays purpose-focused rather than drifting back into a feature list.
+
+# gpt-5.4_2026-03-21_0539_48
+
+Rewrote [ont.purpose.md](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/ontology/notes/ont.purpose.md) into a short prose draft centered on your purpose rather than the earlier bullet list.
+
+It now emphasizes two things:
+- Semantic Flow IRIs as human-dereferenceable, machine-usable identifiers with predictable support structures.
+- the ontology’s artifact model for continuity over time, historical states, manifestations, and located files, including immutable historical access.
+
+No validation run since this was a docs-only edit.
