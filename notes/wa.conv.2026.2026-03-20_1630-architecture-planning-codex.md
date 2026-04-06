@@ -3,7 +3,7 @@ id: architecture-planning-24vnar
 title: 'architecture planning'
 desc: ''
 created: 1774049403623
-updated: 1774049403623
+updated: 1775338353371
 participants: [djradon, codex.gpt-5.4]
 conversationEventKinds: [message.assistant, message.user, tool.call, tool.result, decision]
 ---
@@ -12,7 +12,7 @@ conversationEventKinds: [message.assistant, message.user, tool.call, tool.result
 
 architecture planning
 
-I'm ambivalent about the next steps. Do we start to nail down an architecture (see [wd.task.2026-03-20-architecture-planning.md](/home/djradon/hub/semantic-flow/weave/documentation/notes/wd.task.2026-03-20-architecture-planning.md) )? Produce a example-data repo with markdown files and rdf data , like for the [ont.use-cases.alice-bio.md](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/ontology/notes/ont.use-cases.alice-bio.md) ? Work on the support ontology model (/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/ontology/old/sflo-meta-ontology.jsonld, config, host) - define the [product-vision.md](/home/djradon/hub/semantic-flow/weave/documentation/notes/product-vision.md)
+I'm ambivalent about the next steps. Do we start to nail down an architecture (see [[wd.task.2026-03-20-architecture-planning]] )? Produce a example-data repo with markdown files and rdf data , like for the [[ont.use-cases.alice-bio]] ? Work on the support ontology model (dependencies/github.com/semantic-flow/ontology/old/sflo-meta-ontology.jsonld, config, host) - define the [[product-vision]]
 
 # gpt-5.4_2026-03-20_1607_56
 
@@ -30,22 +30,22 @@ I’ve confirmed the support ontologies are not “lightly stale”; they’re s
 
 Start with architecture planning now, but not by freezing everything. The right next move is a short decision sprint: define the product vision, translate the old architecture into the current ontology, and queue a few proof-of-concepts. I’d treat example data as part of that planning, not as an alternative to it.
 
-1. Write a minimal product vision in [product-vision.md](/home/djradon/hub/semantic-flow/weave/documentation/notes/product-vision.md#L1). Right now it’s empty, so the architecture note has no product anchor.
-2. Use [wd.task.2026-03-20-architecture-planning.md](/home/djradon/hub/semantic-flow/weave/documentation/notes/wd.task.2026-03-20-architecture-planning.md#L19) as the main planning artifact. It already names the real decisions: daemon/API split, jobs, RDF posture, Deno viability, config discovery, locking, and `ResourcePage` generation.
-3. Create a small in-repo example mesh under `examples/`, not a separate repo yet. The fresh-monorepo note already puts examples in the main repo at [wd.task.2026.2026-03-15-fresh-monorepo.md](/home/djradon/hub/semantic-flow/weave/documentation/notes/wd.task.2026.2026-03-15-fresh-monorepo.md#L38), and [ont.use-cases.alice-bio.md](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/ontology/notes/ont.use-cases.alice-bio.md#L21) is a good seed.
+1. Write a minimal product vision in [[product-vision|product-vision.md]]. Right now it’s empty, so the architecture note has no product anchor.
+2. Use [[wd.task.2026-03-20-architecture-planning|wd.task.2026-03-20-architecture-planning.md]] as the main planning artifact. It already names the real decisions: daemon/API split, jobs, RDF posture, Deno viability, config discovery, locking, and `ResourcePage` generation.
+3. Create a small in-repo example mesh under `examples/`, not a separate repo yet. The fresh-monorepo note already puts examples in the main repo at [[wd.completed.2026.2026-03-15-fresh-monorepo|wd.completed.2026.2026-03-15-fresh-monorepo.md]], and [[ont.use-cases.alice-bio|ont.use-cases.alice-bio.md]] is a good seed.
 4. Only after that, redesign support ontologies selectively: `config` first, `meta` second, `host` last.
 
-I would not start by extending the old support ontologies. The current core explicitly says not to reintroduce `WorkingState`, `CurrentState`, `ArtifactState`, `AbstractArtifact`, or `payloadSlug` in [ont.summary.core.md](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/ontology/notes/ont.summary.core.md#L124). But the old config ontology still depends on `sflo:AbstractArtifact` and `sflo:Mesh` in [sflo-config-ontology.jsonld](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/ontology/old/sflo-config-ontology.jsonld#L57), the old meta ontology has obvious drift like `mesh:` and `FlowSlice` references in [sflo-meta-ontology.jsonld](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/ontology/old/sflo-meta-ontology.jsonld#L17), and the old host ontology subclasses an `ApplicationConfig` I couldn’t find in the config ontology in [sflo-host-ontology.jsonld](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/ontology/old/sflo-host-ontology.jsonld#L29). Preserve the ideas, not the schema.
+I would not start by extending the old support ontologies. The current core explicitly says not to reintroduce `WorkingState`, `CurrentState`, `ArtifactState`, `AbstractArtifact`, or `payloadSlug` in [[ont.summary.core|ont.summary.core.md]]. But the old config ontology still depends on `sflo:AbstractArtifact` and `sflo:Mesh` in [sflo-config-ontology.jsonld](../../ontology/old/sflo-config-ontology.jsonld#L57), the old meta ontology has obvious drift like `mesh:` and `FlowSlice` references in [sflo-meta-ontology.jsonld](../../ontology/old/sflo-meta-ontology.jsonld#L17), and the old host ontology subclasses an `ApplicationConfig` I couldn’t find in the config ontology in [sflo-host-ontology.jsonld](../../ontology/old/sflo-host-ontology.jsonld#L29). Preserve the ideas, not the schema.
 
-The old `sflo-host` and `sflo-api` notes are still worth carrying forward for central coordination, locking, watchers, noun URLs, `_working`, jobs, and API/site symmetry in [product.sflo-host.md](/home/djradon/hub/semantic-flow/sflo/documentation/product.sflo-host.md#L9) and [product.plugins.sflo-api.md](/home/djradon/hub/semantic-flow/sflo/documentation/product.plugins.sflo-api.md#L10). My current calls would be: runtime name = `daemon`, contract name = `Weave API`; long operations are first-class jobs; OpenAPI + SSE is enough for day one; RDF should live at persisted/query boundaries rather than everywhere internally; and Deno needs a real RDF POC before you lock it in.
+The old `sflo-host` and `sflo-api` notes are still worth carrying forward for central coordination, locking, watchers, noun URLs, `_working`, jobs, and API/site symmetry in [[product.sflo-host|product.sflo-host.md]] and [[product.plugins.sflo-api|product.plugins.sflo-api.md]]. My current calls would be: runtime name = `daemon`, contract name = `Weave API`; long operations are first-class jobs; OpenAPI + SSE is enough for day one; RDF should live at persisted/query boundaries rather than everywhere internally; and Deno needs a real RDF POC before you lock it in.
 
-One extra correction: the top-level `ontology/` paths from your editor are not present in this repo. The local ontology source here is under [dependencies/github.com/semantic-flow/ontology](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/ontology).
+One extra correction: the top-level `ontology/` paths from your editor are not present in this repo. The local ontology source here is under [dependencies/github.com/semantic-flow/ontology](../../ontology).
 
 # djradon_2026-03-20_1653_30
 
 where are the  top-level ontology paths?
 
-[sflo.md](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/sflo-dendron-notes/sflo.md) is close to a vision document. Or is it more accurately termed a product brief. It's more about the overall framework, whereas in this new beginning, weave is just an implementation.
+[[sflo]] is close to a vision document. Or is it more accurately termed a product brief. It's more about the overall framework, whereas in this new beginning, weave is just an implementation.
 
 # gpt-5.4_2026-03-20_1658_39
 
@@ -61,19 +61,19 @@ In `weave` itself, there is no top-level `ontology/` folder.
 
 The ontology files you were pointing at are here:
 
-- Current local copy used by `weave`: [ontology](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/ontology)
-- Core summary: [ont.summary.core.md](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/ontology/notes/ont.summary.core.md)
-- Old support ontology: [sflo-meta-ontology.jsonld](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/ontology/old/sflo-meta-ontology.jsonld)
+- Current local copy used by `weave`: [ontology](../../ontology)
+- Core summary: [[ont.summary.core]]
+- Old support ontology: [sflo-meta-ontology.jsonld](../../ontology/old/sflo-meta-ontology.jsonld)
 
 There is also an older sibling ontology area in the legacy repo here:
 
-- Legacy sibling location: [sflo/ontology](/home/djradon/hub/semantic-flow/sflo/ontology)
+- Legacy sibling location: [sflo/ontology](../../../../../../sflo/ontology)
 
 So if your editor is showing `ontology/notes/...` or `ontology/old/...`, that’s most likely a workspace-root-relative label for the checked-out ontology repo, not a path relative to `weave`’s root.
 
-On [sflo.md](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/sflo-dendron-notes/sflo.md#L11): yes, I’d call it closer to a framework brief with some vision language, not a `weave` product vision. It describes Semantic Flow as the broader framework at [sflo.md](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/sflo-dendron-notes/sflo.md#L11) and its benefits/features at [sflo.md](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/sflo-dendron-notes/sflo.md#L18), but it also bakes in old implementation assumptions like generator-free publishing, `index.html` everywhere, `docs/`, and Lume/GitHub Pages at [sflo.md](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/sflo-dendron-notes/sflo.md#L77) and [sflo.md](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/sflo-dendron-notes/sflo.md#L144).
+On [[sflo|sflo.md]]: yes, I’d call it closer to a framework brief with some vision language, not a `weave` product vision. It describes Semantic Flow as the broader framework at [[sflo|sflo.md]] and its benefits/features at [[sflo|sflo.md]], but it also bakes in old implementation assumptions like generator-free publishing, `index.html` everywhere, `docs/`, and Lume/GitHub Pages at [[sflo|sflo.md]] and [[sflo|sflo.md]].
 
-For the restart, I’d treat `sflo.md` as parent-level input: “what Semantic Flow is for.” The new [product-vision.md](/home/djradon/hub/semantic-flow/weave/documentation/notes/product-vision.md) should answer the narrower question: “what is Weave, as the implementation, daemon, and client surface for that framework?”
+For the restart, I’d treat `sflo.md` as parent-level input: “what Semantic Flow is for.” The new [[product-vision]] should answer the narrower question: “what is Weave, as the implementation, daemon, and client surface for that framework?”
 
 # djradon_2026-03-20_1659_14
 
@@ -151,12 +151,12 @@ With that clarification, yes: I think there probably are two layers, but I would
 - `mesh create` is exactly the kind of operation that straddles both layers. The framework can define what “create a mesh” means semantically; Weave can define how a local daemon does it on disk.
 - So I’d revise my earlier answer slightly: if you truly mean a framework-wide API, it should not live only in `weave`. It should live either in the framework repo at first, or in a dedicated protocol/spec repo once it becomes stable enough to deserve independent versioning.
 
-The old API note already hints at part of this split: it had mesh registry and jobs as first-class concerns in [product.plugins.sflo-api.md](/home/djradon/hub/semantic-flow/sflo/documentation/product.plugins.sflo-api.md#L50) and [product.plugins.sflo-api.md](/home/djradon/hub/semantic-flow/sflo/documentation/product.plugins.sflo-api.md#L151). That feels more like protocol territory than mere implementation detail.
+The old API note already hints at part of this split: it had mesh registry and jobs as first-class concerns in [[product.plugins.sflo-api|product.plugins.sflo-api.md]] and [[product.plugins.sflo-api|product.plugins.sflo-api.md]]. That feels more like protocol territory than mere implementation detail.
 
 **Naming**
 - I would not make `Knop` the new generic “node.”
-- The current core defines `Knop` pretty specifically as the mesh-managed support object paired with a `Nomen`, not the whole composite thing in the abstract, in [semantic-flow-core-ontology.ttl](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/ontology/semantic-flow-core-ontology.ttl#L245) and [semantic-flow-core-ontology.ttl](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/ontology/semantic-flow-core-ontology.ttl#L269).
-- The archive discussion already landed on a better compromise: use `Semantic Flow entry` or `mesh entry` as the prose term for the integrated unit, roughly “identifier + Nomen + Knop,” without introducing a new ontology class yet, in [wa.conv.2026.2026-03-18_1410-picking-up-the-pieces-codex.md](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/weave-dev-archive/notes/wa.conv.2026.2026-03-18_1410-picking-up-the-pieces-codex.md#L2686).
+- The current core defines `Knop` pretty specifically as the mesh-managed support object paired with a `Nomen`, not the whole composite thing in the abstract, in [semantic-flow-core-ontology.ttl](../../ontology/semantic-flow-core-ontology.ttl#L245) and [semantic-flow-core-ontology.ttl](../../ontology/semantic-flow-core-ontology.ttl#L269).
+- The archive discussion already landed on a better compromise: use `Semantic Flow entry` or `mesh entry` as the prose term for the integrated unit, roughly “identifier + Nomen + Knop,” without introducing a new ontology class yet, in [[wa.conv.2026.2026-03-18_1410-picking-up-the-pieces-codex|wa.conv.2026.2026-03-18_1410-picking-up-the-pieces-codex.md]].
 - That gives you a replacement for old `node` without muddying `Knop`.
 - I’d keep `Knop` as the technical support/container term, keep `Nomen` as the naming term, and use `entry` as the user-facing umbrella.
 
@@ -184,12 +184,12 @@ I’m going to sanity-check that idea against the current core definitions and t
 
 I think the strongest version of this is not “invent a better composite term,” it’s “make `Knop` the primary operational unit and demote `Nomen` to a thin required naming resource.”
 
-The nice part is: the live core is already very close to that. `Knop -> hasNomen -> Nomen` is already the model in [semantic-flow-core-ontology.ttl](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/ontology/semantic-flow-core-ontology.ttl#L245), [semantic-flow-core-ontology.ttl](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/ontology/semantic-flow-core-ontology.ttl#L269), and [semantic-flow-core-ontology.ttl](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/ontology/semantic-flow-core-ontology.ttl#L274), and SHACL already says every `Knop` must have exactly one `Nomen` in [sflo-core-shacl.jsonld](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/ontology/sflo-core-shacl.jsonld#L237). So the real change may be less ontology surgery and more emphasis:
+The nice part is: the live core is already very close to that. `Knop -> hasNomen -> Nomen` is already the model in [semantic-flow-core-ontology.ttl](../../ontology/semantic-flow-core-ontology.ttl#L245), [semantic-flow-core-ontology.ttl](../../ontology/semantic-flow-core-ontology.ttl#L269), and [semantic-flow-core-ontology.ttl](../../ontology/semantic-flow-core-ontology.ttl#L274), and SHACL already says every `Knop` must have exactly one `Nomen` in [sflo-core-shacl.jsonld](../../ontology/sflo-core-shacl.jsonld#L237). So the real change may be less ontology surgery and more emphasis:
 
 - `Knop` is the thing users create, inspect, and operate on.
 - `Nomen` is the required naming record a `Knop` owns or carries.
 - `designatorPath` stays on `Nomen`.
-- the full Semantic Flow identifier is derived from `meshBase + Nomen.designatorPath`, as the summary already says in [ont.summary.core.md](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/ontology/notes/ont.summary.core.md#L29).
+- the full Semantic Flow identifier is derived from `meshBase + Nomen.designatorPath`, as the summary already says in [[ont.summary.core|ont.summary.core.md]].
 
 So yes, `create knop` can be coherent. I’d define it as: create the integrated mesh handle, mint its mesh-contextual identifier, and materialize the supporting resources, including a thin `Nomen`. I would only push back on one phrase: if rebasing/composability still matters, it’s a little safer to say “mint a Semantic Flow identifier in this mesh context” than “mint an IRI,” because the absolute IRI still depends on `meshBase`.
 
@@ -224,7 +224,7 @@ I’m checking the exact current wording around `Semantic Flow identifier`, `des
 
 # gpt-5.4_2026-03-20_1735_35
 
-I agree on the terminology cleanup. The current wording in [ont.summary.core.md](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/ontology/notes/ont.summary.core.md#L25) is close, but it still blurs `Nomen`, `designatorPath`, and `Semantic Flow identifier`.
+I agree on the terminology cleanup. The current wording in [[ont.summary.core|ont.summary.core.md]] is close, but it still blurs `Nomen`, `designatorPath`, and `Semantic Flow identifier`.
 
 The clean version is:
 
@@ -234,7 +234,7 @@ The clean version is:
 - `Nomen` = the thin naming resource that carries `designatorPath`
 - `Knop` = the mesh-managed support object that has exactly one `Nomen`
 
-So yes, I would rewrite the ontology comments in [semantic-flow-core-ontology.ttl](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/ontology/semantic-flow-core-ontology.ttl#L245) so they say “the identifier is formed from the mesh base plus the `Nomen`’s `designatorPath`,” not that the `Nomen` is vaguely “the identifier side” of things.
+So yes, I would rewrite the ontology comments in [semantic-flow-core-ontology.ttl](../../ontology/semantic-flow-core-ontology.ttl#L245) so they say “the identifier is formed from the mesh base plus the `Nomen`’s `designatorPath`,” not that the `Nomen` is vaguely “the identifier side” of things.
 
 I’d push back a bit on `mint`, though. If we reserve `mint` for publication, we’ll fight normal identifier language. I think the cleaner split is:
 
@@ -267,13 +267,13 @@ If we strip it down, there are really three coherent models:
 - `Knop`-only:
   Put `designatorPath` on `Knop`, derive the Semantic Flow identifier as `meshBase + designatorPath`, and drop `Nomen` entirely. This is the cleanest operational model, and it fits `create knop` very naturally.
 - Thin `Nomen`:
-  Keep `Knop -> hasNomen -> Nomen`, with `Nomen` carrying only `designatorPath` and maybe `designates`. That is basically the current live model in [semantic-flow-core-ontology.ttl](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/ontology/semantic-flow-core-ontology.ttl#L245).
+  Keep `Knop -> hasNomen -> Nomen`, with `Nomen` carrying only `designatorPath` and maybe `designates`. That is basically the current live model in [semantic-flow-core-ontology.ttl](../../ontology/semantic-flow-core-ontology.ttl#L245).
 - Full identifier-handle:
   Add an explicit node for “the identifier as identifier.” That is where `_iri-handle/` starts to make sense, but then you are not really obviating `Nomen`; you are replacing it with another explicit handle object.
 
 My pushback is: don’t keep `Nomen` just because maybe the broader Semantic Web might someday want a convention. That’s too speculative. Keep a separate node only if you have concrete facts that want to live there now.
 
-I’d also be cautious about `_iri-handle/`. If composability and rebasing still matter, then the reusable thing is the mesh-relative naming component, not the full absolute IRI. That was the strongest argument for thin `Nomen` in the earlier discussion at [wa.conv.2026-03-18...](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/weave-dev-archive/notes/wa.conv.2026.2026-03-18_1410-picking-up-the-pieces-codex.md#L2222) and [wa.conv.2026-03-18...](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/weave-dev-archive/notes/wa.conv.2026.2026-03-18_1410-picking-up-the-pieces-codex.md#L2279). `_iri-handle/` sounds like the node is about the full published IRI, which works against that story.
+I’d also be cautious about `_iri-handle/`. If composability and rebasing still matter, then the reusable thing is the mesh-relative naming component, not the full absolute IRI. That was the strongest argument for thin `Nomen` in the earlier discussion at [[wa.conv.2026.2026-03-18_1410-picking-up-the-pieces-codex|wa.conv.2026-03-18...]] and [[wa.conv.2026.2026-03-18_1410-picking-up-the-pieces-codex|wa.conv.2026-03-18...]]. `_iri-handle/` sounds like the node is about the full published IRI, which works against that story.
 
 The “folder so it can have a `ResourcePage`” point is real, but I wouldn’t let it decide the ontology. Folder-vs-file is a serialization choice. If you want a separate semantic resource, you can serialize it as a folder. If you don’t, `D/_knop/` can already be the dereferenceable thing.
 
@@ -341,14 +341,14 @@ PLEASE IMPLEMENT THIS PLAN:
 - Do not introduce any replacement handle resource such as `_iri-handle` in this change.
 
 ## Core Changes
-- Update [semantic-flow-core-ontology.ttl](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/ontology/semantic-flow-core-ontology.ttl) so:
+- Update [semantic-flow-core-ontology.ttl](../../ontology/semantic-flow-core-ontology.ttl) so:
   - `Nomen` class is removed.
   - `hasNomen` property is removed.
   - `designatorPath` domain becomes `Knop`.
   - `designates` is removed from the active core entirely.
   - `Knop` comments are rewritten to describe it as the mesh-managed support object and naming anchor for a Semantic Flow identifier.
   - `SemanticFlowResource` and related comments stop listing `Nomen` as an active constituent.
-- Update [sflo-core-shacl.jsonld](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/ontology/sflo-core-shacl.jsonld) so:
+- Update [sflo-core-shacl.jsonld](../../ontology/sflo-core-shacl.jsonld) so:
   - all `Nomen`-targeted shapes are removed.
   - `Knop` must declare exactly one `designatorPath`.
   - any `hasNomen` validation is removed.
@@ -357,7 +357,7 @@ PLEASE IMPLEMENT THIS PLAN:
 - Keep `Knop` as the only active resource-side handle in the naming model.
 
 ## Live Doc Changes
-- Rewrite the live ontology notes under [dependencies/github.com/semantic-flow/ontology/notes](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/ontology/notes) to match the Knop-only model:
+- Rewrite the live ontology notes under [dependencies/github.com/semantic-flow/ontology/notes](../../ontology/notes) to match the Knop-only model:
   - `ont.summary.core.md`: remove the Nomen section, define `designatorPath` as a property of `Knop`, redefine `Semantic Flow identifier`, remove `_nomen` path conventions, and state that `designator` is prose shorthand for the mesh-local path form.
   - `semantic-flow-identifier.md`: redefine formation as `meshBase + Knop.designatorPath`, remove all pairing language about `Nomen`, and explain that the identifier is distinct from its paired `Knop`.
   - `ont.use-cases.alice-bio.md`: remove `_nomen` rows entirely, move naming semantics into the `Knop` rows/explanatory text, and keep no replacement `_iri-handle` rows.
@@ -413,11 +413,11 @@ One repo subtlety showed up: the ontology lives in its own nested git repo, so t
 
 # gpt-5.4_2026-03-21_0600_56
 
-Removed `Nomen` from the active core and shifted the naming model to Knop-only in [semantic-flow-core-ontology.ttl](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/ontology/semantic-flow-core-ontology.ttl) and [sflo-core-shacl.jsonld](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/ontology/sflo-core-shacl.jsonld). `designatorPath` now lives on `Knop`, `hasNomen`/`_nomen`/`designates` are gone from the active core, and the active ontology notes now define a Semantic Flow identifier strictly as the IRI formed from `meshBase + Knop.designatorPath`.
+Removed `Nomen` from the active core and shifted the naming model to Knop-only in [semantic-flow-core-ontology.ttl](../../ontology/semantic-flow-core-ontology.ttl) and [sflo-core-shacl.jsonld](../../ontology/sflo-core-shacl.jsonld). `designatorPath` now lives on `Knop`, `hasNomen`/`_nomen`/`designates` are gone from the active core, and the active ontology notes now define a Semantic Flow identifier strictly as the IRI formed from `meshBase + Knop.designatorPath`.
 
-I also rewrote the live ontology docs to match: [ont.summary.core.md](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/ontology/notes/ont.summary.core.md), [semantic-flow-identifier.md](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/ontology/notes/semantic-flow-identifier.md), [ont.purpose.md](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/ontology/notes/ont.purpose.md), [ont.use-cases.alice-bio.md](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/ontology/notes/ont.use-cases.alice-bio.md), and [ont.decision-log.md](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/ontology/notes/ont.decision-log.md). The decision log now explicitly supersedes the March 18 thin-`Nomen` decision instead of silently overwriting it.
+I also rewrote the live ontology docs to match: [[ont.summary.core]], [[semantic-flow-identifier]], [[ont.purpose]], [[ont.use-cases.alice-bio]], and [[ont.decision-log]]. The decision log now explicitly supersedes the March 18 thin-`Nomen` decision instead of silently overwriting it.
 
-Validation passed with `python3 -m json.tool` for the SHACL JSON, `riot --validate` for the Turtle, and a grep over the active ontology surface is clean for `Nomen`/`hasNomen`/`_nomen`/`designates` outside the decision log. One repo nuance: these edits are inside the nested ontology repo under [dependencies/github.com/semantic-flow/ontology](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/ontology), not the top-level `weave` git history. There was also already an unrelated deletion present in that nested repo: `old/sflo-config-ontology_metadata.jsonld`.
+Validation passed with `python3 -m json.tool` for the SHACL JSON, `riot --validate` for the Turtle, and a grep over the active ontology surface is clean for `Nomen`/`hasNomen`/`_nomen`/`designates` outside the decision log. One repo nuance: these edits are inside the nested ontology repo under [dependencies/github.com/semantic-flow/ontology](../../ontology), not the top-level `weave` git history. There was also already an unrelated deletion present in that nested repo: `old/sflo-config-ontology_metadata.jsonld`.
 
 # djradon_2026-03-21_0608_40
 
@@ -429,7 +429,7 @@ I’m reading the current vision draft and the repo guidance side by side, then 
 
 # gpt-5.4_2026-03-21_0609_00
 
-The draft in [product-vision.md](/home/djradon/hub/semantic-flow/weave/documentation/notes/product-vision.md) is a good spine. It’s clear, narrow, and it keeps Weave in the right role: an implementation, not the whole framework.
+The draft in [[product-vision]] is a good spine. It’s clear, narrow, and it keeps Weave in the right role: an implementation, not the whole framework.
 
 My main pushback is that it currently reads more like a positioning sentence than a full vision sentence. Three spots feel a little soft or slightly misaligned:
 
@@ -451,11 +451,11 @@ So: good draft, definitely on the right track, but I’d sharpen the API claim a
 
 Just want to be clear: Semantic Flow identifier are the same as Semantic Flow IRIs. designators is the local, path-like thing.
 
-Could you edit [ont.purpose.md](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/ontology/notes/ont.purpose.md) to not have any hard newlines, and help me figure out how to avoid them everywhere?
+Could you edit [[ont.purpose]] to not have any hard newlines, and help me figure out how to avoid them everywhere?
 
 # gpt-5.4_2026-03-21_0617_28
 
-I’m going to unwrap [ont.purpose.md](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/ontology/notes/ont.purpose.md) and then check the repo’s formatter/editor settings so I can give you a concrete way to stop hard-wrapped Markdown from creeping back in.
+I’m going to unwrap [[ont.purpose]] and then check the repo’s formatter/editor settings so I can give you a concrete way to stop hard-wrapped Markdown from creeping back in.
 
 # gpt-5.4_2026-03-21_0617_35
 
@@ -477,7 +477,7 @@ I’ve unwrapped the note. I’m doing one quick formatter check against that fi
 
 Yes: `Semantic Flow identifier` and `Semantic Flow IRI` should mean the same thing, and `designator` is the mesh-local path-like form.
 
-I unwrapped [ont.purpose.md](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/ontology/notes/ont.purpose.md) so its paragraphs are now single lines instead of hard-wrapped.
+I unwrapped [[ont.purpose]] so its paragraphs are now single lines instead of hard-wrapped.
 
 The useful thing I found is that `deno fmt` will re-wrap Markdown here. There doesn’t seem to be a repo-local formatter config yet, so the two practical ways to avoid this everywhere are:
 
