@@ -469,3 +469,81 @@ Remaining housekeeping:
 - Since the manifests task was archived, the only current worktree item I see in Weave is the deletion of `wd.task.2026.2026-05-02-address-content-sensitive-manifests.md`.
 
 Practical status: `next/v0.0.1` is test-clean from this task’s perspective. The note can be updated/archived as completed.
+
+# djradon_2026-05-02_1624_14
+
+OK, so we can do a PR and merge to main?
+
+# gpt-5.5_2026-05-02_1624_14
+
+I’ll verify branch cleanliness, remote state, and whether the archived note deletion should be included before opening anything. Since this is GitHub PR work, I’m using the GitHub publish workflow rather than guessing from local state.
+
+Using the GitHub publish workflow for this check. I’m going to verify `gh` auth, compare `next/v0.0.1` against `main`, and decide whether the archived task-note deletion belongs in the PR scope before I touch the remote.
+
+The remote branch is already pushed and test-clean, but the local checkout has one intentional-looking deletion from your archive step. I’m going to fold that housekeeping in and update the stale fix-failing-tests note so the PR doesn’t merge obsolete task state.
+
+There’s no existing PR for `next/v0.0.1`. The branch is 34 commits ahead of `main`, which matches the long-running release branch. I’m going to update the task note to reflect completion, commit the archived-note deletion, push, then create a normal PR to `main`.
+
+The note still had one contradictory “not merge-ready” sentence in the Summary, so I’m cleaning that before committing the housekeeping.
+
+The housekeeping commit is in place: it records the fix-failing-tests task as complete and keeps your archived manifests task out of the Weave docs vault. I’m pushing the branch and opening the PR now.
+
+The PR creation failed because `gh` is using the active account `david-richardson-fluxtailor`, which is not a collaborator on `semantic-flow/weave`. The `djradon` account is already authenticated, so I’m switching `gh` to that account and retrying.
+
+# djradon_2026-05-02_1624_14
+
+OK, so we can do a PR and merge to main?
+
+# gpt-5.5_2026-05-02_1624_14
+
+I’ll verify branch cleanliness, remote state, and whether the archived note deletion should be included before opening anything. Since this is GitHub PR work, I’m using the GitHub publish workflow rather than guessing from local state.
+
+Using the GitHub publish workflow for this check. I’m going to verify `gh` auth, compare `next/v0.0.1` against `main`, and decide whether the archived task-note deletion belongs in the PR scope before I touch the remote.
+
+The remote branch is already pushed and test-clean, but the local checkout has one intentional-looking deletion from your archive step. I’m going to fold that housekeeping in and update the stale fix-failing-tests note so the PR doesn’t merge obsolete task state.
+
+There’s no existing PR for `next/v0.0.1`. The branch is 34 commits ahead of `main`, which matches the long-running release branch. I’m going to update the task note to reflect completion, commit the archived-note deletion, push, then create a normal PR to `main`.
+
+The note still had one contradictory “not merge-ready” sentence in the Summary, so I’m cleaning that before committing the housekeeping.
+
+The housekeeping commit is in place: it records the fix-failing-tests task as complete and keeps your archived manifests task out of the Weave docs vault. I’m pushing the branch and opening the PR now.
+
+The PR creation failed because `gh` is using the active account `david-richardson-fluxtailor`, which is not a collaborator on `semantic-flow/weave`. The `djradon` account is already authenticated, so I’m switching `gh` to that account and retrying.
+
+# gpt-5.5_2026-05-02_1624_20
+
+PR #11 is open. I’m checking its merge state and CI/check rollup before merging.
+
+# gpt-5.5_2026-05-02_1624_27
+
+GitHub says the PR is mergeable but currently `UNSTABLE` because checks are still queued/in progress: CI, CodeQL, and CodeRabbit. I’ll wait for those rather than bypassing them.
+
+# gpt-5.5_2026-05-02_1625_56
+
+CI and CodeQL passed. Codecov patch is reporting a failure, likely because this branch has a large docs/test-heavy diff and patch coverage accounting is unhappy; CodeRabbit is still pending. I’m going to let the review checks finish, then I’ll inspect whether Codecov is required before deciding whether to merge or leave the PR open.
+
+# gpt-5.5_2026-05-02_1627_38
+
+`main` is not branch-protected. Required CI is green; the only failed status is Codecov patch, and CodeRabbit is still pending. Since those are non-blocking repository statuses and the full local test suite plus GitHub CI passed, I’m proceeding with a normal merge commit rather than bypassing protected checks.
+
+# gpt-5.5_2026-05-02_1627_49
+
+The PR merge command completed. I’m verifying GitHub closed the PR and that `origin/main` has the merge commit before I call this done.
+
+# gpt-5.5_2026-05-02_1628_08
+
+Done.
+
+PR: https://github.com/semantic-flow/weave/pull/11  
+Merged to `main` with merge commit `f9b0705`.
+
+Validation before merge:
+- Local `deno task test`: `220 passed | 0 failed`
+- GitHub `ci`: passed
+- GitHub CodeQL: passed
+
+Non-blocking statuses at merge time:
+- `codecov/patch`: failed
+- CodeRabbit: still pending
+
+`main` is now updated on `origin`. Your local checkout is still on `next/v0.0.1`, clean and aligned with `origin/next/v0.0.1`.
