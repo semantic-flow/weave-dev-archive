@@ -1454,3 +1454,723 @@ update CLI/spec/task documentation for the new command shape.
 ```
 
 Note: the worktree still has many unrelated documentation moves/deletions already present in status; I only touched the mesh-create implementation/tests and the related docs/task note for this slice.
+
+# djradon_2026-05-03_1509_32
+
+what's next?
+
+# gpt-5.5_2026-05-03_1509_43
+
+Next slice should be baseline `MeshConfig` creation from `mesh.create`.
+
+Reason: `--mesh-root` now gets us to `docs/_mesh/...`, but sidecar operation still needs the stable config surface we just documented. It is smaller and cleaner than `.nojekyll`, and it affects the RDF support surface/conformance model.
+
+I’d do:
+
+1. Update `planMeshCreate`
+   - Add `_mesh/_config/config.ttl`.
+   - Add `_mesh/_config` as `sfcfg:MeshConfig`, `sflo:DigitalArtifact`, likely `sflo:RdfDocument`.
+   - Add working located-file facts for `_mesh/_config/config.ttl` in mesh inventory.
+   - Baseline config grants no access rules.
+
+2. Add tests
+   - Core planner expects three support artifacts.
+   - Integration/e2e expect `_mesh/_config/config.ttl`.
+   - Existing Alice Bio fixture comparison will fail until the ladder is updated.
+
+3. Re-ladder `mesh-alice-bio`
+   - Update `02-mesh-created` and downstream branches with baseline config.
+   - Do it branch-by-branch again.
+   - Update semantic-flow-framework conformance manifests for `02`/`03` as needed.
+
+4. Then `.nojekyll`
+   - Add GitHub Pages default + opt-out.
+   - That may also require ladder updates, but it is a simpler static-file addition after config is settled.
+
+So the immediate next task is: implement baseline `_mesh/_config/config.ttl`, then re-ladder Alice Bio for the changed mesh-create output.
+
+# djradon_2026-05-03_1511_19
+
+Regarding the re-laddering, I don't think we HAVE to have config unless there's something unusual. Does alice need it?
+
+# gpt-5.5_2026-05-03_1511_27
+
+Alice does not need it behaviorally today.
+
+For `mesh-alice-bio`, there are no extra-mesh sources in the early mesh-created state, and its later page sources are mesh-local paths like `alice/alice.md`, `home.md`, and `mesh-content/sidebar.md`. Those do not require a `MeshConfig` grant if they stay inside the mesh root. So from a runtime policy standpoint, Alice can run without `_mesh/_config/config.ttl`.
+
+The question is whether baseline config is a required mesh support artifact or an optional artifact created only when needed.
+
+I’d lean optional for now:
+
+- `mesh.create` should not create `_mesh/_config/config.ttl` by default.
+- `mesh.create` should create it when explicit policy is requested, such as sidecar adjacent-source grants.
+- We still document `_mesh/_config/config.ttl` as the standard location when mesh config exists.
+- Fantasy sidecar will get config because it needs adjacent `../ontology/`, `../shacl/`, and eventually `../examples/`.
+- Alice does not need re-laddering just for config.
+
+This avoids inflating every mesh with an empty policy artifact. It also keeps config semantically meaningful: if `_mesh/_config/config.ttl` exists, there is a reason to inspect it.
+
+So I’d revise my previous recommendation: next slice should probably be `.nojekyll` or explicit mesh config creation support, but not baseline config by default. For fantasy sidecar, the mesh-create/config story should be “create config when grants are requested,” not “always create empty config.”
+
+# djradon_2026-05-03_1513_22
+
+If it's a sidecar situation, we should always create config tho, right? Just to specify the workspace root.
+
+# gpt-5.5_2026-05-03_1513_32
+
+Not quite “to specify the workspace root.” I’d avoid putting workspace root in `MeshConfig`.
+
+The workspace root is a local execution fact. It may be a repo checkout today, a temp dir in CI, a downloaded zip tomorrow, or not a repo at all. A portable mesh config should not say “the workspace root is one directory above me” as a general authority claim.
+
+What `MeshConfig` can safely say in a sidecar situation is narrower:
+
+- this mesh allows `workingLocalRelativePath` resolution for specific mesh-adjacent prefixes
+- those prefixes are relative to `sfcfg:meshRootPathBase`
+- examples: `../ontology/`, `../shacl/`, `../examples/`
+- the runtime still enforces that those paths stay inside its configured workspace boundary
+
+So for fantasy sidecar, yes, we should create config during or soon after mesh creation because the sidecar needs adjacent source access. But the config should not “specify the workspace root”; it should specify constrained path grants. The workspace root remains supplied by `--workspace` or local runtime config.
+
+I’d phrase the rule as:
+
+- Whole-repo mesh: no config needed by default.
+- Sidecar mesh with no adjacent access: config optional.
+- Sidecar mesh that points at adjacent authored files: create `_mesh/_config/config.ttl` with explicit constrained grants.
+- `--workspace` defines the local boundary used to validate those grants at runtime, but is not recorded as portable mesh data.
+
+# djradon_2026-05-03_1515_15
+
+I'm not so sure. When you create a mesh with --workspace, at least in the "sidecar in repo" situation, you want that info to travel with the mesh.
+
+# gpt-5.5_2026-05-03_1515_27
+
+I think the distinction is: you want the *relationship* to travel, not the host path.
+
+For a sidecar-in-repo mesh, the portable fact is something like:
+
+- mesh root is `docs/` relative to the workspace/project root
+- authored ontology source is `ontology/` relative to the workspace/project root
+- equivalently, from the mesh root, ontology source is `../ontology/`
+
+That is useful and portable. It survives different absolute checkout paths.
+
+What should not travel is:
+
+- `/home/djradon/hub/.../mesh-sidecar-fantasy-rules`
+- “this exact local directory is the workspace root”
+- broad permission to read anything under whatever parent happens to contain `docs`
+
+So I’d support recording a portable workspace relationship, but not as an access grant alone. Maybe `MeshConfig` needs two concepts:
+
+- `meshRootWorkspaceRelativePath "docs"`: describes where this mesh sits within its containing workspace/project
+- `hasLocalPathAccessRule`: describes what adjacent paths are allowed for specific locator kinds
+
+Then a sidecar config could say:
+
+```ttl
+<> a sfcfg:MeshConfig ;
+    sfcfg:meshRootWorkspaceRelativePath "docs" ;
+    sfcfg:hasLocalPathAccessRule <#ontology-source-access> .
+
+<#ontology-source-access>
+    a sfcfg:LocalPathAccessRule ;
+    sfcfg:hasLocalPathBase sfcfg:meshRootPathBase ;
+    sfcfg:pathPrefix "../ontology/" ;
+    sfcfg:hasLocalPathLocatorKind sfcfg:workingLocalRelativePathLocatorKind .
+```
+
+That gives future tools the context they need: “this mesh is intended to live at `docs/` inside a larger project,” without claiming an absolute workspace root.
+
+If we don’t want a new property yet, then the minimal near-term version is: create config only when grants exist, and infer the relationship from the relative prefixes. But I agree that for sidecar-in-repo fixtures, making the relationship explicit is probably better than leaving it implicit.
+
+# djradon_2026-05-03_1516_33
+
+Wouldn't meshRootWorkspaceRelativePath be "../" ?
+
+# gpt-5.5_2026-05-03_1516_45
+
+If the subject is the mesh config *inside the mesh*, then yes, the useful locator for “where is the workspace root from here?” would be `"../"` for a `docs/` sidecar.
+
+So the property should probably not be named `meshRootWorkspaceRelativePath`. That sounds like “path from workspace root to mesh root,” which would be `"docs"`.
+
+There are two inverse relationships:
+
+```text
+workspace root -> mesh root: docs
+mesh root -> workspace root: ../
+```
+
+For config that lives at `docs/_mesh/_config/config.ttl` and is interpreted relative to the mesh root, the second one is more directly useful:
+
+```ttl
+<> a sfcfg:MeshConfig ;
+    sfcfg:workspaceRootRelativePath "../" .
+```
+
+But that name is also ambiguous: “relative to what?” Better names:
+
+- `sfcfg:workspaceRootPathFromMeshRoot "../"`
+- `sfcfg:containingWorkspacePathFromMeshRoot "../"`
+- `sfcfg:workspaceRootRelativeToMeshRoot "../"`
+
+I’d pick `workspaceRootRelativeToMeshRoot` if we want clarity over brevity.
+
+Then access rules can remain relative to `meshRootPathBase`:
+
+```ttl
+<#ontology-source-access>
+    sfcfg:hasLocalPathBase sfcfg:meshRootPathBase ;
+    sfcfg:pathPrefix "../ontology/" .
+```
+
+The runtime can use `workspaceRootRelativeToMeshRoot "../"` as the portable boundary: adjacent grants are allowed only if they resolve inside that containing workspace root.
+
+# djradon_2026-05-03_1518_20
+
+OK, agreed. Update the ontology and plan to include a MeshConfig whenever workspace root is specified (and different from mesh root)
+
+# gpt-5.5_2026-05-03_1518_42
+
+I’ll update the config ontology and planning docs only for this turn: add the portable “workspace root relative to mesh root” property, and record that sidecar mesh creation should emit `MeshConfig` when `--workspace` and `--mesh-root` describe different roots.
+
+# gpt-5.5_2026-05-03_1518_44
+
+The current `sf.config.md` still says every newly created mesh gets baseline config, which no longer matches the agreed rule. I’m tightening that to sidecar creation only and adding the ontology property for `workspaceRootRelativeToMeshRoot`.
+
+# gpt-5.5_2026-05-03_1520_03
+
+The ontology and plan now include the sidecar workspace relationship. I’m doing a quick syntax/readback pass on the changed sections so we don’t leave a malformed Turtle or contradictory wording.
+
+# gpt-5.5_2026-05-03_1520_21
+
+Updated the ontology and plan.
+
+Changes made:
+
+- Added `sfcfg:workspaceRootRelativeToMeshRoot` to [semantic-flow-config-ontology.ttl](../../ontology/semantic-flow-config-ontology.ttl)
+  - domain: `sfcfg:MeshConfig`
+  - range: `xsd:string`
+  - meaning: normalized relative path from mesh root to containing workspace root
+  - explicitly not an access grant or absolute host path
+
+- Added an ontology decision-log entry:
+  - sidecar `MeshConfig` records the portable workspace relationship
+  - `docs/` sidecar should record `"../"`
+  - whole-root meshes do not need config just to record `"."`
+
+- Updated [sf.config.md](../../semantic-flow-framework/notes/sf.config.md)
+  - no longer says every mesh gets baseline config
+  - says sidecar creation gets config when workspace root differs from mesh root
+  - keeps access grants separate and explicit
+
+- Updated the fantasy sidecar task note
+  - sidecar mesh create should emit `docs/_mesh/_config/config.ttl`
+  - config should include `sfcfg:workspaceRootRelativeToMeshRoot "../"`
+  - no extra-mesh access unless explicit path-policy rules are added
+
+Validation:
+
+- Parsed `semantic-flow-config-ontology.ttl` successfully with N3 parser.
+
+# djradon_2026-05-03_1523_38
+
+ok, next? nojekyll?
+
+# gpt-5.5_2026-05-03_1523_46
+
+Yes, `.nojekyll` is the next clean slice.
+
+It is independent of config grants, and it unblocks the GitHub Pages sidecar surface without forcing Alice re-laddering for config. The contract should be:
+
+- `weave mesh create` creates `.nojekyll` by default when `meshBase` is a GitHub Pages URL.
+- For whole-root Alice Bio, that means `.nojekyll` at workspace root.
+- For sidecar fantasy rules, that means `docs/.nojekyll`.
+- Add an opt-out flag, probably `--no-nojekyll`.
+- The file is a publishing guard, not RDF, so no inventory entry.
+- Because Alice Bio already has `.nojekyll` in the woven branch history, we need to check whether `02-mesh-created` expects it. If mesh-create starts creating it at `02`, Alice ladder/conformance may need a small branch-by-branch update.
+
+Implementation shape:
+
+1. Add `includeNoJekyll` to `MeshCreateRequest` or runtime options.
+2. Default it from CLI based on `meshBase` unless `--no-nojekyll` is passed.
+3. Add `.nojekyll` as a planned file only when enabled.
+4. Add tests:
+   - GitHub Pages mesh base creates `.nojekyll`
+   - opt-out suppresses it
+   - non-GitHub Pages mesh base does not create it by default
+   - sidecar writes `docs/.nojekyll`
+5. Then decide if Alice Bio ladder needs updating now or if tests should scope `.nojekyll` separately from the old `02` fixture.
+
+# djradon_2026-05-03_1524_54
+
+yup, looks good. proceed
+
+# gpt-5.5_2026-05-03_1524_58
+
+I’ll add `.nojekyll` as a mesh-create planned file controlled by a CLI default/opt-out, then adjust tests around the new output. I’ll keep it out of RDF inventory because it is a Pages publishing guard, not a mesh artifact.
+
+# gpt-5.5_2026-05-03_1525_32
+
+The current `mesh.create` fixture test is tied to Alice `02-mesh-created`, so this default will make that old fixture incomplete unless we opt out in that specific test or update the ladder. I’m checking whether `.nojekyll` already exists on the relevant Alice branches before deciding the least misleading test update.
+
+# gpt-5.5_2026-05-03_1525_44
+
+Only Alice `02-mesh-created` is missing `.nojekyll`; `03` already has it. I’m going to make the default real, update the 02 manifest expectation, and then add `.nojekyll` to the local Alice 02 branch so the fixture remains authoritative.
+
+# gpt-5.5_2026-05-03_1527_18
+
+The code and docs are patched. I’m formatting and running the mesh-create tests now; this will also verify the `--no-nojekyll` option name that Cliffy exposes to the action handler.
+
+# gpt-5.5_2026-05-03_1527_31
+
+Two expected issues surfaced: the Alice 02 branch still needs `.nojekyll`, and Cliffy exposes the negated flag differently than I guessed. I’m fixing the option handling first, then I’ll update the Alice fixture branch.
+
+# gpt-5.5_2026-05-03_1528_04
+
+The fixture repo is clean, so I’m adding `.nojekyll` to `02-mesh-created` as its own branch-ladder commit and then returning the checkout to `main`. This keeps the manifest and branch expected state aligned with the new default.
+
+# gpt-5.5_2026-05-03_1528_19
+
+The targeted mesh-create tests are green now, including opt-out and Alice fixture comparison. I’m running lint and the full suite next.
+
+# gpt-5.5_2026-05-03_1528_52
+
+The full suite is still running through the integration tail and remains green so far. I’m waiting for the final summary before wrapping up.
+
+# gpt-5.5_2026-05-03_1529_18
+
+Lint and the full suite are green: 227 passed. I’m doing a final status check across the touched repos, including the Alice fixture branch commit.
+
+# gpt-5.5_2026-05-03_1529_27
+
+`deno.lock` picked up an accidental `npm:n3@*` entry from my one-off ontology parse command. That is unrelated to `.nojekyll`, so I’m removing that lockfile noise.
+
+# gpt-5.5_2026-05-03_1529_49
+
+Implemented `.nojekyll` for `weave mesh create`.
+
+What changed:
+
+- `planMeshCreate` now adds `.nojekyll` by default when `meshBase` is a GitHub Pages URL.
+- Added CLI opt-out: `--no-nojekyll`.
+- Sidecar meshes write it under the mesh root, e.g. `docs/.nojekyll`.
+- `.nojekyll` is not added to RDF inventory.
+- Updated core, integration, and e2e tests.
+- Updated CLI/spec/task docs.
+- Updated the Alice Bio `02-mesh-created` conformance manifest to expect `.nojekyll`.
+
+Fixture update:
+
+- Added `.nojekyll` to `mesh-alice-bio` branch `02-mesh-created`.
+- Committed locally there as:
+  - `31c90f2 test: add pages guard to mesh-created fixture`
+- Not pushed.
+- `03-mesh-created-woven` already had `.nojekyll`, so this did not require reladdering every later branch.
+
+Verification:
+
+- `deno task lint` passed
+- targeted mesh-create tests: `11 passed | 0 failed`
+- full suite: `227 passed | 0 failed`
+
+Remaining uncommitted changes are in Weave plus the framework conformance manifest.
+
+# djradon_2026-05-03_1532_40
+
+commit message
+
+# gpt-5.5_2026-05-03_1532_45
+
+```text
+feat: add GitHub Pages guard to mesh create
+
+Create an empty .nojekyll file by default when mesh.create targets a GitHub
+Pages mesh base, including sidecar meshes where the guard belongs under the
+mesh root such as docs/.nojekyll.
+
+Add a --no-nojekyll CLI opt-out for callers that do not want the publishing
+guard. Keep .nojekyll out of mesh inventory because it is static-hosting
+metadata, not an RDF support artifact.
+
+Update mesh-create unit, integration, and CLI coverage for the default,
+sidecar, opt-out, and non-GitHub-Pages cases. Refresh mesh-create docs and the
+Fantasy Rules sidecar task checklist.
+
+Update the Alice Bio 02 mesh-created conformance expectation for the new
+default Pages guard.
+```
+
+# djradon_2026-05-03_1533_35
+
+OK, next?
+
+# gpt-5.5_2026-05-03_1533_43
+
+Next is sidecar `MeshConfig` creation for `--workspace . --mesh-root docs`.
+
+That’s the last mesh-create surface piece before using the command to build the fantasy sidecar `02-sidecar-mesh-created` branch.
+
+Scope I’d do next:
+
+1. Add sidecar config planning
+   - If `meshRoot !== "."`, create `_mesh/_config/config.ttl`.
+   - Include:
+     ```ttl
+     @base <...> .
+     @prefix sfcfg: <https://semantic-flow.github.io/ontology/config/> .
+
+     <_mesh/_config> a sfcfg:MeshConfig ;
+       sfcfg:workspaceRootRelativeToMeshRoot "../" .
+     ```
+   - No access rules yet.
+
+2. Inventory support
+   - Add `_mesh/_config` as a config artifact / RDF document if we’re ready to represent it there.
+   - Add working located file `_mesh/_config/config.ttl`.
+   - This is RDF support, unlike `.nojekyll`.
+
+3. Tests
+   - Whole-root Alice mesh create still creates only existing support RDF plus `.nojekyll`.
+   - Docs-root mesh create creates `docs/_mesh/_config/config.ttl`.
+   - Config contains `workspaceRootRelativeToMeshRoot "../"`.
+   - The config path shows in created paths for sidecar only.
+
+4. Docs
+   - Mark the sidecar config checklist item complete.
+   - Keep access-rule checklist separate and unchecked.
+
+No Alice re-ladder should be needed for this because whole-root Alice should not get the config artifact.
+
+# djradon_2026-05-03_1534_43
+
+Should we start a new conversation? Is [wd.task.2026.2026-05-02-fantasy-rules-sidecar.md](../../../../../documentation/notes/wd.task.2026.2026-05-02-fantasy-rules-sidecar.md) updated?
+
+# gpt-5.5_2026-05-03_1534_57
+
+You don’t have to start a new conversation yet, but it would be reasonable. We’ve accumulated several separate repo changes and design decisions in one thread.
+
+Yes, [wd.task.2026.2026-05-02-fantasy-rules-sidecar.md](../../../../../documentation/notes/wd.task.2026.2026-05-02-fantasy-rules-sidecar.md) is updated for the current state:
+
+- `--workspace . --mesh-root docs` decision recorded.
+- `--mesh-root` implementation checklist marked done.
+- `.nojekyll` default + opt-out checklist marked done.
+- sidecar `MeshConfig` plan recorded with `sfcfg:workspaceRootRelativeToMeshRoot "../"`.
+- access-rule grant work remains separate and unchecked.
+- ontology/SHACL follow-up pair and dataset compatibility questions are captured.
+
+Good next-conversation starting prompt would be:
+
+```text
+Continue the fantasy rules sidecar work. Current next slice is implementing sidecar MeshConfig creation in weave mesh create: when --mesh-root differs from workspace root/default ".", create _mesh/_config/config.ttl under the mesh root with sfcfg:MeshConfig and sfcfg:workspaceRootRelativeToMeshRoot "../". Do not add access grants yet. Keep whole-root Alice meshes unchanged except existing .nojekyll behavior. Run lint/tests.
+```
+
+That gives the next session a clean boundary.
+
+# djradon_2026-05-03_1537_04
+
+Let's continue you here a bit longer. "If meshRoot !== "."" doesn't seem quite right. It's more like if meshRoot != workspaceRoot no?
+
+# gpt-5.5_2026-05-03_1537_13
+
+Yes, conceptually it is “if mesh root differs from workspace root.”
+
+In the current CLI shape, though, `meshRoot` is not an absolute path. It is a path *inside* `workspaceRoot`, defaulting to `"."`. So in implementation terms the condition becomes:
+
+```ts
+normalizedMeshRoot !== "."
+```
+
+That is equivalent to “mesh root differs from workspace root” for the current option model.
+
+But the docs should phrase the rule conceptually, not as a string comparison:
+
+- Create sidecar `MeshConfig` when the mesh root is not the workspace root.
+- In Weave CLI terms, that means `--mesh-root` normalizes to something other than `.`.
+- Whole-root mesh: `--workspace ./mesh --mesh-root .`
+- Sidecar mesh: `--workspace . --mesh-root docs`
+
+One nuance: `--workspace docs --mesh-root .` is also a whole-root mesh from Weave’s perspective, even if `docs` sits inside a larger repo. Weave was not told about the larger workspace, so it cannot portably record `"../"` as the containing workspace root. If the user wants sidecar semantics, they need to invoke it as:
+
+```sh
+weave mesh create --workspace . --mesh-root docs ...
+```
+
+So I’d document that too: sidecar config depends on the caller identifying both the containing workspace and the mesh root.
+
+# djradon_2026-05-03_1541_04
+
+--workspace docs --mesh-root . is weird. Should we protect the workspace from being inside the mesh? Maybe not, but it would be unusual. Conceptually, the workspace always includes the mesh plus whatever pseudopod-like extensions are specified.
+
+# gpt-5.5_2026-05-03_1541_11
+
+I would not hard-block `--workspace docs --mesh-root .`. It is a valid whole-root mesh invocation, and it may be exactly what someone wants if they only checked out or copied the published mesh directory.
+
+But I agree with the conceptual model:
+
+- workspace is the local operational boundary
+- mesh root is inside that workspace
+- extra-mesh sources are workspace-contained extensions outside the mesh root
+- sidecar config is only meaningful when the caller identifies the larger workspace
+
+So I’d protect the important invariant, not the unusual invocation:
+
+- Require `meshRoot` to stay inside `workspace`.
+- Do not allow mesh config to grant paths outside the workspace boundary.
+- If `meshRoot === "."`, treat it as whole-root from Weave’s perspective and do not infer a parent workspace.
+- If the user intended repo sidecar semantics, they must call `--workspace . --mesh-root docs`.
+
+Maybe add a warning later, not now:
+
+```text
+mesh root equals workspace root; no sidecar workspace relationship will be recorded
+```
+
+But warnings can get noisy. I’d skip it until users actually stumble.
+
+For implementation, I’d name the predicate/helper around the concept:
+
+```ts
+const isSidecarMesh = normalizedMeshRoot !== ".";
+```
+
+Not because the string comparison is the concept, but because that is how the current CLI represents “mesh root differs from workspace root.”
+
+# djradon_2026-05-03_1542_11
+
+Doesn't "Require meshRoot to stay inside workspace" mean that --workspace docs --mesh-root . is invalid?
+
+# gpt-5.5_2026-05-03_1542_18
+
+No. `--workspace docs --mesh-root .` means:
+
+```text
+workspace root = docs
+mesh root = docs/.
+```
+
+So the mesh root is exactly the workspace root. That satisfies “meshRoot stays inside workspace.”
+
+Invalid examples would be:
+
+```sh
+weave mesh create --workspace docs --mesh-root ..
+weave mesh create --workspace docs --mesh-root ../other
+weave mesh create --workspace docs --mesh-root /tmp/mesh
+```
+
+The subtle part is that `--workspace docs --mesh-root .` loses knowledge of the parent repo. From Weave’s point of view, there is no surrounding workspace that includes `ontology/`, `shacl/`, etc. It is just a whole-root mesh whose workspace happens to be a directory named `docs`.
+
+So:
+
+- valid: yes
+- sidecar semantics: no
+- creates `workspaceRootRelativeToMeshRoot`: no, because mesh root and workspace root are the same
+- allows `../ontology/`: no, unless some separate local config grants it, and even then it would be outside the declared workspace boundary if we enforce that boundary strictly.
+
+# djradon_2026-05-03_1543_46
+
+Now I'm really confused. We're imagine a CLI invocation from the repo root, call it "/" so --workspace docs means "/docs" and --mesh-root . means "/"
+
+# gpt-5.5_2026-05-03_1544_18
+
+The confusion is that `--mesh-root` is relative to `--workspace`, not relative to the current shell directory.
+
+If you run from repo root `/`:
+
+```sh
+weave mesh create --workspace docs --mesh-root .
+```
+
+then Weave resolves:
+
+```text
+workspaceRoot = /docs
+meshRoot = .
+absolute mesh root = /docs/.
+```
+
+So the mesh root is `/docs`, not `/`.
+
+If you want:
+
+```text
+workspaceRoot = /
+meshRoot = /docs
+```
+
+the invocation is:
+
+```sh
+weave mesh create --workspace . --mesh-root docs
+```
+
+So the option model is:
+
+```text
+absoluteMeshRoot = resolve(workspaceRoot, meshRoot)
+```
+
+not:
+
+```text
+absoluteMeshRoot = resolve(cwd, meshRoot)
+```
+
+That is why `--workspace docs --mesh-root .` is valid but means “treat docs as the entire workspace and mesh root.” It does not describe the repo sidecar shape.
+
+# djradon_2026-05-03_1544_57
+
+ah, that seems wrong to me. As a user, I would expect the path argument to be relative to CWD.
+
+# gpt-5.5_2026-05-03_1545_04
+
+That expectation is reasonable. I think we chose the wrong CLI semantics.
+
+For CLI ergonomics, path arguments should usually resolve from the shell CWD unless clearly documented otherwise. So this should probably be the model:
+
+```text
+--workspace <path> = workspace root, resolved from CWD
+--mesh-root <path> = mesh root, resolved from CWD
+```
+
+Then Weave validates:
+
+```text
+absoluteMeshRoot must be inside absoluteWorkspaceRoot
+```
+
+Under that model, from repo root `/repo`:
+
+```sh
+weave mesh create --workspace . --mesh-root docs
+```
+
+means:
+
+```text
+workspace = /repo
+mesh root = /repo/docs
+```
+
+and:
+
+```sh
+weave mesh create --workspace docs --mesh-root .
+```
+
+means:
+
+```text
+workspace = /repo/docs
+mesh root = /repo
+```
+
+which is invalid because mesh root is outside workspace.
+
+That matches your intuition.
+
+The internal runtime can still accept `meshRoot` as workspace-relative if we want, but the CLI should convert CWD-relative inputs into a normalized workspace-relative mesh root before calling runtime. Better yet, make runtime explicit too:
+
+- CLI resolves both paths from CWD.
+- Runtime takes `workspaceRoot` absolute and `meshRoot` absolute or normalized workspace-relative.
+- Runtime validates containment.
+
+Given we already implemented `--mesh-root` as workspace-relative, I’d change it before building config. This is early enough, and it will prevent repeated confusion.
+
+# djradon_2026-05-03_1548_45
+
+I'm trying to decide if we would ever want a mesh root that's not contained in its workspace. But I guess let's not get too fancy. OK, proceed with avoiding confusion.
+
+# gpt-5.5_2026-05-03_1548_56
+
+I’ll change the CLI semantics so `--mesh-root` is resolved like a normal path argument from the current command working directory, then converted to a workspace-relative path for the runtime. That preserves the runtime’s current internal model while making the user-facing behavior match expectation.
+
+# gpt-5.5_2026-05-03_1549_19
+
+I found the e2e sidecar test was accidentally relying on the old workspace-relative CLI behavior. I’m changing it to run from the temporary workspace like a user would, and adding a negative test for `--workspace docs --mesh-root .` from the repo root shape.
+
+# gpt-5.5_2026-05-03_1550_09
+
+The CLI now resolves `--mesh-root` from the process CWD and rejects roots outside `--workspace`. I’m updating the docs to make that explicit.
+
+# gpt-5.5_2026-05-03_1550_38
+
+I’m formatting the touched files and running the targeted CLI tests. The new negative test should cover the confusing `--workspace docs --mesh-root .` case from a repo root.
+
+# gpt-5.5_2026-05-03_1550_48
+
+The failures are useful: omitted `--mesh-root` should mean “use the workspace root,” while explicit `--mesh-root .` should mean CWD. I’m separating omitted from explicit now and using an absolute `src/main.ts` path for tests that run from a temp workspace.
+
+# gpt-5.5_2026-05-03_1551_42
+
+The CLI mesh-root semantics are now covered: omitted means workspace root, explicit relative values are CWD-relative and must be contained. I’m running the broader mesh-create tests plus lint next.
+
+# gpt-5.5_2026-05-03_1551_48
+
+Targeted tests and lint are green. I’m running the full suite once more because this changes CLI path semantics.
+
+# gpt-5.5_2026-05-03_1552_25
+
+The full suite is still in the final integration section and has no failures so far. I’m waiting for completion before finalizing.
+
+# gpt-5.5_2026-05-03_1553_02
+
+Agreed, and I changed it.
+
+The CLI now treats explicit `--mesh-root` like a normal path argument:
+
+- `--workspace` is resolved from the command CWD.
+- explicit `--mesh-root` is also resolved from the command CWD.
+- the resolved mesh root must stay inside the resolved workspace root.
+- omitted `--mesh-root` still means “use the workspace root.”
+
+So from repo root:
+
+```sh
+weave mesh create --workspace . --mesh-root docs ...
+```
+
+is valid, and:
+
+```sh
+weave mesh create --workspace docs --mesh-root . ...
+```
+
+is invalid because `.` resolves to the repo root, which is outside `docs`.
+
+I added a black-box CLI test for that confusing case, and updated the mesh-create spec, fantasy sidecar task note, and `sf.config.md` wording.
+
+Verification:
+
+- `deno task lint` passed
+- targeted mesh-create tests passed: `12 passed | 0 failed`
+- full suite passed: `228 passed | 0 failed`
+
+Current relevant status:
+
+- Weave has uncommitted changes in `src/cli/run.ts`, the e2e mesh-create test, and two docs notes.
+- `semantic-flow-framework/notes/sf.config.md` is modified.
+- `mesh-alice-bio` branch `02-mesh-created` is locally ahead by one commit: `31c90f2 test: add pages guard to mesh-created fixture`.
+
+# djradon_2026-05-03_1556_12
+
+commit message
+
+# gpt-5.5_2026-05-03_1556_19
+
+```text
+fix: resolve mesh-root CLI paths from cwd
+
+Change weave mesh create so an explicit --mesh-root behaves like a normal CLI
+path argument: relative values are resolved from the command working directory,
+not from --workspace. Keep omitted --mesh-root as the whole-workspace mesh case.
+
+Validate that the resolved mesh root stays inside the resolved workspace root,
+so invocations such as --workspace docs --mesh-root . fail instead of silently
+describing the wrong sidecar shape.
+
+Update black-box mesh-create coverage for cwd-relative sidecar paths and the
+outside-workspace failure case. Refresh mesh-create and sidecar config docs to
+document the resolved path model.
+```
