@@ -1921,3 +1921,1150 @@ The corrected fixture ladder now has local commits for `03`, `04`, and `05`, and
 # gpt-5.5_2026-05-03_1937_44
 
 The SFF manifests now reflect that `03` versions support artifacts, and there is a new `05` ontology woven transition manifest. I’m validating JSON and then running Weave lint/tests.
+
+# gpt-5.5_2026-05-03_1938_55
+
+Weave lint and full tests are green (`237 passed`). I’m committing the runtime fix in Weave and the manifest updates in SFF so the three repos have clean, reviewable states.
+
+# gpt-5.5_2026-05-03_1939_26
+
+Implemented the corrected path.
+
+What changed:
+
+- Reverted the bad direction where `integrate` would create `ResourcePage` facts.
+- Fixed Weave so support-only `weave` now versions mesh support artifacts instead of only generating current support pages.
+- Rebuilt the sidecar ladder:
+  - `03-sidecar-mesh-created-woven`: `834c88a feat: version sidecar mesh support surface`
+  - `04-ontology-integrated`: `c9e6808 feat: integrate ontology sidecar artifact`
+  - `05-ontology-integrated-woven`: `a2eee78 feat: weave ontology sidecar artifact`
+- `05` now creates `docs/ontology/index.html`, and it includes the raw RDF panel for the ontology Turtle.
+
+Commits made:
+
+- Weave: `521ecb7 feat: version support-only mesh weave`
+- SFF: `eb38875 test: add sidecar ontology woven manifest`
+- Fixture commits listed above.
+
+Validation:
+
+- `deno task lint` passed.
+- `deno task test` passed: `237 passed | 0 failed`.
+- JSON manifests parse.
+- `git diff --check` clean in Weave, SFF, and fixture.
+
+One repo-state note: fixture branch `04-ontology-integrated` now diverges from `origin/04-ontology-integrated` because we rebuilt it from the corrected `03`. `03` is ahead of origin by one commit.
+
+# djradon_2026-05-03_1940_32
+
+ok, please push 03 and fix 04 origin
+
+# gpt-5.5_2026-05-03_1940_41
+
+I’ll push the corrected `03` branch, then update `04` with `--force-with-lease` because that branch was intentionally rebuilt on top of the corrected `03`.
+
+# gpt-5.5_2026-05-03_1941_01
+
+Pushed fixture updates:
+
+- `03-sidecar-mesh-created-woven`: pushed normally to `834c88a`
+- `04-ontology-integrated`: force-with-lease updated origin to `c9e6808`
+
+Branch tracking is clean for `03`, `04`, and current `05`.
+
+# djradon_2026-05-03_1942_43
+
+The Raw RDF source is unreadable:
+
+# gpt-5.5_2026-05-03_1942_51
+
+That screenshot shows the source text is being painted as block-like white bars, not readable glyphs. I’m checking the generated page CSS/rendering path now; this should be a small theme fix plus a regression test.
+
+# gpt-5.5_2026-05-03_1942_59
+
+The HTML content is escaped correctly. The problem is CSS: the global `code` pill styling is also applying inside `<pre>`, so every source line gets a light inline background. I’m adding a `pre code` override and then regenerating the fixture page.
+
+# gpt-5.5_2026-05-03_1943_34
+
+The CSS fix is passing focused tests. I’m regenerating the current `05` fixture pages so the screenshot path uses the corrected source panel styling, then I’ll amend the relevant commits.
+
+# gpt-5.5_2026-05-03_1943_57
+
+The generated ontology page now has the CSS override. I’m committing the Weave renderer fix and amending the current `05` fixture branch so that page is readable.
+
+# gpt-5.5_2026-05-03_1944_43
+
+Fixed. The issue was the global inline `code` styling applying inside `<pre>`, which painted each source line with the light code-pill background. I added a `pre code` override so raw RDF renders as normal readable monospace text on the dark source panel.
+
+Changes:
+
+- Weave commit: `9b3a40d fix: make raw RDF source panels readable`
+- Amended fixture `05-ontology-integrated-woven` so `docs/ontology/index.html` has the corrected CSS:
+  - new local commit: `97e08c4 feat: weave ontology sidecar artifact`
+
+Validation:
+
+- `deno task lint` passed.
+- Focused tests passed: `36 passed | 0 failed`.
+- `git diff --check` clean.
+
+Note: fixture `05-ontology-integrated-woven` now needs a `--force-with-lease` push because I amended the commit.
+
+# djradon_2026-05-03_1944_43
+
+"Associated Knop" for https://djradon.github.io/mesh-sidecar-fantasy-rules/ontology is incorrectly https://djradon.github.io/mesh-sidecar-fantasy-rules/_knop
+
+The "Working RDF file" for the ontology goes to https://djradon.github.io/ontology/fantasy-rules-ontology.ttl
+
+# gpt-5.5_2026-05-03_1945_03
+
+Both bad links come from the same renderer assumption: it generates directory-relative links for `ontology/index.html`, then the slashless URL polish changes the browser URL to `/ontology`. I’m changing generic pages to emit mesh-root-relative hrefs for mesh resources, and to avoid public-site relative links for extra-mesh `../...` source paths.
+
+# djradon_2026-05-03_1945_48
+
+Oops, just realized that mesh-sidecar-fantasy-rules is in my personal account instead of semantic-flow. I will move it. What git command do I need to change the origin?
+
+# gpt-5.5_2026-05-03_1945_56
+
+After you move the repo to `semantic-flow`, update the remote in the fixture repo:
+
+```sh
+cd /home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/mesh-sidecar-fantasy-rules
+git remote set-url origin git@github.com:semantic-flow/mesh-sidecar-fantasy-rules.git
+git remote -v
+```
+
+Then verify/fetch:
+
+```sh
+git fetch origin
+```
+
+If you use HTTPS instead of SSH:
+
+```sh
+git remote set-url origin https://github.com/semantic-flow/mesh-sidecar-fantasy-rules.git
+```
+
+# djradon_2026-05-03_1948_19
+
+oo, help me resolve the conflicts.
+
+# gpt-5.5_2026-05-03_1948_28
+
+I’ll inspect the fixture repo state first to see whether this is a remote-url/fetch issue, a branch divergence after the move, or an actual merge conflict in files.
+
+# gpt-5.5_2026-05-03_1948_40
+
+This is a rebase conflict on `05-ontology-integrated-woven`. The conflicts are all generated HTML add/add files; we want the regenerated local versions that include the readable raw RDF CSS. I’ll verify the staged sides, then take the local generated version for those HTML files and continue the rebase.
+
+# gpt-5.5_2026-05-03_1948_52
+
+The rebase is complete. I’m checking the branch state and verifying the two bad links in `docs/ontology/index.html` before I continue with the link fix we were in the middle of.
+
+# gpt-5.5_2026-05-03_1949_05
+
+The rebase conflict is resolved. I’m now fixing the two link bugs directly: same-mesh resource links will use the mesh root path from `meshBase`, and extra-mesh `../...` source paths will render as local source labels instead of broken public links.
+
+# gpt-5.5_2026-05-03_1949_44
+
+The failures are expected test expectations still asserting directory-relative links. I’m updating them to the new root-relative contract and adding coverage that `../ontology/...` does not become a broken public href.
+
+# gpt-5.5_2026-05-03_1950_22
+
+The renderer unit tests now pass. I’m regenerating the fixture `05` pages so the ontology page gets the fixed links, then I’ll run focused integration/lint and update the commits.
+
+# gpt-5.5_2026-05-03_1951_45
+
+I’ve got the conflict resolution context now. I’m going to verify the renderer/link fix, then check the two relevant repos so we can leave the branches in a coherent state.
+
+# gpt-5.5_2026-05-03_1951_52
+
+The focused renderer tests are running and the early cases are passing. I also see the fixture branch has `README.md` modified alongside regenerated pages, so I’ll inspect that before staging anything to avoid accidentally folding unrelated local edits into the woven fixture commit.
+
+# gpt-5.5_2026-05-03_1952_05
+
+Focused tests passed. The only fixture change outside generated `docs/` is a README ladder note, so I’ll leave that uncommitted unless you say otherwise and only amend the generated page output.
+
+# gpt-5.5_2026-05-03_1952_11
+
+Lint is clean, and the regenerated ontology page now has the correct `/mesh-sidecar-fantasy-rules/ontology/_knop` href. The current working RDF path is intentionally rendered as a local source label rather than a broken public link because it points outside the mesh root.
+
+# gpt-5.5_2026-05-03_1952_17
+
+The fixture diff is small and directly matches the bug: resource links moved to mesh-root URLs, and extra-mesh working bytes stopped pretending to be public files. Full test suite is running now.
+
+# gpt-5.5_2026-05-03_1953_09
+
+Full test suite passed: 238 tests. I’m going to commit the Weave renderer fix now, then amend only the generated fixture docs into the current `05-ontology-integrated-woven` commit.
+
+# gpt-5.5_2026-05-03_1953_38
+
+The generated docs are amended into the fixture’s `05` commit. The branch is one amended commit ahead of origin, and the only remaining local fixture change is your README line, which I’m leaving alone.
+
+# gpt-5.5_2026-05-03_1954_02
+
+Resolved and pushed the fixture conflict on `05-ontology-integrated-woven`.
+
+I also fixed the Weave renderer bug that caused slashless page URLs to resolve bad relative links:
+- Associated Knop now links to `/mesh-sidecar-fantasy-rules/ontology/_knop`
+- extra-mesh working RDF source paths render as local source text instead of broken public links
+- raw RDF blocks remain readable and mesh-local raw files use mesh-root hrefs
+
+Verification:
+- `deno task lint` passed
+- `deno task test` passed: `238 passed`
+- Fixture `05-ontology-integrated-woven` pushed to `semantic-flow/mesh-sidecar-fantasy-rules`
+
+Local state:
+- `weave` is clean and ahead 2, including new commit `c786833 fix: make generated page links mesh-root safe`
+- fixture repo is synced with origin, but still has your local `README.md` edit unstaged/uncommitted.
+
+# djradon_2026-05-03_1954_13
+
+extra-mesh source paths could potentially link to github raw files, if we wanted. But the raw RDF gets displayed regardless, so I'm not sure. What do you think?
+
+# gpt-5.5_2026-05-03_1954_21
+
+I’d keep them unlinked for now.
+
+A GitHub raw link is attractive, but it needs more config than “path starts with `../`” gives us. We’d need to know the source repo URL, branch/ref, and whether the displayed bytes came from that exact ref. Otherwise the page could imply permanence while linking to mutable or wrong bytes.
+
+Since the raw RDF panel already embeds the bytes, the ResourcePage remains useful and self-contained. The label “local source outside mesh root” is honest, even if not beautiful.
+
+The cleaner future version is probably config-backed:
+
+- `sfcfg:sourceRepository` or similar on the source access rule
+- optional pinned commit/ref when integrating
+- renderer can show:
+  - embedded RDF bytes
+  - “Source path: ../ontology/...”
+  - “GitHub source” link only when provenance is known enough
+
+So I’d treat GitHub raw links as a later provenance/config feature, not a default renderer guess.
+
+# djradon_2026-05-03_2156_04
+
+Some more page tweaks (we don't have to ammend history, I'm okay with just running weave generate again and committing the changes)...
+
+- "Semantic Flow identifier." appears twice, once as text and once as a pill. But what is the purpose? Does something else get displayed under different circumstances? If not, I would just remove it. 
+- the Canonical IRI button just links back to the same page? what's the point? 
+- if dcterms:description exists we can add the description below the title heading. 
+- if there's a class (or multiple classes) that this thing is an instance of, include a list in grey italics below the heading.
+
+What do you think of adding a two-column table that lists "Canonical IRI", "Associated Knop" (with a mouseover tooltip that explains what a Knop is), "Working File"? 
+
+And then a section with histories, contracted by default, that lists versions underneath.
+
+# gpt-5.5_2026-05-03_2156_14
+
+I agree with the direction. The current header is still carrying “debug metadata as buttons”; I’m going to inspect the page model to see what RDF facts are already available at render time, then make the header more informational: description/classes when available, metadata table instead of pill/button clutter, and a collapsed histories section if the model exposes history data.
+
+# gpt-5.5_2026-05-03_2156_24
+
+The renderer currently only gets a fairly thin page model. Description/class extraction will need to come from the RDF bytes already attached to raw panels, which is fine for this slice; history listings may need inventory data in the page model, so I’ll distinguish what can be done cleanly now from what needs planner support.
+
+# gpt-5.5_2026-05-03_2156_51
+
+Description and RDF classes are available from the Turtle panel for the ontology page, so I can add those without changing the planner contract. The history list is not currently present in the render model; I’m going to see whether `generate` already has inventory state in hand so we can add a compact optional `historyLinks` field instead of guessing from directories.
+
+# gpt-5.5_2026-05-03_2157_17
+
+For the histories section I’m going to do a conservative first pass: expose the current payload history and the historical states the current inventory knows about. That gives useful links now without directory crawling, and it leaves support-artifact histories for a later model-wide pass.
+
+# gpt-5.5_2026-05-03_2157_33
+
+I’m about to edit the page model and renderer. The implementation will remove the duplicate identifier label, turn page metadata into a compact table, derive description/classes from RDF source when available, and add a collapsible history block for payload histories known from inventory.
+
+# djradon_2026-05-03_2158_50
+
+support artifacts have their own histories, pages should account for them, perhaps without any additional effort needed.
+
+# gpt-5.5_2026-05-03_2158_56
+
+Agreed. I pushed the first edit toward payload histories, but your point is right: support artifacts are first-class artifacts too, so the page model should derive histories by resource path from the inventory, not special-case payloads. I’m going to adjust this to attach history groups for any resource page whose resource has `sflo:currentArtifactHistory` or is itself an `ArtifactHistory`.
+
+# gpt-5.5_2026-05-03_2200_23
+
+I’ve adjusted that now: histories are collected from inventory by resource path, so mesh support artifacts and Knop support artifacts can get the same collapsed history block as payload pages when the inventory has the facts. Next I’m running the renderer and integration tests to catch type/model drift.
+
+# gpt-5.5_2026-05-03_2200_44
+
+The failing assertion is expected after the metadata table change: the extra-mesh source now appears as the Working File value and raw-source label, rather than the old `local source:` detail string. I’m updating the tests to reflect that and adding coverage for descriptions/classes/histories.
+
+# gpt-5.5_2026-05-03_2201_23
+
+The page tests and Weave integration tests are green after the generic history change. I’m going to regenerate the sidecar fixture pages now so we can inspect the actual ontology/support output before committing.
+
+# gpt-5.5_2026-05-03_2201_54
+
+Lint is clean. Focused tests are running again with the added support-artifact history assertion.
+
+# gpt-5.5_2026-05-03_2202_18
+
+The generated sidecar page now shows the ontology description, `owl:Ontology`, a metadata table, and a collapsed history section. Support artifacts also get history sections from their inventories. I’m running the full suite now before committing the renderer/runtime changes.
+
+# djradon_2026-05-03_2202_55
+
+Oh, and if dcterms:title, schema:characterName, schema:Name, or any similar properties exist, use those for the title instead of the segment.
+
+# gpt-5.5_2026-05-03_2203_06
+
+Good addition. I’ll make title extraction use the same RDF panel pass as description/classes, with a conservative priority order: `dcterms:title`, schema name-ish fields, then label-style properties. That way the ontology page can show “Fantasy Rules Ontology” instead of just `ontology` when the subject matches the page IRI.
+
+# gpt-5.5_2026-05-03_2204_23
+
+The full suite had passed before this last title tweak. I’ve added the title extraction and a test assertion that `dcterms:title` drives the H1. Next I’ll format, run lint/focused tests, regenerate the sidecar pages again, and then run the full suite once more.
+
+# gpt-5.5_2026-05-03_2204_51
+
+The regenerated ontology page now uses `Fantasy Rules Ontology` from `dcterms:title`. I also see a new untracked task note in Weave and your fixture README edit; I’ll leave both out of my commits and only stage the renderer/runtime/test files plus generated `docs/` pages.
+
+# gpt-5.5_2026-05-03_2205_50
+
+Full tests passed again: 239 tests. I’m going to commit the Weave renderer/runtime change, then commit the regenerated fixture `docs/` pages as a normal new fixture commit, leaving the untracked task note and README edit untouched.
+
+# gpt-5.5_2026-05-03_2206_15
+
+Implemented and committed the page tweaks.
+
+Weave commit:
+`2c2ab24 feat: enrich default ResourcePage metadata`
+
+Fixture commit:
+`fcf9d69 docs: regenerate sidecar ResourcePages`
+
+What changed:
+- Removed duplicate “Semantic Flow identifier” text/pill from default pages.
+- Replaced button-like links with a metadata table:
+  - Canonical IRI
+  - Associated Knop, with tooltip
+  - Working File
+- Uses RDF facts from local raw RDF panels:
+  - `dcterms:title`, schema name-ish fields, `rdfs:label`, `skos:prefLabel`, `foaf:name` for page title
+  - `dcterms:description`, `rdfs:comment`, `skos:definition` for summary
+  - `rdf:type` for grey italic class list
+- Adds collapsed `Histories` sections from inventory for payload and support artifacts.
+
+Verified:
+- `deno task lint` passed
+- `deno task test` passed: `239 passed`
+
+Left untouched:
+- untracked `documentation/notes/wd.task.2026.2026-05-03-enumeration-type-instances.md`
+- local fixture `README.md` edit
+
+Neither repo was pushed after these commits.
+
+# djradon_2026-05-03_2222_23
+
+You forgot the tooltip for "Knop" that explains what a Knop is. I think a dotted underline of the word indicates is mouseoverable.
+
+Let's make the histories section (rename to History) more tree like, and reflecting our hierarchy. If present it should each element of the DigitalArtifact model:
+
+-  _history001 (sflo:ArtifactHistory)
+  - _s0001 (sflo:HistoricalState)
+    - fantasy-rules-ontology-ttl (sflo:ArtifactManifestation)
+      - fantasy-rules-ontology.ttl (sflo:LocatedFile)
+
+with all the class in grey italics.
+
+We were going to swtich the ArtifactManifestation segment name from the whole filename to just the extension by default. Is that a regression?
+
+If you can make it look, visually, like each layer is enclosed, maybe with shading, that might be helpful to see that a LocatedFile is part of the Artifact.
+
+# gpt-5.5_2026-05-03_2222_34
+
+I’ll fix the tooltip presentation and make the history block reflect the actual artifact hierarchy. I’m going to inspect the manifestation path helper before touching that naming question, because changing default manifestation segment naming is a broader fixture/test change than the page renderer.
+
+# gpt-5.5_2026-05-03_2222_51
+
+The manifestation segment behavior is not a regression from these renderer changes: `toManifestationSegment()` still defaults to the full filename with dots replaced by hyphens. The extension-only default is a separate planner/runtime naming change and will ripple through fixtures; I’m keeping this pass focused on making the current hierarchy visible rather than silently changing artifact paths.
+
+# gpt-5.5_2026-05-03_2225_06
+
+The history model now carries the manifestation node explicitly, so the renderer can show all four layers instead of flattening the state directly to the file. I’m formatting and running focused checks now.
+
+# gpt-5.5_2026-05-03_2225_37
+
+The regenerated page now has a dotted-underlined `Knop` term with tooltip and a nested `ArtifactHistory -> HistoricalState -> ArtifactManifestation -> LocatedFile` tree. I’m running the full suite once more, then I’ll commit these as a follow-up renderer refinement and regenerate-docs fixture commit.
+
+# gpt-5.5_2026-05-03_2226_39
+
+Full tests passed again. I’m committing this as a small follow-up to the metadata renderer work, then committing the regenerated fixture pages.
+
+# gpt-5.5_2026-05-03_2227_02
+
+Done.
+
+Weave commit:
+`e3c6e92 feat: render ResourcePage history hierarchy`
+
+Fixture commit:
+`2f30b76 docs: refresh sidecar history trees`
+
+Changes:
+- `Knop` now has a dotted underline and tooltip on the word itself.
+- `Histories` renamed to `History`.
+- History renders as nested artifact structure:
+  - `sflo:ArtifactHistory`
+  - `sflo:HistoricalState`
+  - `sflo:ArtifactManifestation`
+  - `sflo:LocatedFile`
+- Each layer is visually enclosed with progressively shaded boxes.
+- Support artifact pages use the same hierarchy.
+
+Verification:
+- `deno task lint` passed
+- `deno task test` passed: `239 passed`
+
+On manifestation segment naming: not a regression from this renderer work. The current default is still full filename with dots converted to hyphens, e.g. `fantasy-rules-ontology-ttl`. Switching that to extension-only is a separate path-naming change that will update planner output and fixtures. Both repos are clean; neither was pushed.
+
+# djradon_2026-05-03_2229_45
+
+For these visual changes, you don't have to run the full suite.
+
+Can we add a handsome, centered, semi-transparent "Generated May 3, 2026 by Weave" that when you mouseover the date part it displays an ISO-style timestamp, and Weave is a link to https://github.com/semantic-flow/weave/
+
+# gpt-5.5_2026-05-03_2229_58
+
+I’ll add it, but I’m going to avoid a nondeterministic timestamp in the core renderer tests. The clean path is to let `generate` pass a timestamp into the renderer while direct renderer tests can use a stable default.
+
+# gpt-5.5_2026-05-03_2230_19
+
+There’s a testing constraint here: if the renderer uses `new Date()` directly, every fixture comparison would drift. Since you specifically want “May 3, 2026” for these generated pages, I’ll render a stable generation stamp for this pass and keep a later clock/provenance model as a separate improvement if we need true per-run timestamps.
+
+# djradon_2026-05-03_2230_31
+
+Or just don't test it, it's fine.
+
+# gpt-5.5_2026-05-03_2230_38
+
+Fair. I’ll remove the test assertion for this visual footer and just keep the renderer/fixture update. I’ll still run formatter/lint because that’s cheap and catches syntax issues without exercising the suite.
+
+# gpt-5.5_2026-05-03_2231_01
+
+The generated footer is now present and centered with the timestamp tooltip and Weave link. I’ll commit the small renderer change and the regenerated fixture pages.
+
+# gpt-5.5_2026-05-03_2231_23
+
+Added the generated footer.
+
+Weave commit:
+`a41679a feat: add generated ResourcePage footer`
+
+Fixture commit:
+`4f95f9f docs: add generated footer to sidecar pages`
+
+Footer renders as:
+`Generated May 3, 2026 by Weave`
+
+Details:
+- centered and semi-transparent
+- date has mouseover tooltip: `2026-05-03T00:00:00.000Z`
+- `Weave` links to `https://github.com/semantic-flow/weave/`
+
+I did not run the full suite. I ran:
+- `deno fmt`
+- `deno task lint`
+
+Both repos are clean; neither was pushed.
+
+# djradon_2026-05-03_2235_04
+
+Put the class(es) directly below the title as "a owl:Ontology, some:OtherClass", with the description below that, and make the title about half the size it is now. 
+
+for SF classes, don't use the label... for consistency, e.g. use sflo:HistoricalState
+
+# gpt-5.5_2026-05-03_2235_18
+
+I’ll adjust the default renderer so the class line reads like RDF (`a …`) directly under the H1, then put the description below it. I’ll also stop using human-ish fallback labels where we can use prefixed class names.
+
+# gpt-5.5_2026-05-03_2235_51
+
+The class line is now RDF-shaped and placed directly under the heading. I also changed fallback class labels to prefixed names, and the renderer will use actual RDF classes from raw panels when present. Next I’ll format, lint, regenerate, and inspect the ontology/config pages.
+
+# gpt-5.5_2026-05-03_2236_11
+
+The generated pages now show `a owl:Ontology`, `a sfcfg:MeshConfig`, and `a sflo:HistoricalState` directly below smaller titles, with descriptions below the class line. I’m committing this renderer tweak and the regenerated pages.
+
+# gpt-5.5_2026-05-03_2236_29
+
+Done.
+
+Weave commit:
+`dc24ad6 feat: refine ResourcePage class header`
+
+Fixture commit:
+`4ef77e5 docs: refine sidecar class headers`
+
+Changes:
+- Title size reduced to roughly half the previous max.
+- Class line now appears directly below the title as RDF-ish text, e.g. `a owl:Ontology`.
+- Description now appears below the class line.
+- Fallback Semantic Flow classes now use prefixed names like `sflo:HistoricalState`, not display labels.
+- Added `sfcfg:` compaction for config classes.
+
+Ran:
+- `deno fmt`
+- `deno task lint`
+
+Both repos are clean; neither was pushed.
+
+# djradon_2026-05-03_2236_31
+
+The friendly-date mouseover isn't working. also let's do "Generated on"
+
+# gpt-5.5_2026-05-03_2236_40
+
+I’ll switch the footer wording to “Generated on …” and make the date tooltip less dependent on native `title` behavior by adding an explicit CSS hover/focus tooltip.
+
+# gpt-5.5_2026-05-03_2237_17
+
+The footer now says “Generated on …” and uses an explicit hover/focus tooltip via `data-tooltip`, while keeping the native `title` as fallback. I’m committing the renderer and generated page updates.
+
+# gpt-5.5_2026-05-03_2237_34
+
+Fixed.
+
+Weave commit:
+`483b216 fix: improve ResourcePage generated date tooltip`
+
+Fixture commit:
+`606c76e docs: refresh generated date footer`
+
+Changes:
+- Footer now says `Generated on May 3, 2026 by Weave`.
+- Date has an explicit CSS tooltip on hover/focus using `data-tooltip`, with native `title` kept as fallback.
+- Tooltip shows `2026-05-03T00:00:00.000Z`.
+
+Ran:
+- `deno fmt`
+- `deno task lint`
+
+Both repos are clean; neither was pushed.
+
+# djradon_2026-05-03_2241_34
+
+the https://semantic-flow.github.io/mesh-sidecar-fantasy-rules/ontology/_history001 should be titled Historical States and not include itself. 
+
+the https://semantic-flow.github.io/mesh-sidecar-fantasy-rules/ontology/_history001/_s0001 should have the "component bubles" expanding section too, title "Manifestations"
+
+https://semantic-flow.github.io/mesh-sidecar-fantasy-rules/ontology/_history001/_s0001/fantasy-rules-ontology-ttl similarly should have a list of LocatedFiles. with an expando section title "Located Files"
+
+Consistent colors everywhere, so located Files are always the same darkest shade.
+
+# gpt-5.5_2026-05-03_2241_49
+
+I’ll make the component section context-sensitive instead of always rendering the full artifact-history tree. The artifact page can still show the full tree, but history/state/manifestation pages should show only their children with fixed class-based colors.
+
+# gpt-5.5_2026-05-03_2243_08
+
+I’ve changed the renderer so pages at each artifact layer show their immediate children: history pages show states, state pages show manifestations, manifestation pages show files. I’m running formatter/lint and a focused renderer/integration check now.
+
+# gpt-5.5_2026-05-03_2243_25
+
+The focused failure is just an assertion that still expected the pre-`a owl:Ontology` class line. I’ll update that test expectation and add a couple of assertions for the scoped child sections.
+
+# gpt-5.5_2026-05-03_2245_26
+
+The generated pages now match the requested shape: history pages list only historical states, state pages list manifestations, and manifestation pages list located files. I’m committing the renderer change and regenerated fixture pages.
+
+# gpt-5.5_2026-05-03_2245_45
+
+Done.
+
+Weave commit:
+`9d9339a feat: scope ResourcePage component sections`
+
+Fixture commit:
+`d1ca950 docs: scope sidecar component sections`
+
+Changes:
+- `.../_history001` page:
+  - H1 is `Historical States`
+  - expando title is `Historical States`
+  - section lists states only, not the history node itself
+- `.../_history001/_s0001` page:
+  - expando title is `Manifestations`
+  - section lists manifestation bubbles
+- `.../_s0001/fantasy-rules-ontology-ttl` page:
+  - expando title is `Located Files`
+  - section lists located file bubbles
+- Bubble colors are now class-based, so `sflo:LocatedFile` always uses the same darkest shade regardless of where it appears.
+
+Ran:
+- `deno fmt`
+- `deno task lint`
+- focused tests: `pages_test.ts` and `tests/integration/weave_test.ts` passed, `39 passed`
+
+Both repos are clean; neither was pushed.
+
+# djradon_2026-05-03_2245_47
+
+Make the footer text smaller and more transparent
+
+# gpt-5.5_2026-05-03_2245_52
+
+I’ll make the generated footer quieter with a smaller font and lower alpha, then regenerate the sidecar pages and commit the visual-only change.
+
+# gpt-5.5_2026-05-03_2246_33
+
+Done.
+
+Weave commit:
+`68d27a1 style: quiet ResourcePage generated footer`
+
+Fixture commit:
+`f66b101 docs: quiet sidecar generated footer`
+
+Footer is now smaller (`0.78rem`) and more transparent (`rgba(..., 0.42)`).
+
+Ran:
+- `deno fmt`
+- `deno task lint`
+
+Both repos are clean; neither was pushed.
+
+# djradon_2026-05-03_2246_33
+
+the mouseover utc has time of 00:00:00.
+
+# gpt-5.5_2026-05-03_2246_43
+
+Right. That’s because I used a stable placeholder timestamp to avoid nondeterministic generated HTML and fixture churn.
+
+For the tooltip we should either:
+
+1. Use a real generation timestamp passed into the renderer from runtime, which means generated pages change every run unless we inject/freeze the clock in tests/fixtures.
+2. Use a date-only ISO value like `2026-05-03` instead of pretending we know the time.
+3. Use a meaningful fixed timestamp from the fixture run, if we want the fixture to say when that rung was generated.
+
+Given the footer text is “Generated on May 3, 2026”, I’d change the tooltip to `2026-05-03` for now. It’s honest and avoids fake precision.
+
+# djradon_2026-05-03_2249_24
+
+Where does "Generated resource page for ontology/_history001." come from on https://semantic-flow.github.io/mesh-sidecar-fantasy-rules/ontology/_history001 ? We shouldn't describe this thing as a ResourcePage because the URL is an IRI that represents a HistoricalState. It should say "Historical state for the _history001 Artifact history" Similarly for other pages.
+
+# gpt-5.5_2026-05-03_2249_27
+
+I’ll replace those generic fallback descriptions with model-aware descriptions based on the resource path, so the page describes the represented Semantic Flow resource rather than the HTML page.
+
+# gpt-5.5_2026-05-03_2249_42
+
+The string comes from `collectGeneratedPageFiles()` in `src/runtime/weave/weave.ts`; it was the generic fallback for simple generated pages. I’m replacing that fallback with Semantic Flow resource descriptions keyed off the resource path.
+
+# gpt-5.5_2026-05-03_2250_04
+
+That patch needs a small local path helper; `weave.ts` did not already have `toLastPathSegment()`. I’ll add it and rerun the checks.
+
+# gpt-5.5_2026-05-03_2250_45
+
+The regenerated pages now describe the represented resource: `_history001` says it is an ArtifactHistory for `ontology`, `_s0001` says it is a HistoricalState for `_history001`, and the manifestation page describes the ArtifactManifestation. I’ll commit this runtime description change and the regenerated docs.
+
+# gpt-5.5_2026-05-03_2251_07
+
+Updated.
+
+Weave commit:
+`0ec94fe feat: describe generated ResourcePage resources`
+
+Fixture commit:
+`4a62041 docs: describe sidecar resources`
+
+The generic fallback came from `collectGeneratedPageFiles()` in [src/runtime/weave/weave.ts](../../../../../src/runtime/weave/weave.ts). It now uses resource-aware descriptions instead of “Generated resource page for …”.
+
+Examples now generated:
+- `ontology/_history001`: `ArtifactHistory for ontology.`
+- `ontology/_history001/_s0001`: `Historical state _s0001 for the _history001 ArtifactHistory.`
+- manifestation page: `Artifact manifestation fantasy-rules-ontology-ttl for historical state _s0001.`
+
+Ran:
+- `deno fmt`
+- `deno task lint`
+- focused `tests/integration/weave_test.ts`
+
+Both repos are clean; neither was pushed.
+
+# djradon_2026-05-03_2251_07
+
+Use a real generation timestamp passed into the renderer from runtime, which means generated pages change every run unless we inject/freeze the clock in tests/fixtures. and just don't test on the date. Or test that it matches some format.
+
+# gpt-5.5_2026-05-03_2251_27
+
+I’ll thread a generation timestamp through the renderer from runtime. Because exact fixture comparisons would otherwise churn every run, I’m going to add a small clock seam: production/default uses `new Date()`, while tests and fixture-generation paths can freeze it without asserting the exact date text.
+
+# gpt-5.5_2026-05-03_2252_02
+
+To keep fixture comparisons stable while production uses real timestamps, I’m going to support `WEAVE_GENERATED_AT` as an override. Normal CLI use will use `new Date()`, and test/fixture runs can freeze the value via environment without asserting the literal date in renderer tests.
+
+# gpt-5.5_2026-05-03_2253_24
+
+The code now uses `new Date()` by default and `WEAVE_GENERATED_AT` only when provided. I froze that env var for the focused test run so fixture comparisons don’t churn.
+
+# gpt-5.5_2026-05-03_2254_23
+
+Implemented real generation timestamps.
+
+Weave commit:
+`bd5d961 feat: use runtime ResourcePage generation timestamp`
+
+Fixture commit:
+`f33a8d4 docs: refresh sidecar generation timestamp`
+
+Changes:
+- Renderer now receives `generatedAt` from runtime instead of using a hardcoded timestamp.
+- Normal runtime/CLI generation uses `new Date()`.
+- `WEAVE_GENERATED_AT` can freeze timestamps for tests/fixture comparisons.
+- `executeGenerate` / `executeWeave` also accept an optional `now` function for direct injection.
+- `deno task test` and `test:coverage` set `WEAVE_GENERATED_AT=2026-05-03T00:00:00.000Z` so test output stays stable without testing the literal date.
+
+The regenerated sidecar pages now have a real ISO timestamp in the footer tooltip, e.g. `2026-05-04T05:53:40.426Z`.
+
+Ran:
+- `deno fmt`
+- `deno task lint`
+- focused `pages_test.ts` + `tests/integration/weave_test.ts`: `39 passed`
+
+Both repos are clean; neither was pushed.
+
+# djradon_2026-05-03_2258_19
+
+If you haven't corrected it already, https://semantic-flow.github.io/mesh-sidecar-fantasy-rules/_mesh in the abscence of better description, should say "Semantic Mesh". And how hard would it be to include any named DigitalArtifacts in the top level of the mesh? Is it a good idea? As a default, it might be annoying, e.g. if there were large numbers of artifacts.
+
+# gpt-5.5_2026-05-03_2258_26
+
+I’ll check the current renderer defaults and mesh page model before changing anything, then I’ll decide whether the top-level artifact listing belongs in this slice or should stay as an explicit future option.
+
+# gpt-5.5_2026-05-03_2258_36
+
+The mesh fallback is still the older wording in the runtime. I’m going to correct that small default now; for the artifact listing, I’ll keep it out of the generic default unless there’s already a bounded model hook, because defaulting to a full mesh index can get noisy fast.
+
+# gpt-5.5_2026-05-03_2258_53
+
+I’m making the mesh fallback description literal and restrained: `_mesh` becomes “Semantic Mesh.” That keeps the generic renderer from inventing prose when the mesh metadata does not provide a better description.
+
+# gpt-5.5_2026-05-03_2259_00
+
+I’ll regenerate the sidecar docs so the published fixture output matches the runtime change. After that I’ll run the narrow checks that exercise page generation rather than the full suite.
+
+# djradon_2026-05-03_2259_29
+
+Wait you might be misunderstanding me, _mesh as a title is fine, but "Generated resource page for _mesh." should be "Semantic Mesh"
+
+# gpt-5.5_2026-05-03_2259_38
+
+Yes, that’s exactly the change I made: the title remains `_mesh`, and only the fallback summary text changed from:
+
+`Generated resource page for _mesh.` / `Semantic Flow mesh resource.`
+
+to:
+
+`Semantic Mesh.`
+
+I regenerated the sidecar docs, so [docs/_mesh/index.html](../../mesh-sidecar-fantasy-rules/docs/_mesh/index.html:67) now has that summary.
+
+On named top-level `DigitalArtifact`s: I’d avoid listing all of them by default. It will be useful in small meshes like fantasy rules, but annoying in large meshes. Better default would be a capped “Featured Artifacts” or “Top-Level Artifacts” section only when there are few, or later make it theme/config controlled.
+
+# djradon_2026-05-03_2301_39
+
+On https://semantic-flow.github.io/mesh-sidecar-fantasy-rules/ontology/_history001 -- the title should just be _history001, but let's put ontology as a link next to "mesh-sidecar-fantasy-rules" (above the title), after a slash, so it looks and works like breadcrumbs
+
+# gpt-5.5_2026-05-03_2301_43
+
+I’ll adjust the generic ResourcePage header so ArtifactHistory pages keep their actual segment as the title, and add a compact breadcrumb trail in the eyebrow line when the resource has a parent path.
+
+# gpt-5.5_2026-05-03_2301_58
+
+I’m going to treat this as a default-page header rule, not just a one-off for histories: the H1 should be the current resource segment unless RDF gives a better title, while ancestors render as breadcrumbs above it.
+
+# gpt-5.5_2026-05-03_2302_52
+
+The renderer change is in place. I’m formatting, then I’ll regenerate the fixture and run the focused ResourcePage/weave checks.
+
+# gpt-5.5_2026-05-03_2303_17
+
+One focused integration expectation caught the over-broad part: support artifact pages were relying on the full path title. I’m tightening the title rule to history/state/manifestation pages instead of applying it to every generic resource.
+
+# djradon_2026-05-03_2303_43
+
+For LocatedFiles let's use the full URL instead of just the filename. Might have to make it a little smaller. 
+
+Also, each layer in the cake should be expandable.
+
+# gpt-5.5_2026-05-03_2303_56
+
+I’ll change the history tree markup so parent nodes are real `<details>` elements, keeping them open by default. For LocatedFile labels I’ll render the canonical IRI text while keeping the link target mesh-relative.
+
+# gpt-5.5_2026-05-03_2305_42
+
+Implemented the page tweaks:
+
+- `ontology/_history001` now has `<h1>_history001</h1>`.
+- The eyebrow line is now breadcrumb-style: `mesh-sidecar-fantasy-rules / ontology`, with `ontology` linked.
+- History tree parent layers now render as expandable `<details>` nodes, open by default.
+- LocatedFile entries now display the full canonical URL, with smaller wrapping text.
+- `_mesh` fallback summary remains `Semantic Mesh.`
+
+Regenerated the sidecar docs.
+
+Verification:
+- `deno task lint`
+- focused ResourcePage/weave tests: `39 passed`
+
+Not committed yet. Suggested commit message:
+
+```text
+feat: refine generated ResourcePage navigation
+
+- render parent paths as breadcrumb links above generated ResourcePage titles
+- title history, state, and manifestation pages by their own path segment
+- make history tree parent layers expandable by default
+- render LocatedFile history entries with full canonical IRIs
+- use "Semantic Mesh" as the fallback mesh resource summary
+```
+
+# djradon_2026-05-03_2309_46
+
+Sorry, breadcrumbs should appear on every page if possible, e.g. https://semantic-flow.github.io/mesh-sidecar-fantasy-rules/ontology/_history001 should have mesh-sidecar-fantasy-rules (remove capitalization styling) / ontology / _history001
+
+(That's above the title, each segment a link.)
+
+# gpt-5.5_2026-05-03_2309_53
+
+I’ll make breadcrumbs include the current resource segment as a linked crumb, and remove the uppercase treatment so they read like path navigation rather than an eyebrow label.
+
+# gpt-5.5_2026-05-03_2310_11
+
+That combined command ran from the fixture repo and didn’t find the Weave source path. I’ll run formatting from Weave and generation from the fixture separately.
+
+# gpt-5.5_2026-05-03_2310_34
+
+Updated breadcrumbs to include the current page segment as a linked crumb and removed capitalization styling from the breadcrumb line.
+
+For `ontology/_history001`, the generated header now shows:
+
+`mesh-sidecar-fantasy-rules / ontology / _history001`
+
+above the `_history001` title.
+
+Regenerated sidecar docs and verified:
+- `deno task lint`
+- focused ResourcePage/weave tests: `39 passed`
+
+# djradon_2026-05-03_2311_04
+
+and the title on https://semantic-flow.github.io/mesh-sidecar-fantasy-rules/ontology/_history001 should be _history001 and description should be "Artifact history for " and then use the name of the ontology.
+
+# gpt-5.5_2026-05-03_2311_14
+
+I’ll trace where the ArtifactHistory description is produced and whether the renderer already has access to the owning artifact’s RDF title. If it doesn’t, I’ll use the owner resource display name for this slice rather than inventing cross-page RDF lookup.
+
+# gpt-5.5_2026-05-03_2311_37
+
+The owning ontology does have `dcterms:title "Fantasy Rules Ontology"`. I’m going to use that when the history page can find the owner’s raw RDF panel; otherwise the fallback will be the owner path segment.
+
+# gpt-5.5_2026-05-03_2312_28
+
+I added owner-title lookup for ArtifactHistory summaries. Now I’m regenerating the sidecar pages and checking the exact history page output before running the same focused tests.
+
+# gpt-5.5_2026-05-03_2312_51
+
+Updated. The `ontology/_history001` page now has:
+
+- title: `_history001`
+- description: `Artifact history for Fantasy Rules Ontology.`
+
+I used the owning artifact’s RDF title from `dcterms:title` when available, with a path-based fallback for support artifacts.
+
+Regenerated sidecar docs and verified:
+- `deno task lint`
+- focused ResourcePage/weave tests: `39 passed`
+
+# djradon_2026-05-03_2312_54
+
+Sorry, the breadcrumbs themselves should include the current page. miscommunication
+
+# gpt-5.5_2026-05-03_2312_58
+
+Already adjusted that way: breadcrumbs now include the current resource as the last linked segment.
+
+For `ontology/_history001`, generated output is:
+
+`mesh-sidecar-fantasy-rules / ontology / _history001`
+
+with `_history001` included in the breadcrumb, and the page title remains `_history001`.
+
+# djradon_2026-05-03_2314_37
+
+https://semantic-flow.github.io/mesh-sidecar-fantasy-rules/ontology/_history001/_s0001 instead of "Historical state _s0001 for the _history001 ArtifactHistory." should be "Historical state for the _history001 artifact history" (no period, it's not a sentence.
+
+# gpt-5.5_2026-05-03_2314_40
+
+I’ll update that generated description style for HistoricalState pages and regenerate the sidecar output.
+
+# gpt-5.5_2026-05-03_2315_13
+
+Updated. The generated `ontology/_history001/_s0001` summary is now:
+
+`Historical state for the _history001 artifact history`
+
+No period.
+
+Regenerated sidecar docs and verified:
+- `deno task lint`
+- focused ResourcePage/weave tests: `39 passed`
+
+# djradon_2026-05-03_2315_47
+
+And do the same for other pages, don't repeat the name in the description text, and use the labels instead of the PascalCase class term.
+
+# gpt-5.5_2026-05-03_2315_57
+
+I’ll normalize the generic generated summaries so they describe the relationship without restating the current page segment, and replace PascalCase class names with readable labels in prose.
+
+# gpt-5.5_2026-05-03_2316_09
+
+I found a few prose summaries still using class-style names. I’m changing those to readable labels and removing the current resource segment from relationship summaries.
+
+# gpt-5.5_2026-05-03_2316_52
+
+The prose changes are type-checking. I’m regenerating the sidecar pages now and then I’ll verify representative generated summaries before running the focused test set.
+
+# gpt-5.5_2026-05-03_2317_06
+
+The representative output looks better, but it exposed one bad generic: `_mesh/_meta` is mesh metadata, not Knop metadata. I’m going to correct mesh support artifact labels separately from Knop support artifacts.
+
+# gpt-5.5_2026-05-03_2318_11
+
+Done. Generic summaries now avoid repeating the current page segment and use readable labels instead of PascalCase class names.
+
+Examples now generated:
+- `Artifact manifestation for the _s0001 historical state`
+- `Historical state for the _history001 artifact history`
+- `Artifact history for Fantasy Rules Ontology`
+- `Mesh metadata for this mesh`
+- `Mesh inventory for this mesh`
+- `Mesh config for this mesh`
+- `Knop metadata for ontology`
+- `Resource page definition for alice`
+
+Regenerated sidecar docs and verified:
+- `deno task lint`
+- focused ResourcePage/weave/generate tests: `54 passed`
+
+# djradon_2026-05-03_2318_57
+
+summary commit mesg for weave
+
+# gpt-5.5_2026-05-03_2319_02
+
+```text
+feat: refine generated ResourcePage presentation
+
+- add breadcrumb navigation across generated ResourcePages
+- title history/state/manifestation pages by their own resource segment
+- use readable relationship summaries instead of ResourcePage/class-name prose
+- derive artifact history summaries from owner RDF titles when available
+- make history tree layers expandable and render LocatedFile entries as full IRIs
+- keep generated timestamps runtime-driven with test clock freezing
+```
+
+# djradon_2026-05-03_2319_48
+
+the breadcrumbs are still including the current thing, e.g. "mesh-sidecar-fantasy-rules
+/
+ontology
+/
+_history001" on https://semantic-flow.github.io/mesh-sidecar-fantasy-rules/ontology/_history001
+
+# gpt-5.5_2026-05-03_2319_52
+
+Got it. I’ll reverse that part: breadcrumbs should stop at the parent, so `ontology/_history001` shows `mesh-sidecar-fantasy-rules / ontology` above the `_history001` title.
+
+# gpt-5.5_2026-05-03_2320_27
+
+Fixed. Breadcrumbs now stop at the parent, so `ontology/_history001` renders:
+
+`mesh-sidecar-fantasy-rules / ontology`
+
+above the `_history001` title.
+
+Regenerated sidecar docs and verified:
+- `deno task lint`
+- focused ResourcePage/weave tests: `39 passed`
+
+# djradon_2026-05-03_2323_14
+
+OK, I think we're ready to get back to [wd.task.2026.2026-05-02-fantasy-rules-sidecar.md](../../../../../documentation/notes/wd.task.2026.2026-05-02-fantasy-rules-sidecar.md) -- any changes there before we proceed? new conversation or same?
+
+# gpt-5.5_2026-05-03_2323_22
+
+I’ll skim the fantasy sidecar task against the current implemented state and call out whether the note needs cleanup before the next slice.
+
+# gpt-5.5_2026-05-03_2323_34
+
+Yes, a few task-note cleanups would help before Phase 2 continues:
+
+- Phase 4 should acknowledge the renderer refresh work is now mostly handled in [[wd.task.2026.2026-05-03-resource-page-renderer-refresh]], not pending inside this task. I’d mark the raw RDF/shared renderer/look-and-feel items as completed or delegated there.
+- Phase 2 has mixed ontology+SHACL bullets. Since ontology is already integrated and woven, split remaining unchecked items so the next obvious slice is SHACL-only: integrate `shacl`, add `../shacl/` grant, weave `07-shacl-integrated-woven`, add the Accord manifest.
+- “Add current resource pages for root, ontology, SHACL…” should probably be partially complete or rephrased, because root/ontology/support pages now exist; SHACL is the remaining part.
+- If the latest renderer behavior is now part of fixture expectations, add a short decision saying the generic renderer owns baseline navigation/raw RDF/history presentation, while this task only consumes it.
+
+Same conversation is okay technically, but I’d start a new one for the SHACL integration slice. This thread has a lot of renderer back-and-forth in context; a fresh prompt with the task link, current branch/status, and “next slice: integrate SHACL sidecar artifact” will be cleaner.
+
+# djradon_2026-05-03_2325_05
+
+yes, update the task. 
+
+integrating shacl should add the grant, no?
+
+Renderer behavior should never be part of fixture expectations.
+
+# gpt-5.5_2026-05-03_2325_10
+
+I’ll update the task note to make SHACL integration/grant coupling explicit, remove renderer behavior from fixture acceptance, and mark the renderer work as delegated rather than part of this fixture contract.
+
+# gpt-5.5_2026-05-03_2325_48
+
+Updated [wd.task.2026.2026-05-02-fantasy-rules-sidecar.md](../../../../../documentation/notes/wd.task.2026.2026-05-02-fantasy-rules-sidecar.md).
+
+Changes made:
+- Explicitly says SHACL integration should create the `../shacl/` grant as part of the integration operation.
+- Split ontology-complete items from SHACL-remaining items.
+- Reframed renderer/page presentation as delegated to [[wd.task.2026.2026-05-03-resource-page-renderer-refresh]].
+- Clarified fixture acceptance should not include renderer-specific prose/layout/visual expectations.
+- Marked raw RDF/shared renderer seam work as done/delegated where appropriate.
+
+No tests run; this was documentation-only.
+
+# djradon_2026-05-03_2325_53
+
+prompt for new conversation
+
+# gpt-5.5_2026-05-03_2326_04
+
+Use this:
+
+```text
+Continue the fantasy rules sidecar work in /home/djradon/hub/semantic-flow/weave.
+
+Read:
+- weave/documentation/notes/wd.task.2026.2026-05-02-fantasy-rules-sidecar.md
+- weave/documentation/notes/wd.general-guidance.md
+- weave/documentation/notes/product-vision.md
+
+Current next slice: integrate the SHACL sidecar artifact.
+
+Context:
+- The fixture repo is at weave/dependencies/github.com/semantic-flow/mesh-sidecar-fantasy-rules.
+- The current fixture branch should continue from 05-ontology-integrated-woven toward 06-shacl-integrated.
+- Ontology integration is already done.
+- SHACL integration should add the constrained mesh-carried source grant for ../shacl/ as part of the integration operation. Do not add ../examples/ yet.
+- Renderer behavior should not be part of fixture conformance expectations.
+- Accord manifests should stay focused on Semantic Flow artifacts, inventories, path policy, generated page presence, and raw RDF availability, not exact renderer prose/layout/styling.
+
+Task:
+1. Check current git status in weave and mesh-sidecar-fantasy-rules.
+2. Inspect the sidecar task note and current fixture branches/manifests.
+3. Confirm the exact `weave integrate` command for SHACL from the fixture repo root.
+4. Add or update the Accord manifest for the SHACL integration transition before settling output, if missing.
+5. Run the SHACL integration so public path `shacl` uses `workingLocalRelativePath` to the adjacent authored SHACL source.
+6. Ensure config gets the constrained `sfcfg:hasLocalPathAccessRule` for `../shacl/`.
+7. Verify generated/changed files against the intended transition contract.
+8. Run the relevant lint/tests, not necessarily the full suite unless risk warrants it.
+9. Update the task note checkboxes/notes if needed.
+```
+
+# djradon_2026-05-03_2328_07
+
+Can we re-generate mesh-alice-bio? And test that it works when _page stuff is involved?
+
+# gpt-5.5_2026-05-03_2328_16
+
+I’ll check the current weave changes and the Alice fixture branches first, then run the smallest generation path that exercises `_knop/_page` custom pages.
+
+# gpt-5.5_2026-05-03_2328_28
+
+The Alice fixture `main` already contains `_knop/_page` files, and the dedicated integration tests cover both woven page definitions and generate-only rendering after a page definition exists. I’m going to regenerate `mesh-alice-bio` on its current branch and then run those focused tests.
+
+# gpt-5.5_2026-05-03_2329_14
+
+Regenerated `mesh-alice-bio` on its current `main` branch.
+
+What I checked:
+- `weave generate` updated 108 existing generated pages.
+- `_page` custom rendering is present:
+  - `alice/index.html` still renders from `alice/_knop/_page/page.ttl`.
+  - `alice/_knop/_page/index.html` was regenerated and shows `Resource page definition for alice`.
+  - `_page` history/state/manifestation pages were regenerated too.
+
+Focused tests passed:
+
+```text
+WEAVE_GENERATED_AT=2026-05-03T00:00:00.000Z deno test --allow-read --allow-write --allow-run=git,deno --allow-env tests/integration/weave_test.ts tests/integration/validate_version_generate_test.ts
+
+43 passed | 0 failed
+```
+
+Current state:
+- Weave repo has the task-note edit from the previous step.
+- `mesh-alice-bio` has 108 modified generated HTML files after regeneration.
+
+# djradon_2026-05-03_2333_21
+
+https://semantic-flow.github.io/mesh-alice-bio/_mesh/_inventory has "_mesh/_inventory" instead of just "_inventory" for title.
+
+# gpt-5.5_2026-05-03_2333_29
+
+That’s a fair consistency issue. Since breadcrumbs now carry the parent path, generic pages can use just the current segment as the H1; I’ll change that default and update the `_page` test expectations accordingly.
+
+# gpt-5.5_2026-05-03_2333_58
+
+I’m formatting the touched files, then I’ll regenerate Alice and verify `_mesh/_inventory` now titles as `_inventory`.
+
+# gpt-5.5_2026-05-03_2334_29
+
+The failing focused test found one remaining special case: reference catalog pages still used the full catalog path as H1. I’ll bring that into the same “current segment as title” rule.
+
+# gpt-5.5_2026-05-03_2335_04
+
+The remaining failure is another test expectation for the old full-path title in an escaping test. I’ll update that assertion to the new segment title while keeping the escaping coverage.
+
+# gpt-5.5_2026-05-03_2335_47
+
+Fixed the generated-title rule. Generic generated pages now use the current path segment as the H1 when there is no RDF title override.
+
+Verified in regenerated `mesh-alice-bio`:
+- `_mesh/_inventory/index.html` now has `<h1>_inventory</h1>`
+- `alice/_knop/_page/index.html` now has `<h1>_page</h1>`
+- `alice/_knop/_references/index.html` now has `<h1>_references</h1>`
+
+Regeneration left `mesh-alice-bio` clean, so its checked-in output already matches after generation.
+
+Verification:
+- `deno task lint`
+- focused ResourcePage/weave/generate tests: `54 passed`
+
+Weave repo now has two modified files:
+- `src/runtime/weave/pages.ts`
+- `src/runtime/weave/pages_test.ts`
+
+# gpt-5.5_2026-05-03_2335_49
+
+Fixed the generated-title rule. Generic generated pages now use the current path segment as the H1 when there is no RDF title override.
+
+Verified in regenerated `mesh-alice-bio`:
+- `_mesh/_inventory/index.html` now has `<h1>_inventory</h1>`
+- `alice/_knop/_page/index.html` now has `<h1>_page</h1>`
+- `alice/_knop/_references/index.html` now has `<h1>_references</h1>`
+
+Regeneration left `mesh-alice-bio` clean, so its checked-in output already matches after generation.
+
+Verification:
+- `deno task lint`
+- focused ResourcePage/weave/generate tests: `54 passed`
+
+Weave repo now has two modified files:
+- `src/runtime/weave/pages.ts`
+- `src/runtime/weave/pages_test.ts`
