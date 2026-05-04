@@ -2174,3 +2174,38 @@ Update black-box mesh-create coverage for cwd-relative sidecar paths and the
 outside-workspace failure case. Refresh mesh-create and sidecar config docs to
 document the resolved path model.
 ```
+
+# djradon_2026-05-03_1559_37
+
+OK, prompt for new conversation?
+
+# gpt-5.5_2026-05-03_1559_48
+
+Use this:
+
+```text
+Continue the fantasy rules sidecar work in /home/djradon/hub/semantic-flow/weave.
+
+Current next slice: implement sidecar MeshConfig creation in `weave mesh create`.
+
+Context:
+- `--mesh-root` exists.
+- CLI semantics were corrected: explicit `--workspace` and `--mesh-root` paths are resolved from the command CWD; omitted `--mesh-root` means the mesh root is the workspace root.
+- The resolved mesh root must stay inside the resolved workspace root.
+- `.nojekyll` is created by default for GitHub Pages mesh bases, with `--no-nojekyll` opt-out.
+- `mesh-alice-bio` branch `02-mesh-created` has a local commit adding `.nojekyll`: `31c90f2 test: add pages guard to mesh-created fixture`.
+- Tests were green: `deno task lint`, full `deno task test` with 228 passed.
+
+Task:
+- When `weave mesh create` is invoked with an explicit mesh root that differs from the workspace root, create `_mesh/_config/config.ttl` under the mesh root.
+- For `weave mesh create --workspace . --mesh-root docs --mesh-base https://semantic-flow.github.io/mesh-sidecar-fantasy-rules/`, create `docs/_mesh/_config/config.ttl`.
+- The config should be an `sfcfg:MeshConfig` and include `sfcfg:workspaceRootRelativeToMeshRoot "../"`.
+- Do not add local path access grants yet.
+- Whole-root Alice Bio meshes should not get config just for `"."`.
+- Add/update tests and docs. Run lint and tests.
+
+Relevant docs:
+- `weave/documentation/notes/wd.task.2026.2026-05-02-fantasy-rules-sidecar.md`
+- `semantic-flow-framework/notes/sf.config.md`
+- `ontology/semantic-flow-config-ontology.ttl`
+```
