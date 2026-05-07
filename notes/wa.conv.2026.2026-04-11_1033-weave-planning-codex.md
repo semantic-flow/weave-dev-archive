@@ -2,7 +2,7 @@
 id: weave-planning-fpojz7
 title: weave planning
 desc: ''
-updated: 1775928819899
+updated: 1778134118941
 created: 1775928819899
 participants:
   - djradon
@@ -183,7 +183,7 @@ One practical note: I couldn’t find `semantic-flow-config-ontology.ttl` on dis
 
 # djradon_2026-04-11_0225_30
 
-/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/ontology/semantic-flow-config-ontology.ttl
+/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/sflo/semantic-flow-config-ontology.ttl
 
 I think regex targeting is valuable in the case that certain filenames or paths should have the same templates applied. But it's maybe too complicated for the first pass? Or maybe you have a better idea?
 
@@ -233,7 +233,7 @@ So my recommendation is:
 3. Do not carry `TemplateMappingSet` / regex matching into first pass.
 4. If bulk template selection pressure shows up later, add a constrained selector model before full regex.
 
-One small note: the TTL at `/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/ontology/semantic-flow-config-ontology.ttl` appears to exist but currently reads as empty from the shell, so it looks like a good time to shape it deliberately rather than let old structure leak in.
+One small note: the TTL at `/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/sflo/semantic-flow-config-ontology.ttl` appears to exist but currently reads as empty from the shell, so it looks like a good time to shape it deliberately rather than let old structure leak in.
 
 If you want, I can turn this into a concrete `keep / defer / reject` list against `sflo-config-ontology.jsonld`, then draft the first-pass TTL skeleton.
 
@@ -418,7 +418,7 @@ I synthesized the first-pass config ontology in [semantic-flow-config-ontology.t
 
 I kept content composition out of config on purpose, because the core ontology already contains the `_knop/_page` content-side vocabulary like `ResourcePageDefinition`, `ResourcePageRegion`, `ResourcePageSource`, `ResourcePageBundleFile`, and related source-policy terms in [semantic-flow-core-ontology.ttl](../../ontology/semantic-flow-core-ontology.ttl). So the split is now much cleaner: core owns content/source composition; config owns presentation/chrome.
 
-I also updated the checklist in [1735](../../../../../documentation/notes/wd.task.2026.2026-04-08_1735-page-definition-ontology-and-config.md) to reflect that the ontology review, split decision, first-pass vocabulary draft, asset-bundle concept, and example shapes are now done. Validation passed with `riot --validate dependencies/github.com/semantic-flow/ontology/semantic-flow-config-ontology.ttl`.
+I also updated the checklist in [1735](../../../../../documentation/notes/wd.task.2026.2026-04-08_1735-page-definition-ontology-and-config.md) to reflect that the ontology review, split decision, first-pass vocabulary draft, asset-bundle concept, and example shapes are now done. Validation passed with `riot --validate dependencies/github.com/semantic-flow/sflo/semantic-flow-config-ontology.ttl`.
 
 One thing I intentionally did not add yet is any regex or mapping-set machinery. If we still want a later bulk assignment mechanism, I’d add it on top of this substrate rather than letting it shape the first ontology draft.
 
@@ -488,7 +488,7 @@ Changed:
 I kept the scope to true class/property naming collisions, not every noun-like property in the ontologies. That feels like the clean boundary here.
 
 Verification:
-- `riot --validate dependencies/github.com/semantic-flow/ontology/semantic-flow-prov-ontology.ttl`
+- `riot --validate dependencies/github.com/semantic-flow/sflo/semantic-flow-prov-ontology.ttl`
 - `jq empty` on both edited JSON-LD files
 
 One minor loose end: conversation notes still mention the old names as historical text, but the ontology files themselves are now aligned. A good commit message would be: `Normalize ontology relation names to has* for class/property collisions`.

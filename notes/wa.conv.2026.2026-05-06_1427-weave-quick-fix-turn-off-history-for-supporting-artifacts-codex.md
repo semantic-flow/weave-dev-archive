@@ -3,7 +3,7 @@ id: weave-quick-fix-turn-off-8wstzq
 title: 'weave quick fix: turn off history for supporting artifacts'
 desc: ''
 created: 1778102835194
-updated: 1778102835194
+updated: 1778134118931
 participants: [djradon, codex.gpt-5.5]
 conversationEventKinds: [message.assistant, message.user, tool.call, tool.result]
 ---
@@ -377,10 +377,10 @@ Read:
 - weave/documentation/notes/product-vision.md
 - weave/documentation/notes/wd.general-guidance.md
 - weave/documentation/notes/wd.task.2026.2026-05-06-grand-config-synthesis.md
-- weave/dependencies/github.com/semantic-flow/ontology/notes/ont.task.2026.2026-05-03-enumeration-type-instances.md
-- weave/dependencies/github.com/semantic-flow/ontology/semantic-flow-core-ontology.ttl
-- weave/dependencies/github.com/semantic-flow/ontology/semantic-flow-config-ontology.ttl
-- weave/dependencies/github.com/semantic-flow/ontology/old/sflo-config-ontology.jsonld, only for lineage
+- weave/dependencies/github.com/semantic-flow/sflo/notes/ont.task.2026.2026-05-03-enumeration-type-instances.md
+- weave/dependencies/github.com/semantic-flow/sflo/semantic-flow-core-ontology.ttl
+- weave/dependencies/github.com/semantic-flow/sflo/semantic-flow-config-ontology.ttl
+- weave/dependencies/github.com/semantic-flow/sflo/old/sflo-config-ontology.jsonld, only for lineage
 
 Goal:
 Settle the Phase 0 design before rerunning or overhauling fixtures. The fixture meshes/manifests are expected to change substantially, especially around which support artifacts get history by default.
@@ -425,3 +425,60 @@ Operational config is a trusted runtime input and gate. Effective/resolved confi
 ```
 
 I’d run that before fixture churn. Otherwise the rerun will bake in today’s half-settled support artifact behavior and we’ll immediately have to migrate it again.
+
+# djradon_2026-05-06_2238_09
+
+Does the task represent the sharper separation of operational and effective?
+
+# gpt-5.5_2026-05-06_2238_17
+
+I’ll check the grand config task wording directly and see whether it merely implies the separation or actually makes it a contract.
+
+# gpt-5.5_2026-05-06_2238_27
+
+There is a mismatch: the task has the trust-gate wording in places, but it still says operational/runtime config “can hold” or “is” active resolved config. I’m going to patch those spots so the note matches the sharper model instead of carrying both versions.
+
+# gpt-5.5_2026-05-06_2239_29
+
+Not cleanly before. It had the right idea in some places, but still said operational/runtime config could be the active resolved config layer.
+
+I updated [wd.task.2026.2026-05-06-grand-config-synthesis.md](../../../../../documentation/notes/wd.task.2026.2026-05-06-grand-config-synthesis.md) so the separation is now explicit:
+
+- `OperationalConfig`: trusted runtime input and trust gate.
+- `ConfigResolutionConfig`: resolver/bootstrap policy.
+- `WeaveDefaultConfig`: declared baseline defaults.
+- authored mesh/Knop/reusable config: portable source material.
+- `EffectiveConfig` / `ResolvedConfig`: derived runtime output, not operational input.
+
+I also added a non-goal: do not model derived effective/resolved config as `OperationalConfig`.
+
+Tests not run; docs-only update.
+
+# djradon_2026-05-06_2256_27
+
+We'll also have a "weave default" config, i.e., externalize the choices that are implicit in the code or manipulated via API/CLI.
+
+# gpt-5.5_2026-05-06_2256_43
+
+I’ll check the grand config note and make sure the Weave default layer is represented as a first-class input layer, not just mentioned in passing.
+
+# gpt-5.5_2026-05-06_2256_54
+
+The note already has a `WeaveDefaultConfig` section and decisions. I’m going to make the Phase 0 work more concrete: inventory current code/API/CLI defaults and classify which become default config versus per-operation request fields.
+
+# gpt-5.5_2026-05-06_2257_16
+
+Captured. The task already had a `WeaveDefaultConfig` section, but I tightened Phase 0 so it now explicitly requires an inventory of implicit defaults from:
+
+- TypeScript implementation defaults
+- API defaults
+- CLI defaults
+- page planning
+- history planning
+- fixture assumptions
+
+Each default now has to be classified as `Weave default config`, `operational config`, `explicit operation request`, or `derived effective config`.
+
+I also added contract/testing language so Weave defaults are inspectable independently of implementation details, with parity checks or diagnostics proving the internal defaults match the serialized/emitted default config.
+
+Tests not run; docs-only update.

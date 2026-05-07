@@ -2,7 +2,7 @@
 id: weave-rdf-parsing-135m0q
 title: weave rdf parsing
 desc: ''
-updated: 1775902188061
+updated: 1778134118937
 created: 1775530714979
 participants:
   - djradon
@@ -1628,7 +1628,7 @@ I’m checking whether this actually needs a new ontology term or whether the cu
 
 I don’t think we need a new ontology property just to say what the current history name is.
 
-We already have `sflo:currentArtifactHistory` in the core ontology at [semantic-flow-core-ontology.ttl](../../dependencies/github.com/semantic-flow/ontology/semantic-flow-core-ontology.ttl), and that points to the actual `ArtifactHistory` resource. If the current history is `<ontology/releases>`, then the “current history name” is already derivable from that IRI’s last path segment: `releases`.
+We already have `sflo:currentArtifactHistory` in the core ontology at [semantic-flow-core-ontology.ttl](../../dependencies/github.com/semantic-flow/sflo/semantic-flow-core-ontology.ttl), and that points to the actual `ArtifactHistory` resource. If the current history is `<ontology/releases>`, then the “current history name” is already derivable from that IRI’s last path segment: `releases`.
 
 So I’d separate two ideas:
 

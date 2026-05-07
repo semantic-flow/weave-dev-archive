@@ -2,7 +2,7 @@
 id: 08-weave-alice-bio-refer-f6sdcv
 title: 08 weave alice bio referenced
 desc: ''
-updated: 1775534716641
+updated: 1778134118922
 created: 1775342261732
 participants:
   - djradon
@@ -80,7 +80,7 @@ I’ve got the docs consistent. I’m grabbing exact line references now so the 
 
 Updated the docs to take `referenceRole` as input on the first local surface: [[wa.completed.2026.2026-04-04-alice-bio-referenced#L85]] and [[wd.spec.2026-04-04-knop-add-reference-behavior#L21]] now use `weave knop add-reference <designatorPath> --reference-target-designator-path <referenceTargetDesignatorPath> --reference-role <referenceRole>` and treat `referenceRole` as part of the narrow local request shape.
 
-I did not adopt a silent `Supplemental` default. The settled `08` acceptance target explicitly asserts `ReferenceRole/Canonical` for this first carried slice in [08-alice-bio-referenced.jsonld](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/semantic-flow-framework/examples/alice-bio/conformance/08-alice-bio-referenced.jsonld#L29) and [08-alice-bio-referenced.jsonld](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/semantic-flow-framework/examples/alice-bio/conformance/08-alice-bio-referenced.jsonld#L161), while the ontology defines the role vocabulary but no default in [semantic-flow-core-ontology.ttl](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/ontology/semantic-flow-core-ontology.ttl#L210). So the docs now require the role explicitly for this first local slice instead of inventing omission semantics. If you want a global `Supplemental` default later, that should get its own spec and fixture.
+I did not adopt a silent `Supplemental` default. The settled `08` acceptance target explicitly asserts `ReferenceRole/Canonical` for this first carried slice in [08-alice-bio-referenced.jsonld](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/semantic-flow-framework/examples/alice-bio/conformance/08-alice-bio-referenced.jsonld#L29) and [08-alice-bio-referenced.jsonld](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/semantic-flow-framework/examples/alice-bio/conformance/08-alice-bio-referenced.jsonld#L161), while the ontology defines the role vocabulary but no default in [semantic-flow-core-ontology.ttl](/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/sflo/semantic-flow-core-ontology.ttl#L210). So the docs now require the role explicitly for this first local slice instead of inventing omission semantics. If you want a global `Supplemental` default later, that should get its own spec and fixture.
 
 No tests run.
 

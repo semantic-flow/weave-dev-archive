@@ -3,7 +3,7 @@ id: exterminate-sfc-5iefva
 title: 'exterminate sfc'
 desc: ''
 created: 1778012457885
-updated: 1778012457885
+updated: 1778134118945
 participants: [djradon, codex.gpt-5.5]
 conversationEventKinds: [message.assistant, message.user, tool.call, tool.result]
 ---
@@ -93,7 +93,7 @@ We need to finalize the sflo ontology and SHACL URLs, which means deciding wheth
 
 I’ll ground this in the current repo layout and ontology metadata before giving a recommendation, because the URL decision is mostly about what future publishing and mesh boundaries should make boring.
 
-I don’t see a live sibling `/home/djradon/hub/semantic-flow/ontology`; this Weave checkout has the ontology under `dependencies/github.com/semantic-flow/ontology`, and there’s an `ontology_DONT-USE` sibling. I’m checking the dependency repo metadata and current ontology filenames/URLs so the recommendation doesn’t assume the wrong working copy.
+I don’t see a live sibling `/home/djradon/hub/semantic-flow/ontology`; this Weave checkout has the ontology under `dependencies/github.com/semantic-flow/sflo`, and there’s an `ontology_DONT-USE` sibling. I’m checking the dependency repo metadata and current ontology filenames/URLs so the recommendation doesn’t assume the wrong working copy.
 
 My recommendation:
 

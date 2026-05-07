@@ -2,7 +2,7 @@
 id: weave-targeting-lbtq2f
 title: weave targeting
 desc: ''
-updated: 1775902188059
+updated: 1778134118918
 created: 1775613259132
 participants:
   - djradon
@@ -452,7 +452,7 @@ I’m grabbing exact line references for the ontology/runtime constraint so I ca
 
 As a temporary implementation rule, yes. As the long-term model, no.
 
-The ontology already treats `hasWorkingLocatedFile` as an authoring/current shortcut, not as “the public current bytes.” In the vendored ontology, it is explicitly for “sparse authoring support without materializing working/current state resources” in [semantic-flow-core-ontology.ttl#L137](../../dependencies/github.com/semantic-flow/ontology/semantic-flow-core-ontology.ttl#L137). And `currentArtifactHistory` points to the default history for further versioning, not to a public current file in [semantic-flow-core-ontology.ttl#L86](../../dependencies/github.com/semantic-flow/ontology/semantic-flow-core-ontology.ttl#L86).
+The ontology already treats `hasWorkingLocatedFile` as an authoring/current shortcut, not as “the public current bytes.” In the vendored ontology, it is explicitly for “sparse authoring support without materializing working/current state resources” in [semantic-flow-core-ontology.ttl#L137](../../dependencies/github.com/semantic-flow/sflo/semantic-flow-core-ontology.ttl#L137). And `currentArtifactHistory` points to the default history for further versioning, not to a public current file in [semantic-flow-core-ontology.ttl#L86](../../dependencies/github.com/semantic-flow/sflo/semantic-flow-core-ontology.ttl#L86).
 
 The problem is the current implementation does bake in the stronger assumption:
 - runtime inventory resolution only accepts mesh-relative paths for working files in [inventory.ts#L326](../../src/runtime/mesh/inventory.ts#L326)

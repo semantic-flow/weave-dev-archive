@@ -2,7 +2,7 @@
 id: bw3amcysclo64aty396b378
 title: 2026 03 20 Architecture Planning
 desc: ''
-updated: 1775334188690
+updated: 1778134118920
 created: 1774046567965
 ---
 
@@ -151,8 +151,8 @@ We’re defining an architecture-planning subtask for a fresh Weave reset.
 
 Review the [[ont.summary.core]] and reference the ontology as necessary:
 
-- weave/dependencies/github.com/semantic-flow/ontology/notes/ont.summary.core.md
-- weave/dependencies/github.com/semantic-flow/ontology/semantic-flow-core-ontology.ttl
+- weave/dependencies/github.com/semantic-flow/sflo/notes/ont.summary.core.md
+- weave/dependencies/github.com/semantic-flow/sflo/semantic-flow-core-ontology.ttl
 
 Reading these local files for context on my previous architecture:
 

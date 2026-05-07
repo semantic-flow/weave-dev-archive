@@ -3,7 +3,7 @@ id: architecture-planning-24vnar
 title: 'architecture planning'
 desc: ''
 created: 1774049403623
-updated: 1775338353371
+updated: 1778134118950
 participants: [djradon, codex.gpt-5.4]
 conversationEventKinds: [message.assistant, message.user, tool.call, tool.result, decision]
 ---
@@ -12,7 +12,7 @@ conversationEventKinds: [message.assistant, message.user, tool.call, tool.result
 
 architecture planning
 
-I'm ambivalent about the next steps. Do we start to nail down an architecture (see [[wd.task.2026-03-20-architecture-planning]] )? Produce a example-data repo with markdown files and rdf data , like for the [[ont.use-cases.alice-bio]] ? Work on the support ontology model (dependencies/github.com/semantic-flow/ontology/old/sflo-meta-ontology.jsonld, config, host) - define the [[product-vision]]
+I'm ambivalent about the next steps. Do we start to nail down an architecture (see [[wd.task.2026-03-20-architecture-planning]] )? Produce a example-data repo with markdown files and rdf data , like for the [[ont.use-cases.alice-bio]] ? Work on the support ontology model (dependencies/github.com/semantic-flow/sflo/old/sflo-meta-ontology.jsonld, config, host) - define the [[product-vision]]
 
 # gpt-5.4_2026-03-20_1607_56
 
@@ -39,7 +39,7 @@ I would not start by extending the old support ontologies. The current core expl
 
 The old `sflo-host` and `sflo-api` notes are still worth carrying forward for central coordination, locking, watchers, noun URLs, `_working`, jobs, and API/site symmetry in [[product.sflo-host|product.sflo-host.md]] and [[product.plugins.sflo-api|product.plugins.sflo-api.md]]. My current calls would be: runtime name = `daemon`, contract name = `Weave API`; long operations are first-class jobs; OpenAPI + SSE is enough for day one; RDF should live at persisted/query boundaries rather than everywhere internally; and Deno needs a real RDF POC before you lock it in.
 
-One extra correction: the top-level `ontology/` paths from your editor are not present in this repo. The local ontology source here is under [dependencies/github.com/semantic-flow/ontology](../../ontology).
+One extra correction: the top-level `ontology/` paths from your editor are not present in this repo. The local ontology source here is under [dependencies/github.com/semantic-flow/sflo](../../ontology).
 
 # djradon_2026-03-20_1653_30
 
@@ -357,7 +357,7 @@ PLEASE IMPLEMENT THIS PLAN:
 - Keep `Knop` as the only active resource-side handle in the naming model.
 
 ## Live Doc Changes
-- Rewrite the live ontology notes under [dependencies/github.com/semantic-flow/ontology/notes](../../ontology/notes) to match the Knop-only model:
+- Rewrite the live ontology notes under [dependencies/github.com/semantic-flow/sflo/notes](../../ontology/notes) to match the Knop-only model:
   - `ont.summary.core.md`: remove the Nomen section, define `designatorPath` as a property of `Knop`, redefine `Semantic Flow identifier`, remove `_nomen` path conventions, and state that `designator` is prose shorthand for the mesh-local path form.
   - `semantic-flow-identifier.md`: redefine formation as `meshBase + Knop.designatorPath`, remove all pairing language about `Nomen`, and explain that the identifier is distinct from its paired `Knop`.
   - `ont.use-cases.alice-bio.md`: remove `_nomen` rows entirely, move naming semantics into the `Knop` rows/explanatory text, and keep no replacement `_iri-handle` rows.
@@ -417,7 +417,7 @@ Removed `Nomen` from the active core and shifted the naming model to Knop-only i
 
 I also rewrote the live ontology docs to match: [[ont.summary.core]], [[semantic-flow-identifier]], [[ont.purpose]], [[ont.use-cases.alice-bio]], and [[ont.decision-log]]. The decision log now explicitly supersedes the March 18 thin-`Nomen` decision instead of silently overwriting it.
 
-Validation passed with `python3 -m json.tool` for the SHACL JSON, `riot --validate` for the Turtle, and a grep over the active ontology surface is clean for `Nomen`/`hasNomen`/`_nomen`/`designates` outside the decision log. One repo nuance: these edits are inside the nested ontology repo under [dependencies/github.com/semantic-flow/ontology](../../ontology), not the top-level `weave` git history. There was also already an unrelated deletion present in that nested repo: `old/sflo-config-ontology_metadata.jsonld`.
+Validation passed with `python3 -m json.tool` for the SHACL JSON, `riot --validate` for the Turtle, and a grep over the active ontology surface is clean for `Nomen`/`hasNomen`/`_nomen`/`designates` outside the decision log. One repo nuance: these edits are inside the nested ontology repo under [dependencies/github.com/semantic-flow/sflo](../../ontology), not the top-level `weave` git history. There was also already an unrelated deletion present in that nested repo: `old/sflo-config-ontology_metadata.jsonld`.
 
 # djradon_2026-03-21_0608_40
 

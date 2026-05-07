@@ -2,7 +2,7 @@
 id: weave-planning-spec-draf-1qn2wb
 title: weave planning / spec drafting
 desc: ''
-updated: 1775928807520
+updated: 1778134118943
 created: 1775928807520
 participants:
   - djradon
@@ -1363,12 +1363,12 @@ Key outcome
 
 Validation
 
-- `riot --validate dependencies/github.com/semantic-flow/ontology/semantic-flow-core-ontology.ttl` passed
+- `riot --validate dependencies/github.com/semantic-flow/sflo/semantic-flow-core-ontology.ttl` passed
 - `deno task lint` passed
 
 Notes
 
-- There is no separate sibling `ontology/` checkout in this workspace. The ontology changes live in the nested repo at `dependencies/github.com/semantic-flow/ontology`.
+- There is no separate sibling `ontology/` checkout in this workspace. The ontology changes live in the nested repo at `dependencies/github.com/semantic-flow/sflo`.
 - If you grep for old bundle terms, the remaining hits are historical only:
   - the superseded decision entry in the ontology decision log
   - old conversation/archive notes
@@ -1521,7 +1521,7 @@ Aligned notes and examples
 
 Validation
 
-- `riot --validate dependencies/github.com/semantic-flow/ontology/semantic-flow-core-ontology.ttl` passed
+- `riot --validate dependencies/github.com/semantic-flow/sflo/semantic-flow-core-ontology.ttl` passed
 - `deno task lint` passed
 
 Suggested commit messages
@@ -2660,7 +2660,7 @@ On your design question: no, I would not describe this as abandoning “a mesh c
 That gives us portable persisted RDF without forbidding a larger surrounding workspace.
 
 Validation:
-- `riot --validate dependencies/github.com/semantic-flow/ontology/semantic-flow-core-ontology.ttl`
+- `riot --validate dependencies/github.com/semantic-flow/sflo/semantic-flow-core-ontology.ttl`
 - `deno task fmt`
 - `deno task ci`
 
@@ -2877,7 +2877,7 @@ In practice right now, `targetMeshPath` exists mainly so page-definition regions
 Right, thanks for the reminder. OK, please:
 - add workingFilePath (right below hasWorkingLocatedFile)
 - help me define precedence/consistency with hasWorkingLocatedFile
-- note the runtime allowed-directories boundary in spec/tasks... really it should involve operational config, for which previous efforts include /home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/ontology/old/sflo-host-ontology.jsonld
+- note the runtime allowed-directories boundary in spec/tasks... really it should involve operational config, for which previous efforts include /home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/sflo/old/sflo-host-ontology.jsonld
 
 # gpt-5.4_2026-04-11_1647_14
 
@@ -2927,10 +2927,10 @@ Recommended precedence/consistency rule:
 
 Operational-boundary note:
 - I recorded that allowed-directory policy belongs in host/runtime operational config, not core RDF
-- I also noted the old host-config line as precedent: `dependencies/github.com/semantic-flow/ontology/old/sflo-host-ontology.jsonld`
+- I also noted the old host-config line as precedent: `dependencies/github.com/semantic-flow/sflo/old/sflo-host-ontology.jsonld`
 
 Validation:
-- `riot --validate dependencies/github.com/semantic-flow/ontology/semantic-flow-core-ontology.ttl`
+- `riot --validate dependencies/github.com/semantic-flow/sflo/semantic-flow-core-ontology.ttl`
 - `deno task lint`
 
 Both passed.
@@ -3083,7 +3083,7 @@ The important contract now is:
 So this adds the vocabulary now without silently widening runtime behavior.
 
 Validation:
-- `riot --validate dependencies/github.com/semantic-flow/ontology/semantic-flow-core-ontology.ttl`
+- `riot --validate dependencies/github.com/semantic-flow/sflo/semantic-flow-core-ontology.ttl`
 - `deno task lint`
 
 Both passed.
@@ -3171,7 +3171,7 @@ Important constraint I kept explicit:
 - actual use remains gated by operational policy and a later runtime slice
 
 Validation:
-- `riot --validate dependencies/github.com/semantic-flow/ontology/semantic-flow-core-ontology.ttl`
+- `riot --validate dependencies/github.com/semantic-flow/sflo/semantic-flow-core-ontology.ttl`
 - `deno task lint`
 
 Both passed.
@@ -3689,10 +3689,10 @@ First, read:
 - `documentation/notes/wd.task.2026.2026-04-11_1723-operational-config-for-runtime-resolution.md`
 - `documentation/notes/wd.task.2026.2026-04-08_1545-resource-page-definition-and-sources.md`
 - `documentation/notes/wd.task.2026.2026-04-08_1735-page-definition-ontology-and-config.md`
-- `dependencies/github.com/semantic-flow/ontology/semantic-flow-config-ontology.ttl`
+- `dependencies/github.com/semantic-flow/sflo/semantic-flow-config-ontology.ttl`
 - old context only as precedent:
-  - `dependencies/github.com/semantic-flow/ontology/old/sflo-host-ontology.jsonld`
-  - `dependencies/github.com/semantic-flow/ontology/old/sflo-config-ontology.jsonld`
+  - `dependencies/github.com/semantic-flow/sflo/old/sflo-host-ontology.jsonld`
+  - `dependencies/github.com/semantic-flow/sflo/old/sflo-config-ontology.jsonld`
 
 Settled direction:
 - keep first-pass vocabulary in `semantic-flow-config-ontology.ttl`
@@ -3791,7 +3791,7 @@ What’s now explicit:
   - `~/.sf-local-access.ttl`
 
 Validation:
-- `riot --validate dependencies/github.com/semantic-flow/ontology/semantic-flow-config-ontology.ttl` passed
+- `riot --validate dependencies/github.com/semantic-flow/sflo/semantic-flow-config-ontology.ttl` passed
 
 One thing I noticed and deliberately did not touch:
 - [semantic-flow-config-ontology.ttl](../../ontology/semantic-flow-config-ontology.ttl) still uses an `@base` without a trailing slash. That may affect how relative IRIs resolve across the whole file, so I left it alone rather than smuggling in a namespace-wide change during this slice.

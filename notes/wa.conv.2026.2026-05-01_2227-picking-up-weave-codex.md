@@ -2,7 +2,7 @@
 id: picking-up-weave-t1pv9y
 title: picking up weave
 desc: ''
-updated: 1777699652098
+updated: 1778134118934
 created: 1777699652098
 participants:
   - djradon
@@ -84,7 +84,7 @@ Where Weave is at: the product vision is still a filesystem-oriented Semantic Fl
 
 `DigitalArtifact -> ArtifactHistory -> HistoricalState -> ArtifactManifestation -> LocatedFile`
 
-That is the important mapping for your URPX release/version question ([ont.summary.core.md](../../dependencies/github.com/semantic-flow/ontology/notes/ont.summary.core.md:54)).
+That is the important mapping for your URPX release/version question ([ont.summary.core.md](../../dependencies/github.com/semantic-flow/sflo/notes/ont.summary.core.md:54)).
 
 For URPX, I would map:
 
@@ -121,7 +121,7 @@ Current Weave already supports custom payload history/state path segments, but o
 
 Your “site lives in `docs/` adjacent to represented files” repo idea is on target. I’d make it a separate fixture repo because it tests a different topology than `mesh-alice-bio`: mesh root at `docs/`, source ontology/SHACL outside `docs/`, and repo access policy allowing `../ontology/...` and `../shacl/...`. That lines up with the operational-config work, where `workingFilePath` and `targetMeshPath` already have local-boundary behavior, while `workingAccessUrl` and `targetAccessUrl` are still metadata/model-only for now ([operational config](wd.task.2026.2026-04-11_1723-operational-config-for-runtime-resolution.md:30)).
 
-One warning before using this for URPX: there is a vocabulary/namespace cleanup needed. Runtime currently expects newer page terms like `hasTargetArtifact` ([page_definition.ts](../../src/runtime/weave/page_definition.ts:22)), while the vendored ontology TTL still has older `hasSourceArtifact` names ([semantic-flow-core-ontology.ttl](../../dependencies/github.com/semantic-flow/ontology/semantic-flow-core-ontology.ttl:532)). I would settle that before treating Weave-generated RDF as publication-grade.
+One warning before using this for URPX: there is a vocabulary/namespace cleanup needed. Runtime currently expects newer page terms like `hasTargetArtifact` ([page_definition.ts](../../src/runtime/weave/page_definition.ts:22)), while the vendored ontology TTL still has older `hasSourceArtifact` names ([semantic-flow-core-ontology.ttl](../../dependencies/github.com/semantic-flow/sflo/semantic-flow-core-ontology.ttl:532)). I would settle that before treating Weave-generated RDF as publication-grade.
 
 # User_2026-05-01_2215_07
 
@@ -611,7 +611,7 @@ So yes: SRD-inspired, CC-attributed, tiny ontology+SHACL, sidecar mesh rooted at
 
 # User_2026-05-01_2342_36
 
-Is [ont.use-cases.alice-bio.md](../../dependencies/github.com/semantic-flow/ontology/notes/ont.use-cases.alice-bio.md) up-to-date? It's not a very explanatory title... maybe we should rename to ont.use-cases.reference-data? From [wu.repository-options.md](wu.repository-options.md) I'm not sure whether alice-bio is more of a reference mesh or an artifact-native project.
+Is [ont.use-cases.alice-bio.md](../../dependencies/github.com/semantic-flow/sflo/notes/ont.use-cases.alice-bio.md) up-to-date? It's not a very explanatory title... maybe we should rename to ont.use-cases.reference-data? From [wu.repository-options.md](wu.repository-options.md) I'm not sure whether alice-bio is more of a reference mesh or an artifact-native project.
 
 # gpt-5.5_2026-05-01_2342_46
 
@@ -619,7 +619,7 @@ I’ll inspect the Alice Bio use-case note against current ontology vocabulary a
 
 # gpt-5.5_2026-05-01_2344_12
 
-No, [ont.use-cases.alice-bio.md](../../dependencies/github.com/semantic-flow/ontology/notes/ont.use-cases.alice-bio.md:9) is not really up-to-date as a description of the current Alice Bio fixture. It reads like an early model sketch: only `alice` and `alice/bio`, older `_history001/_s0001/bio-md` style paths, and no Bob, root page, page-main artifacts, extraction/import behavior, or current fixture ladder.
+No, [ont.use-cases.alice-bio.md](../../dependencies/github.com/semantic-flow/sflo/notes/ont.use-cases.alice-bio.md:9) is not really up-to-date as a description of the current Alice Bio fixture. It reads like an early model sketch: only `alice` and `alice/bio`, older `_history001/_s0001/bio-md` style paths, and no Bob, root page, page-main artifacts, extraction/import behavior, or current fixture ladder.
 
 I would classify Alice Bio as a **reference mesh / fixture repo**, not an artifact-native project. Its primary purpose is to demonstrate Semantic Flow behavior and mint inspectable example identifiers. The Alice Bio content is deliberately small and artificial; it is not the real “native” artifact that the repository exists to maintain.
 
@@ -680,12 +680,12 @@ The current renamed note is still the old Alice-specific designator table under 
 
 # gpt-5.5_2026-05-01_2352_39
 
-Updated [ont.use-case.biographical-data-publishing.md](../../dependencies/github.com/semantic-flow/ontology/notes/ont.use-case.biographical-data-publishing.md:9) so it now reads as an actual use case: purpose, typical publishers, user needs, Semantic Flow modeling shape, boundaries around people vs artifacts-about-people, repository-shape guidance, and a short Alice Bio fixture pointer.
+Updated [ont.use-case.biographical-data-publishing.md](../../dependencies/github.com/semantic-flow/sflo/notes/ont.use-case.biographical-data-publishing.md:9) so it now reads as an actual use case: purpose, typical publishers, user needs, Semantic Flow modeling shape, boundaries around people vs artifacts-about-people, repository-shape guidance, and a short Alice Bio fixture pointer.
 
 I kept Alice Bio deliberately small in the note: it now says Alice Bio is a whole-repo reference mesh fixture for this use case, with links to the implementation/task notes, but it no longer carries the old designator table.
 
 Also updated renamed-note references in:
-- [ont.summary.core.md](../../dependencies/github.com/semantic-flow/ontology/notes/ont.summary.core.md:170)
+- [ont.summary.core.md](../../dependencies/github.com/semantic-flow/sflo/notes/ont.summary.core.md:170)
 - [sf.api.examples.md](../../dependencies/github.com/semantic-flow/semantic-flow-framework/notes/sf.api.examples.md:15)
 - related ontology backlinks/completed notes
 
@@ -695,7 +695,7 @@ No tests run; this was docs-only. I left the unrelated untracked `notes/ont.use-
 
 First, should I merge the 25-root-page-customized-woven to main? No harm, right? Makes the default view more interesting. 
 
-Then fill out [ont.use-case.dereferenceable-ontology.md](../../dependencies/github.com/semantic-flow/ontology/notes/ont.use-case.dereferenceable-ontology.md) if you think that's a good name for our ontology use case.
+Then fill out [ont.use-case.dereferenceable-ontology.md](../../dependencies/github.com/semantic-flow/sflo/notes/ont.use-case.dereferenceable-ontology.md) if you think that's a good name for our ontology use case.
 
 # gpt-5.5_2026-05-01_2353_25
 
@@ -717,7 +717,7 @@ I’ve filled the note around ontology publication rather than URPX specifics: s
 
 Yes, merging `25-root-page-customized-woven` to `main` looks fine. I fetched and checked it: `origin/main...origin/25-root-page-customized-woven` is `0 43`, so `main` is strictly behind and the merge should be a fast-forward. The only real caveat is semantic, not Git: `main` will stop being a minimal early fixture and become the rich/current demo surface. That seems desirable now, and Weave tests appear to target explicit fixture branch refs rather than assuming `mesh-alice-bio` `main` is minimal.
 
-I filled out [ont.use-case.dereferenceable-ontology.md](../../dependencies/github.com/semantic-flow/ontology/notes/ont.use-case.dereferenceable-ontology.md:9). I kept the filename but changed the title to **Dereferenceable Ontology Publishing**, which is the better human-facing name.
+I filled out [ont.use-case.dereferenceable-ontology.md](../../dependencies/github.com/semantic-flow/sflo/notes/ont.use-case.dereferenceable-ontology.md:9). I kept the filename but changed the title to **Dereferenceable Ontology Publishing**, which is the better human-facing name.
 
 The note now covers:
 - ontology and SHACL as `DigitalArtifact` / `PayloadArtifact` / `RdfDocument` surfaces
