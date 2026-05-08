@@ -350,3 +350,37 @@ If it still does not show:
 - Select `/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/sflo`
 
 I’d also remove or move the stale `ontology` checkout once you confirm it has no unique changes, because its presence is the confusing part.
+
+# djradon_2026-05-06_2313_58
+
+FYI, listing it in [weave.code-workspace](../../../../../weave.code-workspace) is supposed to counter-act the gitignoring.
+
+# gpt-5.5_2026-05-06_2314_10
+
+Yes, that is how multi-root workspaces are meant to behave. I’ll re-check the current workspace file and local folder state so the advice is grounded in what VS Code is actually being handed.
+
+# gpt-5.5_2026-05-06_2314_20
+
+Correct. `weave.code-workspace` does list `dependencies/github.com/semantic-flow/sflo`, and that should let VS Code treat it as a separate workspace folder/repository despite the parent `.gitignore`.
+
+The local state still has both directories:
+
+- `dependencies/github.com/semantic-flow/sflo` with remote `git@github.com:semantic-flow/sflo.git`
+- `dependencies/github.com/semantic-flow/ontology` still present
+
+So the remaining weirdness is likely VS Code state/stale paths, not the workspace file. Your open tab is still from `.../semantic-flow/ontology/...`, which is the old checkout.
+
+I’d do this next:
+
+```bash
+git -C dependencies/github.com/semantic-flow/sflo status
+git -C dependencies/github.com/semantic-flow/ontology status
+```
+
+If `ontology` has nothing you need, move it aside:
+
+```bash
+mv dependencies/github.com/semantic-flow/ontology /tmp/semantic-flow-ontology-old
+```
+
+Then reload VS Code from the workspace file. That should remove the stale ignored `ontology` tree from the equation and leave `sflo` as the workspace-root repo.

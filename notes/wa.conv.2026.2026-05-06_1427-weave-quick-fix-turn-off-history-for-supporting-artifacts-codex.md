@@ -3,7 +3,7 @@ id: weave-quick-fix-turn-off-8wstzq
 title: 'weave quick fix: turn off history for supporting artifacts'
 desc: ''
 created: 1778102835194
-updated: 1778134118931
+updated: 1778217612761
 participants: [djradon, codex.gpt-5.5]
 conversationEventKinds: [message.assistant, message.user, tool.call, tool.result]
 ---
@@ -482,3 +482,443 @@ Each default now has to be classified as `Weave default config`, `operational co
 I also added contract/testing language so Weave defaults are inspectable independently of implementation details, with parity checks or diagnostics proving the internal defaults match the serialized/emitted default config.
 
 Tests not run; docs-only update.
+
+# djradon_2026-05-06_2344_02
+
+Are we sure that we couldn't get away with just a no-history inventory? I mean, I'm still not sure I understand the reasoning/dependency. If inventory is almost entirely additive, why do we need to keep old versions?
+
+# gpt-5.5_2026-05-06_2344_15
+
+I’m going to ground this in the current Weave code rather than answer from memory, because the important part is whether inventory history is conceptual nice-to-have or something current resource/page generation depends on.
+
+# gpt-5.5_2026-05-06_2344_29
+
+The current code confirms two separate arguments: mesh inventory snapshots are part of the public resource map, and Knop inventory history is currently used as progression state. The “almost additive” point is real, though, so the right question is whether we can replace history snapshots with another explicit mesh-state ledger later.
+
+# gpt-5.5_2026-05-06_2345_29
+
+We are not sure in the “never possible” sense. We are pretty sure it is not a quick safe change in the current model.
+
+The key issue is not that inventory contains many additive facts. It is that it also contains mutable “current state” facts:
+
+- `sflo:latestHistoricalState`
+- `sflo:nextStateOrdinal`
+- `sflo:currentArtifactHistory`
+- current working-file/page relationships
+- which generated pages/located files exist after a weave
+
+If the inventory file is current-only, those facts get overwritten. If instead we keep every old value additively, the RDF becomes semantically wrong: one history would have multiple “latest” states and multiple “next” ordinals unless every assertion is temporally scoped.
+
+Current code depends on this shape. For example, mesh inventory progression reads `_mesh/_inventory` history, latest state, and next state ordinal to compute the next settled inventory state in [weave.ts](../../../../../src/core/weave/weave.ts:1831). Knop inventory progression does the same for page-definition/payload flows in [weave.ts](../../../../../src/core/weave/weave.ts:1679), and later code appends the next inventory historical state in [weave.ts](../../../../../src/core/weave/weave.ts:4792).
+
+So the real answer is:
+
+- Could we someday have no-history inventory? Yes, if we replace inventory history with another explicit per-weave mesh-state ledger, or make inventory an append-only event log with temporal scoping.
+- Could we just make `_mesh/_inventory/inventory.ttl` current-only and delete inventory snapshots now? I would not. It loses the stable “inventory as of weave N” resource.
+- If inventory is nearly additive, that argues for a slimmer history representation, maybe deltas or state manifests, not for removing temporal state entirely.
+
+For `_knop/_inventory`, the dependency is partly implementation-shaped and may be easier to replace later. For `_mesh/_inventory`, some equivalent settled mesh-state record is foundational as long as historical resource pages, pinned states, and generated RDF surfaces are part of the public model.
+
+# djradon_2026-05-06_2345_29
+
+It just seems like a shame to keep all these copies of inventory around, and each one just looks like the last one, but with a little more data. Plus all the HTML resource pages for all those versions.
+
+# gpt-5.5_2026-05-06_2345_55
+
+You’re right. The waste is real.
+
+I’d separate three things that Weave currently conflates:
+
+1. `Inventory state identity`
+   `_mesh/_inventory/_history001/_s0004` means “the settled mesh inventory as of this weave.”
+
+2. `Full snapshot manifestation`
+   `_mesh/_inventory/_history001/_s0004/inventory-ttl/inventory.ttl` is a complete copy of the inventory at that state.
+
+3. `HTML pages`
+   `_mesh/_inventory/_history001/_s0004/index.html` and manifestation pages are human-facing renderings of support-artifact history.
+
+I think we need 1. We probably do not need 2 and 3 by default forever.
+
+A better target is:
+
+- keep inventory historical state resources
+- keep current `_mesh/_inventory/inventory.ttl` as the full working file
+- make historical inventory manifestations slim by default: delta, patch, checksum, or compact state metadata instead of full copied inventory
+- suppress most inventory history HTML pages by default
+- optionally materialize full historical inventory snapshots/pages when configured or requested
+
+So the policy should not be “inventory history on/off” as a single switch. It should be more like:
+
+- `historyTrackingPolicyRequired` for `_mesh/_inventory`
+- `historicalManifestationPolicyFullSnapshot | Delta | MetadataOnly`
+- `resourcePageGenerationPolicySuppress` or `Defer` for inventory history/state/manifestation pages
+
+That preserves the semantic ledger without exploding files. The shameful part is not preserving old mesh states; it’s materializing every state as a full Turtle copy plus several HTML pages when most users only need the current inventory and a reconstructable audit trail.
+
+# djradon_2026-05-06_2348_55
+
+For the "“current state” facts", why do we need their historical state, specifically.
+
+# gpt-5.5_2026-05-06_2349_19
+
+We do not need the historical state of the “current” facts because `nextStateOrdinal` itself is precious. That part is mostly incidental.
+
+We need some historical record of those facts because they are **time-relative assertions**.
+
+Example:
+
+At weave 1:
+
+```turtle
+<alice/bio/_history001> sflo:latestHistoricalState <alice/bio/_history001/_s0001> .
+```
+
+At weave 2:
+
+```turtle
+<alice/bio/_history001> sflo:latestHistoricalState <alice/bio/_history001/_s0002> .
+```
+
+Both facts were true, but at different settled mesh states. If the inventory is only current, the weave-1 truth is overwritten. If the inventory is only additive, both facts appear true at once unless we introduce temporal scoping.
+
+So the historical inventory state is one way to say:
+
+- in mesh inventory state `_s0003`, payload latest was `_s0001`
+- in mesh inventory state `_s0004`, payload latest was `_s0002`
+
+That matters if later we want to explain, validate, or regenerate RDF/resource pages “as of” a prior weave.
+
+But you’re right to question the implementation. We probably do **not** need full copied inventory Turtle snapshots just to preserve that. Alternatives could work:
+
+- a compact mesh-state ledger
+- inventory deltas
+- per-weave event records
+- metadata-only inventory historical states
+- full snapshots only on demand/checkpoints
+
+So the answer is: we need historical **temporal scoping** for current-ish inventory facts. We do not necessarily need full historical inventory file copies or HTML pages for every inventory state.
+
+# djradon_2026-05-06_2354_21
+
+I do think we should break out the "current" facts from the inventory, maybe into _meta. But I still don't understand  why "We need some historical record of those facts because they are time-relative assertions." I don't understand your example. What would we need "<alice/bio/_history001> sflo:latestHistoricalState <alice/bio/_history001/_s0001> . " for after it is no longer true?
+
+# gpt-5.5_2026-05-06_2354_33
+
+For normal operation, we probably do **not** need the old `latestHistoricalState` fact after it stops being current.
+
+That fact is useful only if we want to reconstruct the mesh’s *view of the world at that prior weave*. In that case, “latest” means “latest as of mesh state N,” not “latest now.”
+
+Example where it matters:
+
+- Weave 1 publishes `alice/bio/_history001/_s0001`.
+- Weave 1 also generates `alice/bio/index.html`, and that page says or links as though `_s0001` is current.
+- Weave 2 publishes `_s0002`.
+- Now current `alice/bio/index.html` should point to `_s0002`.
+
+If later we want to regenerate the exact Weave 1 version of `alice/bio/index.html`, we need to know that, at Weave 1, `_s0001` was the latest/current state. The old `latestHistoricalState` fact gives that. But if we are not preserving/regenerating historical current pages, then no, that old fact is mostly audit/debug information.
+
+So your instinct is right: this is not a strong reason to keep full inventory snapshots by default.
+
+Better model:
+
+- Put live mutable pointers like `currentArtifactHistory`, `latestHistoricalState`, `nextStateOrdinal`, maybe `hasWorkingLocatedFile`, into current metadata/working-state surfaces.
+- Keep immutable historical states themselves.
+- For historical reconstruction, use explicit weave/state event records or optional checkpoints, not full inventory snapshots every time.
+- Generate current pages by default.
+- Defer/suppress historical support pages by default.
+
+The hard requirement is not “old `latestHistoricalState` facts must be preserved.” The hard requirement is “if Weave claims prior public mesh states are reconstructable, then something must preserve enough temporal context to reconstruct them.” Full inventory history is the current blunt tool for that. We can design a slimmer tool.
+
+# djradon_2026-05-07_0013_20
+
+I don't think "Weave 1 also generates alice/bio/index.html, and that page says or links as though _s0001 is current." applies. Resource pages don't display that information, and shouldn't because it gets stale.
+
+If we needed to, we could keep that information as historical, but I don't think we need to? Can you find specific cases where the mutable “current state” facts are needed, either for resource page generation or some other purpose?
+
+# gpt-5.5_2026-05-07_0013_49
+
+I’ll trace the concrete reads of `currentArtifactHistory`, `latestHistoricalState`, and `nextStateOrdinal` now, and separate “needed to plan the next weave” from “needed to render pages.”
+
+# gpt-5.5_2026-05-07_0014_11
+
+The renderer itself does not seem to need stale “latest” values. The planner/runtime uses the current values heavily to choose targets, snapshots, and next paths. I’m checking the runtime extraction path too, because that is where page definitions and pinned references are likely to matter.
+
+# gpt-5.5_2026-05-07_0014_55
+
+I think you’re right to push on this. I found concrete uses of mutable current-state facts, but they are mostly uses of the **current value now**, not old values after they stop being true.
+
+Specific current uses:
+
+- **Compute the next inventory state path.**  
+  Mesh inventory progression reads `_mesh/_inventory sflo:currentArtifactHistory`, that history’s `sflo:latestHistoricalState`, and `sflo:nextStateOrdinal` to decide the next inventory state path, e.g. `_mesh/_inventory/_history001/_s0004`. See [weave.ts](../../../../../src/core/weave/weave.ts:1831) and [weave.ts](../../../../../src/core/weave/weave.ts:1901).
+
+- **Compute the next Knop inventory state path.**  
+  Page-definition and later payload weaves do the same against the current Knop inventory history. See [weave.ts](../../../../../src/core/weave/weave.ts:1679) and [weave.ts](../../../../../src/core/weave/weave.ts:4173).
+
+- **Compute the next payload state path and read the previous snapshot.**  
+  Payload versioning uses current payload history/latest state to find the current snapshot and next state. See [weave.ts](../../../../../src/core/weave/weave.ts:6472) and runtime loading in [weave.ts](../../../../../src/runtime/weave/weave.ts:978).
+
+- **Resolve “current” extraction sources.**  
+  If an extracted resource follows the current source payload rather than a pinned state, runtime chooses `sourcePayloadArtifact.latestHistoricalStatePath`. See [weave.ts](../../../../../src/runtime/weave/weave.ts:1132).
+
+- **Load active page-definition snapshots.**  
+  Resource page definition loading reads the latest page-definition historical snapshot when one exists. See [page_definition.ts](../../../../../src/runtime/weave/page_definition.ts:75).
+
+What I did **not** find is a compelling current-page rendering need for old stale `latestHistoricalState` facts. The renderer renders the model it is given; it is not depending on “what used to be latest” for current pages.
+
+So I’d revise my earlier position:
+
+- We need mutable current facts somewhere.
+- We do not clearly need old values of those mutable current facts preserved as full inventory snapshots by default.
+- If historical reconstruction becomes important, we can keep explicit weave event records/checkpoints/deltas.
+- Moving current-ish facts out of inventory and into `_meta` or a working-state artifact is plausible.
+
+The main thing inventory still needs is stable membership/topology/public-surface facts. The “latest/next/current” allocator and pointer facts increasingly look like working state, not inventory essence.
+
+# djradon_2026-05-07_0025_03
+
+I think moving the mutable stuff to meta is good because, at least right now, meta is small and inventory could get huge. So for ease of access only, better in meta. Historical reconstruction is important in the sense that historical resources pages need to be re-generatable. But I don't think we need to be able to re-weave, other than for testing purposes, in which case the mutable values should be captured in the manifest.
+
+If you still agree, can you update the [wd.task.2026.2026-05-05-optional-history-and-slim-support-artifacts-by-default.md](../../../../../documentation/notes/wd.task.2026.2026-05-05-optional-history-and-slim-support-artifacts-by-default.md)
+
+# gpt-5.5_2026-05-07_0025_16
+
+I agree with the revised direction: mutable allocator/current pointers are better treated as small working-state/meta facts, while inventory should stay focused on public mesh/resource membership. I’ll update the optional-history task to stop overstating inventory history as required for those mutable facts and capture the manifest-based historical reconstruction angle.
+
+# gpt-5.5_2026-05-07_0025_46
+
+I’m going to revise the note rather than just append a caveat, because the current wording still treats inventory history as more foundational than the code audit supports. The update will keep the “don’t break current implementation in the first pass” constraint, but change the target design.
+
+# gpt-5.5_2026-05-07_0027_20
+
+I found one ambiguity in the new contract language: if `_meta` carries current pointers for other artifacts, the “current-only support artifacts have no `currentArtifactHistory`” line needs to mean no history facts about the `_meta` artifact itself. I’m tightening that wording.
+
+# gpt-5.5_2026-05-07_0027_34
+
+Updated [wd.task.2026.2026-05-05-optional-history-and-slim-support-artifacts-by-default.md](../../../../../documentation/notes/wd.task.2026.2026-05-05-optional-history-and-slim-support-artifacts-by-default.md).
+
+The note now reflects the sharper position:
+
+- Inventory history was overstated as foundational.
+- Mutable current/progression facts should move out of inventory, likely into `_mesh/_meta`, `_knop/_meta`, or a future working-state artifact.
+- Full inventory snapshots should not be the default mechanism for historical page regeneration.
+- Historical page regeneration should rely on page/render manifests, pinned source states, output durability, checkpoints, or source-state bundles.
+- Re-weaving old mesh states is not a general user-facing requirement; test fixtures can capture extra mutable state in manifests when needed.
+- `_mesh/_inventory` and `_knop/_inventory` history stay on only for the immediate quick fix because current code depends on that shape.
+
+Tests not run; docs-only update.
+
+# djradon_2026-05-07_0033_57
+
+OK, any updates to the prompt? Or sequencing/next steps?
+
+# gpt-5.5_2026-05-07_0034_30
+
+Yes. The prompt should now include the newer inventory conclusion: mutable progression facts are current working state, not a reason to keep full inventory snapshots forever.
+
+**Updated Phase 0 Prompt**
+
+```text
+Weave Phase 0 config/history synthesis.
+
+Read:
+- weave/documentation/notes/product-vision.md
+- weave/documentation/notes/wd.general-guidance.md
+- weave/documentation/notes/wd.task.2026.2026-05-06-grand-config-synthesis.md
+- weave/documentation/notes/wd.task.2026.2026-05-05-optional-history-and-slim-support-artifacts-by-default.md
+- weave/dependencies/github.com/semantic-flow/ontology/notes/ont.task.2026.2026-05-03-enumeration-type-instances.md
+- weave/dependencies/github.com/semantic-flow/ontology/semantic-flow-core-ontology.ttl
+- weave/dependencies/github.com/semantic-flow/ontology/semantic-flow-config-ontology.ttl
+- weave/src/runtime/mesh/inventory.ts
+- weave/src/core/weave/weave.ts
+- weave/src/runtime/weave/weave.ts
+- weave/src/runtime/weave/page_definition.ts
+
+Goal:
+Settle Phase 0 design before the fixture mesh/manifest overhaul. Do not rerun fixtures yet.
+
+Key decisions to preserve:
+- Payload artifacts keep history by default.
+- Support artifacts should be current-only or slim by default where possible.
+- `_mesh/_inventory` and `_knop/_inventory` keep current history behavior only as an immediate implementation constraint.
+- Mutable current/progression facts should move out of inventory, probably into `_mesh/_meta`, `_knop/_meta`, or a dedicated working-state artifact.
+- Full inventory snapshots should not be the default mechanism for historical page regeneration.
+- Historical page regeneration should use page/render manifests, pinned source states, output durability, checkpoints, or source-state bundles.
+- Re-weaving old mesh states is not a general user-facing requirement; fixtures may capture extra mutable state in manifests for tests.
+- Operational config is trusted runtime input/gating. Effective/resolved config is derived output.
+- Weave default config is a first-class input layer externalizing code/API/CLI defaults.
+- New controlled policy values use flat camelCase enum-style individuals.
+
+Deliverables:
+1. Align the grand config synthesis note with the revised inventory/history position.
+2. Inventory current mutable/progression facts in code:
+   - `currentArtifactHistory`
+   - `latestHistoricalState`
+   - `nextHistoryOrdinal`
+   - `nextStateOrdinal`
+   - working located file pointers
+   - current page/resource pointers
+3. Classify each fact as:
+   - public inventory/map fact
+   - mutable working-state/meta fact
+   - artifact-history fact
+   - page-generation manifest fact
+   - config/default policy fact
+4. Draft an artifact-role policy matrix for:
+   - payloads
+   - `_mesh/_inventory`
+   - `_knop/_inventory`
+   - `_mesh/_meta`
+   - `_knop/_meta`
+   - `_mesh/_config`
+   - `_knop/_local-config`
+   - `_knop/_inheritable-config`
+   - `ResourcePageDefinition`
+   - `ReferenceCatalog`
+   - templates/styles/assets
+5. Draft a page-generation manifest/checkpoint shape that pins:
+   - generated page path
+   - source artifact state(s)
+   - page definition state
+   - reference catalog state
+   - renderer/config/effective policy identity
+   - output checksum or generated file identity
+6. Draft compact Turtle examples for:
+   - Weave default config
+   - operational config
+   - effective/resolved config
+   - `_mesh/_config`
+   - `_knop/_local-config`
+   - `_knop/_inheritable-config`
+   - reusable config artifact
+   - page-generation manifest
+7. Update the Phase 0 implementation plan so fixture overhaul happens only after these contracts are settled.
+
+Do not:
+- implement the full resolver
+- rerun fixtures
+- expose public CLI/config flags
+- preserve full inventory snapshots as a permanent design requirement
+- let portable mesh config expand host filesystem/network trust
+```
+
+**Sequencing**
+1. Settle enum-style individuals first enough to avoid minting bad config policy names.
+2. Align the grand config note with the revised inventory/meta/manifest direction.
+3. Do the mutable-fact audit and policy matrix.
+4. Draft manifest/checkpoint examples.
+5. Then overhaul fixtures and manifests.
+6. Only after that, implement the slim-history defaults.
+
+# djradon_2026-05-07_0040_12
+
+Why not implement the resolver? What good are these config changes without it?
+
+# gpt-5.5_2026-05-07_0040_24
+
+Because “implement the resolver” is too big for Phase 0, not because it is optional.
+
+The config ontology changes are only useful if a resolver eventually consumes them. But implementing the resolver before the contracts are settled would force decisions we are still actively changing:
+
+- where mutable progression facts live: inventory vs `_meta` vs working-state artifact
+- whether inventory history is full snapshot, slim state, delta, checkpoint, or current-only
+- whether page regeneration depends on source histories or page-generation manifests
+- what `OperationalConfig` can gate versus what `EffectiveConfig` derives
+- exact policy values for history/page generation
+- config layer precedence and inheritance
+- reusable config reference rules and pinning/current-following semantics
+
+If we implement the resolver now, it will hard-code the wrong model and the fixture overhaul will bake that in.
+
+Better sequencing:
+
+1. **Phase 0: settle contracts and examples.**  
+   This produces the vocabulary, policy matrix, example Turtle, default config shape, manifest shape, and fact classification.
+
+2. **Phase 1: ontology update.**  
+   Add the classes/properties/individuals in `semantic-flow-config-ontology.ttl` and related core/prov/job terms if needed.
+
+3. **Phase 2: thin resolver skeleton.**  
+   Implement a minimal typed resolver that can answer only the first needed questions:
+   - history policy for artifact role
+   - page-generation policy for artifact role
+   - Weave default config
+   - operational gates
+   - explicit request overrides
+
+4. **Phase 3: apply resolver to slim-history behavior.**  
+   Use it for `_meta`, config artifacts, and later inventory/page policies.
+
+So I’d revise “do not implement resolver” to: **do not implement the full general resolver in Phase 0**. A thin resolver skeleton should come soon after the contract examples are stable. The point of Phase 0 is to avoid building a resolver around a model we are still correcting.
+
+# djradon_2026-05-07_0052_00
+
+- mutable progression goes in meta
+- history is current-only by default (i.e., in the ApplicationConfig -- speaking of which, I think default ApplicationConfig can best live in the weave repo as a separate TTL file instead of in code, right?
+- I don't understand "whether page regeneration depends on source histories" -- doesn't it depend pinned vs current, or is that not what you're talking about
+- "what OperationalConfig can gate versus what EffectiveConfig derives"" - is that one of the open issues?
+
+Obviously we won't implement the resolver until everything is settled conceptually and ontology-wise. I'm okay with deferring it.
+
+ConfigResolutionConfig is a good name. The default ConfigResolverConfig could be kept in the weave repo as well, but it's really more of a sflo platform thing... we want consistent default behavior across implementations. 
+
+Which leads to: should we combine sflo (formerly ontology) repo with semantic-flow-framework repo?
+
+# gpt-5.5_2026-05-07_0052_16
+
+I’ll update the synthesis note with the decisions you just made, and I’ll sanity-check the local repo layout before answering the repo-combination question.
+
+# gpt-5.5_2026-05-07_0052_32
+
+The current grand synthesis still has old inventory-history wording and treats Weave defaults as the baseline name. I’m going to patch it to distinguish platform defaults from Weave’s implementation profile, record `ConfigResolutionConfig` as the chosen name, and move mutable progression to `_meta`.
+
+# djradon_2026-05-07_1453_17
+
+what does "_mesh/_inventory` and `_knop/_inventory` keep current history behavior only as an immediate implementation constraint." mean
+
+what does "_mesh/_inventory` and `_knop/_inventory` keep current history behavior only as an immediate implementation constraint." mean
+
+# gpt-5.5_2026-05-07_1453_28
+
+That phrase is too compressed. I’ll replace it with wording that says exactly what is constrained today and what the target design is.
+
+# gpt-5.5_2026-05-07_1453_43
+
+It meant: current code still depends on inventory history/progression facts to plan the next weave, so we should not remove inventory history in the first cleanup before moving those reads elsewhere.
+
+It did **not** mean inventory history is conceptually required long term.
+
+I changed the wording in [wd.task.2026.2026-05-06-grand-config-synthesis.md](../../../../../documentation/notes/wd.task.2026.2026-05-06-grand-config-synthesis.md) to:
+
+> The current Weave planner still reads `_mesh/_inventory` and `_knop/_inventory` history/progression facts to decide the next weave, so the first cleanup should not remove inventory history until those reads are moved. That is a short-term code dependency, not the target model.
+
+That’s the distinction I intended.
+
+# djradon_2026-05-07_1454_16
+
+I  stilldon't understand "whether page regeneration depends on source histories" -- doesn't it depend pinned vs current, or is that not what you're talking about
+
+# gpt-5.5_2026-05-07_1454_23
+
+You’re right: the better wording is **page regeneration depends on source resolution policy**, and source resolution can be `pinned` or `current`.
+
+What I meant by “depends on source histories” was imprecise.
+
+For regeneration there are two separate questions:
+
+1. **Which source should the page use?**
+   - `Pinned`: use the exact state recorded in the page/render manifest.
+   - `Current`: resolve the source’s current state at generation time.
+
+2. **Can Weave still read that source?**
+   - If the page needs an old payload/page-definition/reference-catalog state, that state must still exist as a historical snapshot, generated output, checkpoint, or equivalent source bundle.
+   - If the page uses current resolution, then regeneration is not reproducing the old page; it is regenerating a fresh page from today’s current sources.
+
+So, for historical page regeneration, the manifest should generally pin source states. Then regeneration depends on the availability of those pinned artifacts/states, not on stale inventory “latest” facts.
+
+Better phrase:
+
+> Historical page regeneration should be driven by a page/render manifest that records source resolution choices. Pinned sources should name exact artifact states. Current sources may be re-resolved at regeneration time, but that produces a fresh current rendering rather than a faithful reproduction of the historical output.
+
+That avoids the confusing “source histories” phrasing.
