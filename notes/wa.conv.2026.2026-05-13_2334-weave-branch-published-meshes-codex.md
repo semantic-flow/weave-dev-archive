@@ -1567,3 +1567,449 @@ So the immediate next task is: **failure inventory/classification for fixture-ba
 # djradon_2026-05-14_1127_59
 
 I don't understand how the inventory will be helpful. Can't we just move forward?
+
+# djradon_2026-05-14_1135_18
+
+I don't understand how the inventory will be helpful. Can't we just move forward?
+
+# gpt-5.5_2026-05-14_1135_34
+
+Yes, we can move forward. I was being a little too cautious there.
+
+The inventory is useful only if we think there may be real regressions hiding among the fixture failures. But we already know the dominant problem: stale fixture branches after namespace/progression/config shape changes. Cataloging 145 failures before building the generator is probably busywork.
+
+Better path:
+
+1. Commit the current docs closeout.
+2. Update the generator task to soften/defer the “inventory all failing tests” item.
+3. Start implementation with the dry-run planner:
+   - hard-code the first Alice Bio scenario transitions in TypeScript
+   - print source branch, target branch, manifest path, command, and validation steps
+   - no branch writes yet
+4. Then implement one real Alice Bio transition replay in a temp checkout.
+
+So yes: move forward by building the generator’s dry-run skeleton. The failures can become acceptance pressure after the tool exists, not a prerequisite spreadsheet.
+
+# djradon_2026-05-14_1136_43
+
+OK, start dry-run planner implementation.
+
+# gpt-5.5_2026-05-14_1136_53
+
+I’ll start with the smallest useful planner: a Deno-native developer script that prints the explicit Alice Bio transition plan without touching fixture branches. I’ll check the existing script/test patterns and preserve the current docs changes as user work while I add the implementation.
+
+# gpt-5.5_2026-05-14_1137_01
+
+The task is already cleanly written for a TypeScript-first dry run, and the worktree is clean. I’m going to add a `fixture:ladder` task plus a script module with explicit Alice Bio transitions, then cover the planner output with focused script tests.
+
+# gpt-5.5_2026-05-14_1137_26
+
+I’m going to keep the planner intentionally boring: no git mutation, no fixture checkout materialization, just a reviewable plan. The scenario definitions will name the replay command or file-operation provenance, and later execution can consume the same structure.
+
+# gpt-5.5_2026-05-14_1138_49
+
+The planner and tests are in place. I’m formatting and running the focused script tests next; if the hard-coded scenario has any command/path mismatch, it should show up there.
+
+# gpt-5.5_2026-05-14_1138_55
+
+The focused tests pass. I’m going to mark the generator task accordingly: defer the failure-inventory spreadsheet, accept TypeScript scenario definitions for the first pass, and mark the dry-run planner slice complete.
+
+# gpt-5.5_2026-05-14_1139_12
+
+One thing jumped out in the printed plan: top-level weave steps were rendering as `weave weave`. That’s exactly why dry-run output is valuable. I’m correcting the scenario so the top-level command is just `weave`, with target flags added directly when needed.
+
+# gpt-5.5_2026-05-14_1139_58
+
+The dry-run output now reads correctly (`command: weave` for top-level weave). I’m running the standard check/lint pass for the new script surface.
+
+# gpt-5.5_2026-05-14_1140_22
+
+Implemented the first dry-run planner slice.
+
+Added:
+- [scripts/fixture-ladder.ts](../../../../../scripts/fixture-ladder.ts): TypeScript Alice Bio scenario with 25 transitions, command/file-operation provenance, manifest paths, validation guardrails, text and JSON output.
+- [tests/scripts/fixture_ladder_test.ts](../../../../../tests/scripts/fixture_ladder_test.ts): focused planner tests.
+- [deno.json](../../../../../deno.json): new `deno task fixture:ladder`.
+- [wd.task.2026.2026-05-07-fixture-ladder-generator.md](../../../../../documentation/notes/wd.task.2026.2026-05-07-fixture-ladder-generator.md): marked TypeScript scenario and dry-run planner done; deferred the failure-inventory spreadsheet.
+
+Usage:
+
+```sh
+deno task fixture:ladder
+deno task fixture:ladder -- --json
+```
+
+Validation:
+- `deno test --allow-read tests/scripts/fixture_ladder_test.ts` passed.
+- `deno task check` passed.
+- `deno task lint` passed.
+- `deno fmt --check deno.json scripts/fixture-ladder.ts tests/scripts/fixture_ladder_test.ts` passed.
+- `git diff --check` passed.
+
+Suggested commit message:
+
+```text
+feat(weave): add fixture ladder dry-run planner
+
+- Add a TypeScript Alice Bio fixture scenario with command and file-operation provenance
+- Add the fixture:ladder task with text and JSON dry-run output
+- Cover planner parsing, rendering, manifest paths, and transition ordering
+- Update the fixture generator task note for the TypeScript-first planner slice
+```
+
+# djradon_2026-05-14_1144_27
+
+Next, local materialization? Proceed if there are no open issues.
+
+# gpt-5.5_2026-05-14_1144_41
+
+I’ll treat “local materialization” as the next safe slice: copy the selected transition’s `fromRef` branch into a fresh temporary workspace, report what was materialized, and still perform no branch writes or command replay. I’ll first check the current script state and then add that mode behind an explicit flag.
+
+# gpt-5.5_2026-05-14_1145_00
+
+No blocking open issue for this slice: materialization is clearly the next checklist item and can stay read/copy-only. I’m adding it as `--materialize <transition-id>` with an optional `--workspace-root`; by default it creates a temp workspace and never writes fixture branches.
+
+# gpt-5.5_2026-05-14_1146_24
+
+The materializer code is in; I also made `--workspace-root` require `--materialize` so the planner mode stays purely a planner. I’m formatting and running the focused script tests with the new git/write permissions now.
+
+# gpt-5.5_2026-05-14_1146_48
+
+The materialization mode works against the local fixture repo and leaves branch writes disabled. I’m running the standard check/lint pass now and then I’ll summarize the exact new command surface.
+
+# gpt-5.5_2026-05-14_1147_08
+
+Implemented local materialization for the fixture ladder.
+
+What changed:
+- `deno task fixture:ladder` now has the permissions it needs for materialization: read, write, and `git`.
+- [scripts/fixture-ladder.ts](../../../../../scripts/fixture-ladder.ts) now supports:
+  - `--materialize <transition-id>`
+  - optional `--workspace-root <path>`
+  - text or JSON output
+  - safe materialization from the transition’s `fromRef`
+  - empty-workspace enforcement
+  - no branch writes
+- [tests/scripts/fixture_ladder_test.ts](../../../../../tests/scripts/fixture_ladder_test.ts) covers parsing, materialization, non-empty workspace rejection, and rendered output.
+- Marked the materialization checklist item done in the generator task note.
+
+Example:
+
+```sh
+deno task fixture:ladder -- --materialize 02-mesh-created
+deno task fixture:ladder -- --materialize 02-mesh-created --json
+```
+
+Validation:
+- `deno test --allow-read --allow-write --allow-run=git tests/scripts/fixture_ladder_test.ts` passed.
+- `deno task check` passed.
+- `deno task lint` passed.
+- `deno fmt --check deno.json scripts/fixture-ladder.ts tests/scripts/fixture_ladder_test.ts` passed.
+- `git diff --check` passed.
+
+Suggested commit message:
+
+```text
+feat(weave): materialize fixture ladder source refs
+
+- Add fixture:ladder --materialize for copying a transition source ref into a temporary workspace
+- Resolve local or origin fixture refs through git without mutating fixture branches
+- Reject non-empty materialization workspaces
+- Cover materialization parsing, copying, rendering, and safety checks
+```
+
+# djradon_2026-05-14_1259_34
+
+What's next?
+
+# gpt-5.5_2026-05-14_1259_48
+
+I’ll do a quick status/checklist glance so the next step is anchored in the actual repo state, not my memory of the last slice.
+
+# gpt-5.5_2026-05-14_1259_53
+
+Worktree is clean, so the materialization slice is committed. Nice, we have a clear next rung.
+
+Next is the first real executor slice:
+
+`Implement execution for the first Alice Bio transition that runs the intended Weave command and validates the result against its Accord manifest.`
+
+Concretely, I’d implement only `02-mesh-created` first:
+
+1. Materialize `01-source-only` into a temp workspace.
+2. Run the planned command there:
+   ```sh
+   weave mesh create --workspace . --mesh-base https://semantic-flow.github.io/mesh-alice-bio/
+   ```
+3. Validate against `02-mesh-created.jsonld` using manifest-scoped file expectations.
+4. Keep branch writes disabled.
+5. Print a report: command, exit status, created/updated files, manifest result.
+
+I would not add branch writes or full-ladder replay yet. The goal is one honest transition from scenario definition -> materialized workspace -> command execution -> Accord-backed validation.
+
+# djradon_2026-05-14_1300_23
+
+Sounds good.
+
+# gpt-5.5_2026-05-14_1300_32
+
+I’ll add the executor as another explicit mode, probably `--execute <transition-id>`, and keep it scoped to command-backed transitions for now. First I’m checking the local Accord checker shape so we reuse what exists instead of inventing a parallel comparison format.
+
+# gpt-5.5_2026-05-14_1301_29
+
+I’ll pick up at the executor slice now: first I’m going to inspect the Accord comparison helpers and the current fixture manifest shape, then I’ll wire execution in a small way around `02-mesh-created`.
+
+# gpt-5.5_2026-05-14_1301_35
+
+The comparison helpers are small enough to reuse directly, which is nice. I’m checking the manifest fields now so the executor can validate only what the ladder scenario says it should validate, instead of inventing a separate rule set.
+
+# gpt-5.5_2026-05-14_1303_30
+
+I’m going to make the first executor intentionally narrow but real: materialize the source ref, run the planned Weave command in that workspace, then produce an Accord-shaped validation report comparing the resulting workspace to the transition’s expected branch. It will report drift instead of hiding it, which is important while the fixture refs are still stale.
+
+# gpt-5.5_2026-05-14_1305_21
+
+The executor code is in place now. I’m going to let Deno format/type-check it next; this is the point where little type-shape mistakes usually show themselves.
+
+# gpt-5.5_2026-05-14_1305_28
+
+The first type check found a good boundary problem: importing Accord’s public barrel drags in its CLI parser dependency, which Weave doesn’t map. I’m going to switch the generator to narrower Accord imports so this dev tool only depends on the checker/report/manifest pieces it actually uses.
+
+# gpt-5.5_2026-05-14_1306_03
+
+The focused script tests are green. I’m going to run the new CLI path once too, because here the nonzero exit on stale fixture validation is part of the behavior we need to see clearly.
+
+# gpt-5.5_2026-05-14_1306_33
+
+The implementation plan is marked through the first executor step. I’m running the repo-level checks now; since this touched a script entry point and tests, I want the normal Deno gates rather than just the focused test.
+
+# gpt-5.5_2026-05-14_1306_58
+
+Implemented the first real ladder executor slice.
+
+What changed:
+- Added `fixture:ladder --execute <transition>` in [scripts/fixture-ladder.ts](../../../../../scripts/fixture-ladder.ts).
+- It materializes the source ref, runs the planned Weave command, and validates the workspace against the Accord manifest.
+- Added focused tests in [tests/scripts/fixture_ladder_test.ts](../../../../../tests/scripts/fixture_ladder_test.ts).
+- Updated `deno task fixture:ladder` permissions in [deno.json](../../../../../deno.json).
+- Marked the executor checklist item done in [wd.task.2026.2026-05-07-fixture-ladder-generator.md](../../../../../documentation/notes/wd.task.2026.2026-05-07-fixture-ladder-generator.md).
+
+Important result: `02-mesh-created` command execution succeeds, but manifest validation currently exits nonzero because the expected fixture branch is stale: command exit `0`, validation `pass=9 fail=6 error=0`. The failures are the expected old namespace/SPARQL drift, not an executor failure.
+
+Verified with:
+- `deno test --allow-read --allow-write --allow-run=git,deno --allow-env tests/scripts/fixture_ladder_test.ts`
+- `deno task check`
+- `deno task lint`
+- `deno fmt --check deno.json scripts/fixture-ladder.ts tests/scripts/fixture_ladder_test.ts`
+- `git diff --check`
+
+Suggested commit message:
+
+```text
+feat(fixtures): execute first Alice Bio ladder transition
+
+Add fixture:ladder --execute support to materialize a transition source ref,
+run the planned Weave command in an isolated workspace, and validate the
+result against the transition Accord manifest.
+
+Keep branch writes disabled, report manifest-scoped file/RDF/SPARQL drift,
+and cover the executor path with focused fixture ladder tests.
+```
+
+Next sensible step is the guardrail layer: explicitly catch old `semantic-flow-ontology` namespace output and stale MeshInventory progression location before any future branch write.
+
+# djradon_2026-05-14_1307_25
+
+proceed
+
+# gpt-5.5_2026-05-14_1307_35
+
+I’ll take the guardrail slice next. I’m going to check the repo guidance and the existing ontology guardrail tests first, then I’ll add the checks into the ladder executor so stale generated output is caught before branch writes ever exist.
+
+# gpt-5.5_2026-05-14_1307_51
+
+I found the existing broad ontology guardrails are repo-level, while this one needs to be workspace-output-level. I’m narrowing it to two generated-output checks: no old ontology namespace in emitted RDF, and MeshInventory progression predicates anchored in `_mesh/_meta/meta.ttl` rather than `_mesh/_inventory/inventory.ttl`.
+
+# gpt-5.5_2026-05-14_1309_40
+
+The guardrails are wired into the validation report and have a direct negative test now. I’m formatting and running the focused suite to catch both type issues and the intentional stale-output detection behavior.
+
+# gpt-5.5_2026-05-14_1309_50
+
+Focused checks are green. I’m running the repo-level gates now; after that I’ll do one CLI probe so we can see the validation summary with the new guardrail checks included.
+
+# gpt-5.5_2026-05-14_1310_20
+
+Added the generated-output guardrail layer.
+
+The ladder executor now adds three setup checks to its Accord-style validation report:
+- generated RDF must not use the retired `semantic-flow-ontology` namespace
+- `_mesh/_inventory/inventory.ttl` must not own MeshInventory progression facts
+- if MeshInventory history output exists, `_mesh/_meta/meta.ttl` must anchor current/latest progression
+
+I also added a direct stale-output test plus executor coverage in [tests/scripts/fixture_ladder_test.ts](../../../../../tests/scripts/fixture_ladder_test.ts), and marked the guardrail checklist item done in [wd.task.2026.2026-05-07-fixture-ladder-generator.md](../../../../../documentation/notes/wd.task.2026.2026-05-07-fixture-ladder-generator.md).
+
+Verified:
+- `deno test --allow-read --allow-write --allow-run=git,deno --allow-env tests/scripts/fixture_ladder_test.ts`
+- `deno task check`
+- `deno task lint`
+- `deno fmt --check deno.json scripts/fixture-ladder.ts tests/scripts/fixture_ladder_test.ts`
+- `git diff --check`
+
+CLI probe still exits `1` for `02-mesh-created`, as expected, because fixture refs/manifests are stale. The new guardrails pass there, changing the summary to `pass=12 fail=6 error=0`.
+
+Suggested commit message:
+
+```text
+feat(fixtures): execute Alice Bio ladder step with output guardrails
+
+- add fixture:ladder --execute support for command-backed transitions
+- run the planned Weave command in a materialized temporary workspace
+- validate generated output against manifest-scoped Accord expectations
+- add guardrails for canonical sflo namespace usage and _mesh/_meta-owned MeshInventory progression
+- cover executor and stale-output guardrail behavior with focused script tests
+```
+
+# djradon_2026-05-14_1909_40
+
+next steps?
+
+# djradon_2026-05-14_1914_08
+
+next steps?
+
+# gpt-5.5_2026-05-14_1914_23
+
+Next I’d do **branch update support**, but with one important wrinkle: validation against the existing `toRef` is supposed to fail right now because the branch is stale. So the write mode should not simply be “validate then write”; it needs a regeneration-aware flow.
+
+Recommended next slice:
+
+1. Commit the current executor/guardrail work.
+2. Add an explicit local-only branch write mode, probably `--write-branch`.
+3. For `--write-branch`, require:
+   - command execution succeeds
+   - generated-output guardrails pass
+   - workspace is generated from the declared `fromRef`
+   - branch update is explicit and local only
+4. Update the target branch tip from the generated workspace.
+5. Print a clear warning: branch updated locally; push separately if desired.
+6. Start with only `02-mesh-created`, then extend to sequential Alice Bio replay.
+
+I would not add push support yet. And I’d avoid making old-branch manifest drift block regeneration, because that would trap us in the stale-fixture state we’re trying to escape. The stricter manifest comparison becomes useful again after each branch has been regenerated.
+
+# djradon_2026-05-14_1916_06
+
+Sounds good. "explicit write flag" seems unnecessary, it's okay if we break stuff. Let's make dry-run the explicit flag.
+
+# gpt-5.5_2026-05-14_1916_21
+
+I agree with the spirit, but I’m going to put one rail under it: “dry-run explicit” should apply to regeneration commands, not to `deno task fixture:ladder` with no arguments. A no-arg command that mutates fixture branches would be too easy to trigger accidentally from muscle memory, while `--execute 02-mesh-created` can reasonably mean “do the rung for real” and `--dry-run --execute ...` can mean “show me without branch update.”
+
+# gpt-5.5_2026-05-14_1917_43
+
+I’m going to implement this as: `--execute` writes the local target branch by default; `--dry-run --execute` runs the command and validation but skips branch update. I’ll keep plain no-arg planning non-mutating, because that still feels like the right CLI shape.
+
+# gpt-5.5_2026-05-14_1919_38
+
+The branch-writer is now using a temporary Git index and updates `refs/heads/<target>` without checking out the fixture branch. I’m running the focused tests because this is exactly where Git plumbing either behaves nicely or teaches us a tiny lesson.
+
+# gpt-5.5_2026-05-14_1920_48
+
+The task note now reflects the new decision: regeneration writes locally by default, `--dry-run` is the opt-out, and push stays manual. I’m running the full gates and then I’ll do a dry-run CLI probe so we confirm it doesn’t touch the real fixture branch.
+
+# gpt-5.5_2026-05-14_1921_44
+
+One more behavior tweak is worth making while we’re here: if a regeneration command successfully updates the local branch after command success and guardrails pass, it shouldn’t still exit nonzero just because it compared against the stale pre-update branch. Dry-run should keep surfacing that drift as nonzero.
+
+# gpt-5.5_2026-05-14_1922_48
+
+Implemented the “dry-run is explicit” branch-update slice.
+
+Now:
+- `deno task fixture:ladder -- --execute 02-mesh-created` writes the local fixture branch tip by default, after command success and generated-output guardrails pass.
+- `--dry-run` skips the branch update while still running command/validation in the temp workspace.
+- Branch updates are local only; the CLI prints a push reminder, but does not push.
+- Runtime `.weave/` logs are excluded from generated fixture branch commits.
+- Plain no-arg planning remains non-mutating.
+
+I did not run the non-dry-run command against the real `mesh-alice-bio` fixture repo. I did run a dry-run CLI probe and confirmed it did not create/update the local `02-mesh-created` branch.
+
+Verified:
+- `deno test --allow-read --allow-write --allow-run=git,deno --allow-env tests/scripts/fixture_ladder_test.ts`
+- `deno task check`
+- `deno task lint`
+- `deno fmt --check deno.json scripts/fixture-ladder.ts tests/scripts/fixture_ladder_test.ts`
+- `git diff --check`
+
+Suggested commit message:
+
+```text
+feat(fixtures): update generated fixture branches by default
+
+- make fixture:ladder --execute write the local target branch after command success
+  and generated-output guardrails pass
+- add --dry-run as the explicit non-writing execution mode
+- write branch commits through a temporary Git index without checking out fixture branches
+- exclude runtime .weave logs from generated fixture branch trees
+- keep fixture pushes manual and report local branch update details in CLI output
+```
+
+# djradon_2026-05-14_1922_48
+
+This generator we're building, it's not mesh-specific, right? it's general purpose, fed by the manifests (and .assets).
+
+This conversation is getting long and, perhaps, slow. Give me a details prompt to pick back up in another conversation.
+
+# gpt-5.5_2026-05-14_1923_06
+
+It’s **not inherently mesh-specific**, but the current implementation is still **Weave fixture-ladder-specific** and only partially manifest-fed.
+
+Right now it has:
+- a hard-coded Alice Bio scenario in TypeScript
+- command/file-operation metadata outside the Accord manifests
+- validation fed by Accord manifests
+- branch writing that is generic enough for fixture repos
+- no `.assets`-driven source materialization yet
+
+So I’d phrase the direction as: “make this a general fixture-ladder generator fed by manifests plus `.assets`, with the current Alice Bio TypeScript scenario as the temporary adapter.”
+
+Here’s a pickup prompt for a new conversation:
+
+```text
+We’re in /home/djradon/hub/semantic-flow/weave.
+
+Please read:
+- AGENTS.md
+- documentation/notes/product-vision.md
+- documentation/notes/wd.general-guidance.md
+- documentation/notes/wd.task.2026.2026-05-07-fixture-ladder-generator.md
+
+Context:
+We’re building the fixture ladder generator. The intended direction is not mesh-specific; it should become a general fixture-ladder/regeneration tool fed by Accord manifests plus deterministic `.assets` source bytes. The current implementation is a temporary Alice Bio adapter in `scripts/fixture-ladder.ts`.
+
+Current state:
+- `deno task fixture:ladder` exists.
+- Dry-run planner exists for the Alice Bio ladder.
+- Local source-ref materialization exists.
+- `--execute <transition>` runs command-backed transitions.
+- Generated-output guardrails exist for canonical sflo namespace and `_mesh/_meta` MeshInventory progression ownership.
+- `--execute` now updates the local target fixture branch by default after command success and guardrails pass.
+- `--dry-run --execute ...` runs command/validation without branch update.
+- Branch updates are local only; push support is intentionally omitted.
+- Runtime `.weave/` logs are excluded from generated fixture branch trees.
+- The task note was updated to record that dry-run is explicit for execution/regeneration, while plain planning remains non-mutating.
+
+Important nuance:
+Manifest comparison against old `toRef` may fail while regenerating stale branches. That drift should be reported, but it should not block a branch update if command execution succeeds and generated-output guardrails pass.
+
+Likely next work:
+1. Decide how to move from the hard-coded Alice Bio TypeScript scenario toward a manifest + `.assets` driven generator.
+2. Design/implement `.assets` handling for non-command/fileOperation transitions like Alice Bio `01-source-only`, `14-alice-page-customized`, `18-alice-page-artifact-source`, `20-bob-page-imported-source`, and `24-root-page-customized`.
+3. Keep this general-purpose: don’t bake in mesh-only assumptions where manifest/source asset metadata can drive behavior.
+4. Possibly rename or reframe the script/API from “fixture ladder” to something more general only after the shape stabilizes.
+5. Extend from single-transition execution toward sequential Alice Bio replay.
+
+Please first inspect the current code and git status. Do not assume the working tree is clean. Avoid reverting unrelated user changes. Use `rg` for search. Use `apply_patch` for edits. After significant code changes, run focused tests plus `deno task check` and `deno task lint`, and provide a semantic commit message.
+```
+
+Current best next step, in my opinion: **design `.assets` replay as the bridge from hard-coded scenario toward general manifest-fed regeneration**, before trying to replay the whole Alice ladder.
