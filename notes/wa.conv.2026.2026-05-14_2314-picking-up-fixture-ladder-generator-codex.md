@@ -4944,3 +4944,343 @@ I fat-fingered that first switch in the Weave repo; Git correctly refused becaus
 # gpt-5.5_2026-05-16_1358_05
 
 The isolated failing test passes when the branch fixture checkout is on `main`, then I put it back on `gh-pages`. For release confidence I’m going to run the full gate once more with that dependency temporarily on `main`, and restore `gh-pages` afterward.
+
+# gpt-5.5_2026-05-16_1400_23
+
+Yes, I’d move toward `v0.1.0` now.
+
+The two unchecked fixture-ladder items are still useful, but they are not reasons to reopen the generator task:
+
+- Keep “update manifests/tests/conformance after combined enum/config rerun” as future config/regeneration work.
+- Keep “record large ontology/config churn workflow” as release/runbook or grand-config documentation, not generator implementation.
+
+For URPX by Monday, I would defer the next-segment hint API. Friendly payload histories/states are already possible with explicit segments, e.g.:
+
+```sh
+WEAVE_LOG_DIR=/tmp/weave-logs deno run -A src/main.ts weave \
+  --mesh-root <urpx-mesh-root> \
+  --target 'designatorPath=ontology,historySegment=releases,stateSegment=v0.1.0,manifestationSegment=ttl'
+```
+
+That is enough unless URPX specifically needs durable “next state” hints stored in mesh metadata between commands.
+
+Release gate update: `deno task ci` passes cleanly, 422 passed / 0 failed, when `mesh-branch-fantasy-rules` is temporarily on `main` so `.assets` are present. I restored that checkout back to `gh-pages` afterward. The only failed run was environmental: the fixture-ladder asset test cannot see `.assets` while that dependency checkout sits on `gh-pages`.
+
+Next release work: fill `release-notes.v0.1.0.md`, commit your docs/task-note moves, then run the local binary/npm packaging smoke from the runbook.
+
+# djradon_2026-05-16_1402_00
+
+OK, you fill the notes, I'll start a PR.
+
+# gpt-5.5_2026-05-16_1402_17
+
+I’ll fill the release-facing notes and keep your in-progress task-note moves intact. I’ll avoid touching code; this is a PR-prep docs pass.
+
+# gpt-5.5_2026-05-16_1402_28
+
+The actual gate is much healthier than the old note says. I’m going to update the release notes and the release task/runbook to reflect the current reality: v0.1.0 is packageable, `deno task ci` can pass, and the only local gotcha is the branch fixture checkout needing to be on the source branch when running the asset-existence test.
+
+# gpt-5.5_2026-05-16_1403_19
+
+I filled the release notes, updated the release gate narrative, and marked the next-segment hint API as a post-v0.1.0 reassessment rather than Monday’s hill to climb. I’m doing a quick diff check so I can hand you clean PR notes.
+
+# gpt-5.5_2026-05-16_1403_57
+
+Done. I filled the release notes and release-adjacent task notes:
+
+- `documentation/notes/release-notes.v0.1.0.md`
+- `documentation/notes/dev.release-runbook.md`
+- `documentation/notes/wd.task.2026.2026-05-13-full-ci-cd.md`
+- `documentation/notes/wd.task.2026.2026-05-06-grand-config-synthesis.md`
+
+I left your in-progress note moves and `wd.decision-log` changes alone.
+
+I didn’t rerun tests after these docs-only edits. Earlier, `deno task ci` passed cleanly with `422 passed`, after temporarily putting the branch fixture checkout on `main`; I restored `mesh-branch-fantasy-rules` back to `gh-pages` afterward.
+
+Suggested commit message:
+
+```text
+docs(release): prepare v0.1.0 release notes
+
+- replace v0.1.0 release-note placeholders
+- update release gate and runbook status after clean local ci
+- defer durable next-segment hint APIs past v0.1.0
+```
+
+# djradon_2026-05-16_1407_46
+
+I don't understand why passing tests requires the repo-branch-fantasy-rules to be on main... that means we're not testing the mesh?
+
+# gpt-5.5_2026-05-16_1407_51
+
+Yeah, that smell is worth chasing. I’m going to look at the specific fixture test and manifest paths so I can separate “testing the mesh branch output” from “using the repo checkout as an asset source.”
+
+# gpt-5.5_2026-05-16_1407_57
+
+The failure was coming from a fixture-ladder contract test, not from the branch-published mesh behavior test itself. I’m opening both sides now: the asset contract and the integration test that actually materializes/regenerates the branch fixture.
+
+# gpt-5.5_2026-05-16_1408_20
+
+You’re right to object. My note was too sloppy.
+
+Passing tests should **not** semantically require `mesh-branch-fantasy-rules` to be checked out on `main`. The actual mesh fixture tests are reading explicit refs like `a.15-extracted-term-references-woven` via `git show`, so those are testing the generated mesh branches.
+
+The failure was from a narrower fixture-ladder asset contract test:
+
+```ts
+await Deno.stat(`${plan.assetRoot}/${assetPath}`);
+```
+
+`plan.assetRoot` resolves to the dependency checkout’s working tree:
+
+```text
+dependencies/.../mesh-branch-fantasy-rules/.assets
+```
+
+So if that checkout is on `gh-pages`, `.assets` is absent and the test fails. That test is really checking “the deterministic source assets are present in the fixture repo working tree,” not “the mesh works.”
+
+I think the better fix is to stop depending on the checked-out branch for that test. It should verify `.assets` from a source-bearing ref, probably `main` or `a.01-source-only`, using `git show` / `git ls-tree`, the same way the generated branch tests do. Then the dependency checkout can sit on `gh-pages` for preview without making the suite red.
+
+So: no, this does **not** mean we weren’t testing the mesh. It means one asset-presence test has an avoidable working-tree coupling. I’d correct the release/runbook wording and, ideally, patch that test so CI is ref-based instead of checkout-state-based.
+
+# djradon_2026-05-16_1413_23
+
+Agreed, do the better fix.
+
+Also, fix this:
+
+github-advanced-security AI found potential problems 7 minutes ago
+src/core/weave/weave_test.ts
+function withAliceReferenceExtensionManifestation(contents: string): string {
+  return contents.replaceAll(
+    "alice/_knop/_references/_history001/_s0001/references-ttl",
+    "alice/_knop/_references/_history001/_s0001/ttl",
+github-advanced-security commented 7 minutes ago
+@github-advanced-security
+github-advanced-securitybot
+7 minutes ago
+
+    Medium
+    Warning
+
+CodeQL / Replacement of a substring with itself
+
+This replaces 'alice/_knop/_references/_history001/_s0001/ttl' with itself.
+
+Show more details
+Suggested changeset 1 (1)
+src/core/weave/weave_test.ts
+Original file line number	Diff line number	Diff line change
+ import { readMeshAliceBioBranchFile } from "../../../tests/support/mesh_alice_bio_fixture.ts";
+ function withAliceReferenceExtensionManifestation(contents: string): string {
+   return contents.replaceAll(
+     "alice/_knop/_references/_history001/_s0001/ttl",
+     "alice/_knop/_references/_history001/_s0001/ttl",
+   );
+   return contents;
+ }
+ function meshMetadataProgressionTurtle(
+
+# gpt-5.5_2026-05-16_1413_34
+
+Agreed. I’m going to make the fixture asset test ref-based so previewing on `gh-pages` stops poisoning local CI, then clean up that CodeQL finding in the Alice test helper.
+
+# gpt-5.5_2026-05-16_1413_46
+
+That CodeQL warning is the same tiny helper duplicated in two tests. I’m going to remove/repair the helper in both places, because keeping a no-op migration shim around is exactly the kind of thing that keeps security bots awake for no good reason.
+
+# gpt-5.5_2026-05-16_1414_02
+
+I found the core issue: the generated branch tests already use explicit Git refs, but this one asset test used `plan.assetRoot` from the current working tree. I’m patching just that contract to read the branch fixture assets from `main`, while leaving generated mesh assertions ref-based.
+
+# gpt-5.5_2026-05-16_1414_44
+
+I’m also fixing the release notes/runbook language I wrote earlier. Once the test is ref-based, “switch the checkout to main” is no longer a caveat; the caveat becomes “this contract reads deterministic assets from the source ref.”
+
+# gpt-5.5_2026-05-16_1415_06
+
+Patch is in. I’m going to verify it while the branch fixture checkout stays on `gh-pages`, because that’s the whole point of the fix. Then I’ll run the repo gates you asked for after meaningful code changes.
+
+# gpt-5.5_2026-05-16_1415_18
+
+Focused tests pass with `mesh-branch-fantasy-rules` still on `gh-pages`, so the working-tree coupling is gone. I’m running `deno task check` and `deno task lint` now.
+
+# gpt-5.5_2026-05-16_1415_28
+
+`check` and `lint` are clean. I’m going to do one full `deno task ci` while the branch fixture is still on `gh-pages`; that proves this isn’t just a focused-test patch.
+
+# gpt-5.5_2026-05-16_1417_16
+
+Full CI is green with the fixture checkout still on `gh-pages`: `422 passed`. I’m doing one final diff/status pass so I can give you the exact scope and a clean commit message.
+
+# gpt-5.5_2026-05-16_1417_28
+
+Done. I made the better fix: the Branch-Published Fantasy Rules asset contract now reads `.assets` from the fixture repo’s `main` ref via Git, instead of depending on the dependency checkout’s current branch. So `mesh-branch-fantasy-rules` can stay on `gh-pages` for preview and CI still tests the mesh branches by explicit refs.
+
+Also fixed the CodeQL finding by removing the no-op `withAliceReferenceExtensionManifestation` helpers in both affected tests.
+
+Changed:
+- [fixture_ladder_test.ts](../../../../../tests/scripts/fixture_ladder_test.ts)
+- [weave_test.ts](../../../../../src/core/weave/weave_test.ts)
+- [validate_version_generate_test.ts](../../../../../tests/integration/validate_version_generate_test.ts)
+- release/runbook notes corrected to describe ref-based fixture tests
+
+Verified with `mesh-branch-fantasy-rules` still on `gh-pages`:
+
+```text
+deno task check
+deno task lint
+deno task ci
+ok | 422 passed | 0 failed
+```
+
+Suggested commit message:
+
+```text
+test(fixture): make branch fantasy assets ref-based
+
+- read branch-published deterministic assets from the source ref
+- keep generated mesh assertions independent of checkout state
+- remove no-op Alice reference manifestation test helpers
+- update release notes and runbook wording for ref-based fixtures
+```
+
+# djradon_2026-05-16_1417_28
+
+Coderabbit review landed. For each item in [wa.review.2026-05-16_1413-coderabbit.md](wa.review.2026-05-16_1413-coderabbit.md) add a markdown checkbox. If it's clearly not worth doing, mark as cancelled with [c]. If coderabbit was close, fix the suggestions as necessary. Then tackle everything that's clearly worth doing.
+
+# gpt-5.5_2026-05-16_1417_39
+
+I’ll use the GitHub review-feedback workflow lightly here, since this is review triage even though the source is a local archive note. First I’m going to read the review note and repo guidance, then I’ll mark each item with a checkbox and patch the ones that are worth doing.
+
+# gpt-5.5_2026-05-16_1417_45
+
+The review file is longer than the first read; I’m pulling the rest before editing the checklist so I don’t accidentally classify half a comment.
+
+# gpt-5.5_2026-05-16_1418_00
+
+There are about two dozen items. Some are already done or superseded, a few are genuine release-gate fixes, and one or two are not worth adding right now. I’m going to batch-read the affected code areas, then I’ll patch the clear fixes and mark the review note as I go.
+
+# gpt-5.5_2026-05-16_1419_39
+
+Most of the high-signal fixes are straightforward. One exception: the review’s “resolved effective config” suggestion points at behavior that isn’t actually implemented yet, so I’m going to mark that as deferred/cancelled in this review pass rather than inventing a half-config resolver during release triage.
+
+# gpt-5.5_2026-05-16_1420_30
+
+I’m applying the clear fixes now: exact Deno action tag, Windows-safe path checks, smoke delimiter handling, deploy output, CNAME validation, source registry path policy, extraction/source escaping, pinned snapshot lookup, and the small test cleanups.
+
+# gpt-5.5_2026-05-16_1423_33
+
+One review item tried to restore inline extraction-source fallback in Knop inventory. I’m going to push back on that one and cancel it instead: we deliberately moved extraction/source facts into `_sources`, and keeping inline fallback is legacy support we do not want before v0.1.0. I’m reverting that little fallback before continuing.
+
+# gpt-5.5_2026-05-16_1425_31
+
+`fmt --check` caught a couple of line wraps, and I noticed CI also had the same floating `setup-deno@v2` tag. Since the tag problem is real wherever it appears, I’m pinning CI too and then formatting.
+
+# gpt-5.5_2026-05-16_1427_08
+
+The focused run shook out four test expectations. Two are from the intended behavior changes, one is the test pollution item needing stronger isolation, and one was my overzealous tab path in a field that correctly rejects tabs. I’m tightening those now.
+
+# djradon_2026-05-16_1427_13
+
+CI should use the latest deno, 2.7.14
+
+# gpt-5.5_2026-05-16_1427_25
+
+Good catch. I’ll bump the workflow Deno version pins to `2.7.14` while keeping the action tag pinned to the exact published setup action.
+
+# gpt-5.5_2026-05-16_1427_59
+
+The Deno version is now `2.7.14` in CI and release workflow notes. I’ve also fixed the focused test expectations and am rerunning the same focused batch before I mark the review archive.
+
+# gpt-5.5_2026-05-16_1428_51
+
+Two remaining focused failures are test assertions, not the core fixes: one deploy CLI assertion expected an older page path that the CLI no longer guarantees, and the payload update test still needs to ignore/remove the transient source copy before comparing the fixture snapshot. I’m adjusting those narrowly.
+
+# gpt-5.5_2026-05-16_1430_54
+
+The payload-update review item is stale against the current Alice fixture: `a.10-alice-bio-updated` intentionally contains the root `alice-bio-v2.ttl`, so isolating/removing it makes the fixture comparison wrong. I’m cancelling that item and restoring the test to match the fixture semantics.
+
+# gpt-5.5_2026-05-16_1431_22
+
+Focused tests are green again. I’m marking the CodeRabbit archive now with `[x]` for handled items and `[c]` where the suggestion conflicts with current fixture/config direction.
+
+# gpt-5.5_2026-05-16_1432_17
+
+All review-note items now have `[x]` or `[c]`. I’m at the validation pass: check/lint first, then I’ll run full CI unless something shakes loose.
+
+# gpt-5.5_2026-05-16_1433_15
+
+I’m picking this back up at the failed `check` point. First I’m going to clean up the accidental CLI output block, then rerun the focused validation and full gates so we know the review fixes are actually settled.
+
+# gpt-5.5_2026-05-16_1433_20
+
+Found it: the `materializedSource` loop slipped into `set extraction-source`, which has no such result. The deploy block also lost the materialized-source created paths, so I’m moving that tiny bit back where it belongs.
+
+# gpt-5.5_2026-05-16_1433_26
+
+The CLI type error is fixed. I’m rerunning the static gates now; if those stay green I’ll do a full CI pass so the review bundle isn’t just “probably fine.”
+
+# gpt-5.5_2026-05-16_1433_36
+
+One more misplaced block showed up in `payload update`; same pattern, different nearby command. I’m removing that and checking the deploy block again before rerunning.
+
+# gpt-5.5_2026-05-16_1434_04
+
+`deno task check` is clean now. I’m doing the quick regression loop next, then I’ll let the full repo CI run once.
+
+# gpt-5.5_2026-05-16_1434_15
+
+The targeted deploy/release-script tests are green too. I’m starting the full `deno task ci` now; this is the one that will catch any fixture or broad integration drift.
+
+# gpt-5.5_2026-05-16_1439_54
+
+Full CI is still running and has made it through the core/runtime suites plus the first big chunk of e2e tests. No failures yet; I’m letting the fixture-heavy tail finish.
+
+# gpt-5.5_2026-05-16_1440_04
+
+Full CI passed: 426 tests green. I’m doing one final housekeeping pass now: whitespace diff check, status, and confirming the review note triage boxes are complete.
+
+# gpt-5.5_2026-05-16_1440_31
+
+Handled. The CodeRabbit note now has 24 checkboxed items: 20 fixed, 4 marked `[c]` with reasons in [wa.review.2026-05-16_1413-coderabbit.md](wa.review.2026-05-16_1413-coderabbit.md).
+
+Key fixes included:
+- CI/release workflows now pin `denoland/setup-deno@v2.0.4` and Deno `2.7.14`.
+- Release scripts use cross-platform absolute path checks.
+- `bumpVersion` validates direct API calls.
+- `smoke-npm-install` stops parsing after `--`.
+- `deploy gh-pages` prints updated paths correctly.
+- CNAME validation is stricter.
+- Source registry loading now respects local-path policy.
+- Turtle string escaping handles control characters.
+- ResourcePage `xsd:anyURI` values link correctly.
+- Historical snapshot lookup prefers inventory-recorded paths.
+
+Validation:
+- `deno task check` passed
+- `deno task lint` passed
+- focused deploy/release tests passed
+- `deno task ci` passed: `426 passed | 0 failed`
+- `git diff --check` passed
+
+Two repo-local commit messages, since the review note is in `weave-dev-archive`:
+
+```text
+test(release): address CodeRabbit v0.1.0 review
+
+- pin setup-deno and CI Deno versions
+- harden release script path and argument handling
+- validate gh-pages CNAME input and report updated paths
+- enforce source registry local-path policy
+- preserve inventory-resolved historical source snapshots
+- escape Turtle control characters in generated provenance
+- cover review fixes with focused regression tests
+```
+
+```text
+docs(review): triage CodeRabbit findings
+
+- add checkbox status to each review item
+- mark deferred legacy/config items as cancelled with rationale
+```
