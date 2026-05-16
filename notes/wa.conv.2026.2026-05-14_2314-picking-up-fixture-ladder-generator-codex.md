@@ -5284,3 +5284,157 @@ docs(review): triage CodeRabbit findings
 - add checkbox status to each review item
 - mark deferred legacy/config items as cancelled with rationale
 ```
+
+# djradon_2026-05-16_1608_52
+
+In another conversation, where accord tests against mesh-alice-bio are failing, I asked: "How could these be failing here, but not detected when we run tests from weave?" and you say:
+
+"
+Because the two test paths are checking different things.
+
+Accord’s full manifest run checks manifest self-consistency: it diffs fromRef -> toRef and fails if any changed path is not covered by hasFileExpectation or ignorePaths. That is the tree_unexpected_change logic in tree_completeness.ts (line 44).
+
+Weave’s e2e helper mostly checks Weave output equals the fixture branch, not “the manifest fully describes the branch diff.” In weave_cli_test.ts (line 802), it optionally compares the whole workspace file list to toRef, then only compares files listed in hasFileExpectation starting at line 812 (line 812). So if the fixture branch and Weave output both contain extra generated index.html files, Weave passes, while Accord says “your manifest forgot to declare these changed paths.”
+
+Specific holes:
+
+deno task test does not run a full Accord conformance sweep. It runs src tests; fixture:ladder is a separate task and not in ci in deno.json (line 16).
+Fixture ladder tests know Alice has 25 transitions and that manifests exist, but that test only stats the manifest paths, not validates every one with Accord: fixture_ladder_test.ts (line 217).
+Weave e2e covers some failing old woven cases: 05, 07, 09, 13, but under the weaker “actual equals branch” contract.
+13-bob-extracted-woven explicitly disables whole-tree comparison with compareWorkspaceTree: false at weave_cli_test.ts (line 519).
+The newer failing cases 15, 17, 19, 21, 23, 25 do not appear to have matching Weave e2e conformance tests yet.
+10 passes Weave because the test creates alice-bio-v2.ttl inside the workspace and then compares the workspace file list to toRef; Accord fails because that added file is not declared in the manifest.
+So: not a paradox. Weave tests are proving runtime output compatibility with selected fixture branches; Accord is proving the SFF manifests are complete and internally truthful. The failing list is mostly manifest drift, and Weave CI currently lacks a “run Accord against all current Alice manifests” gate."
+
+So how should we address this. i.e., what should we add to weave if anything, and how should we fix accord's (now-optional) fixture-based tests?
+
+# gpt-5.5_2026-05-16_1609_02
+
+I’m going to ground this in the actual task layout before answering, because the right answer depends on where the Accord runner lives and how Weave currently treats fixture ladders.
+
+# gpt-5.5_2026-05-16_1609_08
+
+Weave’s shape matches that diagnosis: it imports Accord comparators and has a ladder task, but `ci` does not run a manifest-completeness sweep. I’ll peek at the sibling Accord checkout too, then I can give you a clean division of responsibility.
+
+# gpt-5.5_2026-05-16_1610_19
+
+I’d address it in two layers, because the responsibilities really are different.
+
+**In Weave**
+Add one explicit manifest-completeness gate, but don’t blur every Weave e2e test into an Accord test.
+
+Best shape:
+
+1. Add a task like `deno task fixture:check` or `deno task fixture:manifest-check`.
+2. Have it walk the fixture ladder manifests for Alice/sidecar/branch fixtures and run Accord-style checks against each `fromRef -> toRef`.
+3. Include tree completeness: every changed path must be covered by `hasFileExpectation` or `ignorePaths`.
+4. Put it in release/preflight docs now; consider adding it to `ci` once fixture dependency setup is stable/reproducible.
+
+I would not make `assertWeaveTransitionMatchesManifest()` responsible for all of this. That helper should keep proving “Weave output matches the fixture branch.” A separate manifest-completeness sweep gives us a clearer failure: “the manifest lies or is incomplete.”
+
+Maybe later:
+
+```json
+"ci:fixtures": "deno task ci && deno task fixture:manifest-check"
+```
+
+Then release preflight runs `ci:fixtures`.
+
+**In Accord**
+Keep the mesh fixture tests optional, but make them stricter when they run.
+
+I’d change Accord’s optional fixture test to:
+
+1. Discover all Alice manifest files instead of using a hand-maintained subset.
+2. Rewrite legacy refs to `a.*` as it already does.
+3. Run `accord check` for each manifest.
+4. Assert `status === "pass"` and no failed/error checks.
+5. Stop asserting exact pass-count summaries for living external fixtures. Exact counts are useful for Accord’s own tiny testdata, but too brittle for Weave/SFF fixture ladders.
+
+If some manifest is knowingly incomplete during churn, use an explicit skip/allowlist with a reason, not a quiet omission.
+
+**Fixing The Current Manifests**
+For each Accord failure, decide deliberately:
+
+- If the path is meaningful fixture output, add a `hasFileExpectation`.
+- If it is intentionally not part of the behavior contract, add `ignorePaths`.
+- Use `ignorePaths` sparingly. Generated `index.html` is still product output, so I’d usually expect it unless RDF expectations make that path truly redundant.
+- For `10`, either manifest `alice-bio-v2.ttl` as an intentional source rung artifact, or move it back to `.assets`/outside the branch so it is not part of `toRef`. Given current behavior, manifesting it is the least surprising fix.
+
+So: Weave should gain a dedicated fixture-manifest sweep. Accord should keep optional external fixture tests, but broaden them to all manifests and make the assertion “all pass,” not “pass count is exactly N.”
+
+# djradon_2026-05-16_1624_01
+
+coderabbit had an accord suggestion: "
+In `@src/manifest/model.ts`:
+- Around line 109-110: The manifest model defines both hasCommandInvocation and
+hasCommandSequence but hasCommandSequence is loaded and unused and untested;
+either integrate hasCommandSequence into the check command flow (e.g., update
+the check command logic that currently reads hasCommandInvocation to also
+accept/iterate hasCommandSequence, define precedence when both exist, and treat
+an empty array as invalid or document it) or remove hasCommandSequence from the
+model; add unit tests covering the chosen behavior (cases: only
+hasCommandInvocation, only hasCommandSequence, both present with defined
+precedence, and empty hasCommandSequence) and update documentation/comments to
+state whether the two fields are mutually exclusive and which takes precedence."
+
+Your analysis in that conversation is:
+
+CodeRabbit is right that hasCommandSequence is loaded into the Accord model but not consumed by Accord itself.
+I would not wire it into accord check; that command validates before/after fixture state and should not execute replay commands.
+I also would not remove it casually, because Weave’s fixture ladder already consumes ReplayProfile.hasCommandSequence.
+Best follow-up: document hasCommandInvocation as single-command replay metadata, hasCommandSequence as ordered multi-command replay metadata, define precedence as “sequence wins when present,” and decide whether empty sequence is invalid. Then add loader/model tests for invocation-only, sequence-only, both, and empty sequence.
+
+Is that the right approach?
+
+# gpt-5.5_2026-05-16_1624_17
+
+Yes, that’s the right direction, with one refinement: I’d prefer **rejecting both fields together** over “sequence wins.”
+
+My take:
+
+- `accord check` should not execute replay commands. It validates fixture state, not procedure. So CodeRabbit is right about the unused model field, but wiring command execution into `check` would mix concerns.
+- Don’t remove `hasCommandSequence`, because Weave’s fixture ladder needs exactly that concept.
+- Accord should still own the manifest shape enough to parse and validate it.
+
+I’d define the contract like this:
+
+- `hasCommandInvocation`: single replay command metadata.
+- `hasCommandSequence`: ordered replay command metadata.
+- They are **mutually exclusive** on one case/profile.
+- Empty `hasCommandSequence: []` is invalid if present.
+- A future `accord replay` or `accord plan` could consume these, but `accord check` should ignore command metadata except maybe shape validation.
+
+Why I’d push back on “sequence wins”: both-present usually means stale manifest data, and because replay commands can mutate fixtures, silently preferring one path is a little too forgiving. Since we’re pre-v1 and don’t have users depending on ambiguous manifests, fail closed is cleaner.
+
+So the fix I’d make in Accord is: model/loader tests for invocation-only, sequence-only, both-present rejection, and empty-sequence rejection; plus docs/comments saying `check` validates `fromRef -> toRef` and does not execute replay metadata.
+
+# djradon_2026-05-16_1625_41
+
+I created @wd.task.2026.2026-05-16_1625-manifest-completeness-check -- can you fill it out if you still thing manifest check is worth doing.
+
+# gpt-5.5_2026-05-16_1625_51
+
+I still think it’s worth doing, especially as a release gate rather than as another runtime-output e2e assertion. I’ll open the new task note plus the repo guidance and shape it into a concrete, scoped task.
+
+# gpt-5.5_2026-05-16_1625_56
+
+The note is just a skeleton, so I’m going to make it a real task: problem statement, scope split between Weave and Accord, explicit non-goals, and an implementation checklist that keeps “manifest truthfulness” separate from “Weave output matches branch.”
+
+# gpt-5.5_2026-05-16_1627_01
+
+Filled out [wd.task.2026.2026-05-16_1625-manifest-completeness-check.md](../../../../../documentation/notes/wd.task.2026.2026-05-16_1625-manifest-completeness-check.md).
+
+I kept the stance pretty firm: manifest completeness is worth doing, but as its own validation layer. Weave e2e should keep proving “runtime output matches fixture branch”; a separate fixture manifest check should prove “the manifest truthfully describes branch drift.”
+
+No tests run; this was documentation-only.
+
+Commit message:
+
+```text
+docs(testing): define fixture manifest completeness task
+
+- separate Weave runtime fixture checks from Accord manifest truthfulness checks
+- document release-preflight motivation for manifest completeness
+- capture implementation plan for fixture manifest checking and Accord optional test cleanup
+```
