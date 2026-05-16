@@ -4470,3 +4470,477 @@ Also, " WEAVE_LOG_DIR=/tmp/weave-logs deno run -A src/main.ts generate \        
   --mesh-root /home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/mesh-branch-fantasy-rules \
   --target 'designatorPath=/,recursive=true'
 Could not resolve the current extracted source binding for examples/gunaar/ability-score/charisma."
+
+# djradon_2026-05-16_0930_35
+
+We can reset gh-pages to the 15 rung.
+
+Also, " WEAVE_LOG_DIR=/tmp/weave-logs deno run -A src/main.ts generate \                                                                                                                                            ─╯
+  --mesh-root /home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/mesh-branch-fantasy-rules \
+  --target 'designatorPath=/,recursive=true'
+Could not resolve the current extracted source binding for examples/gunaar/ability-score/charisma."
+
+Maybe the reset will fix that
+
+# djradon_2026-05-16_0940_11
+
+We can reset gh-pages to the 15 rung.
+
+Also, " WEAVE_LOG_DIR=/tmp/weave-logs deno run -A src/main.ts generate \                                                                                                                                            ─╯
+  --mesh-root /home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/mesh-branch-fantasy-rules \
+  --target 'designatorPath=/,recursive=true'
+Could not resolve the current extracted source binding for examples/gunaar/ability-score/charisma."
+
+Maybe the reset will fix that
+
+# gpt-5.5_2026-05-16_0940_28
+
+Yes, reset makes sense here. I’m going to move `gh-pages` directly onto `a.15-extracted-term-references-woven`, then rerun that generate command against the dependency checkout so we can see whether the source binding error was just the old published branch.
+
+# gpt-5.5_2026-05-16_0940_40
+
+Good, the reset did fix that error: the recursive generate command completed successfully. It updated existing preview pages in the dependency checkout, so I’m checking the resulting branch state now.
+
+# gpt-5.5_2026-05-16_0940_45
+
+Done. Local `gh-pages` in `dependencies/github.com/semantic-flow/mesh-branch-fantasy-rules` now points at `a.15-extracted-term-references-woven` (`d954125`).
+
+Your generate command now succeeds. It reported:
+
+`Generated 74 designator paths and created 0 files while updating 756 existing pages.`
+
+So yes, the reset fixed the missing extracted source binding for `examples/gunaar/ability-score/charisma`.
+
+One note: the checkout is now dirty with the regenerated HTML preview changes, and `gh-pages` is `ahead 10, behind 10` relative to `origin/gh-pages` because this was a non-fast-forward local reset. I did not push it.
+
+# djradon_2026-05-16_0941_18
+
+You can push it, no need to merge just overwrite origin.
+
+# gpt-5.5_2026-05-16_0941_29
+
+Got it. I’m going to force-push the current `gh-pages` ref to origin. The uncommitted preview HTML from the test generate won’t be included in that push, so I’ll check the state afterward and leave the working tree visible rather than quietly cleaning it.
+
+# gpt-5.5_2026-05-16_0941_45
+
+Pushed. `origin/gh-pages` was force-updated from `630d684` to `d954125`, matching `a.15-extracted-term-references-woven`.
+
+Current local checkout is still dirty from the preview generate run: 756 modified HTML files. That’s local-only for your live-server preview; the pushed branch itself is clean at `d954125`.
+
+# djradon_2026-05-16_0946_35
+
+OK, on to the targeted regeneration?
+
+# gpt-5.5_2026-05-16_0946_47
+
+Yep, that’s the next sensible slice. I’m going to check the current dirty state and the ladder commands first, because the single `mesh-branch-fantasy-rules` checkout is dirty from preview generation and targeted regen may need to switch branches underneath it.
+
+# gpt-5.5_2026-05-16_0946_58
+
+The source repos are clean except the branch preview checkout, and weave itself has the ResourcePage UI changes in `pages.ts` plus its test. I’ll reset the preview HTML before branch replay, then use the ladder tool so the rung refs and expected manifests move together rather than hand-editing output.
+
+# gpt-5.5_2026-05-16_0953_19
+
+I’m going to treat “targeted” as: branch fantasy `a.05` through `a.15`, sidecar fantasy `a.08` through `a.17`, and Alice `a.12` through `a.25`. That covers the extraction-source support move plus the woven ResourcePage UI surfaces without replaying source-only/bootstrap branches.
+
+# gpt-5.5_2026-05-16_0953_25
+
+The branch checkout is now clean at the `a.04` publication state, so `gh-pages` can fast-forward naturally as the branch-published rungs replay. Starting the branch fixture sequence now.
+
+# gpt-5.5_2026-05-16_0953_43
+
+The branch replay made it through `a.09`; the woven rungs reported expected validation drift but still updated, which is okay for this regeneration path. The sequence stopped at `a.10`, so I’m opening that result instead of guessing.
+
+# gpt-5.5_2026-05-16_0954_00
+
+The stop is useful: the branch replay should not have the checkout sitting on `gh-pages`, because the ladder reads `.assets` from the checked-out worktree and early publication rungs don’t contain the later release assets. I’m moving the checkout back to `main` for asset access while leaving the `gh-pages` ref at the regenerated publication state.
+
+# gpt-5.5_2026-05-16_0954_07
+
+That’s cleaner: `main` has all the `.assets`, and `gh-pages` is parked at regenerated `a.09`. Continuing `a.10` through `a.15` now.
+
+# gpt-5.5_2026-05-16_0954_41
+
+Branch fantasy replay completed locally through `a.15`; the expected manifest drift shows up on generated pages, but every operation succeeded and the guardrails allowed branch updates. Moving on to the sidecar rungs.
+
+# gpt-5.5_2026-05-16_0955_09
+
+Sidecar rungs are replayed. The first all-terms rungs report drift but still produce guarded branch commits, which is exactly the “regenerate stale branches” behavior we wanted. Now I’m replaying Alice from Bob extraction forward.
+
+# gpt-5.5_2026-05-16_0955_48
+
+Alice is cleanly replayed through `a.25`, all validations passing there. I’m going to run the focused fixture and rendering tests before pushing the regenerated refs, then I’ll do check/lint.
+
+# gpt-5.5_2026-05-16_0956_24
+
+One focused test failed, and it’s a good one: the regenerated release ResourcePage no longer shows `sflo:HistoricalState`, even though the test expects the extracted release page to surface that history/state role. I’m checking whether that is a legitimate expectation change or a regression in the regenerated facts.
+
+# gpt-5.5_2026-05-16_0956_56
+
+The regenerated data does still contain the important fact in `ontology/_knop/_inventory/inventory.ttl`: `<ontology/releases/v0.0.2> a sflo:HistoricalState`. The page render isn’t pulling that into the ResourcePage for the extracted release IRI, and it is showing extraction Source UI for a support/state resource where the test says we should suppress it. That looks like a real code fix, not a fixture expectation change.
+
+# gpt-5.5_2026-05-16_0957_52
+
+I’m making a small renderer-planning change: when a public identifier page is also a history component of some other artifact, the planner should let the history ownership win. That preserves the `HistoricalState` class and avoids treating the page as an ordinary extracted term with a Source row.
+
+# gpt-5.5_2026-05-16_0958_35
+
+The first patch didn’t change this exact-target case because the generator only loaded the requested designator context, not the owning `ontology` context. I’m tightening that now by loading ancestor Knop inventories for the requested designator and merging any history groups they contain. That keeps exact-target generation honest without requiring recursive generation.
+
+# gpt-5.5_2026-05-16_0959_31
+
+That fixed the failing exact-target test. Since the branch HTML was generated before this planning fix, I’m going to refresh only the affected woven publication rungs now: branch fantasy `a.13` through `a.15`, and sidecar final `a.17`. Alice doesn’t have this “extracted public identifier is also a source artifact history state” shape.
+
+# gpt-5.5_2026-05-16_0959_54
+
+I tripped over a working-directory footgun there: the `gh-pages` ref reset ran in the weave repo instead of the fixture repo, so the replay commands created candidate commits but refused to move the publication branch. I’m correcting the fixture ref directly and rerunning that short branch slice with `set -e` so it stops cleanly if anything else is off.
+
+# gpt-5.5_2026-05-16_1000_30
+
+The affected woven branches are refreshed after the code fix. I’m rerunning the broader focused batch now; if that passes, I’ll do `check` and `lint`, then push the regenerated refs.
+
+# gpt-5.5_2026-05-16_1001_03
+
+Focused tests are green now: 107 passing. I’m running the full repository check and lint pass next.
+
+# gpt-5.5_2026-05-16_1001_18
+
+Check and lint are green. I’m pushing the regenerated fixture refs now, using force-with-lease for the rung branches since these are deliberately regenerated snapshots. After that I’ll leave the branch-published fixture checkout on `gh-pages` again for preview.
+
+# gpt-5.5_2026-05-16_1002_41
+
+Targeted regeneration is done and pushed.
+
+Regenerated refs:
+- `mesh-branch-fantasy-rules`: `a.05` through `a.15`, plus `gh-pages`
+- `mesh-sidecar-fantasy-rules`: `a.08` through `a.17`
+- `mesh-alice-bio`: `a.12` through `a.25`
+
+I also hit and fixed one real code issue: exact-target generation for an extracted identifier that is also an ancestor artifact history state was rendering it as an ordinary extracted term. Now it loads ancestor Knop inventory history groups, so `ontology/releases/v0.0.2` keeps its `sflo:HistoricalState` page behavior instead of showing the extraction Source row. The only remaining local change is [src/runtime/weave/weave.ts](../../../../../src/runtime/weave/weave.ts:2140).
+
+Verification:
+- `deno test -A tests/scripts/fixture_ladder_test.ts tests/integration/branch_fantasy_rules_fixture_test.ts tests/integration/extract_test.ts tests/integration/weave_test.ts src/runtime/weave/pages_test.ts` passed: 107 tests
+- `deno task check` passed
+- `deno task lint` passed
+
+The branch-published fixture checkout is back on clean `gh-pages` at `83f4e10`.
+
+Suggested weave commit message:
+
+```text
+fix(weave): preserve ancestor history roles for exact resource generation
+
+Load ancestor Knop inventory history groups when planning generated ResourcePages so an extracted identifier that is also an artifact history component still renders as a Semantic Flow history resource. This keeps release-state pages such as ontology/releases/v0.0.2 classified as sflo:HistoricalState instead of treating them as ordinary extracted terms with Source metadata.
+```
+
+# djradon_2026-05-16_1020_22
+
+okay, what;s next
+
+# gpt-5.5_2026-05-16_1025_39
+
+I’m going to do a quick status pass across the repos before I recommend the next slice, because we just touched generated fixture refs in three places and there’s one local code fix in weave that probably wants committing.
+
+# gpt-5.5_2026-05-16_1026_17
+
+Next, I’d do this:
+
+1. Commit the remaining `sflo` doc note change:
+   `docs(ontology): mark inventory-rooted extraction sources historical`
+
+2. Update the active task note with what just landed:
+   - targeted regeneration completed and pushed
+   - branch fantasy `gh-pages` now equals `a.15`
+   - exact-target ResourcePage generation now preserves ancestor history roles
+   - validation drift on stale woven manifests is expected/non-blocking during regen
+
+3. Then move back to product work:
+   - broaden the ResourcePage “properties about this thing” UI
+   - decide whether references should stay curated/manual or get a helper/API to derive reference links from extraction source facts
+   - optionally add more canonical current references in the branch fixture, beyond the representative set
+
+Everything important is clean except `sflo/notes/ont.decision-log.md`. Weave itself is clean and already has the commit `1404ed8 fix(weave): preserve ancestor history roles for exact resource generation`.
+
+# djradon_2026-05-16_1032_27
+
+proceed
+
+# gpt-5.5_2026-05-16_1032_44
+
+I’ll take the bookkeeping slice: commit the ontology decision-log wording in `sflo`, then update the active ResourcePage task note with the regeneration and the next decisions so the trail doesn’t evaporate.
+
+# gpt-5.5_2026-05-16_1032_50
+
+The ResourcePage note path in the IDE tab doesn’t exist under the current weave checkout name, so I’m locating the actual note before editing. The `sflo` change is exactly the one-line decision-log wording we expected.
+
+# gpt-5.5_2026-05-16_1033_12
+
+The `sflo` doc commit is made locally and is ahead by one. The ResourcePage task note appears to have been archived by Kato rather than present as a live `wd.task.*` note in this checkout, so I’m checking the note inventory before I create or update anything in the wrong place.
+
+# gpt-5.5_2026-05-16_1033_33
+
+I’m going to update the two live development notes rather than the Kato archive copy: the branch fixture task and the fixture-ladder generator task. The archive note looks like a completed conversation/task capture, while the live Dendron notes are where this maintenance state belongs.
+
+# gpt-5.5_2026-05-16_1034_01
+
+The live notes now reflect that `gh-pages` is resolved and that the targeted rerun is pushed. I’m doing a quick diff check and then I’ll commit the weave docs separately from the `sflo` docs commit.
+
+# gpt-5.5_2026-05-16_1034_14
+
+Both doc commits are local now. I’m pushing them, then I’ll give you the clean state and the next real work options.
+
+# gpt-5.5_2026-05-16_1034_31
+
+Done and pushed.
+
+Commits:
+- `weave`: `f7063ad docs(fixtures): record targeted ladder regeneration`
+- `sflo`: `2134ef3 docs(ontology): mark inventory extraction sources historical`
+
+I updated the live fixture notes, not the Kato archive note:
+- `wd.task.2026.2026-05-15_1113-mesh-branch-fantasy-rules`
+- `wd.task.2026.2026-05-07-fixture-ladder-generator`
+
+Current checked repos are clean:
+- `weave`
+- `sflo`
+- `semantic-flow-framework`
+- `mesh-branch-fantasy-rules` on clean `gh-pages`
+
+Next best slice: update the user/API docs for the settled `_knop/_sources` supporting artifact and branch-published fixture shape: `wu.cli-reference`, `sf.api` / `sf.api.examples`, `ont.summary.core`, and the `mesh-branch-fantasy-rules` README.
+
+# djradon_2026-05-16_1037_39
+
+proceed
+
+# gpt-5.5_2026-05-16_1037_50
+
+I’ll take the documentation slice now: first locate the current CLI/API/ontology summary docs, then patch the settled `_knop/_sources` and branch-published fixture behavior into the right repos.
+
+# gpt-5.5_2026-05-16_1038_07
+
+The branch fixture checkout is clean on `gh-pages`; for README work I’ll switch it to `main`, update and push, then put it back on `gh-pages` for preview. I’m also reading the ontology summary before touching ontology-facing docs, per guidance.
+
+# gpt-5.5_2026-05-16_1038_52
+
+I’ll move the docs slice forward now: source registries in the user/API/ontology notes, then the branch fixture README on `main`, with separate commits per repo so the trail stays readable.
+
+# gpt-5.5_2026-05-16_1038_58
+
+The repo state is clean in the four places I’m touching. I found the task-note checkbox that explicitly calls for these docs, and the ontology notes already have the core model in place, so this should be mostly clarifying and aligning the public/API examples with the shape we just generated.
+
+# gpt-5.5_2026-05-16_1039_10
+
+I’m going to keep the docs deliberately factual rather than philosophical here: where source provenance lives, what it means, and what the branch fixture now demonstrates. One small cleanup I’ll make in the CLI doc is naming `sflo:ExtractionSource`, since the current generated fixtures use the `sflo` prefix.
+
+# gpt-5.5_2026-05-16_1040_05
+
+The ontology summary now calls out the split I think matters most: `_sources` explains provenance and materialization, `_references` expresses curation. Next I’m switching only the branch fixture checkout to `main` so its source README can describe the fixture without touching the publication tree.
+
+# gpt-5.5_2026-05-16_1040_21
+
+The source README is updated on `main`, and I marked the task-note docs item complete. I’m doing a quick diff pass now before committing, mostly to catch stale phrasing or any accidental branch/publication confusion.
+
+# gpt-5.5_2026-05-16_1040_28
+
+The diffs look scoped. These are docs-only changes, so I’m going to commit and push each repo separately; no Deno test/check run is needed for this slice.
+
+# gpt-5.5_2026-05-16_1041_02
+
+All four docs commits are pushed. I’m putting the branch fixture checkout back on `gh-pages` now so it’s in the usual preview-friendly state.
+
+# gpt-5.5_2026-05-16_1041_19
+
+Done and pushed, with separate commits per repo:
+
+- `weave`: `18e6683 docs(cli): describe branch-published source registries`
+- `semantic-flow-framework`: `abcfbb1 docs(api): record branch fixture source registries`
+- `sflo`: `6432f76 docs(ontology): clarify Knop source registries`
+- `mesh-branch-fantasy-rules`: `d8b40af docs: describe branch-published fixture ladder` on `main`
+
+I restored `mesh-branch-fantasy-rules` to `gh-pages` afterward for preview. All four worktrees are clean and tracking their remotes.
+
+No Deno checks were run; this was markdown-only documentation. The next good slice is revisiting `ont.task.2026.2026-03-24-integration-support` now that `_knop/_sources` has settled, especially the source-registry vs. integration-support boundary.
+
+# djradon_2026-05-16_1050_15
+
+ok great. [wd.task.2026.2026-05-06-grand-config-synthesis.md](../../../../../documentation/notes/wd.task.2026.2026-05-06-grand-config-synthesis.md) is in my heada too
+
+# gpt-5.5_2026-05-16_1050_31
+
+That one sounds like the right conceptual umbrella for the source-registry/config boundary. I’ll peek at it so I’m not free-associating from the title alone.
+
+# gpt-5.5_2026-05-16_1050_42
+
+Yes, that note is very much the next gravity well.
+
+The important boundary I’d keep crisp:
+
+- `_knop/_sources` = provenance/source bindings for carried bytes and extracted terms.
+- `_mesh/_config`, `_knop/_local-config`, `_knop/_inheritable-config`, reusable config artifacts = policy/config inputs.
+- `ArtifactResolutionTarget` can serve both worlds, but the attachment property determines meaning.
+
+So I’d probably sequence next work like this:
+
+1. Revisit `ont.task.2026.2026-03-24-integration-support` now that `_sources` settled, and make sure it doesn’t accidentally pull provenance back into config.
+2. Then use `wd.task.2026.2026-05-06-grand-config-synthesis` as the bigger ontology/config pass: HostLocalOperationalConfig, config-source targets, defaults profile, resolved config, and Knop-local/inheritable config artifacts.
+3. Keep the fixture ladder close while doing that, because config changes will almost certainly want fresh rungs.
+
+No changes made just now.
+
+# djradon_2026-05-16_1207_39
+
+Hmmm... [ont.task.2026.2026-03-24-integration-support.md](../../sflo/notes/ont.task.2026.2026-03-24-integration-support.md) probably needs updating, but I don't see automated integration as an immediate need.
+
+# gpt-5.5_2026-05-16_1207_44
+
+That sounds right to me: we can demote that note from “next implementation pressure” to “keep as design context, now partially absorbed by `_sources` and config synthesis.” I’ll read the note and make a small status update rather than turning it into a workstream.
+
+The old integration-support note is still written like a first-pass ontology task. I’m going to update it to say: not immediate, don’t confuse it with source provenance, and let grand config synthesis absorb the config-facing pieces when we actually need automated integration.
+
+# gpt-5.5_2026-05-16_1208_00
+
+That update is intentionally modest: it doesn’t close the topic, it just moves it out of the immediate queue and documents the new boundaries. I’ll diff it, then commit/push this sflo docs change.
+
+# gpt-5.5_2026-05-16_1208_22
+
+Agreed, and I updated the note that way.
+
+Committed and pushed in `sflo`:
+
+`148be07 docs(ontology): defer automated integration support`
+
+The note now says automated integration is useful future work, but not immediate. It also records the current boundary:
+
+- `_knop/_sources` owns source provenance.
+- Operational/config-source resolution belongs with grand config synthesis.
+- Integration support should only handle future automatic recognition/matching/mapping of candidate artifacts.
+
+Worktree is clean.
+
+# djradon_2026-05-16_1209_28
+
+ok, we were thinking about regenerating all the fixture meshes, but i'm okay switching to config first
+
+# gpt-5.5_2026-05-16_1214_44
+
+I’d switch to config too. Fixture regeneration is now pretty well paved, while config is the thing that decides whether the next regeneration is meaningful or just churn. I’ll take the first slice as orientation plus a small, durable config move rather than trying to swallow the whole synthesis note at once.
+
+# gpt-5.5_2026-05-16_1214_55
+
+Interesting: the “first config pass” is farther along than the title made it sound. The ontology already has `HostLocalOperationalConfig`, `ConfigResolutionConfig`, `ResolvedConfig`, policy-valued history/page settings, and Weave default TTL files. I’m checking what’s still actually missing so we don’t invent work that’s already landed.
+
+# gpt-5.5_2026-05-16_1215_07
+
+I spotted two small ontology hygiene glitches while reading: duplicate Turtle statements for `historyTrackingPolicy_required` and `unknownConfigTermPolicy_reject`. They parse, but they’re exactly the kind of quiet vocabulary lint that makes the config pass feel less crisp, so I’m going to clean those up and add a guardrail test for duplicate predicate/object pairs in active RDF files.
+
+# gpt-5.5_2026-05-16_1215_18
+
+Small correction from my own read: the apparent duplicate statements came from overlapping `sed` ranges, not the Turtle itself. So I’m not touching the ontology for that. I am still going to add the RDF duplicate-triple guardrail, because it’s cheap and fits the config/ontology cleanup mood.
+
+# gpt-5.5_2026-05-16_1215_23
+
+The guardrail is in place. I’ll run the focused ontology/config tests first, then the full check/lint since this is code-facing test work even though the implementation is tiny.
+
+# gpt-5.5_2026-05-16_1215_44
+
+Focused config tests, `deno task check`, and `deno task lint` all pass. I’ll commit this small guardrail now; it’s a nice low-risk footing before any bigger config runtime work.
+
+# gpt-5.5_2026-05-16_1216_12
+
+Good switch. I did a small config-adjacent guardrail slice and pushed it:
+
+`934f172 test(ontology): guard against duplicate RDF triples`
+
+I also sanity-checked the config state: the first config ontology/default-profile pass is already substantially in place. `HostLocalOperationalConfig`, `ConfigResolutionConfig`, `ResolvedConfig`, default profile TTL, policy-valued history/page settings, and runtime default parsing are all present.
+
+Tiny note: I initially thought I saw duplicate Turtle statements, but that was just overlapping `sed` output. The new guardrail proves the active ontology/default RDF files don’t repeat exact triples.
+
+Verification passed:
+
+- `deno test -A tests/integration/ontology_guardrails_test.ts src/runtime/config/effective_config_test.ts src/runtime/operational/local_path_policy_test.ts`
+- `deno task check`
+- `deno task lint`
+
+Worktrees checked are clean. Next real config slice should probably be one of the open Phase 3 items: historical ResourcePage regeneration policy, path/URL trust alignment, or concrete default/next-segment hint behavior beyond the MeshInventory state seam.
+
+# djradon_2026-05-16_1341_54
+
+Anything to keep from [ont.task.2026.2026-03-23-config-modernization.md](../../sflo/notes/ont.task.2026.2026-03-23-config-modernization.md) , or should mark that as cancelled?
+
+# gpt-5.5_2026-05-16_1342_06
+
+I’ll read it against the newer grand synthesis shape before calling it dead. My hunch is “superseded, not cancelled”: keep any historical rationale, but mark the actionable direction as absorbed/replaced.
+
+# gpt-5.5_2026-05-16_1342_12
+
+I wouldn’t call it cancelled. It did useful seed work, but the active choices are now in grand config synthesis, and a few early hunches were explicitly reversed. I’ll mark it as superseded and add a short “what survived / what did not” so future-us doesn’t have to re-argue it.
+
+# gpt-5.5_2026-05-16_1342_24
+
+I added a superseded status instead of a cancellation marker. Quick diff now, then I’ll commit this as an sflo docs-only update.
+
+# gpt-5.5_2026-05-16_1342_46
+
+I’d mark it superseded, not cancelled, and I did that.
+
+Committed and pushed in `sflo`:
+
+`94eb2ed docs(ontology): mark config modernization superseded`
+
+What I preserved as useful:
+- `Config` distinct from `DigitalArtifact`
+- reusable config artifacts as `ConfigArtifact` / `DigitalArtifact` / `RdfDocument`
+- explicit mesh/Knop config attachments
+- effective config as non-authoritative runtime/debug output
+- old Flow/State/Distribution and `AbstractArtifact` framing rejected
+- ResourcePage presentation terms stay in config, while content composition stays in core
+
+What I marked as replaced/rejected:
+- `ConfigFragment`
+- `KnopConfigDefaults` as the main model
+- mesh-scoped defaults replacing Knop-local/inheritable config
+- boolean config switches
+- regex-heavy template mappings as the first contract
+- immediate automated integration support
+
+Worktree is clean.
+
+# djradon_2026-05-16_1349_41
+
+I moved the fixture ladder generator task to completed, even though these were unchecked:
+
+- [ ] Update Accord manifests, fixture-backed Weave tests, and conformance expectations after generated branches are rerung for the combined enum/config changes.
+- [ ] Record the expected workflow for large ontology/config churn: update manifests, run generator, inspect generated branch diffs, run fixture tests, commit/push branch updates intentionally.
+
+Do we still want to do those?
+
+Then I'm leaning towards "Complete concrete default-segment and next-segment hint runtime behavior beyond this first MeshInventory state seam, including history hints, Knop-local progression, and API/CLI set/clear commands." -- My goal is to have a version of weave published to npmjs by Monday that can build the URPX ontology. It's histories and historicalstates will need to be friendly by then, but maybe it's already good enough. Maybe we move towards the v0.1.0 release now?
+
+# gpt-5.5_2026-05-16_1355_03
+
+I think this is a release-triage moment, not a “finish every beautiful config idea” moment. I’m going to quickly inspect the current naming/hint support and release notes so I can separate what’s actually blocking URPX/npm from what can ride after v0.1.0.
+
+# gpt-5.5_2026-05-16_1355_15
+
+I found your working tree has the docs moves/edits in progress, so I’m leaving those alone. I’m going to do one more quick release-readiness read from `deno.json` and the current release notes, then I’ll give you a crisp recommendation instead of wandering into a config feature that may not be release-critical.
+
+# gpt-5.5_2026-05-16_1355_32
+
+For URPX-by-Monday, I would not start with the next-segment hint API. Explicit `historySegment` / `stateSegment` already gets friendly payload history and state paths; durable hints are ergonomics and repeatability, not the likely release blocker. I’m going to run the actual local release gate now so we can make this decision from the ground instead of from the old CI note.
+
+# gpt-5.5_2026-05-16_1357_24
+
+The release gate is almost green: `deno task ci` got through 421 tests and failed exactly one fixture-ladder test. The failure is not a runtime/config blocker; it’s the branch-fantasy asset root expecting `.assets/01-source-only/NOTICE.md` in the dependency checkout. I’m going to inspect that scenario and the fixture repo branch state now.
+
+# gpt-5.5_2026-05-16_1357_48
+
+This one is environmental: the branch fixture asset test reads `.assets` from the `mesh-branch-fantasy-rules` dependency checkout, and we intentionally keep that checkout on `gh-pages` for preview. The assets exist on `main` and `a.01-source-only`, not on `gh-pages`. I’m going to temporarily switch that dependency checkout to `main`, rerun the failing test, then switch it back to `gh-pages`.
+
+# gpt-5.5_2026-05-16_1357_54
+
+I fat-fingered that first switch in the Weave repo; Git correctly refused because of your uncommitted docs changes. No files changed. Running the intended dependency-only switch now.
+
+# gpt-5.5_2026-05-16_1358_05
+
+The isolated failing test passes when the branch fixture checkout is on `main`, then I put it back on `gh-pages`. For release confidence I’m going to run the full gate once more with that dependency temporarily on `main`, and restore `gh-pages` afterward.

@@ -590,3 +590,62 @@ feat(resource-pages): render blank node property values separately
 Move subject triples with blank-node objects out of the Properties panel and
 render them in a dedicated Blank Nodes panel with predicate/code table rows.
 ```
+
+# djradon_2026-05-16_0944_39
+
+References working now.
+
+For the blank node display, "_:n3-5063" is totally arbitrary, So instead of:tead of:
+
+	
+
+_:n3-5063
+  sh:datatype xsd:string;
+  sh:description "Optional display name for a character.";
+  sh:path schema:characterName.
+
+Let's just show
+
+  sh:datatype xsd:string;
+  sh:description "Optional display name for a character.";
+  sh:path schema:characterName.
+
+# gpt-5.5_2026-05-16_0944_50
+
+Agreed. The blank node identifier is parser-local noise, so I’ll change the snippet renderer to omit the root blank-node label and show just the blank node’s predicate lines in the code block.
+
+# gpt-5.5_2026-05-16_0945_23
+
+I’m going a little further than just deleting the first line: nested blank nodes will also render inline with brackets instead of leaking another parser-generated `_:` id. That keeps the code block Turtle-ish without exposing labels that don’t mean anything.
+
+# gpt-5.5_2026-05-16_0945_56
+
+The targeted test now asserts that the rendered page contains no `_:` blank-node ids at all, while still showing the nested blank node as a bracketed block. I’m running the broader renderer and repo checks now.
+
+# gpt-5.5_2026-05-16_0946_29
+
+Adjusted the blank node code rendering so parser-generated IDs like `_:n3-5063` are suppressed. Root blank nodes now render only their predicate/object lines, and nested blank nodes render as bracketed inline blocks instead of leaking arbitrary IDs.
+
+Changed:
+- [pages.ts](../../../../../src/runtime/weave/pages.ts)
+- [pages_test.ts](../../../../../src/runtime/weave/pages_test.ts)
+
+Verified with:
+- `deno fmt src/runtime/weave/pages.ts src/runtime/weave/pages_test.ts`
+- `deno check src/runtime/weave/pages.ts src/runtime/weave/pages_test.ts`
+- `deno test --allow-read --allow-env src/runtime/weave/pages_test.ts`
+- `deno task lint`
+- `deno task check`
+- `git diff --check`
+
+Suggested commit message:
+
+```text
+Refine ResourcePage blank node rendering
+
+Suppress arbitrary blank node identifiers in ResourcePage Blank Nodes panels.
+Render root blank node content as Turtle-style predicate/object lines, while
+preserving nested blank node structure with bracketed inline blocks. Keep blank
+node triples out of the Properties panel and cover the display behavior in
+ResourcePage tests.
+```
