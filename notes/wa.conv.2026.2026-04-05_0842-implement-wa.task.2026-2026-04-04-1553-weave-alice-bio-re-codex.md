@@ -621,7 +621,7 @@ Verified with:
 
 Unrelated worktree items still present:
 - modified [[AGENTS]]
-- untracked [[wa.conv.2026.2026-04-05_0842-implement-wd-task-2026-2026-04-04-1553-weave-alice-bio-re-codex]]
+- untracked [[wa.conv.2026.2026-04-05_0842-implement-wa.task.2026-2026-04-04-1553-weave-alice-bio-re-codex]]
 
 # User_2026-04-05_0849_58
 

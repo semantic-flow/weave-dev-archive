@@ -119,3 +119,177 @@ release: decolorize npm smoke version output
 - print escaped raw version output on mismatch
 - document the colored-version release smoke failure mode
 ```
+
+# djradon_2026-05-16_1642_54
+
+OK, smoketests pass. the linux binary runs. how do I inspect the draft github release body?
+
+# gpt-5.5_2026-05-16_1643_06
+
+Nice, that’s the good release-path kind of boring. I’ll check the workflow’s release-management step so I can give you the exact UI/CLI route for the draft body, not a generic GitHub shrug.
+
+# gpt-5.5_2026-05-16_1643_22
+
+The draft release tag should be `v0.1.0` from root `deno.json`.
+
+Best CLI inspection:
+
+```bash
+gh api repos/semantic-flow/weave/releases --paginate \
+  --jq '.[] | select(.tag_name == "v0.1.0") | {tag_name, draft, name, html_url, body}'
+```
+
+Just the body:
+
+```bash
+gh api repos/semantic-flow/weave/releases --paginate \
+  --jq '.[] | select(.tag_name == "v0.1.0") | .body'
+```
+
+UI route: go to https://github.com/semantic-flow/weave/releases while logged in with repo write/admin access. Draft releases should be visible there; open the `v0.1.0` draft and inspect/edit the body.
+
+To compare against what the workflow intended to upload, preview the local stripped release notes:
+
+```bash
+awk '
+  BEGIN { in_frontmatter = 0; frontmatter_done = 0 }
+  NR == 1 && $0 == "---" { in_frontmatter = 1; next }
+  in_frontmatter && $0 == "---" { in_frontmatter = 0; frontmatter_done = 1; next }
+  !in_frontmatter && frontmatter_done { print }
+' documentation/notes/release-notes.v0.1.0.md
+```
+
+That `awk` is the same frontmatter-stripping logic the workflow uses.
+
+# djradon_2026-05-16_1702_59
+
+The publish to npm failed:
+
+ npm error need auth This command requires you to be logged in to https://registry.npmjs.org/
+npm error need auth You need to authorize this machine using `npm adduser`
+npm error A complete log of this run can be found in: /home/runner/.npm/_logs/2026-05-16T23_54_20_676Z-debug-0.log
+Command failed with exit code 1: npm publish --tag latest --provenance
+
+I logged in locally, but that won't fix the github action. What do I do?
+
+# djradon_2026-05-16_1706_40
+
+The publish to npm failed:
+
+ npm error need auth This command requires you to be logged in to https://registry.npmjs.org/
+npm error need auth You need to authorize this machine using `npm adduser`
+npm error A complete log of this run can be found in: /home/runner/.npm/_logs/2026-05-16T23_54_20_676Z-debug-0.log
+Command failed with exit code 1: npm publish --tag latest --provenance
+
+I logged in locally, but that won't fix the github action. What do I do?
+
+# gpt-5.5_2026-05-16_1706_52
+
+Local npm login only authenticates your machine; the GitHub runner is a fresh machine, so the workflow needs its own publish credential or trusted-publishing setup. I’m going to verify the workflow’s auth path and cross-check npm’s current official guidance before recommending the next move.
+
+# gpt-5.5_2026-05-16_1707_43
+
+The workflow is already wired to read `secrets.NPM_TOKEN` as `NODE_AUTH_TOKEN`; the failure means GitHub either did not have that secret, the secret was empty/unavailable to this run, or the token lacks publish permission for these packages. One wrinkle: trusted publishing is now the better long-term answer, but npm requires the package to already exist before you can attach trusted publishing, so first publish may still need a real token.
+
+# gpt-5.5_2026-05-16_1708_05
+
+Local `npm login` won’t help because GitHub Actions runs on a clean runner. The workflow expects a repo secret named `NPM_TOKEN`:
+
+```yaml
+NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+```
+
+I checked `gh secret list --repo semantic-flow/weave` from here and it returned nothing, so it looks like the repo does not currently have that secret.
+
+Do this for the immediate publish:
+
+1. On npmjs.com, create a granular access token with publish rights.
+   - Access Tokens → Generate New Token.
+   - Give it read/write access to the `@semantic-flow` package scope/packages.
+   - If 2FA is enabled for publishing, enable “Bypass 2FA” for the token.
+   - Do not IP-restrict it unless you have GitHub-hosted runner IP ranges handled.
+
+2. Add it to GitHub:
+
+```bash
+gh secret set NPM_TOKEN --repo semantic-flow/weave
+```
+
+Paste the npm token when prompted.
+
+3. Before rerunning, check whether anything partially published:
+
+```bash
+npm view @semantic-flow/weave@0.1.0 version
+npm view @semantic-flow/weave-linux-x64@0.1.0 version
+npm view @semantic-flow/weave-windows-x64@0.1.0 version
+npm view @semantic-flow/weave-macos-x64@0.1.0 version
+npm view @semantic-flow/weave-macos-arm64@0.1.0 version
+```
+
+If they all 404, rerun the workflow publish on the same commit.
+
+For future releases, I’d move to npm trusted publishing after the first publish. npm’s docs now recommend trusted publishing over long-lived tokens, but `npm trust` requires the package to already exist. Configure trusted publishing separately for all five packages with:
+
+- GitHub org/user: `semantic-flow`
+- Repository: `weave`
+- Workflow filename: `release-manual.yml`
+- Environment: blank, unless you later add a GitHub Actions environment
+
+Sources: npm’s docs on [trusted publishing](https://docs.npmjs.com/trusted-publishers/), [access tokens](https://docs.npmjs.com/about-access-tokens/), and [provenance publishing](https://docs.npmjs.com/generating-provenance-statements/).
+
+# djradon_2026-05-16_1730_18
+
+OK, I set up trusted publishing. Do we need to change or clean anything up?
+
+# gpt-5.5_2026-05-16_1730_36
+
+Trusted publishing changes the release contract a bit: we should stop depending on `NPM_TOKEN`, and preferably let npm’s OIDC path handle provenance instead of forcing the old token-plus-provenance mode. I’ll check the publish script shape, then I’ll clean the workflow/runbook so the next run is unambiguous.
+
+# gpt-5.5_2026-05-16_1730_53
+
+I’m going to keep the script’s `--provenance` switch as a manual/token fallback, but remove it from the GitHub workflow path. With trusted publishing, npm should publish via OIDC and generate provenance automatically; an explicit token env var just keeps the old failure mode alive.
+
+# gpt-5.5_2026-05-16_1730_59
+
+All five `0.1.0` packages are visible on npm now, so the immediate publish succeeded at least once. I’m cleaning the workflow for future releases rather than touching package contents: no `NPM_TOKEN`, no explicit `--provenance` in the trusted-publishing path.
+
+# gpt-5.5_2026-05-16_1731_10
+
+I’m updating the runbook wording so it no longer tells future-you to chase `NPM_TOKEN` after the project has moved to trusted publishing. It will still mention token/provenance only as an emergency/manual fallback, not the normal path.
+
+# gpt-5.5_2026-05-16_1731_27
+
+The release logic change is just YAML plus docs; there isn’t a Deno code path to update. I’m still running the repo linter and whitespace check, then I’ll summarize exactly what to remove/verify outside the repo.
+
+# gpt-5.5_2026-05-16_1731_45
+
+Yes. I cleaned the normal release path so it matches trusted publishing:
+
+- Removed `NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}` from `.github/workflows/release-manual.yml`.
+- Stopped passing `--provenance` in the workflow publish path; npm trusted publishing generates provenance automatically.
+- Updated `documentation/notes/dev.release-runbook.md` so it describes trusted publishing as normal, with token publishing only as a manual fallback.
+
+I also checked npm: all five `0.1.0` packages are visible now:
+`@semantic-flow/weave`, `weave-linux-x64`, `weave-windows-x64`, `weave-macos-x64`, `weave-macos-arm64`.
+
+Still worth doing outside the repo:
+- Confirm trusted publishing is configured for all five packages, not just the wrapper.
+- If you added an `NPM_TOKEN` repo secret during debugging, delete it after the next trusted-publishing release succeeds:
+  `gh secret delete NPM_TOKEN --repo semantic-flow/weave`
+
+Verified locally:
+- `deno task lint`
+- `git diff --check`
+
+Commit message:
+
+```text
+release: use npm trusted publishing
+
+- remove token-based npm auth from the manual release workflow
+- let npm trusted publishing generate provenance automatically
+- update the release runbook for the OIDC publishing path
+```
+
+npm docs: [trusted publishing](https://docs.npmjs.com/trusted-publishers/), [provenance](https://docs.npmjs.com/generating-provenance-statements/).

@@ -5438,3 +5438,65 @@ docs(testing): define fixture manifest completeness task
 - document release-preflight motivation for manifest completeness
 - capture implementation plan for fixture manifest checking and Accord optional test cleanup
 ```
+
+# djradon_2026-05-16_1705_41
+
+ok what next? Should we try to build urpx? or dogfood it with sflo?
+
+# gpt-5.5_2026-05-16_1705_58
+
+I’d dogfood with `sflo` first, then use URPX as the acceptance run.
+
+Reason: `sflo` is closer to Weave’s own ontology assumptions, so it will expose config/history/source/page issues with less domain noise. If `sflo` can’t build cleanly and produce friendly histories/states, URPX will probably fail in harder-to-diagnose ways. But I’d timebox it tightly so we don’t disappear into ontology polish.
+
+My suggested next sequence:
+
+1. **Dogfood `sflo` locally**
+   - Build/generate ResourcePages for the core ontology.
+   - Check history/state naming, source provenance, support artifacts, and preview UX.
+   - Capture any missing config defaults or CLI ergonomics in the grand config task.
+
+2. **Patch only release-blocking gaps**
+   - Friendly histories/states.
+   - No local path leakage.
+   - ResourcePages useful enough for ontology browsing.
+   - CLI commands clear enough to repeat.
+
+3. **Then build URPX**
+   - Treat URPX as the v0.1.0 “real external ontology” smoke test.
+   - If it builds with reasonable commands and produces navigable output, that’s a strong release signal.
+
+4. **Keep manifest completeness/Accord cleanup adjacent**
+   - Worth doing, but I would not let it block the first `sflo -> URPX` dogfood path unless fixture drift is actively blocking release confidence.
+
+So: `sflo` first as calibration, URPX next as proof. That gives us a nice little two-step: “our own ontology works” and “a real target ontology works.”
+
+# djradon_2026-05-16_1709_13
+
+please fill out [wd.task.2026.2026-05-16_1707-create-sflo-branch-mesh.md](../../../../../documentation/notes/wd.task.2026.2026-05-16_1707-create-sflo-branch-mesh.md) . Do we have to worry about the one worktree limitation?
+
+# gpt-5.5_2026-05-16_1709_18
+
+I’ll fill this as a concrete dogfood task, and I’ll call out the worktree issue explicitly. The short version: yes, we need to care, but it’s manageable if we pick one canonical checkout and use temporary clones/worktrees only for publication experiments.
+
+# gpt-5.5_2026-05-16_1709_34
+
+The `sflo` checkout is clean on `main`, which is exactly the source-side starting point I’d want. I’m going to write the note around `main` as clean source and `gh-pages` as the woven/publication state, with a temporary publication worktree to dodge Git’s branch checkout rules.
+
+# gpt-5.5_2026-05-16_1710_12
+
+Filled out [wd.task.2026.2026-05-16_1707-create-sflo-branch-mesh.md](../../../../../documentation/notes/wd.task.2026.2026-05-16_1707-create-sflo-branch-mesh.md).
+
+And yes, we do need to respect the one-worktree limitation. For `sflo`, I wrote the plan as: keep `dependencies/github.com/semantic-flow/sflo` on clean `main` as the canonical source checkout, then use a separate `gh-pages` publication worktree for woven output. Before creating it, check `git worktree list` so we don’t collide with an existing checkout of `gh-pages`.
+
+No tests run; documentation-only.
+
+Commit message:
+
+```text
+docs(dogfood): plan sflo branch-published mesh
+
+- define sflo main-to-gh-pages dogfood workflow
+- capture worktree constraints for branch-published meshes
+- outline validation and preview steps before URPX
+```
