@@ -2,7 +2,7 @@
 id: ilvklxv3r9r6kdf8t5xjug4
 title: 2026 05 16_1707 Create Sflo Branch Mesh
 desc: ''
-updated: 1778976491069
+updated: 1778999947808
 created: 1778976491069
 ---
 
@@ -35,10 +35,12 @@ The one-worktree limitation matters. Git will not let the same branch be checked
 
 The publication worktree can be disposable during experimentation. Once the process stabilizes, decide whether to keep a named worktree under `dependencies/github.com/semantic-flow/sflo-gh-pages` or recreate it as needed. Avoid putting generated publication output into the source checkout unless we intentionally switch that checkout to `gh-pages` for preview.
 
-## Open Issues
+## Settled Issues
 
-- Should all-terms extraction create source references by default, or should reference creation be an explicit `--add-source-references` / `--reference-role canonical` option?
-- Should source-reference creation be limited to extracted terms that appear as RDF subjects, or should it include every extracted named mesh term discovered in subject, predicate, or object position?
+- All-terms extraction should create source references only when explicitly requested with `--add-source-references --reference-role canonical`; extraction provenance remains separate from curated reference links.
+- All-terms extraction should consider every mesh-scoped named node in subject, predicate, or object position.
+- Resources typed `sflo:LocatedFile` are support/file resources and should not be extracted into Knops.
+- The initial core/config/SHACL files are `integrate` inputs for the publication mesh, not `import` inputs. `import` is for outside-origin or extra-workspace content that first needs to become a governed local artifact.
 
 ## Working Answers
 
@@ -52,24 +54,48 @@ The publication worktree can be disposable during experimentation. Once the proc
 - An Accord scenario is valuable as a pinned, invariant-based release preflight, not as a moving golden fixture over live `sflo:main`. Keep stable conformance fixtures in smaller controlled repos such as Fantasy Rules; use `sflo` to prove real ontology pressure without pretending it is frozen.
 - Wait on an `sflo` Accord/conformance scenario until after the dogfood path works. Because `sflo` will continue to change, the scenario can be added later as a pinned or invariant-style preflight without blocking the current build.
 - Use `https://semantic-flow.github.io/sflo/config` as the config ontology base if/when the config namespace moves for this dogfood run.
+- Create a root payload for the mesh root so `https://semantic-flow.github.io/sflo/` is a first-class Semantic Flow identifier, not only the mesh base. `integrate welcome.ttl /` creates the root Knop support surface; use `knop.create /` only when creating an empty root identifier before any payload exists.
+- Add a small root welcome/about RDF payload on the publication branch, tentatively `welcome.ttl`, with root-page facts such as `dcterms:title` and `dcterms:description`. The description can reuse or lightly adapt the text from [[ont.purpose]].
+- Do not introduce a `SemanticSite` or special site resource concept for this. The root designator can identify this publication's welcome/about resource, while `_mesh` remains the standardized `SemanticMesh` resource.
+- Prefer the root RDF payload plus the default ResourcePage renderer for the first pass. A custom `_knop/_page/page.ttl` is only needed if the default ResourcePage look and feel is not enough.
+- Treat Markdown-in-RDF as a possible lightweight future path for richer descriptive copy. For this run, plain RDF literals are enough unless the renderer needs a specific Markdown-aware predicate/datatype later.
 
 ## Sequencing
 
-The branch-published dogfood should exercise the same flow we want URPX to use, so all-terms extraction should come before the real `sflo` publication run. Manually specifying every term would dodge one of the most important ontology-publishing pressures.
+The branch-published dogfood should exercise the same flow we want URPX to use. Manually specifying every ontology term would dodge one of the most important ontology-publishing pressures, so all-terms extraction should be part of the publication sequence once the source ontology artifacts are integrated and woven.
 
-Current Weave already has `weave extract --all-terms --source ...` plus preview/accept-preview behavior. It discovers mesh-scoped named terms in a selected RDF payload, skips existing Knops, and skips generated support artifacts. The missing piece for this dogfood run is bulk source-reference creation for the extracted terms.
+Current Weave has `weave extract --all-terms --source ...` plus preview/accept-preview behavior. It discovers mesh-scoped named terms in a selected RDF payload, skips existing Knops, skips generated support artifacts, skips `sflo:LocatedFile` resources, and can create source references with explicit `--add-source-references --reference-role canonical`.
 
 The proposed sequence is:
 
 - settle the config base before extraction, because terms outside `https://semantic-flow.github.io/sflo/` will not be treated as first-class mesh terms by ordinary mesh-scoped discovery;
-- make all-terms extraction create or optionally create references from each extracted term back to its source artifact, using `sflo:referenceRole_canonical` for ontology-definition sources unless we decide on a narrower role;
-- ensure those references are generated without manual per-term `knop add-reference` calls;
-- then run the branch-published `sflo` dogfood for core, config, and SHACL;
+- create a separate `gh-pages` publication worktree and run `mesh.create` there with `https://semantic-flow.github.io/sflo/` as the public mesh base;
+- create `welcome.ttl` in the publication branch and integrate it at `/`, which creates the root Knop and lets the default root ResourcePage render title/description from RDF;
+- integrate the three initial source-lane files as publication-mesh payload artifacts: `semantic-flow-core-ontology.ttl`, `semantic-flow-config-ontology.ttl`, and `semantic-flow-core-shacl.ttl`;
+- weave/version those three payload artifacts with friendly release/history/state/manifestation names;
+- run `weave extract --all-terms --source ... --add-source-references --reference-role canonical` for each integrated ontology/SHACL source artifact whose terms should become first-class identifiers;
+- weave/generate the extracted terms and inspect the root page, ontology pages, term pages, source-reference panels, and support pages;
 - defer Accord/conformance packaging until the manual dogfood output proves which invariants are worth capturing.
+
+This sequence deliberately says `integrate`, not `import`, for the initial three source files. They are already known source-repository files being bound into the publication mesh. Use `import` later for outside-origin content that needs to cross into a governed local artifact before pages or weave follow it.
+
+## Root Welcome Metadata Sketch
+
+The first root payload can stay intentionally small. A draft `welcome.ttl` could look like:
+
+```ttl
+@base <https://semantic-flow.github.io/sflo/> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+
+<> dcterms:title "Semantic Flow Ontology and Related Resources" ;
+  dcterms:description "The Semantic Flow core ontology and other related resources provide a way to create identifiers that are dereferenceable, resilient, and explorable. It formalizes how Semantic Flow designators, supporting artifacts, and optional payload resources can be combined to make these identifiers useful." .
+```
+
+That is enough for the default ResourcePage renderer to pick up a title and description from RDF when the file is integrated at `/`. If we later want richer authored copy, consider a Markdown literal in RDF before adding a custom page-definition artifact; the custom `_knop/_page/page.ttl` path should be reserved for cases where the default page composition is genuinely insufficient.
 
 ## Bootstrap Config Evaluation
 
-The useful split from [[wd.task.2026.2026-05-13_1655-support-gh-pages-branch-based-deployments]] still holds: operation-local checkout paths are not durable mesh facts, while source provenance and target bindings are durable publication facts.
+The useful split from [[wa.task.2026.2026-05-13_1655-support-gh-pages-branch-based-deployments]] still holds: operation-local checkout paths are not durable mesh facts, while source provenance and target bindings are durable publication facts.
 
 For this dogfood pass, bootstrap input can stay outside `sflo:main` when it only says how this run is wired locally:
 
@@ -97,7 +123,7 @@ If that persistent bootstrap profile is needed, prefer one of these homes, in or
 - CI/deploy workflow configuration for repeatable automation of checkout paths, branch names, and credentials;
 - an operator-local profile for machine-specific paths or trust grants.
 
-Avoid putting bootstrap config on `main` unless the source repo deliberately wants publication intent reviewed with source changes. For URPX, keeping source clean is still the more valuable default.
+Avoid putting bootstrap config on `main` unless the source repo deliberately wants publication intent reviewed with source changes. F
 
 ## `/ontology` Review
 
@@ -112,7 +138,6 @@ The config namespace now sits under the `sflo` mesh base, so ordinary mesh-scope
 
 ## Decisions
 
-- Start with `sflo` before URPX.
 - Treat `main` as source-only and `gh-pages` as the woven/publication branch.
 - Use a separate publication worktree for `gh-pages`; do not try to use one checkout for both source and publication operations.
 - Keep the first pass practical and release-focused rather than building a full fixture ladder immediately.
@@ -127,6 +152,8 @@ The config namespace now sits under the `sflo` mesh base, so ordinary mesh-scope
 - Treat any future `sflo` Accord work as a pinned or invariant-based preflight scenario, not a reliable mutable fixture.
 - Use `https://semantic-flow.github.io/sflo/config` as the preferred config ontology base.
 - Implement or verify bulk source-reference creation for all-terms extraction before relying on the `sflo` dogfood output.
+- Create a root payload such as `welcome.ttl` for root title/description; integrating it at `/` creates the root Knop.
+- Treat the initial core/config/SHACL files as integrated source-repository payloads, not imports.
 - Defer the `sflo` Accord/conformance scenario until the dogfood run exposes stable invariants worth checking.
 
 ## Contract Changes
@@ -153,7 +180,6 @@ The config namespace now sits under the `sflo` mesh base, so ordinary mesh-scope
 ## Non-Goals
 
 - Do not publish to npm as part of this task.
-- Do not build URPX until the `sflo` dogfood path is understood.
 - Do not turn this into a full fixture ladder unless we deliberately create a follow-up.
 - Do not move source ontology files into a sidecar `docs/` layout.
 - Do not hand-author generated `gh-pages` ResourcePages except to diagnose whether Weave needs a code/config fix.
@@ -166,14 +192,13 @@ The config namespace now sits under the `sflo` mesh base, so ordinary mesh-scope
 - [x] Decide the publication base IRI for this pass.
 - [ ] Create a separate new `gh-pages` publication worktree for `sflo`.
 - [ ] Bootstrap the branch-published mesh publication surface from the source checkout into the publication worktree.
-- [ ] Implement or verify all-terms extraction with bulk source-reference creation.
+- [ ] Add `welcome.ttl` as the root welcome/about RDF payload and integrate it at `/`.
+- [x] Implement or verify all-terms extraction with bulk source-reference creation.
 - [ ] Integrate or source-bind `semantic-flow-core-ontology.ttl` from `main`.
 - [ ] Weave/generate ResourcePages for the core ontology artifact.
 - [ ] Add config and SHACL once the first artifact path is healthy.
 - [ ] Defer prov/job artifacts until the core/config/SHACL slice has been inspected.
 - [ ] Preview the publication worktree locally and inspect representative pages.
 - [ ] Record any release-blocking gaps in config defaults, history/state naming, source provenance, generated links, or CLI ergonomics.
-- [ ] Patch Weave only for issues that block the `sflo` dogfood or URPX release path.
 - [ ] Run focused tests for any patches, then `deno task check`, `deno task lint`, and `deno task ci`.
 - [ ] Update [[dev.release-runbook]] with the final dogfood commands if they become release preflight steps.
-- [ ] Decide whether to push the `gh-pages` branch or keep the first run local-only.
