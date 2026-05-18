@@ -1544,3 +1544,898 @@ This keeps the framework examples aligned with the current Weave language: prepa
 ```
 
 Final words before tagging SFF: make sure the new note is added, because it is untracked right now. `git diff --check` is clean. Also, tagging SFF does not satisfy the SFLO raw ontology URLs; those need the `v0.1.0` tag in the `sflo` repo. For SFF itself, tag only after the SFF commit is made and the worktree is clean.
+
+# djradon_2026-05-17_0902_49
+
+oops, i meant sflo.
+
+OK, pushed. Tag is in place, I verified a raw URL. So we pick back up our task? Start from beginning?
+
+# gpt-5.5_2026-05-17_0903_12
+
+Yes, I’d start from the beginning. The publication worktree is stale relative to the tagged SFLO source, and a clean replay is exactly what tells us whether the new `prepare gh-pages` path is actually repeatable. I’ll verify the tag/commit locally, then rebuild `sflo-gh-pages` from scratch while preserving `welcome.ttl`.
+
+# gpt-5.5_2026-05-17_0903_30
+
+Local `sflo` is clean and `v0.1.0` resolves to `e66a715`, so the source side is in the state we want. I’m clearing only the unborn publication worktree contents now; `welcome.ttl` gets preserved and then re-woven.
+
+# gpt-5.5_2026-05-17_0903_42
+
+The root mesh and welcome page replayed cleanly. Next I’m materializing core, config, and core SHACL from the tagged source, recording both `--source-ref v0.1.0` and the exact tag commit.
+
+# gpt-5.5_2026-05-17_0903_59
+
+The three payloads are regenerated under `release/v0.1.0/ttl`. I’m doing the boring-but-useful checks now: parse every generated Turtle file, confirm provenance says `v0.1.0` plus the exact commit, and scan for local path leaks.
+
+# gpt-5.5_2026-05-17_0904_17
+
+One doc follow-through: the SFLO example note still had `--source-ref v0.1.0` but not the exact commit flag we just used. I’m updating it so the recorded command history matches the successful replay.
+
+# gpt-5.5_2026-05-17_0904_46
+
+Yes, starting from the beginning was the right call. I rebuilt `sflo-gh-pages` from a clean publication worktree, preserving `welcome.ttl`, then replayed:
+
+- `mesh create`
+- root `welcome.ttl` integrate
+- root weave with `historySegment=main`
+- three `prepare gh-pages` runs for core, config, and core SHACL
+
+The materialized sources now use:
+
+```text
+--source-ref v0.1.0
+--source-commit e66a7152f96aa48451740edb37cdedc2f2865ab3
+```
+
+Verification passed:
+
+- parsed all 21 generated Turtle files
+- confirmed payload paths:
+  - `ontology/release/v0.1.0/ttl/semantic-flow-core-ontology.ttl`
+  - `config/release/v0.1.0/ttl/semantic-flow-config-ontology.ttl`
+  - `ontology/shacl/release/v0.1.0/ttl/semantic-flow-core-shacl.ttl`
+- confirmed source registries record `v0.1.0` and the exact commit
+- found no local path leaks in generated Turtle
+
+I also updated the SFLO command-history note to include `SFLO_SOURCE_COMMIT` and `--source-commit`.
+
+`sflo-gh-pages` is still uncommitted. Good next commit message there:
+
+```text
+publish: initialize sflo v0.1.0 mesh
+
+- create branch-published mesh support artifacts
+- publish the root welcome page
+- materialize core, config, and core SHACL from sflo v0.1.0
+- record tag and commit provenance for source artifacts
+```
+
+# djradon_2026-05-17_0918_46
+
+Wait, I thought we were using "releases".
+
+Also, where is this branch. when I try "git switch gh-pages" in /home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/sflo I get fatal: invalid reference: gh-pages
+
+# gpt-5.5_2026-05-17_0919_03
+
+Good catch on both. I’ll inspect the actual generated paths and the `sflo` worktree/branch setup before I advise, because there are two separate things tangled here: release path spelling and whether `gh-pages` exists as a local/remote branch yet.
+
+# gpt-5.5_2026-05-17_0919_15
+
+You’re right to pause. I followed the later “use `release` for the ArtifactHistory segment” instruction, but the older ontology/prov/job and fantasy examples use `releases`. If the house style is plural, we should fix it before committing `gh-pages`; the awkward bit is that the `sflo` `v0.1.0` tag now also contains singular paths in the source metadata.
+
+# gpt-5.5_2026-05-17_0919_38
+
+Yep, you’re right to flag it. We currently have singular `release` for core/config/SHACL because I followed the earlier “use `release` for the ArtifactHistory segment” note. But the established pattern elsewhere is plural `releases`, and prov/job already use `releases`. I’d standardize on `releases`.
+
+The catch: `sflo` `v0.1.0` is already tagged at `e66a715`, and that tag contains singular `release` paths for core/config/SHACL. So before committing `gh-pages`, choose one of these:
+
+1. Preferred, if this tag is not publicly relied on yet: make a follow-up SFLO commit changing `release` to `releases`, move `v0.1.0` to that commit, push the tag update, then regenerate `sflo-gh-pages`.
+2. Conservative: leave `v0.1.0` singular, publish this as-is, and standardize on `releases` next version.
+
+For the branch: it’s in the separate worktree:
+
+```sh
+/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/sflo-gh-pages
+```
+
+That worktree is already on unborn branch `gh-pages`:
+
+```sh
+git -C "$SFLO_PUB" branch --show-current
+# gh-pages
+```
+
+`git switch gh-pages` fails inside `sflo` because there is no committed local/remote `gh-pages` ref yet. After the first commit in `sflo-gh-pages`, the branch ref will exist; but it will also be checked out in that separate worktree, so Git still won’t let the main `sflo` worktree switch to it at the same time. Work in `sflo-gh-pages` directly and push from there.
+
+# djradon_2026-05-17_0920_19
+
+yes, 1, preferred. If possible, can we erase the old tag?
+
+# gpt-5.5_2026-05-17_0920_36
+
+Yes, possible. Since the tag was just created for this dogfood path, I’m comfortable replacing it, but this is the one moment to be decisive: anyone who fetched the old tag will need to refetch/prune or force-update their local tag. I’ll update SFLO to plural `releases`, commit it, move `v0.1.0`, then regenerate the publication worktree from the corrected tag.
+
+# gpt-5.5_2026-05-17_0920_42
+
+I’m doing the pluralization as a narrow mechanical edit: core ontology, config ontology, core SHACL, plus the SFF command-history note so the replay commands generate matching paths.
+
+# gpt-5.5_2026-05-17_0921_06
+
+The SFLO Turtle parses cleanly after pluralization. I’m committing that as a tiny follow-up, then I’ll delete and recreate `v0.1.0` on the corrected commit.
+
+# djradon_2026-05-17_0921_06
+
+erase the old tag, nobody could be using it.
+
+# gpt-5.5_2026-05-17_0921_12
+
+Understood. I’ve made the plural-path commit; now I’m removing the old local/remote `v0.1.0` tag and recreating it on the corrected commit.
+
+# gpt-5.5_2026-05-17_0921_30
+
+The remote tag was deleted and recreated. The `ls-remote` line shows the annotated tag object, so I’m checking the peeled target too and then I’ll regenerate `gh-pages` using the corrected tag commit.
+
+# gpt-5.5_2026-05-17_0921_36
+
+The raw tag now resolves to plural `releases`, and the peeled remote tag target is `2946af7`. I’m clearing the stale publication output and replaying from the corrected tag.
+
+# gpt-5.5_2026-05-17_0922_17
+
+The regenerated publication tree now uses plural `releases`. I’m doing the same validation pass again: Turtle parse, path scan, source registry, and local path leak check.
+
+# gpt-5.5_2026-05-17_0922_34
+
+Done. I erased the old remote tag and replaced it.
+
+Current `sflo` state:
+
+```text
+v0.1.0^{} -> 2946af7d76fd831fc5ee069ae0b0f22a525f7e13
+```
+
+I also pushed `main`, so the corrected plural-`releases` commit is on origin. The raw URL now resolves with `releases/v0.1.0` in the Turtle.
+
+Then I regenerated `sflo-gh-pages` from scratch using:
+
+```text
+--payload-history-segment releases
+--source-ref v0.1.0
+--source-commit 2946af7d76fd831fc5ee069ae0b0f22a525f7e13
+```
+
+Validation after regeneration:
+
+- all 21 generated Turtle files parse
+- generated payloads are under:
+  - `ontology/releases/v0.1.0/ttl/...`
+  - `config/releases/v0.1.0/ttl/...`
+  - `ontology/shacl/releases/v0.1.0/ttl/...`
+- source registries record the corrected commit
+- no local path leaks found in generated Turtle
+
+`sflo-gh-pages` is ready for its first commit.
+
+# djradon_2026-05-17_0923_37
+
+OK, what's next?
+
+# gpt-5.5_2026-05-17_0923_49
+
+I’ll do one quick status sweep so the next-step list is grounded in the actual repo state instead of vibes.
+
+# gpt-5.5_2026-05-17_0923_55
+
+Next move: commit and push `sflo-gh-pages`.
+
+`sflo` source is clean and pushed; `v0.1.0` now points to the corrected plural-`releases` commit. The publication branch is generated but unborn/uncommitted.
+
+I’d do:
+
+```sh
+cd "$SFLO_PUB"
+
+git status --short
+git add -A
+git commit -m "publish: initialize sflo v0.1.0 mesh" \
+  -m "- create branch-published mesh support artifacts" \
+  -m "- publish the root welcome page" \
+  -m "- materialize core, config, and core SHACL from sflo v0.1.0" \
+  -m "- record tag and commit provenance for source artifacts"
+
+git push -u origin gh-pages
+```
+
+Then verify live Pages after GitHub catches up:
+
+```sh
+curl -I -L https://semantic-flow.github.io/sflo/ontology/releases/v0.1.0/ttl/semantic-flow-core-ontology.ttl
+curl -I -L https://semantic-flow.github.io/sflo/config/releases/v0.1.0/ttl/semantic-flow-config-ontology.ttl
+curl -I -L https://semantic-flow.github.io/sflo/ontology/shacl/releases/v0.1.0/ttl/semantic-flow-core-shacl.ttl
+```
+
+After that, commit the SFF note update, then circle back to the Weave repo changes (`prepare gh-pages`, optional config, payload naming flags, tests/docs).
+
+# djradon_2026-05-17_0942_33
+
+Published. I was expecting https://semantic-flow.github.io/sflo to have the description extracted into the subheading though. We already have description extraction somewhere, I wonder why it didn't work here?
+
+# gpt-5.5_2026-05-17_0942_50
+
+I’ll trace this from both ends: what the published/root `welcome.ttl` actually says, and what the ResourcePage renderer looks for when it builds the subtitle. My first hunch is either “no description triple on the root subject” or “root page is rendering the Knop shell, not the payload metadata,” but let’s make it earn that hunch.
+
+# gpt-5.5_2026-05-17_0943_01
+
+The root payload definitely has `dcterms:description`, and the live page includes that triple in the raw RDF panel. So the extraction isn’t failing globally; the renderer isn’t using the payload graph’s title/description for the root ResourcePage model. I’m narrowing in on the model-building path now.
+
+# djradon_2026-05-17_0943_01
+
+Also the "children" expander  panel is missing.
+
+# gpt-5.5_2026-05-17_0943_12
+
+The missing children panel points to the same neighborhood: root identifier pages are being treated differently from non-root identifier pages. I’m going to inspect the page renderer’s root-path logic now; likely we need to normalize the root IRI with and without trailing slash, and make child discovery handle the empty designator path.
+
+# gpt-5.5_2026-05-17_0944_13
+
+I’m going to chase both symptoms from the renderer side: the root description looks like a root IRI slash/no-slash mismatch, while the children expander may be either missing model data or getting filtered during render.
+
+# gpt-5.5_2026-05-17_0944_25
+
+The description side is indeed looking like a canonicalization hiccup: the page uses the root without a trailing slash, but the RDF says `<>` under a base with the slash. I’m now checking whether root children are absent from the page model or just being dropped while grouping.
+
+# djradon_2026-05-17_0944_25
+
+yup, I bet the welcome.ttl should be "<https://semantic-flow.github.io/sflo> dcterms:title "Semantic Flow Ontology and Related Resources" ;
+
+# gpt-5.5_2026-05-17_0944_42
+
+Yep, I think that’s the right source-side shape for this mesh: if Weave’s root canonical IRI is slashless, `welcome.ttl` should name that slashless IRI explicitly. I’m still going to fix/check the renderer path too, because one hand-authored trailing slash shouldn’t make the page look empty when the raw RDF panel clearly knows about it.
+
+# gpt-5.5_2026-05-17_0949_11
+
+The children panel is a separate thing from the RDF subject: the root page was rendered before `ontology` and `config` existed, and the later targeted weaves didn’t refresh ancestor pages. I’m going to make `weave` regenerate ancestor ResourcePages for display-only data like child lists, while keeping versioning scoped to the requested target.
+
+# gpt-5.5_2026-05-17_0950_14
+
+The code change is now scoped to generation after weaving: if you weave `ontology/shacl`, Weave will also refresh pages for `/` and `ontology` when those designators exist, so sparse shortcut panels don’t go stale. I also added a renderer test that documents the slashless root IRI expectation for the welcome page.
+
+# gpt-5.5_2026-05-17_0950_25
+
+My first targeted test filter was too clever and matched nothing, which is not the flex it thought it was. I’m rerunning the actual files so we get a real signal.
+
+# gpt-5.5_2026-05-17_0951_44
+
+The integration suite now agrees with the new behavior: targeted weave still versions only the requested designator, but it refreshes ancestor pages for navigation/children. I’m checking the CLI and gh-pages tests next because path counts and updated-path lists are where this sort of change tends to show up.
+
+# gpt-5.5_2026-05-17_0952_01
+
+The CLI and gh-pages tests are clean too. I’m doing the broader lint/check pass now, then I’ll decide whether we should patch the live `sflo-gh-pages` worktree locally or just give you the exact rerun commands.
+
+# gpt-5.5_2026-05-17_0953_30
+
+Yep, you called it: `<>` under `@base <https://semantic-flow.github.io/sflo/>` names `https://semantic-flow.github.io/sflo/`, while Weave’s root ResourcePage canonical is `https://semantic-flow.github.io/sflo`. So the description extractor was looking at the slashless subject and correctly finding nothing.
+
+I fixed the other half too: targeted `weave` now refreshes ancestor ResourcePages during the generate phase, so weaving `ontology`/`config`/`ontology/shacl` will also refresh `/` when that root designator exists. That should bring back the root “Children” expander on a clean rerun.
+
+Changed:
+- [src/runtime/weave/weave.ts](../../../../../src/runtime/weave/weave.ts): targeted weave includes ancestor pages for generation only.
+- [src/runtime/weave/pages_test.ts](../../../../../src/runtime/weave/pages_test.ts): root metadata test uses explicit slashless root IRI.
+- [tests/integration/weave_test.ts](../../../../../tests/integration/weave_test.ts): covers ancestor page refresh.
+- [wu.cli-reference.examples.sflo.md](../../semantic-flow-framework/notes/wu.cli-reference.examples.sflo.md): documents the explicit welcome subject.
+
+Validation passed:
+- `deno test -A src/runtime/weave/pages_test.ts`
+- `deno test -A tests/integration/weave_test.ts`
+- `deno test -A tests/e2e/weave_cli_test.ts`
+- `deno test -A tests/integration/deploy_gh_pages_test.ts tests/e2e/deploy_gh_pages_cli_test.ts`
+- `deno task lint`
+- `deno task check`
+- `git diff --check`
+
+`sflo-gh-pages` is clean; I didn’t mutate the published branch. Cleanest next move is rerun the SFLO sequence from the updated note using the patched Weave. Minimal current-branch repair would be: fix `welcome.ttl` to use `<https://semantic-flow.github.io/sflo>` and regenerate `/`, but a fresh run is tidier.
+
+# djradon_2026-05-17_0953_30
+
+commit message for weave repo please. 
+
+Also, let's move the history panel down to the bottom and open properties by default.
+
+The properties table has an issue, see /home/djradon/Pictures/Screenshots/Screenshot_20260517_094808.png -- the key is overlapping the value.
+
+# gpt-5.5_2026-05-17_0953_47
+
+I’ll make those renderer tweaks in the Weave repo and then give you a commit message that covers both the gh-pages/ancestor refresh work and these page layout fixes. I’m also going to look at the screenshot so the table fix targets the actual failure instead of just poking CSS hopefully.
+
+# gpt-5.5_2026-05-17_0954_09
+
+The screenshot makes the CSS bug pretty clear: long uppercase predicate labels are overflowing the fixed-width `<th>` instead of wrapping inside it. I’m going to let metadata keys break safely, open the properties details by default, and move History after the raw/source sections so it’s no longer competing with the main facts.
+
+# gpt-5.5_2026-05-17_0955_00
+
+The markup/CSS patch is in. I added coverage for the two behavior changes: properties are open by default, and history renders after raw source panels; the key-column wrapping also has a CSS assertion now.
+
+# gpt-5.5_2026-05-17_0955_28
+
+The focused page and integration tests are clean. Since these generated HTML changes can nudge black-box fixture comparisons, I’m running the CLI suite plus lint/check once more before I hand you the commit text.
+
+# gpt-5.5_2026-05-17_0955_51
+
+One small cleanup before I call it done: I noticed my explanatory comment landed by the wrong `return`. The behavior is right, but the comment should live next to target expansion, not version result assembly.
+
+# gpt-5.5_2026-05-17_0956_25
+
+Implemented the ResourcePage tweaks too:
+- History now renders near the bottom, after raw/source panels.
+- Properties opens by default.
+- Metadata/property keys wrap safely, fixing the overlap from the screenshot.
+
+Suggested Weave commit message:
+
+```text
+feat(gh-pages): support release-shaped publication flows
+
+Add prepare gh-pages payload naming flags so branch-published sources can
+materialize under release/history/state/manifestation paths, and record an
+immutable source commit alongside the source ref. Keep root GitHub Pages mesh
+bootstrap lighter by treating _mesh/_config/config.ttl as optional.
+
+Refresh ancestor ResourcePages during targeted weave generation. Child lists are
+display-only navigation over the mesh, not versioned payload state, so updating
+ancestors keeps sparse shortcut pages like the root welcome page accurate when
+descendants are added without broadening the versioning slice.
+
+Tighten ResourcePage rendering for SFLO dogfooding: document slashless root RDF
+metadata extraction, open properties by default, move history below source
+details, and wrap long predicate labels so property keys cannot overlap values.
+
+Update CLI docs and tests for the prepare gh-pages release publication path.
+```
+
+Verified:
+- `deno test -A src/runtime/weave/pages_test.ts`
+- `deno test -A tests/integration/weave_test.ts`
+- `deno test -A tests/e2e/weave_cli_test.ts`
+- `deno test -A tests/integration/deploy_gh_pages_test.ts tests/e2e/deploy_gh_pages_cli_test.ts`
+- `deno task lint`
+- `deno task check`
+- `git diff --check`
+
+# djradon_2026-05-17_1002_17
+
+Maybe make the property keys a little smaller. 
+
+I'm running live-server, and http://127.0.0.1:4507/sflo still doesn't have the correct title, subtitle/description, or child panel
+
+# gpt-5.5_2026-05-17_1002_34
+
+I’ll make the key text a bit more compact, then I’ll inspect what `live-server` is actually serving at `/sflo`. My hunch is the publication worktree still has the pre-fix generated `index.html`, but let’s make it earn that hunch.
+
+# djradon_2026-05-17_1002_34
+
+maybe we need to regen?
+
+# gpt-5.5_2026-05-17_1002_51
+
+Yes, regen is the missing step. The served `/sflo` is still old generated HTML: it has the old `<>` welcome subject and the History panel above the raw RDF, so live-server is faithfully showing stale output. I’ll first make the key text a touch smaller, then regenerate the publication worktree locally from the patched Weave.
+
+# gpt-5.5_2026-05-17_1003_30
+
+I’m going to do a clean local rebuild of `sflo-gh-pages` now. The publication worktree is clean, so this should just replace generated output with the same mesh shape, now using the corrected welcome subject and the patched ResourcePage renderer.
+
+# gpt-5.5_2026-05-17_1003_47
+
+The rebuild completed and left the `sflo-gh-pages` worktree dirty with regenerated HTML, which is what we want for local inspection. I’m checking the live-server output now so we’re not just trusting the command output.
+
+# gpt-5.5_2026-05-17_1003_59
+
+Yes, regen was the missing piece. I rebuilt `sflo-gh-pages` locally with the patched Weave, and live-server now serves the expected root page at `http://127.0.0.1:4507/sflo`:
+
+- H1: `Semantic Flow Ontology and Related Resources`
+- Summary/description present
+- Children panel present
+- Properties open by default
+- History below current working file
+- Property key CSS uses `font-size: 0.78rem` and wraps long keys
+
+I also verified:
+- `deno test -A src/runtime/weave/pages_test.ts`
+- `deno task lint`
+- `deno task check`
+
+`sflo-gh-pages` is now dirty with regenerated HTML/Turtle updates, as expected.
+
+Updated commit message bit for Weave:
+
+```text
+feat(gh-pages): support release-shaped publication flows
+
+Add prepare gh-pages payload naming flags so branch-published sources can
+materialize under release/history/state/manifestation paths, and record an
+immutable source commit alongside the source ref. Keep root GitHub Pages mesh
+bootstrap lighter by treating _mesh/_config/config.ttl as optional.
+
+Refresh ancestor ResourcePages during targeted weave generation. Child lists are
+display-only navigation over the mesh, so updating ancestors keeps sparse
+shortcut pages like the root welcome page accurate when descendants are added
+without broadening the versioning slice.
+
+Tighten ResourcePage rendering for SFLO dogfooding: document slashless root RDF
+metadata extraction, open properties by default, move history below source
+details, and wrap slightly smaller predicate labels so property keys cannot
+overlap values.
+
+Update CLI docs and tests for the prepare gh-pages release publication path.
+```
+
+# djradon_2026-05-17_1034_57
+
+OK, looking great. next steps
+
+# gpt-5.5_2026-05-17_1040_17
+
+I’ll do a quick status sweep so the next-step list matches what’s actually dirty right now, not what was dirty a few minutes ago.
+
+# djradon_2026-05-17_1040_17
+
+I just realized the [wu.cli-reference.examples.sflo.md](../../semantic-flow-framework/notes/wu.cli-reference.examples.sflo.md) doesn't have the commands for extracting all the terms.
+
+# gpt-5.5_2026-05-17_1040_34
+
+Good catch. I’ll add an “extract term identifiers” section to the SFLO example note, using the actual CLI flags rather than hand-waving from memory. First I’m checking the extract syntax and the current step flow so the commands land in the right spot.
+
+# gpt-5.5_2026-05-17_1040_51
+
+The current CLI surface is `extract --all-terms --source ... --accept-preview`, with optional source references. I’m checking whether the follow-up weave should be one recursive target or separate source-rooted batches, because that matters for the commands being something you can paste in one pass.
+
+# gpt-5.5_2026-05-17_1041_08
+
+I found a stale bit too: the intro still said the artifact-history segment was `release`, but the runbook commands now use `releases`. I’m going to fix that while adding the extraction and follow-up weave steps.
+
+# gpt-5.5_2026-05-17_1041_36
+
+Updated [wu.cli-reference.examples.sflo.md](../../semantic-flow-framework/notes/wu.cli-reference.examples.sflo.md) with:
+
+- `Step 9: Extract Terms From The Source Artifacts`
+  - `extract --all-terms` for `ontology`
+  - `extract --all-terms` for `config`
+  - `extract --all-terms` for `ontology/shacl`
+  - each with `--add-source-references --reference-role canonical --accept-preview`
+
+- `Step 10: Weave The Extracted Terms`
+  - untargeted weave against `"$SFLO_PUB"` to publish all pending extracted term surfaces
+
+- Expanded inspection to list `_knop/_sources/sources.ttl` and `_knop/_references/references.ttl`.
+
+Also fixed the intro from `release` to `releases`.
+
+I ran `git diff --check` for the framework repo; it’s clean. I did not run the extraction commands yet, just documented them.
+
+# djradon_2026-05-17_1053_31
+
+This is taking a long time, with no status updates:
+
+deno run -A "$WEAVE_CLI" \                                                                                                                                                                                  ─╯
+  --mesh-root "$SFLO_PUB"
+
+--- 
+
+Let's add progress update loglines (with a % if that's easy)  for each knop woven, updates are by default, but let's add a silent flag.
+
+Then, I've created @wa.task.2026.2026-05-17-weave-performance-optimization -- feel free to put any ideas in there. I hope we're loading everything into one big in-memory mesh so we don't have to recalculate every time, say, a referering term has to look up its description.
+
+# gpt-5.5_2026-05-17_1053_48
+
+I’ll add this at the CLI/runtime boundary rather than only around the outer command, so the long untargeted weave can say which Knop it is actually advancing. I’ll also jot performance notes into the task note while the code shape is fresh.
+
+# gpt-5.5_2026-05-17_1055_44
+
+I’m going to wire this at the CLI/runtime boundary so long runs get a line per completed knop, then I’ll drop the performance observations into the task note. The duplicate planning during validation is already looking like the first real “aha” in the slowdown story.
+
+# gpt-5.5_2026-05-17_1056_02
+
+I’ve got the insertion point now: root `weave` does a full validation plan, then plans again for the actual write, and the recursive planner reloads staged mesh state for each remaining knop. I’m adding the progress hook without changing that behavior, then I’ll capture the bigger optimization ideas in the task note.
+
+# gpt-5.5_2026-05-17_1056_58
+
+The progress hook is in place now, and I added the note with the planning/cache suspects. Next I’m formatting and running the focused e2e coverage so we know the CLI shape behaves the way your terminal needs it to.
+
+# gpt-5.5_2026-05-17_1057_26
+
+The focused progress test passes. I also confirmed the performance note is new/untracked in the archive repo, while the conversation capture file there was already modified separately, so I’m leaving that alone.
+
+# gpt-5.5_2026-05-17_1058_06
+
+One important catch: as written, progress would only appear after the pre-validation planning pass finished, which is the exact silence you complained about. I’m tightening that now by removing the redundant pre-plan from root `weave`; `executeVersion` already validates the complete plan before any writes, so we can report progress during the one real planning pass.
+
+# gpt-5.5_2026-05-17_1059_14
+
+Done. `weave` now prints per-knop progress by default, e.g. `[100%] Wove 1/1: alice/bio`, and `--silent` suppresses those progress lines while keeping the final summary.
+
+I also removed the redundant root `weave` pre-planning pass, so the progress starts during the one real version-planning pass instead of after a long silent validation pass. Notes went into [wa.task.2026.2026-05-17-weave-performance-optimization.md](wa.task.2026.2026-05-17-weave-performance-optimization.md).
+
+Verified:
+- `deno test -A tests/e2e/weave_cli_test.ts`
+- `deno task lint`
+- `deno task check`
+- `git diff --check`
+
+Commit message:
+
+```text
+weave: report progress during long root weaves
+
+Emit per-knop progress from the version planner and surface it through
+the root weave command so large publication meshes no longer look hung.
+Add --silent for automation while preserving the final summary output.
+
+Remove the redundant root weave pre-validation planning pass. executeVersion
+already validates the complete plan before writing, so the extra pass doubled
+planning work and delayed the first useful status line.
+
+Cover default progress, --silent suppression, and single progress emission in
+the CLI e2e suite.
+```
+
+# djradon_2026-05-17_1059_14
+
+The Children display is grouping classes as individuals. e.g. 	
+ArtifactHistory
+ArtifactManifestation
+ArtifactResolutionFallbackPolicy, etc.
+
+# gpt-5.5_2026-05-17_1059_20
+
+That sounds like the page model is treating `rdf:type` objects as child resources, so ontology classes are falling into the “individuals” bucket because they appear as object IRIs. I’ll trace the child collection/rendering path and tighten the classification rather than papering over the display.
+
+# gpt-5.5_2026-05-17_1100_00
+
+The display code already has buckets for Classes/Object Properties/etc., but anything without an `rdf:type` hint falls into Individuals. I’m checking why the extracted SFLO term pages aren’t carrying their own `owl:Class` type forward into the parent’s child list.
+
+# gpt-5.5_2026-05-17_1100_34
+
+Found it: SFLO core uses `rdfs:Class`, while the child bucketing only recognized `owl:Class`. The individual fallback was doing exactly what we told it to do, just with too narrow a definition of “class.”
+
+# gpt-5.5_2026-05-17_1100_57
+
+The fix is tiny but meaningful: `rdfs:Class` now lands in the Classes bucket alongside `owl:Class`. I added a regression test using the SFLO-style pattern, including an actual policy individual to keep the fallback behavior honest.
+
+# gpt-5.5_2026-05-17_1101_03
+
+My first filters were too cute and matched zero tests. I’m switching to the full page-render test file and the relevant integration file so we get real signal.
+
+# gpt-5.5_2026-05-17_1101_48
+
+The full integration suite surfaced a useful regression from the earlier progress optimization: removing the duplicate pre-validation changed two root `weave` errors from `WeaveInputError` to `WeaveRuntimeError`. I’m preserving the single planning pass, but splitting prepare/validate/write so root `weave` keeps the old fail-closed error semantics.
+
+# gpt-5.5_2026-05-17_1102_57
+
+The page and integration suites are green now, including the error-shape regression from the progress optimization. I’m doing the usual lint/type pass next; after that, regenerating the SFLO pages will be the step that makes the live-server view change.
+
+# gpt-5.5_2026-05-17_1103_14
+
+Fixed. The children bucketer only recognized `owl:Class`; SFLO core uses `rdfs:Class`, so those terms fell through to `Individuals`. Now `rdfs:Class` is grouped under `Classes`, while true enum/value terms like `artifactResolutionFallbackPolicy_exactOnly` still land in `Individuals`.
+
+I also cleaned up the progress optimization regression the integration suite caught: root `weave` still does a single planning pass, but preserves the old pre-write validation and `WeaveInputError` behavior.
+
+Verified:
+- `deno test -A src/runtime/weave/pages_test.ts`
+- `deno test -A tests/integration/weave_test.ts`
+- `deno test -A tests/e2e/weave_cli_test.ts --filter "progress"`
+- `deno task lint`
+- `deno task check`
+- `git diff --check`
+
+I did not regenerate `sflo-gh-pages`; that repo is still clean. Your live-server HTML will need a regen with the updated Weave code before the display changes.
+
+Commit message:
+
+```text
+weave: report progress and classify RDFS child classes
+
+- Emit per-knop progress during root weave planning, with --silent for quiet runs.
+- Keep root weave on a single version-planning pass while preserving pre-write RDF validation and input-error behavior.
+- Treat rdfs:Class child identifiers as Classes alongside owl:Class.
+- Add CLI and ResourcePage regression coverage for progress output and SFLO-style class grouping.
+```
+
+# djradon_2026-05-17_1229_35
+
+regen command please
+
+# djradon_2026-05-17_1300_31
+
+I thought we were going to have automatic references generated for extracted terms. I think --add-source-references might not be working correctly.
+
+# gpt-5.5_2026-05-17_1300_43
+
+I’ll trace the `--add-source-references` path end to end against the current SFLO published inventory. My hunch is either the flag is only wiring references for one extraction mode, or it’s adding them to a support artifact that page generation isn’t surfacing where we expected.
+
+# gpt-5.5_2026-05-17_1300_49
+
+I can see your SFLO publication worktree has already been regenerated, so I’ll treat those page changes as yours and only inspect them. Next I’m checking whether `_knop/_references/references.ttl` files actually exist for extracted terms, and whether the extraction runtime created them for the right candidates.
+
+# gpt-5.5_2026-05-17_1307_18
+
+The references are being created on disk, so `--add-source-references` is not completely dead. But for `ontology/ArtifactHistory`, the term page has no References panel and `_knop/_references/index.html` is missing, which points at the next stage: the reference catalog support artifact isn’t being woven/generated into the page model.
+
+# gpt-5.5_2026-05-17_1307_35
+
+The smoking bit: `references.ttl` exists, but the owning term’s current `_knop/_inventory/inventory.ttl` does not say `sflo:hasReferenceCatalog <.../_references>`. Without that, weave can’t discover or render the ReferenceCatalog page, and the identifier page won’t load the reference links. I’m checking whether extraction failed to write the catalog into the inventory, or whether the later weave overwrote it.
+
+# gpt-5.5_2026-05-17_1309_51
+
+I found the actual bug: extraction writes the ReferenceCatalog registration, but the first extracted-term weave re-renders the Knop inventory from a template that preserves `_sources` and drops `_references`. That erases `sflo:hasReferenceCatalog`, orphaning the generated `references.ttl`. I’m going to preserve carried ReferenceCatalog blocks during that weave slice and add a regression that runs extract-with-references followed by weave.
+
+# gpt-5.5_2026-05-17_1310_47
+
+I found the shape of the failure: extraction is creating `_knop/_references/references.ttl`, but the first weave of the extracted term is rewriting the Knop inventory and losing the `hasReferenceCatalog` link. I’m tightening that preservation path and adding a regression so the reference survives into the rendered page.
+
+# gpt-5.5_2026-05-17_1311_21
+
+You were right to be suspicious. The generated references were present on disk, but the page generator couldn’t “see” them because the inventory link got dropped during the first weave of each extracted Knop.
+
+# djradon_2026-05-17_1311_27
+
+Why are we re-rendering inventory. I'd think it would be "append-only"
+
+# gpt-5.5_2026-05-17_1311_50
+
+That’s a fair instinct, and for the history artifacts it mostly is append-only: new state/manifestation files get added instead of mutating old ones. The working `_knop/_inventory/inventory.ttl`, though, is a current index, so Weave re-renders it to keep “latest/current” facts, generated page links, history pointers, and support-artifact shape deterministic.
+
+The bug is exactly in the join between those ideas: extraction appended a reference catalog to the current inventory, then first weave re-derived the woven inventory from a template and forgot to carry that catalog forward. I’m treating `_references` like `_sources` now: not owned by the first-weave template, but preserved as carried Knop support data. Longer term, I agree the nicer mental model is “inventory updates are block/fact upserts over a parsed model,” not “template replaces everything and remembers exceptions.”
+
+# gpt-5.5_2026-05-17_1312_24
+
+The focused regression is green now: it reproduces the extract-with-source-references flow, weaves the extracted term, and verifies the page actually gets its References panel. I’m doing the nearby integration checks next because this touches the inventory/weave core, not just the page renderer.
+
+# gpt-5.5_2026-05-17_1313_32
+
+You were right: `--add-source-references` was creating `references.ttl`, but first weave of the extracted term re-rendered the Knop inventory and dropped `sflo:hasReferenceCatalog`, so the ResourcePage had no References panel.
+
+Why re-render at all: the working inventory is a current index, not the append-only record. Historical state files are the append-ish trail; the working inventory gets regenerated so current pointers, page links, and support artifact shape stay deterministic. The bug was that the renderer forgot carried support artifacts besides `_sources`.
+
+Fixed in [weave.ts](../../../../../src/core/weave/weave.ts) and covered in [extract_test.ts](../../../../../tests/integration/extract_test.ts): extract all terms with source refs, weave `bob`, then assert the inventory still has `hasReferenceCatalog` and `bob/index.html` renders Canonical references.
+
+Verified:
+`deno test -A tests/integration/extract_test.ts --filter "source references"`
+`deno test -A tests/e2e/extract_cli_test.ts --filter "source references"`
+`deno test -A tests/integration/weave_test.ts`
+`deno test -A src/runtime/weave/pages_test.ts`
+`deno task lint`
+`deno task check`
+`git diff --check`
+
+Commit message:
+
+```text
+Preserve extracted source references through weave
+
+Carry Knop support artifacts through inventory rendering so reference catalogs
+created by extract --all-terms --add-source-references survive the first weave
+of each extracted term. This keeps the generated ResourcePage connected to its
+canonical source reference instead of orphaning _knop/_references/references.ttl.
+
+Also cover the extract-to-weave flow with a regression test that verifies the
+Knop inventory retains hasReferenceCatalog and the rendered page shows the
+Canonical references panel.
+```
+
+# djradon_2026-05-17_1315_17
+
+ok, so we need to re-run the extraction. Should we just start from scratch? You can do it, and update [wu.cli-reference.examples.sflo.md](../../semantic-flow-framework/notes/wu.cli-reference.examples.sflo.md) if there are any command changes.
+
+# gpt-5.5_2026-05-17_1320_33
+
+Yes, I think from scratch is cleaner here. The broken run already orphaned a bunch of reference catalogs, and rerunning extract after terms already exist won’t backfill them because extraction intentionally only references newly extracted terms. I’ll inspect the current publication root and the SFLO example note, then regenerate with the fixed CLI and update the note only if the commands need to change.
+
+# gpt-5.5_2026-05-17_1320_50
+
+The examples note already has the important caveat: source references are only created for newly extracted terms, so a broken extracted mesh should be reset and replayed. I’m going to run that replay against the disposable `sflo-gh-pages` worktree now, using the local fixed Weave code.
+
+# gpt-5.5_2026-05-17_1321_18
+
+The replay is underway. The root and the first two payload artifacts are materialized with `releases/v0.1.0/ttl`; now it’s moving through SHACL, extraction, then the full weave pass.
+
+# gpt-5.5_2026-05-17_1321_24
+
+Good sign: the extraction pass now explicitly reported source references for the newly extracted terms, and the full weave has started with the new percentage progress lines. It’s weaving 324 pending designators.
+
+# gpt-5.5_2026-05-17_1323_22
+
+The regenerated mesh has 324 `references.ttl` files, 324 term pages with the References panel, and the `ArtifactHistory` sample now carries `sflo:hasReferenceCatalog` through to its inventory. I’m adding one small note to the command history: if you need to repair/backfill source references, go back to the reset step rather than rerunning extraction over already-created terms.
+
+# gpt-5.5_2026-05-17_1323_51
+
+Done. I replayed the SFLO publication from scratch in `sflo-gh-pages` using the fixed Weave CLI.
+
+Results:
+- 324 `_knop/_references/references.ttl` files generated.
+- 324 generated pages include `<details class="wf-references">`.
+- Spot-checked `ontology/ArtifactHistory`: its inventory now preserves `sflo:hasReferenceCatalog <ontology/ArtifactHistory/_knop/_references>`, and the page shows the Canonical reference to `ontology`.
+
+I updated [wu.cli-reference.examples.sflo.md](../../semantic-flow-framework/notes/wu.cli-reference.examples.sflo.md) with one clarification: if source references need repair/backfill, reset the disposable publication worktree and replay from the beginning, since extraction only references newly-created terms.
+
+Current state:
+- `weave` repo: clean.
+- `sflo` source repo: clean.
+- `semantic-flow-framework`: one doc change.
+- `sflo-gh-pages`: large regenerated diff, including many deletions from the old generated support-history pages. That looks consistent with the fresh replay, but it’s worth reviewing before publish.
+
+# djradon_2026-05-17_1545_35
+
+Let's reset sflo-gh-pages so this next commit will be the first one. i.e., erase all other commits
+
+# gpt-5.5_2026-05-17_1545_46
+
+Yep. Since you want the next `gh-pages` commit to be the root commit, I’ll preserve the current generated working tree, move the worktree onto an unborn orphan `gh-pages` branch, and leave everything staged/uncommitted unless Git forces otherwise. That gives you a clean “first commit” moment.
+
+# gpt-5.5_2026-05-17_1546_03
+
+I’m going to take a temporary filesystem snapshot first, then make the branch orphaned and restore that snapshot into the working tree. That way the current generated publication output survives, while the Git parent history goes away.
+
+# gpt-5.5_2026-05-17_1546_25
+
+`git switch --orphan` refused because the generated changes would be overwritten. I’m switching to the lower-level orphan setup instead: repoint `HEAD` to an unborn branch without touching the files, clear the index, then stage the current tree as the future root commit.
+
+# djradon_2026-05-17_1546_43
+
+I want to erase origin commit history too.
+
+# gpt-5.5_2026-05-17_1546_54
+
+Right, the local branch is now unborn, but the remote still has its old `gh-pages` history until we force-push a new root commit over it. I’ll make the staged publication output the first commit, then push `gh-pages` with `--force-with-lease` so origin’s history is replaced intentionally.
+
+# gpt-5.5_2026-05-17_1547_06
+
+Done. `origin/gh-pages` has been force-updated to the new root commit:
+
+`aed218c Publish initial SFLO semantic mesh`
+
+Local and remote `gh-pages` now point to that single root commit. The previous remote history was replaced with a forced update from `0a6fa60` to `aed218c`.
+
+# djradon_2026-05-17_1547_17
+
+how many files in the repo?
+
+# gpt-5.5_2026-05-17_1547_23
+
+`sflo-gh-pages` has **2,645 files**.
+
+Both tracked files and filesystem files outside `.git` count the same: `2645`.
+
+# djradon_2026-05-17_1557_25
+
+OK, next tweak... Currently the title for all terms is using its label. In the ontology use case, we should just use the actual term. I see two paths forward:
+- 1. for all the RDF-native terms (i.e. things that are classes, properties, SHACL shapes, etc) we have a special case. This won't cover individuals, and I can't think of a clean way to differentiate ontology-related individuals from general
+- 2. Remove rdfs:label from the list of things that can contribute a title.
+
+I think #2 is the right move. What do you think.
+
+# gpt-5.5_2026-05-17_1557_37
+
+I agree with the direction, but I’m going to check the title extraction code before giving a too-confident answer. The exact behavior matters here because “remove label as title” should still leave labels visible as RDF properties.
+
+# gpt-5.5_2026-05-17_1557_54
+
+I agree with #2.
+
+`rdfs:label` is a label, not a title. For ontology terms, using it as the page title actively hides the canonical term name, which is exactly the thing a term page should foreground. The fallback title should be the designator/local segment, so `ArtifactHistory` stays `ArtifactHistory`, while `rdfs:label "Artifact history"` remains visible in Properties.
+
+I’d keep stronger title/name predicates in the title path:
+`dcterms:title`, `schema:name`, maybe `foaf:name`.
+
+But I’d remove `rdfs:label` from title extraction. I’m also tempted to remove `skos:prefLabel` for the same reason, unless we want SKOS concept pages to behave differently. The clean default is: titles come from title/name predicates; labels stay RDF facts.
+
+# djradon_2026-05-17_1608_23
+
+agreed. remove both.
+
+# gpt-5.5_2026-05-17_1608_35
+
+I’ll make that title extraction narrower: `rdfs:label` and `skos:prefLabel` stay visible as RDF properties, but stop overriding the page title. I’ll update the rendering tests so the ontology-term case locks in the actual term segment as the heading.
+
+# gpt-5.5_2026-05-17_1608_52
+
+I found two title paths: the ResourcePage fact extractor and a weave-side helper used when building page models. I’m removing label predicates from both so they don’t sneak back in via generation context.
+
+# gpt-5.5_2026-05-17_1609_32
+
+The tests now assert the intended split directly: a term page headed `AbilityScore` still displays both `rdfs:label` and `skos:prefLabel` in Properties. I’ll run the focused renderer tests first.
+
+# gpt-5.5_2026-05-17_1609_38
+
+Renderer tests are green. Since there’s also a weave-side title helper, I’m running the integration weave suite plus lint/check so we catch any generation-level expectation shifts.
+
+# gpt-5.5_2026-05-17_1610_29
+
+Agreed and done. I removed `rdfs:label` and `skos:prefLabel` from ResourcePage title extraction, while leaving them visible in the Properties table.
+
+Changed:
+- [pages.ts](../../../../../src/runtime/weave/pages.ts): titles now use `dcterms:title`, `schema:name`, character-name predicates, or `foaf:name`, but not RDF/SKOS labels.
+- [weave.ts](../../../../../src/runtime/weave/weave.ts): generation-side title helper now only treats `dcterms:title` as a real title.
+- [pages_test.ts](../../../../../src/runtime/weave/pages_test.ts): locks in `AbilityScore` / `CharacterShape` headings while confirming labels still render as properties.
+
+Verified:
+- `deno test -A src/runtime/weave/pages_test.ts`
+- `deno test -A tests/integration/weave_test.ts`
+- `deno task lint`
+- `deno task check`
+- `git diff --check`
+
+Commit message:
+
+```text
+Use term segments instead of labels for RDF page titles
+
+- stop treating rdfs:label and skos:prefLabel as ResourcePage titles
+- keep stronger title/name predicates for resources that explicitly name themselves
+- preserve labels as visible RDF properties so ontology terms foreground their actual designator segment
+- update rendering tests for ontology and SHACL term pages
+```
+
+One side note: `sflo-gh-pages` currently shows a staged `favicon.ico`; I left that alone.
+
+# djradon_2026-05-17_1942_06
+
+Should we add rdfs:label fr and skos:prefLabel to the "description fields" list, probably near the bottom?
+
+# gpt-5.5_2026-05-17_1942_23
+
+I’ll check the current summary/description fallback order so I can answer in terms of the actual behavior rather than vibes in a trench coat.
+
+# gpt-5.5_2026-05-17_1942_46
+
+Yes, I think that’s a good compromise.
+
+Keep them out of **title** extraction, but allow them as low-priority **summary/description** fallbacks:
+
+1. `dcterms:description`
+2. `rdfs:comment`
+3. `skos:definition`
+4. `skos:prefLabel`
+5. `rdfs:label`
+
+I’d put `skos:prefLabel` before `rdfs:label` because it’s explicitly the preferred display label, while `rdfs:label` is broader and often mechanically generated.
+
+That gives pages the term as the heading, like `ArtifactHistory`, while still allowing a useful subtitle like “Artifact history” when no real prose description exists. It does make labels do double duty, but only after actual description/comment/definition fields are absent, which feels right.
+
+# djradon_2026-05-17_1943_25
+
+ok, implement that.
+
+# gpt-5.5_2026-05-17_1943_36
+
+I’ll add those label predicates back only as summary fallbacks, with `skos:prefLabel` before `rdfs:label`, then pin the behavior in the renderer tests so labels don’t creep back into titles.
+
+# gpt-5.5_2026-05-17_1944_11
+
+Implemented the fallback order and added a targeted renderer test with two cases: `skos:prefLabel` beats `rdfs:label`, and `rdfs:label` works when it’s the only label. Both keep the term segment as the heading.
+
+# gpt-5.5_2026-05-17_1944_28
+
+Implemented.
+
+`rdfs:label` and `skos:prefLabel` are now low-priority summary/description fallbacks in [pages.ts](../../../../../src/runtime/weave/pages.ts), ordered after real prose fields:
+
+`dcterms:description`, `rdfs:comment`, `skos:definition`, `skos:prefLabel`, `rdfs:label`
+
+Added a test in [pages_test.ts](../../../../../src/runtime/weave/pages_test.ts) confirming:
+- heading stays `AbilityScore`
+- `skos:prefLabel` becomes the summary when present
+- `rdfs:label` becomes the summary only when it is the available fallback
+
+Verified:
+- `deno test -A src/runtime/weave/pages_test.ts`
+- `deno task lint`
+- `deno task check`
+
+Commit message:
+
+```text
+Use labels as low-priority ResourcePage summaries
+
+- add skos:prefLabel and rdfs:label as fallback summary predicates
+- keep labels out of ResourcePage title extraction
+- cover preferred-label and label-only summary fallback behavior
+```

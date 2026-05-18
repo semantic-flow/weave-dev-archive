@@ -1,6 +1,6 @@
 version: 1
 schemas:
-  - id: wd
+  - id: wa
     parent: root
     # Match note names like `wd.task.2026.some-task`, then apply the task
     # template to the task notes created beneath the year bucket.
