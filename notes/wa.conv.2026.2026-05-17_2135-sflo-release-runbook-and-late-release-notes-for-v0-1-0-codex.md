@@ -131,3 +131,67 @@ fix(deploy): make prepare dry-run no-op contract explicit
 - verify settled prepare dry-runs stay empty for unchanged source bindings
 - clarify detached publication root semantics in CLI docs
 ```
+
+# djradon_2026-05-17_2207_50
+
+do you have to do weave prepare more than once? I think the [wu.cli-reference.md](../../../../../documentation/notes/wu.cli-reference.md) must need improvement (or an example use case), because I still don't understand what it does. Basically I think we need more symmetry between prepare and create/integrate/weave, like one or the other should suffice for branch and sidecar meshes. No?
+
+# gpt-5.5_2026-05-17_2208_06
+
+I agree with the discomfort. I’m going to tighten the docs around the mental model first: whether `prepare` is a one-shot orchestration command, when repeated runs are currently required, and how that relates to `mesh create` / `integrate` / `weave`. Then I’ll sanity-check the current CLI/test surface so I don’t document a nicer command than we actually have.
+
+# gpt-5.5_2026-05-17_2208_29
+
+The current example actually explains part of the confusion: it mixes primitive commands for a hand-authored root welcome page with `prepare gh-pages` for repository-source payloads. I’m going to make that explicit in the CLI reference and the SFLO example, and name the current limitation: one source binding per `prepare` invocation, so multiple payload artifacts means multiple `prepare` runs today.
+
+# gpt-5.5_2026-05-17_2208_46
+
+I’ve added an explicit “Workflow Shapes” section and clarified the SFLO example. The docs now say the quiet part out loud: yes, today you run `prepare gh-pages` once per source payload, and that is a current CLI limitation rather than the ideal shape.
+
+# gpt-5.5_2026-05-17_2209_08
+
+One more useful thing: since you have a task note open for this exact “prepare symmetry” question, I’m going to record the distilled contract there too. That gives us a place to hang the next implementation step, which I think is a manifest/batch prepare shape rather than more prose forever.
+
+# gpt-5.5_2026-05-17_2209_47
+
+Yes: **today you run `prepare gh-pages` once per source payload**. So for SFLO, core ontology, config ontology, and SHACL mean three `prepare gh-pages` invocations. Re-running the same one should be a no-op, and `--dry-run` now says that explicitly.
+
+But I agree with your larger point: the asymmetry is real. `prepare` should probably become a higher-level publication orchestration surface that can target either an in-place sidecar mesh or a detached publication root, ideally from a manifest/batch input. The primitive commands should still exist, but a release action should not need to manually know “sidecar means create/integrate/weave; branch means prepare three times.”
+
+I updated:
+
+- [wu.cli-reference.md](../../../../../documentation/notes/wu.cli-reference.md:27): added “Workflow Shapes” comparing in-place sidecar vs detached publication root.
+- [wu.cli-reference.md](../../../../../documentation/notes/wu.cli-reference.md:233): clarified no `--source-path` vs exactly one source payload.
+- [wu.cli-reference.examples.sflo.md](../../../../../documentation/notes/wu.cli-reference.examples.sflo.md:15): explained why the SFLO example mixes primitive commands and `prepare gh-pages`.
+- [wa.task.2026.2026-05-17_2206-prepare-symmetry.md](wa.task.2026.2026-05-17_2206-prepare-symmetry.md:15): captured the design issue and next steps.
+
+Validation: `git diff --check` passed. Earlier targeted deploy tests, lint, check, and fmt check are still green from the code-side dry-run contract change. Note: `documentation/notes/wu.cli-reference.examples.sflo.md` is currently untracked in the Weave repo.
+
+# djradon_2026-05-17_2212_21
+
+Does it make sense for you to update [ont.task.2026.2026-03-24-release-runbook.md](../../sflo/notes/ont.task.2026.2026-03-24-release-runbook.md) now too? I failed to flesh it out adequately before we began work on [ont.dev.release-runbook.md](../../sflo/notes/ont.dev.release-runbook.md) , and now that thing is kinda a mess. It'll be pending the inventory work and the prepare symmetry stuff.
+
+# gpt-5.5_2026-05-17_2212_33
+
+Yes, that task note is the right place to capture “where this landed and what’s still pending.” I’ll update it as an active task note, not convert it to completed, and I’ll make the dependency on append-onlyish inventory plus prepare symmetry explicit.
+
+# gpt-5.5_2026-05-17_2212_38
+
+The release task note is still half-sketched, so I’m going to make it a roadmap-style task note: what got done in the durable runbook/release notes, what is intentionally still pending, and what depends on prepare symmetry and append-onlyish inventory.
+
+# gpt-5.5_2026-05-17_2214_18
+
+The task note is now doing the job I’d expect from it: it points at the runbook/release notes that exist, but keeps the automation piece open until inventory idempotence and prepare symmetry are resolved. I’m doing a final whitespace/status check in the sflo repo.
+
+# gpt-5.5_2026-05-17_2214_24
+
+Yes, and I updated it.
+
+[ont.task.2026.2026-03-24-release-runbook.md](../../sflo/notes/ont.task.2026.2026-03-24-release-runbook.md:9) now captures:
+
+- what’s done: `ont.dev.release-runbook`, v0.1.0 notes, current Pages boundary
+- what’s still pending: job/prov publication topology, prepare symmetry, append-onlyish inventory, GitHub Actions release workflow
+- why the task should stay open instead of being treated as completed
+- the staged automation path: source validation first, publication dry-run later, actual `gh-pages` publishing only once no-op/conflict behavior is trustworthy
+
+Validation: `git diff --check` passed for the sflo repo.
