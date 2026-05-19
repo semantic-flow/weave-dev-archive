@@ -621,3 +621,523 @@ docs: persist resolved publication profile in mesh config
 - update mesh-create and publication-source-sync specs for profile persistence
 - update remove-prepare task with config ontology and testing requirements
 ```
+
+# djradon_2026-05-18_1010_49
+
+Regarding open issues, I think we already have "weave import", no? And we can make it manifest driven too, but maybe later? It seems not-that-useful, as import only happens once, right?
+
+# gpt-5.5_2026-05-18_1011_01
+
+I’ll check the actual CLI surface before changing the open issue. My instinct agrees with you: if `weave import` exists, the open issue should shift from “what spelling?” to “how does import interact with one-time acquisition versus later update/sync?”
+
+# gpt-5.5_2026-05-18_1011_18
+
+A quick check says we have `operationId: "import"` in the Alice Bio fixture/conformance ladder, but I don’t see a shipped `weave import` CLI command in `src/cli/run.ts` yet. So I’m going to revise the note to say `weave import` is the intended spelling for the initial copy boundary, while manifest/batch import can wait and repeated refresh belongs to a later update/sync surface.
+
+# gpt-5.5_2026-05-18_1011_59
+
+Mostly yes conceptually, but not quite in the current CLI.
+
+I checked `src/cli/run.ts`: there is no shipped `weave import` command yet. There is already an `operationId: "import"` in the Alice Bio conformance fixture, so the model has it, but the general CLI surface is still pending.
+
+I updated the task/specs accordingly:
+
+- `weave import` is now recorded as the intended CLI spelling for the initial one-target import boundary.
+- Manifest/batch import is deferred until real workflow pressure proves it useful.
+- Import is described as usually one-time acquisition of a governed local copy.
+- Later refresh of that imported/source-bound content is an update/sync concern, not another implicit first import.
+
+`diff --check` passes for the touched notes.
+
+# djradon_2026-05-18_1011_59
+
+"source sync" -- maybe we just dispense with it altogether?
+
+# gpt-5.5_2026-05-18_1017_20
+
+I think we can dispense with it as a named concept for now. The cleaner split is: `import` creates the governed copy, `payload.update` or a later explicit update command refreshes current bytes, and `integrate` binds bytes without moving them. I’ll scrub “source sync” down to “future update/refresh” where needed.
+
+# gpt-5.5_2026-05-18_1017_31
+
+I agree. “Source sync” is becoming a second name for things we can already name: first copy is `import`; later changes are update/refresh. I’m going to remove it as a first-class term from the task/spec wording rather than keep negotiating with the phrase.
+
+# gpt-5.5_2026-05-18_1018_28
+
+The term is mostly gone now; I’m just doing a grep pass for leftovers and checking that the remaining “sync” occurrences, if any, are not describing a first-class operation.
+
+# gpt-5.5_2026-05-18_1019_08
+
+I’m going to do a quick pass for leftover “source sync” language and validate the edited notes/ontology. If the term still appears, I’ll tighten it so the model is clean: import first, refresh later, integrate in place.
+
+# gpt-5.5_2026-05-18_1019_19
+
+The remaining hits are just the Dendron note id and links. Since the concept is going away, I’m going to rename that spec note from `publication-source-sync` to `publication-import` and update the references; leaving the old id around would keep smuggling the old mental model back in.
+
+# gpt-5.5_2026-05-18_1019_42
+
+Good, the old note id is gone from the intended links now. I’m doing the last verification pass: leftover terminology, markdown whitespace, and the config ontology syntax.
+
+# gpt-5.5_2026-05-18_1019_59
+
+Yes. I think “source sync” was a leaky middle concept, so I removed it as a first-class term.
+
+The model is now cleaner:
+
+- `integrate` leaves source bytes where they are.
+- `import` brings bytes into the mesh/publication tree.
+- later upstream changes are explicit `update` / `refresh`, not hidden sync.
+- `weave` does not fetch, copy, import, or refresh bytes implicitly.
+
+I also renamed the new SFF spec note from `sf.spec.2026-05-18-publication-source-sync` to `sf.spec.2026-05-18-publication-import` and updated the wikilinks.
+
+Validation passed:
+
+- no remaining `source sync` / `source synchronization` terminology in the touched notes
+- `git diff --check` passed for the SFF and archive note changes
+- `riot --validate` passed for `semantic-flow-config-ontology.ttl`
+
+Suggested commit message:
+
+```text
+Clarify publication import boundary
+
+Replace the proposed source-sync concept with an explicit publication import
+boundary. Document that integrate leaves source bytes in place, import creates
+governed local copies, and later upstream changes should be handled by explicit
+update/refresh operations rather than hidden sync behavior.
+
+Rename the publication behavior spec to publication-import and update related
+Semantic Flow API/spec links.
+```
+
+# djradon_2026-05-18_1019_59
+
+How did we do import for the sidecar use case, e.g. mesh-sidecar-fantasy-rules?
+
+# gpt-5.5_2026-05-18_1020_11
+
+I’ll trace the sidecar fixture and any test docs around `mesh-sidecar-fantasy-rules` so I can answer from the actual recorded behavior, not from the cleaned-up vocabulary we just designed.
+
+# gpt-5.5_2026-05-18_1020_17
+
+The first search is noisy because “import” matches TypeScript imports everywhere, but the useful trail is the fixture ladder plus the SFF conformance examples. I’m narrowing to the sidecar scenario definitions and operation records now.
+
+# gpt-5.5_2026-05-18_1021_26
+
+We didn’t really do `import` for `mesh-sidecar-fantasy-rules`.
+
+The sidecar fixture did this instead:
+
+```bash
+weave mesh create --workspace . --mesh-root docs --mesh-base https://semantic-flow.github.io/mesh-sidecar-fantasy-rules/
+weave --mesh-root docs
+
+weave integrate ./ontology/fantasy-rules-ontology.ttl ontology --mesh-root docs --grant-source-directory ontology
+weave --mesh-root docs
+
+weave integrate ./shacl/fantasy-rules-shacl.ttl shacl --mesh-root docs --grant-source-directory shacl
+weave --mesh-root docs
+```
+
+Later it also integrated `./examples/gunaar.ttl` as `examples/gunaar`.
+
+So the pattern was: source files stayed outside the mesh root, under repo-local directories like `ontology/`, `shacl/`, and `examples/`; the mesh lived under `docs/`; `integrate` recorded `workingLocalRelativePath` values like `../ontology/fantasy-rules-ontology.ttl`; and `--grant-source-directory` added constrained mesh config access rules. See [scripts/fixture-ladder.ts](../../../../../scripts/fixture-ladder.ts:724) and the ontology integration manifest at [04-ontology-integrated.jsonld](../../semantic-flow-framework/examples/sidecar-fantasy-rules/conformance/04-ontology-integrated.jsonld:25).
+
+The only copy-like pieces were fixture mechanics, not Semantic Flow import:
+
+- `fixture.seedSourceOnly` seeded the authored source branch for the test fixture.
+- `source.update` later replaced the authored ontology/SHACL source files with deterministic release-source bytes.
+- `weave` then snapshotted those bytes into `docs/ontology/releases/v0.0.2/ttl/...` and `docs/shacl/releases/v0.0.2/ttl/...`; that is versioning/publication output, not import. See [15-first-release-woven.jsonld](../../semantic-flow-framework/examples/sidecar-fantasy-rules/conformance/15-first-release-woven.jsonld:25).
+
+So for the new vocabulary: sidecar fantasy rules is the “allowed live local” case, not the “imported local copy” case. Import would only enter if we wanted to copy source bytes into the mesh/publication tree before integrating them.
+
+# djradon_2026-05-18_1023_58
+
+I keep mixing up "import" and "integrate". Sorry! But let's make it clear everywhere... import is "copy working file into mesh" and integrate is "link to external working file, with a policy of pinned or current", right? Please make that distinction clear everywhere, and correct our use of import -- in these sidecar and branch-based ontologies, we want integrate.
+
+# gpt-5.5_2026-05-18_1024_15
+
+Yes, that distinction is the one. I’m going to tighten the spec language so `import` is only the “copy into mesh” operation, and the sidecar/branch ontology flows are described as `integrate` with current or pinned source policy.
+
+# gpt-5.5_2026-05-18_1024_26
+
+There’s a stronger cleanup here than just sentence edits: the spec being named `publication-import` now nudges the wrong interpretation. I’m going to rename it to a publication/source-binding spec and make `import` the exceptional copy boundary, with sidecar and branch-published ontology release flows using `integrate`.
+
+# gpt-5.5_2026-05-18_1024_44
+
+I found the ambiguous bits: the task note still frames `prepare gh-pages` as bundling “import”, and the new spec title itself says publication import. I’m rewriting those so branch/sidecar ontology release examples point at `integrate`, and `import` is reserved for copying a working file into the mesh.
+
+# gpt-5.5_2026-05-18_1026_26
+
+The cleanup now says sidecar/branch ontology releases are `integrate` cases, including separate-repo or different-branch sources. I’m doing a verification sweep for stale note links, old “publication import” naming, and markdown whitespace.
+
+# gpt-5.5_2026-05-18_1027_12
+
+Done. I tightened the docs around the distinction:
+
+- `integrate` = bind/link available source bytes to a designator without moving them. This is the right path for sidecar and branch-published ontology sources, including same-repo, different-branch, and separate-repo sources, with current or pinned source policy.
+- `import` = copy a working file into the mesh/publication tree so that copy becomes governed local working content.
+
+Main changes:
+
+- Renamed the spec from `sf.spec.2026-05-18-publication-source-sync` to [sf.spec.2026-05-18-publication-source-binding.md](../../semantic-flow-framework/notes/sf.spec.2026-05-18-publication-source-binding.md:51).
+- Updated [sf.api.md](../../semantic-flow-framework/notes/sf.api.md:43) so sidecar/branch-published ontology payloads explicitly use `integrate`.
+- Added a glossary section for `Integrate And Import`.
+- Updated the task note at [wa.task.2026.2026-05-18_0627-remove-prepare.md](wa.task.2026.2026-05-18_0627-remove-prepare.md:50) to make branch/sidecar ontology releases integrate-first, with `weave import` only for the explicit copy-into-mesh boundary.
+- Updated the weave/extract/integrate specs to remove the old source-sync framing and link to the new source-binding spec.
+
+Validation passed: `git diff --check` for the SFF notes and archive task note, plus searches for stale `source sync` / `publication-import` references and trailing whitespace.
+
+# djradon_2026-05-18_1322_40
+
+"What is the minimal source registry vocabulary for repository URL, ref, commit, path, digest, current/pinned policy, and optional copy/import time?" -- It's tempting not to worry about this because, at least in some cases, we just want to point to an already checked-out worktree and use whatever's there. But yes, we should be able to point to specific refs, and i think that ArtifactResolutionTarget might be construct to use. I'd thought it already had vocab for repo/ref/, and it definitely supports path, digest, current/pinned. Have a look and let me know what's missing.
+
+# gpt-5.5_2026-05-18_1322_52
+
+I’ll inspect the ontology terms around `ArtifactResolutionTarget` and the source registry usage, then I’ll compare that against the fields in the open issue. If it already carries most of this, I’ll call out only the actual gaps.
+
+# gpt-5.5_2026-05-18_1323_04
+
+The ontology is richer than the open issue implies: `ArtifactResolutionTarget` already has the repository-locator hook, current/pinned mode, path/url/direct file alternatives, expected digest, and observed timestamp. I’m reading the exact TTL/SHACL blocks now so I can separate “already modeled” from “actually missing.”
+
+# gpt-5.5_2026-05-18_1324_12
+
+I’ll check the ontology and SHACL directly so this doesn’t drift into vibes. I’m looking for what ArtifactResolutionTarget already says, what the shapes actually require, and whether the examples use the policy terms consistently.
+
+# gpt-5.5_2026-05-18_1324_23
+
+So far the ontology is doing more of the work than the task note gives it credit for. The main gap I’m seeing is less “we need a new mini-registry vocabulary” and more “the generic source-binding shape/examples don’t consistently require or assert the current/pinned mode.”
+
+# gpt-5.5_2026-05-18_1324_52
+
+Yes: `ArtifactResolutionTarget` is the right construct, and most of the vocabulary already exists.
+
+The model has:
+
+- Source registry: `KnopSourceRegistry` + `hasSourceBinding` to an `ArtifactResolutionTarget` in [semantic-flow-core-ontology.ttl](../../sflo/semantic-flow-core-ontology.ttl:468).
+- Repository coordinates: `hasTargetRepositorySource` to `RepositorySourceLocator`, then `sourceRepositoryUrl`, `sourceRepositoryRef`, `sourceRepositoryCommit`, and `sourceRepositoryPath` in [semantic-flow-core-ontology.ttl](../../sflo/semantic-flow-core-ontology.ttl:576).
+- Local checked-out bytes: `targetLocalRelativePath` on `ArtifactResolutionTarget` in [semantic-flow-core-ontology.ttl](../../sflo/semantic-flow-core-ontology.ttl:564).
+- Current/pinned policy: `hasArtifactResolutionMode` with `artifactResolutionMode_current` / `artifactResolutionMode_pinned` in [semantic-flow-core-ontology.ttl](../../sflo/semantic-flow-core-ontology.ttl:518).
+- Digest: `expectsContentDigest` on the ART, plus `hasContentDigest` can be used on byte-bearing resources/locators in [semantic-flow-core-ontology.ttl](../../sflo/semantic-flow-core-ontology.ttl:714).
+- Observation time: generic `observedAt` on ART in [semantic-flow-core-ontology.ttl](../../sflo/semantic-flow-core-ontology.ttl:708).
+
+What’s missing is mostly tightening, not new conceptual vocabulary:
+
+1. The repository-backed source binding SHACL shape requires artifact/path/digest/repo locator, but does **not** require `hasArtifactResolutionMode`. See [semantic-flow-core-shacl.ttl](../../sflo/semantic-flow-core-shacl.ttl:136). Extraction sources require mode, but generic repository source bindings do not. That is the biggest gap.
+
+2. The branch-level source registries look effectively pinned because they include commit and digest, but they do not assert `artifactResolutionMode_pinned`. Example: [sources.ttl](../../mesh-branch-fantasy-rules/shacl/_knop/_sources/sources.ttl:11).
+
+3. There is no dedicated “imported/copied at” property. I think that is fine for `integrate`, because no copy happened. For true `import`, `observedAt` may be enough initially, but if we need to distinguish “bytes observed” from “copy created inside mesh,” that wants either a small import provenance activity or a specific imported/copied timestamp later.
+
+4. For “use this already checked-out worktree, whatever is there,” we can use `targetLocalRelativePath` plus `artifactResolutionMode_current`; repo URL/ref/commit should be optional unless we are claiming repository provenance. The current SHACL has a repository-backed shape, but not a similarly explicit local-current source binding shape.
+
+So I’d rewrite that open issue to something like:
+
+> Use `ArtifactResolutionTarget` plus `RepositorySourceLocator` for source registries. Add/require `hasArtifactResolutionMode` for repository-backed source bindings, update examples to assert current or pinned policy, and decide later whether `observedAt` is enough for true import/copy provenance.
+
+# djradon_2026-05-18_1809_10
+
+Thinking about "- if the target is a `DigitalArtifact` in `Pinned` mode, resolution follows the requested history or state subject to the allowed fallback policy" -- perhaps we need a new mode that means "latest in this ArtifactHistory" -- pinned could do double duty "pinned to an artifact history means current from that history. I'm ambivalent, what do you thin?
+
+Regarding "what's missing", for SHACL shapes, we should start differentiating between warning and info. I think we can warn on missing mode in both cases.
+
+artifactResolutionMode_pinned is kinda over-rated. By default if you're targeting a state (or manifestation), you're by default pinned to that state. artifactResolutionMode_current is a way of overriding that sensible default. targeting a history, by default you're asking for the latest version of that history, Maybe using current on a history gets you the latest version in any history, so it's kinda misleading.
+
+# gpt-5.5_2026-05-18_1809_21
+
+I’ll look at the exact mode wording and the shapes around it, because this is one of those places where a tiny term can quietly encode a lot of release behavior. My hunch already: `pinned` may be more of an explicitness flag than a necessary mode when the target itself is immutable.
+
+# gpt-5.5_2026-05-18_1809_56
+
+I’d resist adding a new mode for “latest in this `ArtifactHistory`” right now.
+
+The cleaner model is probably: resolution defaults from the most specific target coordinate.
+
+- Targeting a `HistoricalState` or manifestation means exact/pinned by default.
+- Targeting an `ArtifactHistory` means latest state in that history by default.
+- Targeting only a `DigitalArtifact` means the artifact’s current working surface by default.
+- `artifactResolutionMode_current` is an explicit override to follow the current/default artifact surface.
+- `artifactResolutionMode_pinned` is mostly documentary, and only meaningful when paired with coordinates that actually pin bytes: state, manifestation, commit, digest, etc.
+
+So yes, I agree: `artifactResolutionMode_pinned` is over-rated. If the target is already a state, saying “pinned” is redundant. If the target is only a history, calling it “pinned” is slightly misleading, because “latest in this history” can move. It is bounded, not pinned.
+
+I’d treat `current` on a requested history as suspicious. It either means “ignore the history and use artifact current,” which is surprising, or “latest in that history,” which makes `current` do two different jobs. Better to say: if you want latest in a history, name the history and omit mode. If you want artifact current, use `current` and don’t also request a history/state.
+
+For SHACL, I like the warning/info split:
+
+- `Violation`: impossible or contradictory shape, e.g. multiple modes, wrong class, malformed locator.
+- `Warning`: reproducibility risk, e.g. repository ref without commit/digest, `current` with requested state/history, `pinned` without any durable coordinate.
+- `Info`: mode omitted but defaults are clear, e.g. state implies exact, history implies latest-in-history, artifact-only implies current.
+
+So I’d revise my earlier “warn on missing mode” slightly: warn where missing mode leaves reproducibility unclear; use `sh:Info` where the target coordinate already makes the default obvious. That keeps SHACL from yelling at perfectly sensible RDF.
+
+# djradon_2026-05-18_1823_42
+
+Should we split _current into _working and _latest (or _latest-woven)?
+
+# gpt-5.5_2026-05-18_1829_00
+
+Yes. I think `_current` is carrying two different ideas and that is the source of the unease.
+
+I’d split it conceptually as:
+
+- `artifactResolutionMode_working`: resolve mutable working bytes, e.g. `workingLocalRelativePath`, `hasWorkingLocatedFile`, `workingAccessUrl`, or approved live local source.
+- `artifactResolutionMode_latestHistoricalState`: resolve the latest settled state in the requested `ArtifactHistory`, or maybe the artifact’s declared latest state if no specific history is supplied.
+
+I’d avoid `_latest-woven` in ontology vocabulary unless “woven” is already a formal lifecycle term there. `latestHistoricalState` is more neutral and lines up with the existing `latestHistoricalState` property.
+
+Then `pinned` becomes much less important:
+
+- Requested `HistoricalState`/manifestation/commit+digest: exact by default.
+- Requested `ArtifactHistory` + `latestHistoricalState` mode: latest settled state in that history.
+- Requested `DigitalArtifact` + `working` mode: mutable working bytes.
+- Requested `DigitalArtifact` with no mode: maybe warn/info, because defaulting here is where ambiguity lives.
+
+I’d probably keep `artifactResolutionMode_current` for compatibility but document it as deprecated/ambiguous, equivalent to `working` only during the transition. The sharp distinction should be “working” versus “latest historical state,” because that maps directly to the additive mesh idea: mutable authoring surface vs settled mesh state.
+
+# djradon_2026-05-18_1829_00
+
+Regarding #3, when is observedAt normally used? And what would a " explicit local-current source binding shape" look like?
+
+# gpt-5.5_2026-05-18_1829_28
+
+`observedAt` is best treated as a timestamp for a resolution observation, not as identity.
+
+I’d normally use it when Weave has actually looked at bytes and wants to record “this binding was resolved/checked at this time,” especially for mutable surfaces:
+
+- a live local working file under `current` / future `working` mode
+- a repository ref like `main` when no commit was captured yet
+- a remote URL or other source where the durable identity is weak
+- supplemental evidence alongside digest/commit/state, not instead of them
+
+I would not use `observedAt` as the normal way to say “this was imported.” If we copy bytes into the mesh, that is an activity/provenance fact: source observed, bytes copied, new governed local artifact produced. `observedAt` can describe the source check; the import/copy itself probably wants `prov:generatedAtTime` or a later explicit import activity if we need that much detail.
+
+An explicit local-current source binding shape would validate source bindings that say: “this artifact is integrated from this local path; the bytes stay where they are; resolution follows the working/current file under local-path policy.”
+
+Roughly:
+
+```ttl
+:LocalCurrentKnopSourceBindingShape
+  a sh:NodeShape ;
+  rdfs:label "Local current Knop source binding" ;
+  rdfs:comment "A source binding that follows an approved local working file without copying it into the mesh." ;
+
+  # Target source bindings in a KnopSourceRegistry that have a local path
+  # and no repository locator.
+  sh:target [
+    a sh:SPARQLTarget ;
+    sh:select """
+      PREFIX sflo: <https://semantic-flow.github.io/sflo/ontology/>
+      SELECT ?this WHERE {
+        ?registry a sflo:KnopSourceRegistry ;
+          sflo:hasSourceBinding ?this .
+        ?this sflo:targetLocalRelativePath ?path .
+        FILTER NOT EXISTS { ?this sflo:hasTargetRepositorySource ?repo . }
+      }
+    """
+  ] ;
+
+  sh:property [
+    sh:path sflo:hasTargetArtifact ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:IRI ;
+    sh:class sflo:DigitalArtifact ;
+    sh:severity sh:Violation
+  ] ;
+
+  sh:property [
+    sh:path sflo:targetLocalRelativePath ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:string ;
+    sh:severity sh:Violation
+  ] ;
+
+  sh:property [
+    sh:path sflo:hasArtifactResolutionMode ;
+    sh:maxCount 1 ;
+    sh:class sflo:ArtifactResolutionMode ;
+    sh:severity sh:Warning
+  ] ;
+
+  sh:property [
+    sh:path sflo:expectsContentDigest ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:string ;
+    sh:severity sh:Info
+  ] .
+```
+
+If we split `current` into `working` and `latestHistoricalState`, this shape should prefer/expect `artifactResolutionMode_working`. Until then, it would expect `artifactResolutionMode_current`.
+
+The important distinction: repository-backed binding says “here are durable repo coordinates.” Local-current binding says “use this approved local relative path.” It may have a digest as observed evidence, but digest should not be mandatory unless the policy wants a guarded current read.
+
+# djradon_2026-05-18_1831_21
+
+I was thinking "_latest-woven" or "_latest-state" would return the latest state across histories. It would be used when you don't want to target the working file and don't know which historical state would be latest. But maybe I'm overthinking.
+
+# gpt-5.5_2026-05-18_1831_27
+
+You’re not overthinking; that is a real third case.
+
+I’d separate these as three resolution intents:
+
+- `working`: use mutable working bytes.
+- `latestInHistory`: use the latest state within a specifically requested `ArtifactHistory`.
+- `latestState`: use the latest settled state for the artifact, regardless of which history it belongs to.
+
+That last one is what you’re reaching for with `_latest-woven` / `_latest-state`: “do not touch the working file; give me the newest settled mesh state you know about.”
+
+I’d strongly prefer `artifactResolutionMode_latestState` over `latestWoven`. “Woven” is process-colored, while “state” names the thing being resolved. It also leaves room for the fact that settled states might later be produced by a non-CLI API, not literally a `weave` command.
+
+Then defaults could be:
+
+- `hasRequestedTargetState` present: exact state by default.
+- `hasRequestedTargetHistory` present: latest in that history by default.
+- only `hasTargetArtifact` present: this is ambiguous; choose mode explicitly.
+- mode `working`: artifact working bytes.
+- mode `latestState`: artifact latest settled state across histories.
+
+So I’d not add `pinned2`. I’d make `current` retire into two clearer names: `working` and `latestState`, with history-targeting giving you latest-in-history by default. That gives the additive mesh idea a very clean vocabulary: mutable working surface vs settled latest surface.
+
+# djradon_2026-05-18_1834_22
+
+Can you give me two use cases, one for mode working and one for latestState?
+
+# gpt-5.5_2026-05-18_1834_28
+
+`working` use case: sidecar ontology release from a checked-out source file.
+
+You have `sflo/semantic-flow-core-ontology.ttl` in a source repo/worktree, and the publication mesh is elsewhere. `integrate` binds the ontology payload to that local working file without copying it. In CI or local authoring, `working` means: “read the current bytes at this approved path.” If the file changes, the next explicit integrate/weave/update path can see those changed bytes.
+
+`latestState` use case: generating an identifier page from the latest settled artifact, not the draft working file.
+
+A resource page source points at `alice/bio` as a `DigitalArtifact`. The author may currently be editing `alice-bio.ttl`, but the public page should use the newest woven historical state, not draft local edits. `latestState` means: “resolve `alice/bio` to the latest settled `HistoricalState` across its histories, and render from that.” That gives repeatable publication behavior without needing the caller to know the exact `_historyNNN/_sNNNN` IRI.
+
+# djradon_2026-05-18_1836_38
+
+OK, should you update [wa.task.2026.2026-05-18_0627-remove-prepare.md](wa.task.2026.2026-05-18_0627-remove-prepare.md) with our latest thinking and expand it to include the ontology changes? I believe we've resolved "What is the minimal source registry vocabulary..."
+
+# gpt-5.5_2026-05-18_1836_50
+
+I’ll update the task note rather than leave this as chat-only design sediment. I’m going to fold the resolved vocabulary question into Decisions/Contract Changes and add concrete ontology/SHACL work around resolution modes, source-binding shapes, and `observedAt`.
+
+# gpt-5.5_2026-05-18_1836_55
+
+The note itself is currently clean in its own repo, so I can make a focused doc change without trampling existing edits. I’m going to replace the now-resolved open question with explicit decisions and task items rather than add a separate appendix.
+
+# gpt-5.5_2026-05-18_1837_13
+
+I’m going to make the task note say the source-registry vocabulary question is resolved: use `ArtifactResolutionTarget` plus `RepositorySourceLocator`, then add the real ontology work we uncovered. The interesting part is the resolution-mode cleanup, not inventing another registry layer.
+
+# gpt-5.5_2026-05-18_1837_47
+
+The note now has the vocabulary question resolved in-place. I’m doing a quick pass for awkward leftovers, especially any stale “current/pinned source policy” phrasing that would fight the new mode language.
+
+# gpt-5.5_2026-05-18_1838_16
+
+Updated [wa.task.2026.2026-05-18_0627-remove-prepare.md](wa.task.2026.2026-05-18_0627-remove-prepare.md:64).
+
+I resolved the “minimal source registry vocabulary” open issue by documenting that `KnopSourceRegistry -> hasSourceBinding -> ArtifactResolutionTarget`, with `RepositorySourceLocator` for repo evidence, is enough. I also expanded the task with the ontology follow-up work: split `current` into working/latest-state semantics, clarify that exact coordinates imply pinning, add local working source-binding SHACL, tighten repository-backed source-binding validation, and use SHACL `Violation`/`Warning`/`Info` more intentionally.
+
+I left actual ontology files untouched; this was just the task-note refinement. Validation: `git diff --check` passed for the updated note.
+
+# djradon_2026-05-18_1841_36
+
+Further open issues:
+
+- "Which host signals are strong enough..." I think we can assume github.io is strong enough for now. 
+- Remind me why we're messing with CNAME again? I think people can just add their own CNAME if they want to use a custom domain.
+
+# gpt-5.5_2026-05-18_1841_42
+
+Agreed on `*.github.io`: that is strong enough for `publicationProfile=auto` for now. I would not let CI metadata or repo remotes participate yet; it makes auto too spooky. URL says GitHub Pages, so auto can choose GitHub Pages. Anything else should be explicit.
+
+On `CNAME`: the only reason to touch it is GitHub Pages custom-domain support. If a Pages site uses a custom domain, GitHub Pages expects a `CNAME` file at the published root containing that domain.
+
+But I think your instinct is right: Weave does not need to manage that by default. Better contract:
+
+- GitHub Pages preset may create `.nojekyll`.
+- GitHub Pages preset should not create `CNAME` unless explicitly configured.
+- If a user already has a `CNAME`, validation can preserve it and maybe warn if it conflicts with explicit config.
+- Custom-domain management can stay human-owned until there is a repeated workflow asking for it.
+
+So the open issue can collapse to: `*.github.io` is the only auto signal for now; CNAME is optional user-managed host metadata, not core mesh behavior.
+
+# djradon_2026-05-18_1847_23
+
+agreed, update the task appropriately. we want to remove CNAME everywhere for now. 
+
+If people are using a CNAME basename, they'll just have to manually specify the github profile. All it does is add the nojekyll anyhow, right?
+
+- manifest-driven import is possibly a mistake from when I was confusing import and integrate. I think manifest-driven integrate is nice for "automatically integrate all new files that match (dir/extension/etc)." as a part of the weave workflow. You can sketch it in [wa.task.2026.2026-05-19_1846-integrate-manifest.md](wa.task.2026.2026-05-19_1846-integrate-manifest.md) if you agree, but we will save for later.
+
+# gpt-5.5_2026-05-18_1847_39
+
+I’ll fold those decisions into the remove-prepare task and sketch the separate future integrate-manifest idea in the new task note. I’ll also scan for lingering `CNAME` language in the relevant notes so the task doesn’t keep carrying an option we’ve decided to punt.
+
+# gpt-5.5_2026-05-18_1847_50
+
+There are a few `CNAME` mentions in the SFF specs/API too, so I’m going to remove them there as part of “everywhere for now.” The new contract will be: GitHub Pages profile just manages `.nojekyll`; custom domains require explicit GitHub profile selection and any domain control file stays human-owned.
+
+# gpt-5.5_2026-05-18_1848_02
+
+I agree with the manifest reframing, with one caveat worth preserving in the task: it should be an explicit integrate workflow driven by a manifest, not core `weave` quietly sweeping new files into the mesh. I’m adding that line so the additive/no-surprise principle survives the convenience feature.
+
+# gpt-5.5_2026-05-18_1849_25
+
+The integrate-manifest note now has a concrete future shape. I’m doing the cleanup pass now: no stale `CNAME` references in the task/spec/API set, no leftover “manifest-driven import” in the remove-prepare task, and markdown whitespace checks.
+
+# gpt-5.5_2026-05-18_1849_52
+
+The wider scan found a few live docs/specs outside the two task notes still saying the profile manages custom-domain files. I’m leaving historical conversation transcripts alone, but I’m updating current user/API/spec notes so the present contract is consistent.
+
+# gpt-5.5_2026-05-18_1851_10
+
+There are stale mentions in older open task notes too. I’m going to update those task notes, but I’m not rewriting conversation transcripts or completed notes because those are historical records rather than current design guidance.
+
+# gpt-5.5_2026-05-18_1852_10
+
+One more thing: current code and tests still expose configured publication-branch custom-domain handling. Since the contract now says the GitHub profile only handles `.nojekyll`, I’m checking whether it’s small enough to remove the CLI/runtime surface now instead of leaving the docs and code disagreeing.
+
+# gpt-5.5_2026-05-18_1852_36
+
+The runtime removal is small enough, so I’m going to do it: drop the `--cname` option/request field and turn the tests into “manual host files are preserved” instead of “custom-domain file is managed.”
+
+# gpt-5.5_2026-05-18_1853_53
+
+The targeted test command needed Deno permissions, so the first run failed before reaching our assertions. Lint passed; I’m rerunning the same target with `-A` so we actually exercise the changed code.
+
+# gpt-5.5_2026-05-18_1854_28
+
+Implemented the new direction.
+
+I updated the remove-prepare task and related current docs/specs so GitHub Pages profile now only manages `.nojekyll`; custom-domain host files are human-owned, and `publicationProfile=auto` only infers GitHub Pages from `*.github.io`. I also filled out [wa.task.2026.2026-05-19_1846-integrate-manifest.md](wa.task.2026.2026-05-19_1846-integrate-manifest.md:9) as a deferred manifest-driven `integrate`, not `import`, workflow.
+
+I also removed the current CNAME runtime surface: dropped `--cname`, removed the request/runtime handling, and changed tests to assert manually managed host files are preserved rather than managed. Current task notes, docs/specs, `src`, and `tests` now have no `CNAME`/`cname` hits. I left historical conversation/completed archive notes alone.
+
+Validation passed:
+- `deno task lint`
+- `deno test -A tests/integration/deploy_gh_pages_test.ts tests/e2e/deploy_gh_pages_cli_test.ts` 22 passed
+- `diff --check` for touched files
+
+Commit message:
+
+```text
+refactor: remove managed CNAME publication controls
+
+- Drop gh-pages --cname CLI and runtime handling
+- Treat custom-domain host files as manually managed for now
+- Preserve manually managed host files in deploy tests
+- Update current docs/specs/tasks to make GitHub Pages profile .nojekyll-only
+- Sketch deferred manifest-driven integrate workflow
+```
+
+# djradon_2026-05-18_1854_28
+
+"How should CI distinguish "no semantic changes" from "semantic changes were expected but not produced"?" -- re-brief me on this. I think we need a general check for whether working files have changed since last versioned/woven. This could actually make weaves more efficient, but fingerprint/timestamp checking could be expensive in itself. How do we check currently?
+
+# gpt-5.5_2026-05-18_1854_40
+
+I’ll re-ground this in the actual implementation before theorizing. I’m going to look for how `weave`, deploy/prepare, and payload/version code decide whether bytes changed or a run is a no-op.

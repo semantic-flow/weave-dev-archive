@@ -137,7 +137,7 @@ The publication-branch bootstrap can be small. It needs:
 - source ref or commit when the operator wants an explicit pin; otherwise Weave can infer only clean, inspectable git facts such as the checked-out branch and exact `HEAD` commit
 - publication checkout root or publication branch name
 - mesh base IRI, either supplied explicitly or inferred from GitHub remote metadata when the default project-site URL is appropriate
-- publication controls such as branch-create policy, `.nojekyll`, optional `CNAME`, local commit policy, and preserved-file policy
+- publication controls such as branch-create policy, `.nojekyll`, local commit policy, and preserved-file policy
 
 Initial target bindings are not required just to bootstrap the branch. They are required for the first useful materialization because Weave otherwise does not know which source file should become which mesh target, which source files are config inputs, which page-source assets should be materialized, or what designator paths should be integrated/extracted/generated.
 
@@ -228,7 +228,7 @@ The workflow should handle:
 - existing `gh-pages` branch
 - dirty publication worktree
 - stale generated files that should be removed before regeneration
-- preserving intentionally carried files such as `CNAME`, `.nojekyll`, or deployment metadata
+- preserving intentionally carried files such as `.nojekyll`, manually managed host files, or deployment metadata
 
 We should be very conservative about deletes. A publication branch reset is acceptable only behind an explicit flag and after preserving or re-creating known publication control files.
 
@@ -242,7 +242,7 @@ The local workflow should be split into phases that make the branch boundary vis
 4. Inspect publication state before writing. Reject dirty publication git worktrees by default, reject partial branch-published mesh bootstrap state, reject stale local/publication clutter such as `.weave`, `.sf-local-access.ttl`, or old `docs/_mesh`, and report preserved non-generated files. Dry-run should perform the same checks before simulating writes in a temporary copy.
 5. Bootstrap or reuse the publication mesh. If no `_mesh/_meta`, `_mesh/_inventory`, and `_mesh/_config` bootstrap exists, create the minimal mesh shell in the publication root. If all exist, reuse them only when the requested mesh base matches. If only some exist, fail closed rather than guessing how to repair them.
 6. Materialize source bindings. For each binding, read bytes from `sourceRoot/sourcePath`, compute the digest, copy/update the publication-root relative target path, upsert the `RepositorySourceLocator` block in publication config, and run existing integrate/payload-update/weave operations from the publication-local target bytes. This keeps normal generation inside the publication workspace after the initial command-scoped read.
-7. Validate generated publication output. Scan generated RDF for source/publication root paths and parent traversal, preserve publication controls such as `.nojekyll` and configured `CNAME`, and report created, updated, preserved, and woven paths. Later Accord checks can sit after this phase for fixture or CI acceptance.
+7. Validate generated publication output. Scan generated RDF for source/publication root paths and parent traversal, preserve publication controls such as `.nojekyll` and manually managed host files, and report created, updated, preserved, and woven paths. Later Accord checks can sit after this phase for fixture or CI acceptance.
 8. Leave git publication actions explicit. The local write path stops after validated file writes unless `--commit` is supplied. When commit support is requested, Weave stages the publication worktree after validation, creates a local commit only when there is a publication diff, and prints a reminder that the publication branch still needs to be pushed for GitHub Pages to update. Push support should remain a separate explicit operator/CI policy.
 
 The guardrails are intentionally stricter than a generic static-site build:
@@ -292,7 +292,7 @@ The ordering should be: settle the Semantic Flow Framework Fantasy Rules branch-
 Branch-based GitHub Pages usually serves the root of the selected branch. Weave should make sure the generated branch contains the usual publication affordances:
 
 - `.nojekyll` unless disabled
-- optional `CNAME`
+- manually managed host files
 - generated `index.html` for the mesh root when the root Knop/page exists
 - generated resource pages and historical pages
 - no accidental source branch clutter
@@ -325,13 +325,13 @@ This should eventually support CI permissions that are narrower than a blanket t
 - Cross-worktree access: cross-worktree source access should be host-local and command-scoped for the first implementation. A publication branch may carry durable source provenance and project-local expectations, but it should not grant itself arbitrary sibling checkout access.
 - Local generation workflow: resolve/inspect source and publication roots, reject unsafe publication state, bootstrap or reuse the publication mesh, materialize source bindings into publication-local target files, validate output, and stop before git commit unless explicit future flags request that action. Push remains external to the first commit-support slice.
 - Durable source binding model: use git repository/ref/path/digest as the default durable model, with raw URLs as optional access/rendering forms. URL-first bindings are too lossy for private repos, local worktrees, branch/ref semantics, and digest-pinned replay.
-- Preserved files: normal incremental deployment should preserve unknown non-generated files by default, and always preserve or recreate configured publication control files such as `.nojekyll` and `CNAME`. Reset/rebuild mode needs an explicit preserved-file policy and should refuse a dirty publication worktree unless forced.
+- Preserved files: normal incremental deployment should preserve unknown non-generated files by default, and always preserve or recreate configured publication control files such as `.nojekyll`. Reset/rebuild mode needs an explicit preserved-file policy and should refuse a dirty publication worktree unless forced.
 - Command composition: the deploy command should orchestrate existing mesh create, integrate/version/weave/generate seams rather than invent a parallel generator. It can expose a higher-level workflow because the branch-published operator experience is different, but the internal semantic operations should remain recognizable and testable.
 - No semantic payload change: if the source branch changes but resolved source bytes or semantic output do not change, Weave should validate, report no publication diff, skip local commit by default, and never push implicitly. Provenance-only updates, such as recording a new source commit for identical bytes, should be explicit policy rather than accidental churn.
 - Default history policy: the branch-published proof path should float with the current default effective config. In particular, it must not create `_mesh/_inventory`, `_knop/_meta`, or `_knop/_inventory` history merely to preserve old fixture-ladder shapes. Legacy/versioned inventory shapes belong behind explicit non-default policy and can remain covered by Alice Bio or other compatibility fixtures.
 - Default-history proof: the focused branch-published materialization slice now keeps MeshInventory, KnopMetadata, and KnopInventory current-only under runtime defaults while preserving the old explicit/versioned core shape when non-default policies are supplied.
 - Dirty publication roots: branch-published deploy now refuses a dirty publication git worktree root by default. Operators can explicitly opt into dirty-root deployment for local experimentation, but the default path requires committed/stashed/clean publication state before Weave writes generated output.
-- Publication controls: branch-published deploy preserves unknown files by leaving them alone, recreates `.nojekyll` when GitHub Pages protection is enabled, and can create or update a configured `CNAME` without persisting local checkout paths.
+- Publication controls: branch-published deploy preserves unknown files by leaving them alone and recreates `.nojekyll` when GitHub Pages protection is enabled without persisting local checkout paths.
 - Stale output validation: branch-published deploy rejects known stale local/publication clutter such as `.weave`, `.sf-local-access.ttl`, and old `docs/_mesh` sidecar output, then scans generated RDF support files for local source/publication root paths or parent-directory traversal before reporting success.
 - Rebuild mode: rebuild-from-scratch should exist, but only as a separate guarded task after incremental update behavior is proven. Track it in [[wa.task.2026.2026-05-14_1105-guarded-branch-published-rebuild]] rather than bundling it into the first branch-published deploy path.
 - Fixture placement: prefer converting Fantasy Rules to the branch-published ontology fixture if we keep only two main fixture repos. If that creates too much churn during fixture ladder regeneration, create focused temporary-git integration coverage first and defer the fixture move through [[wa.completed.2026.2026-05-07-fixture-ladder-generator]].
@@ -385,7 +385,7 @@ This should eventually support CI permissions that are narrower than a blanket t
 - Add tests proving normal deployment updates an existing publication branch incrementally, while rebuild/reset behavior requires an explicit guarded flag.
 - Add local integration coverage using a temporary git repo with a source branch and a `gh-pages` worktree.
 - Add CLI coverage proving omitted publication root prompts interactively and fails closed in non-interactive mode.
-- Verify generation preserves `.nojekyll` and configured `CNAME`, removes stale generated files only when requested, and refuses dirty publication worktrees by default.
+- Verify generation preserves `.nojekyll` and manually managed host files, removes stale generated files only when requested, and refuses dirty publication worktrees by default.
 - Add fixture or focused coverage for a branch-published ontology source where authored source stays off the publication branch.
 - Because Fantasy Rules moves to branch-published output, update its Accord manifests and fixture helper assumptions through [[wa.completed.2026.2026-05-07-fixture-ladder-generator]], using whole-tree completeness checks plus `ignorePaths` for intentional non-contract paths.
 - Rewrite the Semantic Flow Framework Fantasy Rules example/spec so the conformance story names source-branch authored ontology files, publication-branch mesh output, and repository-source locator provenance.
@@ -422,7 +422,7 @@ This should eventually support CI permissions that are narrower than a blanket t
 - [x] Prove the first clean-source-branch slice in focused tests: source root contains only authored source, publication root carries `_mesh` and generated state, public RDF has no sibling path leakage, reruns are incremental, and default MeshInventory, KnopMetadata, and KnopInventory support histories remain current-only.
 - [x] Add local integration coverage using an actual temporary git repo with source and `gh-pages` worktrees.
 - [x] Update [[wa.completed.2026.2026-05-07-fixture-ladder-generator]] to make fixture-generator work early but full fixture branch rerunging later, after branch-published topology and vocabulary are stable.
-- [x] Add `.nojekyll` and optional `CNAME` preservation behavior.
+- [x] Add `.nojekyll` handling and preserved-file behavior.
 - [x] Add validation that generated public mesh output does not include stale source-branch clutter or developer-specific sibling checkout paths.
 - [x] Implement incremental publication-branch updates as the default behavior.
 - [d] Add a guarded rebuild-from-scratch mode only after incremental updates are proven; deferred to [[wa.task.2026.2026-05-14_1105-guarded-branch-published-rebuild]].

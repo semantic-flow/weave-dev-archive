@@ -15,7 +15,7 @@ created: 1779080820388
 
 ## Summary
 
-`prepare gh-pages` is currently an orchestration command for detached publication roots, not a general synonym for `mesh create + integrate + weave`. Its mesh-bootstrap part is not a different semantic operation: it already delegates to `mesh create` when the publication root has no mesh. The rest exists because branch-published worktrees need publication-root checks and controls: read bytes from a separate source checkout, write generated mesh output to a publication root, avoid local path leakage, preserve publication host files such as `.nojekyll` / `CNAME`, validate the publication worktree, and record repository source provenance in `_knop/_sources/sources.ttl`.
+`prepare gh-pages` is currently an orchestration command for detached publication roots, not a general synonym for `mesh create + integrate + weave`. Its mesh-bootstrap part is not a different semantic operation: it already delegates to `mesh create` when the publication root has no mesh. The rest exists because branch-published worktrees need publication-root checks and controls: read bytes from a separate source checkout, write generated mesh output to a publication root, avoid local path leakage, apply publication host files such as `.nojekyll`, preserve manually managed host files, validate the publication worktree, and record repository source provenance in `_knop/_sources/sources.ttl`.
 
 Today it accepts at most one `--source-path` per invocation. A detached publication-root release that needs to materialize or refresh several source payloads therefore uses one `prepare gh-pages --source-path ...` run per source payload. That does not mean every later release operation needs to prepare every already-integrated payload again: once a payload is already integrated in the publication root and its working bytes are current, ordinary mesh commands such as `weave`, `weave version`, or `weave generate` should be able to operate from the publication mesh state. `prepare gh-pages` remains the source-sync/provenance operation for copying bytes from `--source-root`, detecting source-byte changes, and updating `_knop/_sources`.
 
@@ -27,7 +27,7 @@ So "bootstrap detached root" should split in two. The SemanticMesh bootstrap bel
 
 Even those wrapper concerns are mostly not branch-only:
 
-- Pages controls such as `.nojekyll` and `CNAME` are publication-host preset controls and can matter for sidecar `docs/` publication as much as branch publication. They should belong to a modular GitHub Pages preset, not to a branch-published mesh primitive.
+- Pages controls such as `.nojekyll` are publication-host preset controls and can matter for sidecar `docs/` publication as much as branch publication. They should belong to a modular GitHub Pages preset, not to a branch-published mesh primitive.
 - "source root and publication root are distinct" is a special case of source/output boundary validation, similar to the existing workspace-root / mesh-root relationship.
 - Dirty worktree checks are git safety policy, not mesh semantics. They may be useful before an automated commit, but ordinary local runs should be allowed to work with a dirty mesh root and report or warn clearly.
 - Stale generated-output checks should protect sidecar, whole-repo, and branch-published outputs. They are about not mixing old generated shapes with current output.
@@ -65,7 +65,7 @@ If all of these move to generic primitives or presets, `prepare gh-pages` can be
 - Should source synchronization be a first-class operation shared by sidecar and detached publication roots, with explicit modes such as live-local-current, materialized-current, pinned-state, and repository-ref/commit?
 - Should repository source bindings in `_knop/_sources` ever be dereferenced by ordinary `weave`, or should dereferencing external source bindings always stay in `prepare`/source-sync so `weave` remains a mesh-local operation?
 - Is there any responsibility left that is genuinely branch-only? If not, deprecate `prepare gh-pages` after equivalent mesh/source/publication primitives exist.
-- Should GitHub Pages controls such as `.nojekyll` and `CNAME` move to a host/publication-control preset so they are available for both sidecar and branch-published meshes, while `mesh create` remains host-neutral except when explicitly asked?
+- Should GitHub Pages controls such as `.nojekyll` move to a host/publication-control preset so they are available for both sidecar and branch-published meshes, while `mesh create` remains host-neutral except when explicitly asked?
 - What does the preset/plugin boundary look like for other publication targets such as GitLab Pages, Vercel, Netlify, or plain static hosting?
 - Should clean/dirty git worktree handling become a generic git-output policy, with "warn" as the normal local default and "fail if dirty" only for automated commit/publication modes?
 - Should local commit support become a generic mesh-root operation for any git worktree, rather than a `prepare gh-pages` option?
@@ -106,7 +106,7 @@ If all of these move to generic primitives or presets, `prepare gh-pages` can be
 - [x] Make no-op `prepare gh-pages --dry-run` output explicit.
 - [ ] Design separate-root / separate-repository materialized integrate or source-sync support that can be reused by `prepare gh-pages`.
 - [ ] Design a manifest/batch input over the shared source-sync/integrate layer for multi-payload releases.
-- [ ] Factor publication host controls (`.nojekyll`, `CNAME`) into a modular GitHub Pages preset usable by sidecar, whole-repo, and branch-published meshes.
+- [ ] Factor publication host controls such as `.nojekyll` into a modular GitHub Pages preset usable by sidecar, whole-repo, and branch-published meshes.
 - [ ] Sketch publication-host preset interfaces for GitHub Pages, GitLab Pages, Vercel, Netlify, and plain static output without committing to all implementations.
 - [ ] Factor stale-output and local-path-leak validation into generic publication validation.
 - [ ] Factor optional git commit support into a generic mesh-root git operation or output policy.

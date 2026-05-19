@@ -10,7 +10,7 @@ created: 1778766300000
 
 - Add an explicit rebuild-from-scratch mode for branch-published meshes after incremental publication is the proven default.
 - Keep rebuild behavior loud, guarded, and separate from ordinary `weave deploy gh-pages`.
-- Preserve intentional publication controls such as `.nojekyll`, `CNAME`, and declared manual files when rebuilding.
+- Preserve intentional publication controls such as `.nojekyll` and declared manual host files when rebuilding.
 - Prevent accidental source-branch writes, branch resets, force updates, or publication file deletion.
 
 ## Summary
@@ -59,7 +59,7 @@ The dry-run planner should grow enough detail to show:
 - Add dry-run tests showing rebuild deletion/preservation plans without mutating the publication root.
 - Add integration tests proving normal deploy does not delete unknown publication files.
 - Add integration tests proving rebuild refuses dirty publication worktrees by default.
-- Add tests for `.nojekyll`, `CNAME`, and declared preserved-file handling.
+- Add tests for `.nojekyll` and declared preserved-file handling.
 - Add tests proving rebuild does not touch the source checkout.
 
 ## Non-Goals

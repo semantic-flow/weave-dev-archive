@@ -102,7 +102,7 @@ For this dogfood pass, bootstrap input can stay outside `sflo:main` when it only
 - source checkout root;
 - publication worktree root;
 - publication branch name;
-- whether to create `.nojekyll`, `CNAME`, a local commit, or a dry-run plan;
+- whether to create `.nojekyll`, a local commit, or a dry-run plan;
 - first-run source binding arguments for one invocation;
 - explicit local log directory such as `/tmp/weave-logs`.
 
@@ -113,7 +113,7 @@ Bootstrap config starts to justify a persistent home when it captures stable pub
 - source repository URL, default source ref, and whether to record exact observed commits;
 - target materialization paths in the publication branch;
 - source-binding refresh policy, digest expectations, or pinning policy;
-- publication controls such as `.nojekyll`, `CNAME`, preserved files, local commit policy, and rebuild/force-reset guardrails;
+- publication controls such as `.nojekyll`, preserved files, local commit policy, and rebuild/force-reset guardrails;
 - ResourcePage generation and presentation defaults that should survive across runs;
 - config-resolution/profile choices that narrow behavior without granting new host trust.
 
