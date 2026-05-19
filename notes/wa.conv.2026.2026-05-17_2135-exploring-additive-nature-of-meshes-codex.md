@@ -2132,3 +2132,85 @@ docs(task): record remove-prepare implementation progress
 - Clarify weave orchestration wording around versioning and generation
 - Note that branch-published conformance rewrites wait on repository-backed integrate support
 ```
+
+# djradon_2026-05-18_2230_03
+
+proceed
+
+# gpt-5.5_2026-05-18_2230_09
+
+I’ll take the next unfinished slice from the remove-prepare task, starting with a quick status/read so I don’t step on anything you changed after the last pass. Then I’ll pick the smallest implementation-shaped item that advances the task.
+
+# gpt-5.5_2026-05-18_2230_21
+
+The clean repos make this easier. The next practical slice I see is replacing lingering `artifactResolutionMode_current` / over-eager `pinned` usage in examples and fixtures, since the ontology/SHACL already say `current` is legacy; that should shrink ambiguity without needing the bigger integrate CLI work yet.
+
+# gpt-5.5_2026-05-18_2230_33
+
+There are two layers here: the framework fixtures have old terms, and Weave still emits/accepts those old terms in a few extraction/page-source paths. I’m going to update the emitted “current working bytes” mode to `working` first and keep legacy read support, then adjust tests/fixtures around that. Exact pinned extraction may be a second pass if it turns out to be wider.
+
+# gpt-5.5_2026-05-18_2232_01
+
+I’m going to make `working` the emitted mode for mutable source resolution, while still accepting old `current` graphs as a legacy alias. That keeps old meshes readable but stops new generated fixtures from carrying the ambiguous term.
+
+# gpt-5.5_2026-05-18_2233_12
+
+Now I’ll do the mechanical expectation sweep: new fixtures and tests should say `artifactResolutionMode_working` for live working-byte bindings, and result objects should report `working` instead of the legacy `current` token.
+
+# gpt-5.5_2026-05-18_2233_53
+
+The ambiguity sweep is in place: generated/tested source bindings now use `working`, while runtime parsers still accept old `current`. I’m running the extract/weave/page/inventory tests that exercise those paths; this is the bit where small wording changes tend to reveal one missed assertion.
+
+# gpt-5.5_2026-05-18_2234_58
+
+The focused tests are green now. I left `pinned` alone for this slice because removing it from exact-state extraction output is a different behavior change: the parser is ready to treat exact requested states as exact by default, but the renderer/UI still deliberately displays the explicit pinned hint. I’ll record the current-mode cleanup as complete and leave the pinned cleanup as its own remaining item.
+
+# gpt-5.5_2026-05-18_2235_28
+
+The framework examples no longer contain `artifactResolutionMode_current`; the only remaining occurrences are intentional legacy-read support in Weave and the sflo ontology/SHACL deprecation text. I’m running lint now, then I’ll do final diff checks and status across the touched repos.
+
+# gpt-5.5_2026-05-18_2236_15
+
+Implemented the next slice: Weave now emits `artifactResolutionMode_working` for mutable source bindings instead of the legacy ambiguous `current`, while still accepting old `artifactResolutionMode_current` graphs as legacy input.
+
+I also updated the Semantic Flow Framework conformance examples to expect `working`, updated Weave tests/roadmap wording, and split the task note item so the remaining `pinned` exact-state question is tracked separately instead of being hidden inside the completed `current` cleanup.
+
+Validation passed:
+
+- `deno task check`
+- `deno task lint`
+- focused extract / weave / page / inventory tests
+- `deno fmt --check` on touched Weave files
+- `git diff --check` for touched repos
+
+Repo state:
+
+- `weave`: dirty with code/docs/test updates
+- `semantic-flow-framework`: dirty with conformance example updates
+- `sflo`: clean
+- `weave-dev-archive`: task note dirty, plus the live Kato transcript dirty
+
+Commit messages:
+
+```text
+core: emit working artifact resolution mode
+
+- Emit artifactResolutionMode_working for mutable extraction and page-source bindings
+- Keep legacy artifactResolutionMode_current readable as a working-source alias
+- Accept latestState in extraction source resolution paths
+- Update tests and roadmap wording for Working/LatestState semantics
+```
+
+```text
+docs(framework): use working resolution mode in conformance examples
+
+- Replace artifactResolutionMode_current with artifactResolutionMode_working in extraction assertions
+- Update page-source conformance assertions for working-source resolution
+```
+
+```text
+docs(task): split current-mode cleanup from pinned follow-up
+
+- Mark artifactResolutionMode_current fixture cleanup complete
+- Track exact-state pinned emission as a separate remaining decision
+```

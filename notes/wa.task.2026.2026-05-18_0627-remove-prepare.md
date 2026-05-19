@@ -283,7 +283,8 @@ No conceptual open issues currently block this task. Remaining choices are imple
 - [x] Update the core ontology with working/latest-state resolution mode vocabulary and clarified default exact/history semantics.
 - [ ] Define the payload versioning-intent surface: `weave set history`, `weave set next-state`, and explicit `weave version` state creation.
 - [x] Update core SHACL to add local working source-binding validation, repository-backed source-binding mode guidance, mutable-ref warnings, and warning/info severity distinctions.
-- [ ] Update existing examples and conformance fixtures that currently use `artifactResolutionMode_current` or overstate `artifactResolutionMode_pinned`.
+- [x] Update existing examples and conformance fixtures that currently use `artifactResolutionMode_current`.
+- [ ] Decide whether generated exact-state extraction-source fixtures should omit `artifactResolutionMode_pinned` now that exact target coordinates imply exact identity.
 - [x] Introduce a publication-host preset abstraction in Weave, starting with a GitHub Pages preset for `.nojekyll`.
 - [x] Persist the resolved publication profile in mesh config with `sfcfg:hasPublicationProfile`.
 - [x] Remove implicit GitHub-specific static-file creation from core `mesh create`; allow explicit create-time publication profiles to call the preset where needed.
