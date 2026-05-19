@@ -2561,3 +2561,436 @@ docs(tasks): mark payload version intent implemented
 - record set history and set next-state as completed remove-prepare work
 - resolve hasNextStateSegmentHint as progression metadata
 ```
+
+# djradon_2026-05-18_2349_23
+
+proceed
+
+# gpt-5.5_2026-05-18_2349_29
+
+I’ll keep going into the actual blocker now: `integrate` needs to stop being limited to mesh-local or policy-approved relative paths and be able to record repository-backed source bindings for detached publication roots. I’ll start by reading the current integrate planner/runtime and the source locator vocabulary so the patch lands on the existing model rather than inventing a parallel one.
+
+# gpt-5.5_2026-05-18_2349_59
+
+A detail I’m watching here: repository provenance alone does not make later `weave` able to read a sibling checkout. The first useful slice should record repository source facts, but it also needs an explicit local operational locator for runs that actually read the checked-out file. That keeps provenance and runtime access separate, which is exactly the line we’ve been drawing.
+
+# gpt-5.5_2026-05-18_2350_45
+
+I’m picking this back up at the integrate layer, with the recent `_current`/`_pinned` cleanup treated as already settled. First I’m going to re-open the integrate and source-binding code paths so the next edit lands in the right place rather than just adding vocabulary-shaped confetti.
+
+# gpt-5.5_2026-05-18_2351_03
+
+The task note is already aligned with the bigger design: `integrate` is the semantic boundary, `import` is copy-into-mesh, and `weave` remains a consumer of governed locators. I’m going to implement the first practical integrate slice: record source bindings and repository provenance in the Knop source registry while preserving the current “source bytes stay where they are” behavior.
+
+# gpt-5.5_2026-05-18_2353_35
+
+I’m about to edit the core planner and runtime CLI. The shape I’m adding is deliberately small: repository metadata is optional, and when supplied it creates `D/_knop/_sources/sources.ttl`; it does not fetch, copy, or make later `weave` magically know about a checkout beyond the existing local path policy.
+
+# gpt-5.5_2026-05-18_2357_31
+
+The first implementation pass is in: repository-backed `integrate` now has CLI flags and writes a Knop source registry with target path, working resolution mode, repository URL/ref/path/commit, and digest evidence. I’m running the focused checks now; I expect at least one round of small type/format cleanup because this touches CLI option typing and Turtle rendering.
+
+# gpt-5.5_2026-05-18_2358_13
+
+The focused tests are green after the first cleanup. I’m updating the behavior notes now so the docs say the same thing the implementation does: source registry provenance is an optional integrate output when repository metadata is supplied, and the digest is observed evidence, not a secret fetch/import step.
+
+# gpt-5.5_2026-05-18_2358_50
+
+One important cleanup surfaced: there’s no `gh_pages.ts` file left in the codebase, but the fixture-ladder tests still encode `prepare.ghPages` transitions and command arrays. That’s now the next legacy pocket; I’m going to trace that generator instead of leaving the old operation name alive in test fixtures.
+
+# gpt-5.5_2026-05-18_2359_56
+
+I’m going to leave the branch fixture replay manifests alone for this slice. They still describe the old fixture-generation history, and replacing those command sequences honestly needs either an implemented source-binding refresh command or regenerated fixture ladders. The active CLI no longer has `prepare gh-pages`, and the new integrate path is now covered by fresh tests. Next I’m running lint and a broader format/check pass so we know the new code is tidy.
+
+# gpt-5.5_2026-05-19_0000_20
+
+The code path is clean under `deno task check`, `deno task lint`, focused integrate tests, and diff whitespace checks across the involved repos. I’m going to run the small “prepare is gone” CLI test too, because it’s the guardrail that matters for the no-legacy-support bit.
+
+# gpt-5.5_2026-05-19_0001_12
+
+Since validation is already wired, I’m taking the last cheap validation item rather than just marking it “later”: publication validation can scan public RDF/HTML for obvious host-local leakage without trying to solve source/publication boundary tracking. I’ll keep it conservative: file URLs and the current mesh/home absolute paths, not a broad guess about every `/home`-looking string.
+
+# djradon_2026-05-19_0001_18
+
+we will completely regenerate all the ladders after things have settled down.
+
+# gpt-5.5_2026-05-19_0001_30
+
+Agreed. I’ll treat the branch fixture ladders and their replay manifests as intentionally stale until the operation surface settles, so I won’t spend time sanding down `prepare.ghPages` references inside those generated/historical ladders right now. I’m just finishing the active runtime/doc changes and their direct tests.
+
+# gpt-5.5_2026-05-19_0002_33
+
+The validation addition is holding: integration tests and CLI validation tests pass, including the new leakage check. I’m doing the final lint/whitespace sweep now, then I’ll give you the repo-separated commit messages so this doesn’t become one giant mystery commit.
+
+# gpt-5.5_2026-05-19_0003_08
+
+Implemented the next slice and left the ladders alone for later full regeneration.
+
+In `weave`:
+- `weave integrate` now accepts repository source metadata:
+  - `--source-repository-url`
+  - `--source-repository-ref`
+  - `--source-repository-commit`
+  - `--source-repository-path`
+  - `--source-digest`
+  - `--source-binding-id`
+- Repository-backed integrate writes `D/_knop/_sources/sources.ttl` with `KnopSourceRegistry`, `ArtifactResolutionTarget`, working resolution mode, repo locator facts, and digest evidence.
+- Source bytes still stay where they are. No fetch, copy, or import magic.
+- Publication validation now includes conservative local path leakage checks for public `.ttl` / `.html`, plus the existing GitHub Pages `.nojekyll` preset check.
+- Confirmed there is no `gh_pages.ts`; only the “prepare is gone” guard test remains.
+- Left generated/historical branch fixture ladder references to `prepare.ghPages` alone, per your note.
+
+Docs/spec updates:
+- Updated `wu.cli-reference.md`.
+- Updated framework specs for integrate behavior and publication source binding.
+- Updated the remove-prepare task progress note.
+
+Verification passed:
+- `deno task check`
+- `deno task lint`
+- `deno test -A src/core/integrate/integrate_test.ts tests/e2e/integrate_cli_test.ts`
+- `deno test -A tests/integration/validate_version_generate_test.ts`
+- `deno test -A tests/e2e/weave_cli_test.ts`
+- `deno test -A tests/e2e/deploy_gh_pages_cli_test.ts`
+- `git diff --check` across weave, sflo, semantic-flow-framework, and weave-dev-archive
+
+Separate commit messages:
+
+```text
+integrate: record repository source bindings
+
+- add repository-backed source metadata flags to weave integrate
+- write Knop source registries for integrated payload sources
+- record working resolution mode, repository locator facts, and digest evidence
+- add publication validation for conservative host-local path leakage
+- update CLI docs and focused integration/e2e coverage
+```
+
+```text
+docs: clarify integrate source registry provenance
+
+- document repository-backed integrate source bindings
+- clarify observed digest evidence is not import, refresh, or fetch behavior
+```
+
+```text
+docs: update remove-prepare task progress
+
+- mark integrate source-binding, validation, and gh-pages cleanup progress
+- note remaining dirty-worktree and explicit import/refresh work as future slices
+```
+
+`sflo` currently has no dirty changes in this workspace.
+
+# djradon_2026-05-19_0004_52
+
+don't forget to name the repo that commit messages are for, sometimes it's confusing.
+
+proceed
+
+# gpt-5.5_2026-05-19_0005_03
+
+Got it. I’ll label commit messages by repository from here on, so “weave”, “semantic-flow-framework”, “weave-dev-archive”, etc. are impossible to miss. I’m going to continue with the non-generated cleanup around the remove-prepare task and avoid touching the fixture ladders until we regenerate them wholesale.
+
+# gpt-5.5_2026-05-19_0005_15
+
+The active code repos are clean right now; only the archive task/transcript notes are dirty. That means the previous implementation slice was already committed or otherwise settled. I’m going to use the task note as the source of truth for the next slice and avoid generated fixture-ladder churn.
+
+# gpt-5.5_2026-05-19_0005_32
+
+The notes still say detached SFLO source integration is pending, and that’s accurate if the source checkout sits outside the publication mesh’s configured workspace. The next useful slice is not more provenance RDF; it’s the operational path policy needed for `integrate` to read a checked-out sibling/separate source repo without pretending that path is portable mesh config.
+
+# gpt-5.5_2026-05-19_0006_12
+
+I found the important gap: host-local access rules already exist (`~/.sf-local-access.ttl`), but `integrate --grant-source-directory` only knows how to write mesh-carried grants, and those are intentionally bounded by the workspace. I’m going to teach that flag to create a host-local grant when the source checkout is outside the mesh workspace, which is the missing “separate repo checkout” piece.
+
+# gpt-5.5_2026-05-19_0008_29
+
+The operational grant code is in place now. I’m going to update the SFLO example/runbook language from “once that CLI lands” to the current command shape: `integrate` from `$SFLO_SRC`, `--grant-source-directory "$SFLO_SRC"` for host-local access, and repository metadata flags for portable provenance.
+
+# gpt-5.5_2026-05-19_0009_39
+
+I’ll pick up the separate-checkout integrate slice now and keep the repo names explicit in any commit-message suggestions. First I’m going to re-check the local diff and the spec/runbook notes so I don’t trample any of the work already in motion.
+
+# gpt-5.5_2026-05-19_0009_56
+
+The diff is in the right neighborhood: separate checkout grants now land in `~/.sf-local-access.ttl`, while workspace-local grants still go to mesh config. I also found two docs that still talk as if detached source integration has not landed, so I’ll tighten those after the focused test run.
+
+# gpt-5.5_2026-05-19_0010_49
+
+I’m going to make a small docs/spec pass before running tests: the code change makes the “separate checkout is still missing” language false, but latest-state/exact source-policy and fixture regeneration are still deliberately future work. This is exactly the sort of half-green boundary that can confuse us later if the notes don’t say it plainly.
+
+# gpt-5.5_2026-05-19_0011_39
+
+The notes now say “working-source detached integrate is available” rather than “still blocked,” and fixture-ladder cleanup is explicitly deferred to the regeneration pass you mentioned. I’m running the focused policy and CLI tests next; after that I’ll do the broader check/lint pass.
+
+# gpt-5.5_2026-05-19_0012_08
+
+Focused tests are green, including the new “source checkout outside the publication mesh” CLI case. I’m moving to the repo-level static checks now; if those shake out cleanly, this slice is in good shape.
+
+# gpt-5.5_2026-05-19_0012_30
+
+Static checks are clean: `fmt:check`, `lint`, `check`, and `diff --check` all passed. I’m going to run the full Deno test suite once as the last verification pass, since this touched shared path-policy behavior.
+
+# gpt-5.5_2026-05-19_0014_15
+
+The full suite found one existing-looking integration failure in `executeWeave ignores settled Knops before loading missing working artifacts`: it tries to read a deliberately missing `bob/bio` payload. I’m going to inspect that test before calling it unrelated; there may be a subtle interaction with the path-policy changes, and I’d rather earn the “not mine” label than guess.
+
+# gpt-5.5_2026-05-19_0015_27
+
+That failing fixture was describing a “settled” supplemental payload with only a loose `hasArtifactHistory` pointer, but the current detector treats a history as declared only when the history node is actually typed. I’m going to make the fixture say what the test name says, then rerun the targeted test and the suite.
+
+# gpt-5.5_2026-05-19_0016_04
+
+That one was indeed a too-thin test fixture, not the separate-checkout code. I made the supplemental “settled” payload declare an actual current history and latest state, and the targeted test is green. Full suite is running once more.
+
+# gpt-5.5_2026-05-19_0017_47
+
+Full tests are green now: 441 passed. I changed the one test fixture because it was claiming “settled” without declaring a usable history/state; that made the detector do the right thing for a not-settled payload and trip over the missing file. Last pass is re-running static checks after that fixture tweak.
+
+# gpt-5.5_2026-05-19_0018_38
+
+Implemented the separate-checkout integrate path.
+
+Key changes:
+- `weave integrate --grant-source-directory` now writes workspace-contained grants to mesh config, but writes separate-checkout grants to host-local `~/.sf-local-access.ttl`.
+- Repository-backed integrate now works with source bytes outside the publication mesh without copying them into the mesh.
+- Updated CLI docs and the SFLO example sequence to use `integrate`, `set history`, `set next-state`, and `version`.
+- Updated SFLO/framework/task notes to say working-source detached integration is available, while latest-state/exact source policy and fixture-ladder regeneration remain later work.
+- Tightened one weave test fixture so its “settled” supplemental payload actually declares a history/state.
+
+Verification:
+- `deno task fmt:check`
+- `deno task lint`
+- `deno task check`
+- `deno task test` -> `441 passed`
+- `git diff --check` across `weave`, `sflo`, `semantic-flow-framework`, and `weave-dev-archive`
+
+Suggested commit messages:
+
+```text
+weave: support host-local grants for detached integrate sources
+
+- add host-local workingLocalRelativePath grant rendering for ~/.sf-local-access.ttl
+- let integrate grant separate source checkouts without widening mesh config
+- cover detached source checkout integration with repository provenance
+- update CLI docs and SFLO dogfooding examples
+```
+
+```text
+sflo: update release runbook for detached integrate availability
+
+- describe repository-backed working-source integrate as the current detached publication path
+- keep automated payload publication blocked on release validation and dry-run/reporting
+```
+
+```text
+semantic-flow-framework: clarify integrate source policy specs
+
+- document host-local operational grants for separate checkouts
+- distinguish implemented working-source integrate from later latest-state and exact source policy
+```
+
+```text
+weave-dev-archive: update remove-prepare task progress
+
+- mark repository-backed working-source integrate and host-local grants complete
+- defer latest-state/exact source policy and branch fixture regeneration
+```
+
+Note: `weave-dev-archive` also has the ongoing Kato conversation transcript modified.
+
+# djradon_2026-05-19_0020_13
+
+what's the "latest state" work that's coming "later"? Later as part of this task? Or just something we need a separate task for , to complete before ladder regen.
+
+# gpt-5.5_2026-05-19_0020_31
+
+“Latest state” here means a source binding that resolves to settled mesh state instead of mutable working bytes.
+
+Concretely, current implemented path is:
+
+- `integrate` points at a checked-out working source file.
+- It records repo/ref/path plus commit/digest evidence.
+- It leaves bytes outside the publication mesh.
+- That is enough for SFLO branch publication and ladder regen.
+
+The later `latestState` work would be something like:
+
+- CLI/API way to say “this source binding targets artifact X, resolve its latest settled `HistoricalState`.”
+- Runtime resolver for latest-across-histories or latest-in-requested-history.
+- SHACL/tests for that mode.
+- Docs/examples proving it does not read the working file.
+
+I don’t think that belongs in this task anymore. It should be a separate follow-up task, and I do **not** think it blocks ladder regeneration unless we specifically want the regenerated ladders to demonstrate `latestState`.
+
+For the branch/SFLO ladders, I’d use the implemented working-source path with commit/digest evidence. That’s deterministic enough for release-tagged source bytes and fits the “integrate leaves source where it is” model. The note should probably say: latest-state/exact source-policy is deferred to a future task, not required before fixture-ladder regeneration.
+
+# djradon_2026-05-19_0023_21
+
+sounds good. Please fill out [wa.task.2026.2026-05-19_0022-lateststate-improvement.md](wa.task.2026.2026-05-19_0022-lateststate-improvement.md) and include examples in the summary that demonstrate its importance.
+
+# gpt-5.5_2026-05-19_0023_27
+
+I’ll fill that task note as a separate follow-up, with concrete examples showing why `latestState` is useful but not a blocker for the current branch-publication work. I’ll read the empty/current note and nearby task style first so the shape matches the archive.
+
+# gpt-5.5_2026-05-19_0023_44
+
+I found the new note is just the skeleton. I’m going to make it a real follow-up task, and I’ll be fairly explicit that `latestState` is already vocabulary-level work, while the remaining improvement is resolver/API behavior plus examples/tests.
+
+# gpt-5.5_2026-05-19_0024_30
+
+The task note is now filled in with examples, decisions, and a plan. I’m doing a quick read/diff check so we catch any obvious note-structure or trailing-whitespace weirdness before I hand it back.
+
+# gpt-5.5_2026-05-19_0024_36
+
+Filled out [wa.task.2026.2026-05-19_0022-lateststate-improvement.md](wa.task.2026.2026-05-19_0022-lateststate-improvement.md).
+
+I framed it as a separate follow-up task, not part of remove-prepare and not blocking ladder regeneration. The summary includes examples for local drafts, cross-artifact term pages, dependency meshes, and CI release flow, so the “why this matters” is right up front.
+
+Verification: `git -C dependencies/github.com/semantic-flow/weave-dev-archive diff --check` passed.
+
+Suggested commit message:
+
+```text
+weave-dev-archive: add latestState improvement task
+
+- separate latest-state resolver work from remove-prepare
+- document examples for settled-state resolution
+- define decisions, non-goals, testing, and implementation plan
+```
+
+# djradon_2026-05-19_0028_28
+
+proceed
+
+# gpt-5.5_2026-05-19_0028_46
+
+I’ll take “proceed” as moving from the note into the first implementation slice: make `latestState` actually resolve for the first practical consumer, likely artifact-backed page sources. I’ll inspect that path and the existing fail-closed test, then keep the edits tight.
+
+# gpt-5.5_2026-05-19_0030_12
+
+I’ve found the first consumer cleanly: custom ResourcePage page sources already parse `hasTargetArtifact` and currently reject non-`working` modes. I’m going to teach that path to resolve `latestState` for payload artifacts through their selected history/latest state, while keeping exact states, fallback, and broad latest-across-histories out of this slice.
+
+# gpt-5.5_2026-05-19_0031_22
+
+The first code/test pass is in: latest-state page sources now read the settled snapshot, and there’s a failure test for asking latest-state from an artifact with no settled history. I’m formatting and running the focused integration tests now; if anything complains, I’ll tighten the slice.
+
+# gpt-5.5_2026-05-19_0032_30
+
+I’ll keep moving from the latestState implementation slice, then tighten the task/spec notes so the code and design don’t drift apart. First I’m re-reading the local guidance and the touched areas so I don’t step on anything stale.
+
+# gpt-5.5_2026-05-19_0032_36
+
+The root repo has just the latestState code/tests dirty right now; the archive has the new task note plus prior task/conversation edits. I’m checking the related specs and subrepo states next, then I’ll add the missing requested-history coverage before the broader verification run.
+
+# gpt-5.5_2026-05-19_0033_31
+
+I found one small implementation smell worth fixing while we’re here: latest-state resolution currently asks the payload inventory for the working file even when the historical state already names a settled located file. I’m going to make that lazier, so `latestState` stays semantically settled-first instead of accidentally depending on working metadata.
+
+# gpt-5.5_2026-05-19_0034_06
+
+The requested-history case now has executable coverage: one page source asks for history002 while the artifact’s current history is history001, so the test proves history-bounded latest resolution is not just “use the current history by habit.” I’m formatting and running the focused tests now.
+
+# gpt-5.5_2026-05-19_0034_46
+
+The focused tests are green. I’m updating the behavior wording now so it says exactly what this slice does: payload page sources can resolve latest settled state via a requested history, or via `currentArtifactHistory` when no history is requested; broad “latest across all histories” stays deferred.
+
+# gpt-5.5_2026-05-19_0035_20
+
+Diff hygiene is clean so far. I’m running the repo validation trio now (`fmt:check`, `lint`, `check`); after that I’ll run the full test task unless the linter finds something worth fixing first.
+
+# gpt-5.5_2026-05-19_0035_31
+
+`fmt:check`, `lint`, and `check` all passed. I’m starting the full `deno task test` now; that’s the slower one, but it’s the right level for a shared page-resolution change.
+
+# djradon_2026-05-19_0035_48
+
+I actually meant proceed  with [wa.task.2026.2026-05-18_0627-remove-prepare.md](wa.task.2026.2026-05-18_0627-remove-prepare.md) -- but you can continue now that you started.
+
+# gpt-5.5_2026-05-19_0035_54
+
+Got it, thanks for the correction. I’ll finish this latestState slice cleanly since it’s already under test, then I’ll hand you a clear checkpoint and pivot back to the remove-prepare task rather than drifting further.
+
+# gpt-5.5_2026-05-19_0036_20
+
+The full test suite is still running quietly; the e2e section can take a bit. Once it returns, I’ll avoid adding more latestState scope unless something is broken.
+
+# gpt-5.5_2026-05-19_0038_03
+
+The full test suite passed: 443 tests green. I’m taking that as a clean checkpoint for the latestState slice, and now I’m switching back to the remove-prepare task you actually meant.
+
+# gpt-5.5_2026-05-19_0038_20
+
+Back on remove-prepare, most of the heavy code path is already in place: no `prepare gh-pages` command, publication profiles, scoped validation, and source-binding support are all covered by the suite. I did spot one cleanup candidate: the remaining guard test lives in a legacy-named `deploy_gh_pages` file, which muddies the “no special branch command” story, so I’m going to rename that guard before calling the task slice done.
+
+# gpt-5.5_2026-05-19_0038_42
+
+I renamed the legacy-named guard test and marked the remove-prepare leftovers that we had already decided are future work as deferred, not quietly “still pending.” Now I’m running the renamed guard plus the standard checks that are affected by a test-file move.
+
+# gpt-5.5_2026-05-19_0039_20
+
+One more verification pass makes sense after the test rename, even though the content is the same. I’m rerunning the full suite so the final checkpoint reflects the current file layout exactly.
+
+# gpt-5.5_2026-05-19_0039_58
+
+The suite is through the unit/runtime sections and into e2e; no failures so far. I’ll keep polling until it completes.
+
+# gpt-5.5_2026-05-19_0042_41
+
+Finished the latestState slice I had started, then pivoted back to the remove-prepare task cleanup.
+
+Changed:
+- [page_definition.ts](../../../../../src/runtime/weave/page_definition.ts): payload-backed `ResourcePageSource` now supports `artifactResolutionMode_latestState` via `currentArtifactHistory`, and treats `hasRequestedTargetHistory` as latest-in-that-history.
+- [weave_test.ts](../../../../../tests/integration/weave_test.ts): added coverage for latest-state page sources, requested-history resolution, and fail-closed missing-history behavior.
+- Renamed the old guard test from `deploy_gh_pages_cli_test.ts` to [prepare_removed_cli_test.ts](../../../../../tests/e2e/prepare_removed_cli_test.ts).
+- Updated latest-state behavior docs in [sf.spec.2026-04-11-identifier-page-customization-and-root-lifecycle.md](../../semantic-flow-framework/notes/sf.spec.2026-04-11-identifier-page-customization-and-root-lifecycle.md) and [sf.glossary.md](../../semantic-flow-framework/notes/sf.glossary.md).
+- Updated [wa.task.2026.2026-05-19_0022-lateststate-improvement.md](wa.task.2026.2026-05-19_0022-lateststate-improvement.md) and marked remove-prepare future-work items as deferred in [wa.task.2026.2026-05-18_0627-remove-prepare.md](wa.task.2026.2026-05-18_0627-remove-prepare.md).
+
+Verification:
+- `deno task fmt:check`
+- `deno task lint`
+- `deno task check`
+- `deno task test` -> 443 passed, 0 failed
+- `git diff --check` clean for touched repos
+
+Pending dirty repo note: `sflo` still has the release-runbook edit from the prior work, and `weave-dev-archive` also has the Kato conversation file dirty.
+
+Suggested commit messages:
+
+`weave` repo:
+```text
+weave: support latest-state ResourcePage artifact sources
+
+- Resolve payload-backed ResourcePageSource latestState requests through currentArtifactHistory
+- Treat requested target histories as latest-in-that-history page-source bindings
+- Add fail-closed coverage for missing settled history
+- Rename the removed prepare command guard away from the old gh-pages/deploy naming
+```
+
+`semantic-flow-framework` repo:
+```text
+semantic-flow-framework: document latest-state page-source resolution
+
+- Clarify payload ResourcePageSource latestState behavior
+- Document requested-history and current-history resolution boundaries
+- Note fail-closed behavior for ambiguous latest-across-history cases
+```
+
+`weave-dev-archive` repo:
+```text
+weave-dev-archive: update remove-prepare and latestState task notes
+
+- Record latestState implementation progress and remaining deferred scope
+- Mark remove-prepare import, refresh, dirty-commit, and boundary-check work as deferred
+- Update the prepare removal task to reference the renamed guard test
+```
+
+`sflo` repo:
+```text
+sflo: update ontology release runbook for composed release actions
+
+- Describe regenerate and release as separate CI actions
+- Distinguish weave validation from sflo release validation
+- Remove dependency on the retired prepare gh-pages workflow
+```

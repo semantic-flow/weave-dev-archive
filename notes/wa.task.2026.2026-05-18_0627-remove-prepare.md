@@ -188,6 +188,20 @@ No conceptual open issues currently block this task. Remaining choices are imple
 - `weave` must not hide source fetch/copy/import or host publication setup.
 - `sf.api` should stay an overview and link to behavior specs for detailed contracts.
 
+## Implementation Progress
+
+- [x] Removed the `prepare gh-pages` command surface from the active CLI/docs instead of keeping a compatibility wrapper.
+- [x] Added persisted publication profile vocabulary and GitHub Pages `.nojekyll` preset behavior outside core mesh bootstrap.
+- [x] Replaced ambiguous artifact-resolution `_current` / `_pinned` modes with explicit working/latest-state/exact-coordinate semantics.
+- [x] Added payload-only `weave set history` and `weave set next-state` intent surfaces so selecting a history/state hint does not itself version a payload.
+- [x] Added repository-backed `integrate` source-binding support: when repository metadata is supplied, Weave creates the Knop `_sources/sources.ttl` registry, records `targetLocalRelativePath`, working resolution mode, repository URL/ref/path/commit facts, and digest evidence, while leaving source bytes in place.
+- [x] Added host-local operational grants for separate source checkouts: `integrate --grant-source-directory` writes workspace-contained grants to mesh config and separate-checkout grants to `~/.sf-local-access.ttl`, keeping absolute host paths out of public mesh facts.
+- [x] Confirmed no `gh_pages.ts` implementation file remains; the remaining `prepare_removed_cli_test.ts` guard asserts the removed command is rejected.
+- [x] Added scoped validation commands and wired `weave --validate-before` / `weave --validate-after` to whole-mesh validation.
+- [x] Added first-pass publication validation for conservative local path leakage and GitHub Pages `.nojekyll` host preset satisfaction.
+- [d] Keep dirty worktree checks scoped to future optional commit handling only.
+- [d] Keep explicit import/copy and later update/refresh as separate future work; do not add manifest-driven import as part of this task.
+
 ## Contract Changes
 
 - Add a new Semantic Flow behavior spec for publication source binding and host presets: [[sf.spec.2026-05-18-publication-source-binding]].
@@ -286,14 +300,15 @@ No conceptual open issues currently block this task. Remaining choices are imple
 - [x] Introduce a publication-host preset abstraction in Weave, starting with a GitHub Pages preset for `.nojekyll`.
 - [x] Persist the resolved publication profile in mesh config with `sfcfg:hasPublicationProfile`.
 - [x] Remove implicit GitHub-specific static-file creation from core `mesh create`; allow explicit create-time publication profiles to call the preset where needed.
-- [ ] Extend `integrate` so branch-published and separate-repository ontology sources can bind repository-backed working files with working, latest-state, or exact source policy without copying them into the publication mesh.
-- [ ] Implement or finish the general `weave import` CLI surface only for one-target copy acquisition into the mesh/publication tree, with repository/ref/path/digest provenance where available.
-- [ ] Defer manifest-driven or batch import until a workflow proves it is useful.
+- [x] Extend `integrate` so branch-published and separate-repository ontology sources can bind repository-backed working files without copying them into the publication mesh.
+- [d] Defer latest-state and exact source-policy support for `integrate` until a workflow needs settled source-state resolution instead of checked-out working bytes plus commit/digest evidence.
+- [d] Implement or finish the general `weave import` CLI surface only for one-target copy acquisition into the mesh/publication tree, with repository/ref/path/digest provenance where available.
+- [d] Defer manifest-driven or batch import until a workflow proves it is useful.
 - [ ] Defer manifest-driven integrate to [[wa.task.2026.2026-05-19_1846-integrate-manifest]].
-- [ ] Define the later update/refresh surface for refreshing already-imported or source-bound artifacts.
-- [ ] Ensure `integrate` can bind mesh-local, policy-approved live local, and repository-backed working files without copying them.
+- [d] Define the later update/refresh surface for refreshing already-imported or source-bound artifacts.
+- [x] Ensure `integrate` can bind mesh-local, policy-approved live local, and repository-backed working files without copying them.
 - [x] Define the initial `weave validate publication` scope around concrete publication safety checks, not generated-output freshness.
-- [ ] Defer source-root/publication-root boundary validation until path planning and policy hooks make it precise.
+- [d] Defer source-root/publication-root boundary validation until path planning and policy hooks make it precise.
 - [x] Add `weave validate mesh` for whole-mesh validation, with room to grow as mesh validation becomes more complete.
 - [x] Add `weave validate publication` for publication-readiness validation.
 - [x] Add `weave --validate-before` and `weave --validate-after`, both calling whole-mesh validation.
@@ -301,7 +316,7 @@ No conceptual open issues currently block this task. Remaining choices are imple
 - [x] Remove the `prepare gh-pages` command surface.
 - [x] Remove the legacy `src/runtime/deploy/gh_pages.ts` implementation island and its dedicated integration tests; retained behavior is now either covered by mesh create publication profiles or deferred to integrate/source-binding/import work.
 - [x] Remove runnable `prepare gh-pages` examples from [[wu.cli-reference]], the SFLO CLI examples, and the current SFLO release runbook.
-- [ ] Replace remaining branch-published conformance examples with the composed release sequence once the integrate/source-binding CLI surface exists.
+- [d] Replace remaining branch-published conformance examples with the composed release sequence during the planned fixture-ladder regeneration.
 - [ ] Add automated release rerun tests covering unchanged source/config/designator no-op behavior.
 
-The branch-published conformance manifests still mention the old replay commands because the current `integrate` CLI can follow allowed local working bytes but cannot yet record repository/ref/commit source bindings without copying source files into the publication root. Rewrite those manifests with the composed sequence after that source-binding surface lands.
+The branch-published conformance manifests still mention the old replay commands. Rewrite those manifests with the composed sequence during the planned fixture-ladder regeneration rather than patching generated ladders one-by-one.
