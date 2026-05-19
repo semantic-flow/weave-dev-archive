@@ -316,7 +316,8 @@ No conceptual open issues currently block this task. Remaining choices are imple
 - [x] Remove the `prepare gh-pages` command surface.
 - [x] Remove the legacy `src/runtime/deploy/gh_pages.ts` implementation island and its dedicated integration tests; retained behavior is now either covered by mesh create publication profiles or deferred to integrate/source-binding/import work.
 - [x] Remove runnable `prepare gh-pages` examples from [[wu.cli-reference]], the SFLO CLI examples, and the current SFLO release runbook.
-- [d] Replace remaining branch-published conformance examples with the composed release sequence during the planned fixture-ladder regeneration.
+- [x] Replace branch-published bootstrap and new source-binding conformance replay profiles with composed `mesh create`, `integrate`, and `weave` command sequences.
+- [d] Defer the branch-published first-release replay rewrite until Weave has an explicit source-binding provenance refresh/update surface for already-integrated external working sources.
 - [ ] Add CI-action idempotency tests before relying on automated SFLO release workflows: rerunning `weave generate` over unchanged source/config/designators should create/update nothing or reproduce byte-identical generated output, validation reruns should stay clean, and release/version reruns with the same explicit state target should fail closed or report a deliberate no-op rather than minting duplicate states. Do not make this a generic dirty-source heuristic for default `weave`.
 
-The branch-published conformance manifests still mention the old replay commands. Rewrite those manifests with the composed sequence during the planned fixture-ladder regeneration rather than patching generated ladders one-by-one.
+The branch-published conformance manifests no longer use `prepare gh-pages` for publication bootstrap or initial source integrations. The remaining first-release manifest is different: it needs to update already-integrated external source-binding provenance from a later source ref before weaving release states. That should be an explicit update/refresh API, not a disguised `prepare` replay or a second first-time `integrate`.
