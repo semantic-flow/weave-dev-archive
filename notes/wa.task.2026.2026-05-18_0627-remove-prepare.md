@@ -25,7 +25,7 @@ Those responsibilities should be dissolved into reusable pieces:
 - `mesh.create` bootstraps the mesh support surface.
 - `integrate` binds available source bytes to target designators and payload artifacts without moving those bytes.
 - `import` copies a working file into the mesh or publication tree when the copy itself should become governed local working content.
-- `weave` is the default orchestration surface: it records eligible governed working artifacts and, by default, runs the configured versioning, validation, and generation phases.
+- `weave` is the default orchestration surface for already governed targets: by default it runs the configured versioning, validation, and generation phases. Its versioning phase may append historical states; generation can also render governed artifacts that are intentionally unversioned.
 - `version` is the narrower surface for explicitly appending versioned payload states.
 - `validate` is the narrower surface for reporting mesh or publication problems without recording new state.
 - `generate` is the narrower surface for rendering ResourcePages and other generated surfaces from the current mesh state.
@@ -280,11 +280,11 @@ No conceptual open issues currently block this task. Remaining choices are imple
 - [x] Create/update Semantic Flow behavior specs for publication source binding, mesh create, integrate, weave, extract, and page source relationships.
 - [x] Refactor [[sf.api]] into an overview that links to specs instead of restating each operation contract.
 - [x] Add config ontology vocabulary for persisted publication profiles.
-- [ ] Update the core ontology with working/latest-state resolution mode vocabulary and clarified default exact/history semantics.
+- [x] Update the core ontology with working/latest-state resolution mode vocabulary and clarified default exact/history semantics.
 - [ ] Define the payload versioning-intent surface: `weave set history`, `weave set next-state`, and explicit `weave version` state creation.
-- [ ] Update core SHACL to add local working source-binding validation, repository-backed source-binding mode guidance, mutable-ref warnings, and warning/info severity distinctions.
+- [x] Update core SHACL to add local working source-binding validation, repository-backed source-binding mode guidance, mutable-ref warnings, and warning/info severity distinctions.
 - [ ] Update existing examples and conformance fixtures that currently use `artifactResolutionMode_current` or overstate `artifactResolutionMode_pinned`.
-- [ ] Introduce a publication-host preset abstraction in Weave, starting with a GitHub Pages preset for `.nojekyll`.
+- [x] Introduce a publication-host preset abstraction in Weave, starting with a GitHub Pages preset for `.nojekyll`.
 - [x] Persist the resolved publication profile in mesh config with `sfcfg:hasPublicationProfile`.
 - [x] Remove implicit GitHub-specific static-file creation from core `mesh create`; allow explicit create-time publication profiles to call the preset where needed.
 - [ ] Extend `integrate` so branch-published and separate-repository ontology sources can bind repository-backed working files with working, latest-state, or exact source policy without copying them into the publication mesh.
@@ -293,14 +293,16 @@ No conceptual open issues currently block this task. Remaining choices are imple
 - [ ] Defer manifest-driven integrate to [[wa.task.2026.2026-05-19_1846-integrate-manifest]].
 - [ ] Define the later update/refresh surface for refreshing already-imported or source-bound artifacts.
 - [ ] Ensure `integrate` can bind mesh-local, policy-approved live local, and repository-backed working files without copying them.
-- [ ] Define the initial `weave validate publication` scope around concrete publication safety checks, not generated-output freshness.
+- [x] Define the initial `weave validate publication` scope around concrete publication safety checks, not generated-output freshness.
 - [ ] Defer source-root/publication-root boundary validation until path planning and policy hooks make it precise.
-- [ ] Add `weave validate mesh` for whole-mesh validation, with room to grow as mesh validation becomes more complete.
-- [ ] Add `weave validate publication` for publication-readiness validation.
-- [ ] Add `weave --validate-before` and `weave --validate-after`, both calling whole-mesh validation.
+- [x] Add `weave validate mesh` for whole-mesh validation, with room to grow as mesh validation becomes more complete.
+- [x] Add `weave validate publication` for publication-readiness validation.
+- [x] Add `weave --validate-before` and `weave --validate-after`, both calling whole-mesh validation.
 - [ ] Align or replace `sfcfg:hasNextStateSegmentHint` so explicit payload next-state intent has a clean metadata/progression contract.
 - [x] Remove the `prepare gh-pages` command surface.
-- [ ] Remove the legacy `src/runtime/deploy/gh_pages.ts` implementation and its dedicated integration tests once the replacement publication-profile and source-binding primitives cover the retained behavior.
+- [x] Remove the legacy `src/runtime/deploy/gh_pages.ts` implementation island and its dedicated integration tests; retained behavior is now either covered by mesh create publication profiles or deferred to integrate/source-binding/import work.
 - [x] Remove runnable `prepare gh-pages` examples from [[wu.cli-reference]] and the SFLO CLI examples.
 - [ ] Replace remaining branch-published examples and release runbooks with the composed release sequence once the integrate/source-binding CLI surface exists.
 - [ ] Add automated release rerun tests covering unchanged source/config/designator no-op behavior.
+
+The branch-published conformance manifests still mention the old replay commands because the current `integrate` CLI can follow allowed local working bytes but cannot yet record repository/ref/commit source bindings without copying source files into the publication root. Rewrite those manifests with the composed sequence after that source-binding surface lands.
