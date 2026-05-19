@@ -302,7 +302,7 @@ No conceptual open issues currently block this task. Remaining choices are imple
 - [x] Remove implicit GitHub-specific static-file creation from core `mesh create`; allow explicit create-time publication profiles to call the preset where needed.
 - [x] Extend `integrate` so branch-published and separate-repository ontology sources can bind repository-backed working files without copying them into the publication mesh.
 - [d] Defer latest-state and exact source-policy support for `integrate` until a workflow needs settled source-state resolution instead of checked-out working bytes plus commit/digest evidence.
-- [d] Implement or finish the general `weave import` CLI surface only for one-target copy acquisition into the mesh/publication tree, with repository/ref/path/digest provenance where available.
+- [d] Implement the first general `weave import` CLI/runtime surface for one-target copy acquisition into the mesh/publication tree, with repository/ref/path/digest provenance where available. There is no supported `weave import` command yet; current repository-backed source support is `integrate`, which records source bindings while leaving bytes in place.
 - [d] Defer manifest-driven or batch import until a workflow proves it is useful.
 - [ ] Defer manifest-driven integrate to [[wa.task.2026.2026-05-19_1846-integrate-manifest]].
 - [d] Define the later update/refresh surface for refreshing already-imported or source-bound artifacts.
@@ -317,6 +317,6 @@ No conceptual open issues currently block this task. Remaining choices are imple
 - [x] Remove the legacy `src/runtime/deploy/gh_pages.ts` implementation island and its dedicated integration tests; retained behavior is now either covered by mesh create publication profiles or deferred to integrate/source-binding/import work.
 - [x] Remove runnable `prepare gh-pages` examples from [[wu.cli-reference]], the SFLO CLI examples, and the current SFLO release runbook.
 - [d] Replace remaining branch-published conformance examples with the composed release sequence during the planned fixture-ladder regeneration.
-- [ ] Add automated release rerun tests covering unchanged source/config/designator no-op behavior.
+- [ ] Add CI-action idempotency tests before relying on automated SFLO release workflows: rerunning `weave generate` over unchanged source/config/designators should create/update nothing or reproduce byte-identical generated output, validation reruns should stay clean, and release/version reruns with the same explicit state target should fail closed or report a deliberate no-op rather than minting duplicate states. Do not make this a generic dirty-source heuristic for default `weave`.
 
 The branch-published conformance manifests still mention the old replay commands. Rewrite those manifests with the composed sequence during the planned fixture-ladder regeneration rather than patching generated ladders one-by-one.

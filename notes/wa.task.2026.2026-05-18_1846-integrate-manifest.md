@@ -1,6 +1,6 @@
 ---
 id: 5b9rmj647tzgloxp9jyrz86
-title: 2026 05 19_1846 Integrate Manifest
+title: 2026 05 18_1846 Integrate Manifest
 desc: ''
 updated: 1779155218792
 created: 1779155218792

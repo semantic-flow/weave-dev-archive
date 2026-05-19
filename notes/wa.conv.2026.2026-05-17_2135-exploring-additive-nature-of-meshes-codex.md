@@ -2994,3 +2994,98 @@ sflo: update ontology release runbook for composed release actions
 - Distinguish weave validation from sflo release validation
 - Remove dependency on the retired prepare gh-pages workflow
 ```
+
+# djradon_2026-05-19_0045_20
+
+For this deferred item " Implement or finish the general `weave import` CLI surface only for one-target copy acquisition into the mesh/publication tree, with repository/ref/path/digest provenance where available." -- does that mean import doesn't work, or just the repo-targeted import doesn't work.
+
+# gpt-5.5_2026-05-19_0045_25
+
+I’ll check the current CLI/runtime shape so I don’t answer from memory. The distinction you’re asking for is exactly where stale task wording can mislead.
+
+# gpt-5.5_2026-05-19_0045_41
+
+I checked the active CLI/runtime tree: there is no `weave import` command or `src/runtime/import` implementation right now. I’m going to tighten that task wording so it says “first general import surface,” since “finish” makes it sound half-implemented.
+
+# gpt-5.5_2026-05-19_0045_46
+
+It means general `weave import` does **not** currently exist as a supported CLI/runtime surface, not merely that repo-targeted import is missing.
+
+Current state:
+
+- `integrate` works, including repository-backed source provenance, but it leaves bytes where they are.
+- `payload update` can replace an existing working payload file, but that is not the semantic import/copy acquisition boundary.
+- “Import” exists as a designed semantic concept and in fixture/task language, but there is no first-class `weave import` command yet.
+- Repo-targeted import is also missing because it would be a case of that general import surface.
+
+I updated the task wording to remove the ambiguity: “Implement the first general `weave import` CLI/runtime surface…” and added a sentence saying current repo-backed support is `integrate`, not import.
+
+# djradon_2026-05-19_0047_22
+
+And this one: "Add automated release rerun tests covering unchanged source/config/designator no-op behavior." -- is that to be done next?
+
+# gpt-5.5_2026-05-19_0047_40
+
+I’ll sanity-check the current rerun-related tests and behavior before I give a clean “next/not next” answer. This one is easy to overstate because `weave`, `version`, and `generate` have different idempotency expectations.
+
+# gpt-5.5_2026-05-19_0048_02
+
+This item is still valid, but I don’t think it should mean “make default `weave` always no-op on unchanged source.” I’m going to reword it in the task so it points at CI action idempotency, especially `generate`/validation reruns, rather than a vague dirty-source heuristic.
+
+# gpt-5.5_2026-05-19_0048_19
+
+Not next for finishing remove-prepare itself. It’s next-ish before we trust the SFLO automated release workflows.
+
+The important split:
+
+- For “Regenerate Resource Pages,” yes, we should add an idempotency test soon: run `weave generate` twice over unchanged inputs and verify the second run creates/updates nothing, or at least produces byte-identical output.
+- For validation, rerun tests are straightforward: `weave validate mesh` / `publication` should remain clean.
+- For release/version, it should not mean “infer no semantic change.” A repeated release with the same explicit state target should fail closed or report a deliberate no-op, not silently mint duplicate states.
+
+So: not a blocker for removing `prepare`, but a blocker before leaning on CI reruns as a release safety property. I updated the task wording to say that more precisely.
+
+# djradon_2026-05-19_0049_34
+
+OK, so done with this for now?
+
+# gpt-5.5_2026-05-19_0049_45
+
+Yes, done with the remove-prepare task for now.
+
+What remains is intentionally deferred/future work: first-class `weave import`, manifest-driven integrate, update/refresh, precise source/publication boundary validation, and CI idempotency tests before relying on automated SFLO releases.
+
+The active implementation pieces for removing `prepare gh-pages` are in place and tested: command removed, profiles/validation wired, integrate handles the source-binding path, and docs/task notes now reflect the current boundary.
+
+# djradon_2026-05-19_0052_11
+
+and can you update [wa.task.2026.2026-05-17_2206-prepare-symmetry.md](wa.task.2026.2026-05-17_2206-prepare-symmetry.md) too please
+
+# gpt-5.5_2026-05-19_0052_23
+
+I’ll update that symmetry note to match where the design landed: prepare is gone, branch publication is no longer special, and the remaining questions are either remove-prepare completed work or deferred manifest/update work. First I’m reading the note and adjacent task state so the update doesn’t duplicate the newer task.
+
+# gpt-5.5_2026-05-19_0052_34
+
+The symmetry note is still written as if `prepare gh-pages` exists and might become a thin wrapper. I’m going to make it explicitly superseded by the remove-prepare decision, while preserving the useful live-local vs materialized-copy analysis and moving remaining work to the right follow-up tasks.
+
+# gpt-5.5_2026-05-19_0052_40
+
+I found the integrate-manifest note was renamed to the 05-18 filename, so I’ll point the symmetry note at that current task name rather than the deleted 05-19 path. Next I’m rewriting the old “maybe deprecate prepare” framing into “resolved by remove-prepare; remaining work lives elsewhere.”
+
+# gpt-5.5_2026-05-19_0054_06
+
+Updated [wa.task.2026.2026-05-17_2206-prepare-symmetry.md](wa.task.2026.2026-05-17_2206-prepare-symmetry.md).
+
+It now says the task is resolved by remove-prepare, removes the “maybe keep/deprecate prepare” framing, preserves the live-local vs materialized-copy distinction, and points remaining work to the remove-prepare, integrate-manifest, and latestState notes.
+
+Validation: `git diff --check` passes for `weave-dev-archive`.
+
+Small note: I left the existing archive dirtiness alone, including the apparent integrate-manifest rename from `2026-05-19_1846` to `2026-05-18_1846`.
+
+# djradon_2026-05-19_0056_22
+
+My priority is to get to the github actions, but maybe we should first wipe the gh-pages branch in sflo and try [wu.cli-reference.examples.sflo.md](../../../../../documentation/notes/wu.cli-reference.examples.sflo.md) again. If you agree, can you ensure the commands are correct.
+
+# gpt-5.5_2026-05-19_0056_39
+
+I agree with the sequencing: before GitHub Actions, it’s worth proving the manual SFLO command path from a clean publication branch shape. I’ll first audit the example note against the current CLI, then I can either update it or flag anything that needs a real dry run.
