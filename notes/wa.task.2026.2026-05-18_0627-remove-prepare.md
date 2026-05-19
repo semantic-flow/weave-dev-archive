@@ -25,10 +25,10 @@ Those responsibilities should be dissolved into reusable pieces:
 - `mesh.create` bootstraps the mesh support surface.
 - `integrate` binds available source bytes to target designators and payload artifacts without moving those bytes.
 - `import` copies a working file into the mesh or publication tree when the copy itself should become governed local working content.
-- `weave` records eligible governed working artifacts into the mesh.
-- `version` explicitly appends versioned payload states.
-- `validate` reports mesh or publication problems without recording new state.
-- `generate` renders ResourcePages and other generated surfaces from the current mesh state.
+- `weave` is the default orchestration surface: it records eligible governed working artifacts and, by default, runs the configured versioning, validation, and generation phases.
+- `version` is the narrower surface for explicitly appending versioned payload states.
+- `validate` is the narrower surface for reporting mesh or publication problems without recording new state.
+- `generate` is the narrower surface for rendering ResourcePages and other generated surfaces from the current mesh state.
 - publication-host presets apply host-specific controls such as GitHub Pages `.nojekyll`.
 - publication validation checks publishability without caring whether the mesh is sidecar, whole-repository, or branch-published.
 - optional git output handling commits, tags, pushes, or otherwise hands the result to CI/CD.
@@ -285,8 +285,8 @@ No conceptual open issues currently block this task. Remaining choices are imple
 - [ ] Update core SHACL to add local working source-binding validation, repository-backed source-binding mode guidance, mutable-ref warnings, and warning/info severity distinctions.
 - [ ] Update existing examples and conformance fixtures that currently use `artifactResolutionMode_current` or overstate `artifactResolutionMode_pinned`.
 - [ ] Introduce a publication-host preset abstraction in Weave, starting with a GitHub Pages preset for `.nojekyll`.
-- [ ] Persist the resolved publication profile in mesh config with `sfcfg:hasPublicationProfile`.
-- [ ] Remove implicit GitHub-specific static-file creation from core `mesh create`; allow explicit create-time publication profiles to call the preset where needed.
+- [x] Persist the resolved publication profile in mesh config with `sfcfg:hasPublicationProfile`.
+- [x] Remove implicit GitHub-specific static-file creation from core `mesh create`; allow explicit create-time publication profiles to call the preset where needed.
 - [ ] Extend `integrate` so branch-published and separate-repository ontology sources can bind repository-backed working files with working, latest-state, or exact source policy without copying them into the publication mesh.
 - [ ] Implement or finish the general `weave import` CLI surface only for one-target copy acquisition into the mesh/publication tree, with repository/ref/path/digest provenance where available.
 - [ ] Defer manifest-driven or batch import until a workflow proves it is useful.
@@ -299,6 +299,8 @@ No conceptual open issues currently block this task. Remaining choices are imple
 - [ ] Add `weave validate publication` for publication-readiness validation.
 - [ ] Add `weave --validate-before` and `weave --validate-after`, both calling whole-mesh validation.
 - [ ] Align or replace `sfcfg:hasNextStateSegmentHint` so explicit payload next-state intent has a clean metadata/progression contract.
-- [ ] Remove the `prepare gh-pages` command surface.
-- [ ] Update [[wu.cli-reference]], [[wu.repository-options]], and release-runbook examples to show the composed release sequence instead of durable `prepare gh-pages` usage.
+- [x] Remove the `prepare gh-pages` command surface.
+- [ ] Remove the legacy `src/runtime/deploy/gh_pages.ts` implementation and its dedicated integration tests once the replacement publication-profile and source-binding primitives cover the retained behavior.
+- [x] Remove runnable `prepare gh-pages` examples from [[wu.cli-reference]] and the SFLO CLI examples.
+- [ ] Replace remaining branch-published examples and release runbooks with the composed release sequence once the integrate/source-binding CLI surface exists.
 - [ ] Add automated release rerun tests covering unchanged source/config/designator no-op behavior.

@@ -1515,3 +1515,313 @@ docs(sflo): remove CNAME from GitHub Pages profile comment
 - update semantic-flow-config-ontology.ttl so the GitHub Pages publication profile only mentions .nojekyll
 - keep custom-domain/CNAME handling out of the ontology contract for now
 ```
+
+# djradon_2026-05-18_2032_41
+
+remind me about "behavior spec for publication source binding and host presets"
+
+# gpt-5.5_2026-05-18_2032_47
+
+I’ll pull that spec back into view so I can remind you from the actual note rather than from my increasingly soup-like short-term memory.
+
+# gpt-5.5_2026-05-18_2032_58
+
+“Behavior spec for publication source binding and host presets” is [sf.spec.2026-05-18-publication-source-binding.md](../../semantic-flow-framework/notes/sf.spec.2026-05-18-publication-source-binding.md:11).
+
+It was created to make this idea portable in SFF, instead of just a Weave task note:
+
+- `prepare gh-pages` should dissolve into generic operations.
+- `integrate` binds source bytes without moving them.
+- `import` copies bytes into the mesh/publication tree.
+- branch-published, sidecar, whole-repo, same-repo, and separate-repo publication should use the same Semantic Flow model.
+- host-specific behavior is modular via publication profiles/presets.
+- GitHub Pages preset manages `.nojekyll`, not CNAME.
+- resolved profile is persisted in `MeshConfig` with `sfcfg:hasPublicationProfile`.
+
+It is currently a bit stale relative to our latest task decisions. It still says a CLI “may keep `prepare gh-pages` temporarily,” and its publication validation section still mentions stale output, root-boundary checks, and dirty worktree warnings too broadly.
+
+So: the spec’s purpose is still right, but it should be updated to match the task note’s latest state.
+
+# djradon_2026-05-18_2039_32
+
+OK, update that spec please. [sf.api.md](../../semantic-flow-framework/notes/sf.api.md)  will need an update too probably.
+
+# gpt-5.5_2026-05-18_2039_44
+
+I’ll bring the SFF spec up to the task note’s current contract first, then tighten `sf.api` so it stays an overview rather than re-arguing the spec. The main drift to fix is the old “temporary wrapper” language and the over-broad validation section.
+
+# gpt-5.5_2026-05-18_2039_56
+
+I’m going to keep the spec as the durable behavior boundary, but make it crisper than the task note: no wrapper, operation roles split, validation scopes named, and publication validation stripped down to checks with clear semantics.
+
+# gpt-5.5_2026-05-18_2040_13
+
+Now `sf.api` needs the same operation-role cleanup. I’m going to make `weave`, `version`, `validate`, and `generate` read as separate API surfaces instead of one blurry super-verb.
+
+# gpt-5.5_2026-05-18_2040_42
+
+One more small consistency fix: the spec still had a vague “host-specific publish-root constraints” bullet under GitHub Pages. Since the current preset contract is `.nojekyll` only, I’m trimming that too.
+
+# gpt-5.5_2026-05-18_2041_00
+
+Updated both SFF notes.
+
+In [sf.spec.2026-05-18-publication-source-binding.md](../../semantic-flow-framework/notes/sf.spec.2026-05-18-publication-source-binding.md:13), I aligned the spec with the latest task decisions:
+
+- no durable `prepare gh-pages` concept and no compatibility wrapper;
+- split `weave`, `version`, `validate`, and `generate` responsibilities;
+- GitHub Pages preset is `.nojekyll` only;
+- `weave validate mesh` and `weave validate publication` are the validation scopes;
+- `--validate-before` / `--validate-after` run whole-mesh validation;
+- stale generated-output validation is out of scope for now;
+- source/publication root boundary checking is deferred;
+- dirty publication worktree warnings only apply when optional local commit is requested.
+
+In [sf.api.md](../../semantic-flow-framework/notes/sf.api.md:45), I updated the high-level operation map so it no longer says `weave` “versions, validates, and generates.” It now treats `weave`, `version`, `validate`, and `generate` as distinct surfaces, and updates the branch-published ontology sequence accordingly.
+
+Validation: `git diff --check` passed for both files.
+
+# djradon_2026-05-18_2045_35
+
+I'm not sure about weave changes. By default it does version, generate, and validate... Are you confusing the CLI command name for the default behavior (which is also "weave"). Just want to make sure there's no misunderstanding.
+
+# gpt-5.5_2026-05-18_2045_52
+
+You’re right to call that out. I think I overcorrected the wording: I separated the responsibilities as if `weave` were only the recording phase, when the default `weave` command/operation is more like the orchestration surface that can run versioning, validation, and generation. I’ll adjust the notes so the distinction is explicit instead of accidentally redefining `weave`.
+
+# gpt-5.5_2026-05-18_2045_58
+
+The right model is: `weave` is the default orchestration operation, and `version` / `validate` / `generate` are separable narrower phases. I’m patching the wording that made `weave` sound like only one phase.
+
+# gpt-5.5_2026-05-18_2047_09
+
+Yes, you caught a real wording bug. I was not intending to redefine `weave`, but my phrasing did make it sound like `weave` was only the “record” phase.
+
+I updated the task/spec/API wording to make the distinction explicit:
+
+- `weave` is the default orchestration surface: it records eligible governed working artifacts and, by default, runs configured versioning, validation, and generation phases.
+- `version`, `validate`, and `generate` are narrower surfaces when a workflow wants those phases separated.
+- `weave` still should not do unrelated prep work: no hidden `integrate`, `import`, source fetch, host preset setup, git publish, etc.
+
+Updated:
+
+- [wa.task.2026.2026-05-18_0627-remove-prepare.md](wa.task.2026.2026-05-18_0627-remove-prepare.md:28)
+- [sf.spec.2026-05-18-publication-source-binding.md](../../semantic-flow-framework/notes/sf.spec.2026-05-18-publication-source-binding.md:30)
+- [sf.api.md](../../semantic-flow-framework/notes/sf.api.md:45)
+
+`diff --check` passed.
+
+# djradon_2026-05-18_2047_09
+
+I'm curious, what did "records eligible governed working artifacts" -- that sounds more like integrate.
+
+# gpt-5.5_2026-05-18_2047_32
+
+Yeah, you’re right. That phrase is muddy.
+
+I meant “record” as in: take already-governed working surfaces and materialize their current state into the mesh: version states, metadata/current pointers, inventory facts, generated pages, etc.
+
+But “records eligible governed working artifacts” does sound too much like `integrate`, because `integrate` is the operation that makes a source/payload relationship governed in the first place.
+
+Better wording:
+
+> `weave` is the default orchestration surface: it processes already-managed working surfaces and, by default, runs configured versioning, validation, and generation phases.
+
+Or even tighter:
+
+> `weave` processes already-integrated or otherwise managed working surfaces; it does not create new source bindings.
+
+That distinction feels cleaner:
+
+- `integrate`: “this source file belongs to this designator/payload surface.”
+- `weave`: “now process the already-managed surface into mesh state/pages.”
+
+# djradon_2026-05-18_2048_12
+
+how is "processes..." different from "versions"
+
+# gpt-5.5_2026-05-18_2048_35
+
+It mostly isn’t, unless we name the phases.
+
+Better distinction:
+
+- `version` is the narrow lifecycle operation: create a new historical state/manifestation for an already-managed artifact, using the selected history/state intent.
+- `weave` is the default pipeline over already-managed surfaces: run versioning where configured/eligible, run validation, and generate/update ResourcePages and current presentation surfaces.
+
+So the wording should probably be:
+
+> `weave`: runs the default mesh pipeline for already-managed surfaces: version eligible changes, validate the resulting mesh, and generate configured pages. It does not establish new source bindings, copy source bytes, apply host presets, or publish git refs.
+
+That’s cleaner than “processes” and avoids sounding like `integrate`.
+
+# djradon_2026-05-18_2057_31
+
+agreed, update and begin implementation
+
+# gpt-5.5_2026-05-18_2057_37
+
+Agreed. I’ll first patch the wording in the task/spec/API so `weave` is described as the default pipeline, then I’ll take the first implementation slice: removing the `prepare gh-pages` CLI surface and adjusting the docs/tests that mention it.
+
+# gpt-5.5_2026-05-18_2058_06
+
+I’m at the implementation cut now. The lowest-risk first slice is to remove the CLI command surface while leaving the old runtime module in place for the moment; then tests/docs can prove users no longer see `prepare gh-pages`. That avoids entangling this with the larger replacement flow in the same pass.
+
+# gpt-5.5_2026-05-18_2059_10
+
+I’ll make the first implementation slice concrete: remove the `prepare gh-pages` CLI entry point, update the visible docs so they no longer advertise it, and keep the runtime module untouched for the moment unless the compiler forces the issue. That gives us a clean behavioral step without pretending the whole replacement workflow exists yet.
+
+# gpt-5.5_2026-05-18_2059_22
+
+The command is nicely isolated: it has one CLI block, three CLI-only helper functions, and an e2e file that can become a “this command is gone” guard. I’m going to patch that surface first, then fold the reference docs into the new composed-operation story.
+
+# gpt-5.5_2026-05-18_2059_34
+
+I’m applying the CLI deletion now. The runtime/deploy code will still be sitting there as a legacy internal module after this patch, which is intentional for this slice; the public command surface is the thing we agreed should disappear immediately.
+
+# gpt-5.5_2026-05-18_2101_53
+
+The public docs no longer carry a runnable `prepare gh-pages` recipe. I left a very explicit “this SFLO example is temporarily incomplete” marker rather than inventing a replacement command that the CLI cannot honor yet; the honesty is less elegant, but it keeps automation from copying a ghost command.
+
+# gpt-5.5_2026-05-18_2102_04
+
+The formatter only touched/checks the TypeScript files; the markdown stays hand-shaped, as the project prefers. I’m running the focused CLI test now so we can see the exact Cliffy failure text and tighten the assertion if needed.
+
+# gpt-5.5_2026-05-18_2102_34
+
+Focused test and type-check are green. I’ve also marked the command-surface removal in the task note and kept the remaining release-runbook replacement open, because the honest composed branch-published sequence depends on the new integrate/source-binding CLI work.
+
+# gpt-5.5_2026-05-18_2104_28
+
+Implemented the first slice.
+
+I removed the public `prepare gh-pages` CLI command from [src/cli/run.ts](../../../../../src/cli/run.ts:819), replaced its e2e coverage with a rejection test in [deploy_gh_pages_cli_test.ts](../../../../../tests/e2e/deploy_gh_pages_cli_test.ts:7), and updated the CLI docs so detached publication roots are described as composed operations, not a special command.
+
+I also updated the SFLO example note to stop before the missing repository-backed integrate surface, updated `sf.api` / the publication-source-binding spec wording around `weave`, `version`, `validate`, and `generate`, and marked the command-surface removal done in the task note.
+
+Validation run:
+
+```sh
+deno test -A tests/e2e/deploy_gh_pages_cli_test.ts
+deno check src/main.ts
+deno task lint
+git diff --check
+```
+
+One caveat: I did not delete `src/runtime/deploy/gh_pages.ts` or its integration tests yet. The old runtime helper is no longer reachable from the CLI, but removing/renaming that internal module should probably happen with the publication-profile / integrate-source-binding replacement rather than in this first public-surface removal.
+
+Suggested commit message:
+
+```text
+cli: remove prepare gh-pages command surface
+
+- delete the prepare gh-pages CLI entry point and CLI-only helpers
+- replace e2e coverage with a rejection test for the removed command
+- update CLI and SFLO examples to stop advertising runnable prepare usage
+- clarify API/spec wording for weave orchestration versus version/validate/generate phases
+```
+
+# djradon_2026-05-18_2106_50
+
+ok, just note gh_pages.ts should be removed as an implementation item.
+
+# gpt-5.5_2026-05-18_2106_56
+
+Good call. I’ll add that as an explicit implementation follow-up so the old runtime helper doesn’t quietly become archaeology with teeth.
+
+# gpt-5.5_2026-05-18_2107_08
+
+Noted in the task checklist: remove legacy `src/runtime/deploy/gh_pages.ts` and its dedicated integration tests once the replacement publication-profile/source-binding primitives cover the retained behavior.
+
+# djradon_2026-05-18_2107_31
+
+moving forward, please generate separate commit messages per repo
+
+# gpt-5.5_2026-05-18_2107_37
+
+Absolutely. Going forward I’ll provide separate commit messages per repo when changes span multiple repos, e.g.:
+
+- `weave`: CLI/runtime/tests/docs changes
+- `semantic-flow-framework`: API/spec/glossary changes
+- `sflo`: ontology/runbook changes
+- `weave-dev-archive`: task/design-note changes
+
+# djradon_2026-05-18_2107_49
+
+proceed
+
+# gpt-5.5_2026-05-18_2108_01
+
+I’ll keep going with the next concrete slice: separate GitHub Pages behavior from core `mesh create`. The current code still auto-adds `.nojekyll` from a `github.io` base, so I’m going to inspect the mesh-create tests/config shape and then move that into an explicit publication-profile path.
+
+# gpt-5.5_2026-05-18_2108_07
+
+There’s a design wrinkle here: current `mesh create` has `--no-nojekyll`, which only makes sense because `.nojekyll` is implicit today. I’m going to flip that surface to explicit `--publication-profile github-pages|none|auto` while preserving the conservative `auto` behavior as a user-facing request, then persist the resolved concrete profile in mesh config.
+
+# gpt-5.5_2026-05-18_2109_57
+
+I found one extra place that matters: local path grants rewrite `_mesh/_config/config.ttl`, so if we start storing `hasPublicationProfile` there, that rewrite needs to preserve it. I’ll include that preservation in this slice so the new config fact doesn’t vanish the first time `integrate --grant-source-directory` runs.
+
+# gpt-5.5_2026-05-18_2112_25
+
+The code changes are in place: profile selection is explicit, core mesh planning no longer guesses `.nojekyll`, and mesh config rendering can carry `sfcfg:hasPublicationProfile`. I’m running the mesh-create and local-path-policy tests now, since those are the touched surfaces.
+
+# gpt-5.5_2026-05-18_2113_25
+
+The focused mesh/profile tests are green. I’m doing one extra sanity run over the legacy `gh_pages` integration tests, because even though that module is on the way out, this slice changed the mesh-create planner it still calls.
+
+# gpt-5.5_2026-05-18_2114_20
+
+Proceeded with the next slice.
+
+Implemented explicit publication profiles for `mesh create`:
+
+- Added `--publication-profile auto|none|github-pages`.
+- Stopped core `planMeshCreate` from inferring `.nojekyll` from `meshBase` by default.
+- Persisted resolved profiles in `_mesh/_config/config.ttl` via `sfcfg:hasPublicationProfile`.
+- Preserved that profile when local path grants rewrite mesh config.
+- Updated mesh-create docs and tests.
+- Kept legacy explicit `includeNoJekyll` internally so the old `gh_pages.ts` tests keep passing while that module waits for removal.
+
+Validation passed:
+
+```sh
+deno test -A src/core/mesh/create_test.ts tests/integration/mesh_create_test.ts tests/e2e/mesh_create_cli_test.ts src/runtime/operational/local_path_policy_test.ts
+deno test -A tests/integration/deploy_gh_pages_test.ts
+deno check src/main.ts
+deno task lint
+git diff --check
+```
+
+Separate commit messages:
+
+`weave`:
+```text
+mesh: make publication profile explicit at create time
+
+- add mesh create --publication-profile for auto, none, and GitHub Pages
+- stop core mesh creation from inferring .nojekyll from meshBase
+- persist resolved publication profiles in MeshConfig
+- preserve publication profile facts when local path grants rewrite config
+- update mesh create docs and focused tests
+```
+
+`semantic-flow-framework`:
+```text
+docs(api): clarify weave orchestration and publication validation
+
+- describe weave as the default record/version/validate/generate orchestration job
+- split version, validate, and generate into narrower operation descriptions
+- clarify publication source binding and validation boundaries
+```
+
+`weave-dev-archive`:
+```text
+docs(task): update remove-prepare implementation checklist
+
+- mark prepare gh-pages command removal complete
+- mark publication profile persistence and explicit mesh create profile work complete
+- record legacy gh_pages runtime removal as a follow-up item
+```
+
+Note: `weave-dev-archive` also has the Kato conversation note modified; I didn’t intentionally edit that one.
