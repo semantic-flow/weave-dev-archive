@@ -86,7 +86,7 @@ The gaps are in precision and validation:
 
 ### Resolution modes should separate working and settled surfaces
 
-The current `artifactResolutionMode_current` term is doing too much. It can mean mutable working bytes, or it can be read as "latest known settled bytes." Those are different release semantics.
+The old ambiguous artifact-resolution term did too much. It could mean mutable working bytes, or it could be read as "latest known settled bytes." Those are different release semantics.
 
 The desired distinction is:
 
@@ -95,7 +95,7 @@ The desired distinction is:
 - requested `HistoricalState` or manifestation: exact settled byte identity by default.
 - requested `ArtifactHistory`: latest state in that history by default.
 
-`Pinned` is therefore less central than earlier notes implied. Targeting an exact state, manifestation, commit, or digest already pins identity. Targeting a history is bounded but not pinned; by default it asks for the latest state in that requested history. `artifactResolutionMode_current` should be replaced or retired in favor of less ambiguous mode terms before the API hardens.
+The old explicit pinned mode is therefore unnecessary. Targeting an exact state, manifestation, commit, or digest already fixes identity. Targeting a history is bounded but not exact; by default it asks for the latest state in that requested history. The old ambiguous mode should not remain as a deprecated alias; use explicit working/latest-state/exact semantics instead.
 
 ### Versioning intent should be explicit
 
@@ -173,10 +173,10 @@ No conceptual open issues currently block this task. Remaining choices are imple
 - Source registries should use the existing `KnopSourceRegistry` -> `hasSourceBinding` -> `ArtifactResolutionTarget` model with `RepositorySourceLocator` for repository-backed source evidence; no new minimal source-registry vocabulary is needed for URL/ref/commit/path/digest.
 - `observedAt` records when source or target bytes were observed during resolution. It is not the default import/copy timestamp.
 - A true copy into the mesh should be represented by explicit import/copy provenance if `observedAt` and artifact provenance are not specific enough.
-- `artifactResolutionMode_current` should be split or replaced with explicit working-vs-settled terms.
+- The old ambiguous artifact-resolution mode is removed rather than retained as a legacy alias.
 - `artifactResolutionMode_working` should mean "resolve mutable working/source bytes under the active operational policy."
 - `artifactResolutionMode_latestState` should mean "resolve the latest settled `HistoricalState` for the target artifact across histories."
-- A requested `HistoricalState`, manifestation, commit, or digest should imply exact byte identity even without `artifactResolutionMode_pinned`.
+- A requested `HistoricalState`, manifestation, commit, or digest should imply exact byte identity without an additional resolution mode.
 - A requested `ArtifactHistory` should imply latest state in that history unless an explicit exact state is also supplied.
 - Supplying or selecting a different `ArtifactHistory` should not implicitly append a new state.
 - `weave set history` should change the selected `currentArtifactHistory` for a payload artifact without versioning it.
@@ -195,8 +195,8 @@ No conceptual open issues currently block this task. Remaining choices are imple
 - Add a new Semantic Flow behavior spec for publication source binding and host presets: [[sf.spec.2026-05-18-publication-source-binding]].
 - Add config ontology vocabulary for persisted publication profiles, including `sfcfg:hasPublicationProfile`, `sfcfg:publicationProfile_none`, and `sfcfg:publicationProfile_githubPages`.
 - Add or revise core ontology artifact-resolution mode vocabulary for working-source resolution and latest-settled-state resolution.
-- Update or retire `artifactResolutionMode_current` before the API hardens so it no longer conflates working bytes with latest settled state.
-- Clarify the role of `artifactResolutionMode_pinned`: exact target coordinates pin identity by default; the mode should not be required to make a requested state, manifestation, commit, or digest exact.
+- Remove the old ambiguous artifact-resolution mode before the API hardens so it no longer conflates working bytes with latest settled state.
+- Remove the old explicit pinned resolution mode: exact target coordinates fix identity by default, so no mode is required to make a requested state, manifestation, commit, or digest exact.
 - Add or clarify payload-versioning vocabulary and API affordances for selected history and explicit next-state intent, distinct from source resolution modes.
 - Keep user-directed `set history` / `set next-state` behavior scoped to payload DigitalArtifact Knops; support artifacts should reject those commands or remain unreachable through that surface.
 - Remove the `prepare gh-pages` CLI/API surface and replace docs/tests with the composed operation sequence.
@@ -283,8 +283,8 @@ No conceptual open issues currently block this task. Remaining choices are imple
 - [x] Update the core ontology with working/latest-state resolution mode vocabulary and clarified default exact/history semantics.
 - [ ] Define the payload versioning-intent surface: `weave set history`, `weave set next-state`, and explicit `weave version` state creation.
 - [x] Update core SHACL to add local working source-binding validation, repository-backed source-binding mode guidance, mutable-ref warnings, and warning/info severity distinctions.
-- [x] Update existing examples and conformance fixtures that currently use `artifactResolutionMode_current`.
-- [ ] Decide whether generated exact-state extraction-source fixtures should omit `artifactResolutionMode_pinned` now that exact target coordinates imply exact identity.
+- [x] Remove the old ambiguous artifact-resolution mode from ontology, SHACL, runtime support, examples, and conformance fixtures.
+- [x] Omit resolution-mode triples from generated exact-state extraction-source fixtures now that exact target coordinates imply exact identity.
 - [x] Introduce a publication-host preset abstraction in Weave, starting with a GitHub Pages preset for `.nojekyll`.
 - [x] Persist the resolved publication profile in mesh config with `sfcfg:hasPublicationProfile`.
 - [x] Remove implicit GitHub-specific static-file creation from core `mesh create`; allow explicit create-time publication profiles to call the preset where needed.

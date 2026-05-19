@@ -2214,3 +2214,201 @@ docs(task): split current-mode cleanup from pinned follow-up
 - Mark artifactResolutionMode_current fixture cleanup complete
 - Track exact-state pinned emission as a separate remaining decision
 ```
+
+# djradon_2026-05-18_2239_45
+
+We don't want any legacy support. Please remove _current
+
+# gpt-5.5_2026-05-18_2239_56
+
+Got it. I agree: now that we’ve decided `current` is not a compatibility promise, carrying it as a legacy alias is just another little trapdoor. I’ll remove `_current` from code, ontology, SHACL, docs/fixtures, and make old graphs fail instead of silently normalizing.
+
+# gpt-5.5_2026-05-18_2240_08
+
+The earlier changes are already committed/clean in the main repos, so this is a fresh cleanup. I found the remaining `_current` references: a few deliberate legacy aliases in Weave, one ontology term plus SHACL warning in sflo, and a small fixture-compat shim in an e2e test. I’m removing all of those, then I’ll sweep docs wording from “current/pinned” to “working/exact/latest-state” where it refers to resolution mode.
+
+# gpt-5.5_2026-05-18_2243_30
+
+The search is clean for the artifact-resolution `_current` term and legacy current-mode support now. The only `_current` strings left are unrelated config policy individuals like `historyTrackingPolicy_currentOnly`, so I’m leaving those alone. I’m adding one explicit regression test that old `artifactResolutionMode_current` source bindings fail closed, because that is the no-legacy-support contract.
+
+# gpt-5.5_2026-05-18_2244_35
+
+The artifact-resolution term itself is now gone across code, docs, ontology, SHACL, and framework examples. I also removed the shim that rewrote old fixture expectations at test time; the e2e test now asserts the new `working` mode directly instead of tolerating the old RDF.
+
+# gpt-5.5_2026-05-18_2245_15
+
+The runtime is correctly failing old fixture branches now, which is exactly the no-legacy behavior. The carried fixture repos still have historical branches with the removed mode, so the remaining work is test-fixture hygiene rather than runtime support. I’m checking whether those fixture repos can be updated directly; if not, I’ll adjust only the test setup, not the runtime, to keep the no-legacy contract intact.
+
+# gpt-5.5_2026-05-18_2245_33
+
+Rather than reintroducing runtime compatibility, I’m normalizing the old fixture branches at the test-support read boundary. That keeps application behavior strict while avoiding a giant historical branch rewrite in the fixture repos. I’ll keep the helper narrowly scoped to fixture materialization/expected-byte reads.
+
+# gpt-5.5_2026-05-18_2246_59
+
+The strict version is now green: no `artifactResolutionMode_current` or current-mode aliases remain. I’m doing the final lint/format/diff checks and then I’ll summarize the repo splits cleanly.
+
+# gpt-5.5_2026-05-18_2247_29
+
+Removed the artifact-resolution `_current` path completely.
+
+What changed:
+- Deleted `artifactResolutionMode_current` from the sflo core ontology and SHACL.
+- Removed runtime/core acceptance of `_current`; old source bindings now fail instead of aliasing to `working`.
+- Added a regression test that rejects `"current"` source resolution mode.
+- Updated docs, CLI copy, framework examples/spec wording to `working` / exact source-state language.
+- Kept historical fixture branches usable only through test-support normalization, not runtime compatibility.
+
+Validation passed:
+- `deno task check`
+- `deno task lint`
+- focused extract/weave/ontology guardrail tests
+- `deno fmt --check`
+- `git diff --check` across touched repos
+- `rg artifactResolutionMode_current ...` returns no matches
+
+Repo commit messages:
+
+```text
+core: remove current artifact resolution mode
+
+- Drop runtime and core support for the removed current resolution mode
+- Require working or pinned source resolution in extract planning
+- Normalize historical fixture reads to working mode for test fixtures only
+- Update CLI/docs wording from current source mode to working or exact source state
+```
+
+```text
+ontology: remove current artifact resolution mode
+
+- Remove artifactResolutionMode_current from the core ontology
+- Drop SHACL legacy-current warning now that the term is invalid
+- Update resolution-mode wording to working/latest/exact semantics
+```
+
+```text
+docs(framework): remove current-mode source wording
+
+- Update conformance descriptions and examples to working-source language
+- Clarify glossary and extract behavior around working and exact source states
+```
+
+```text
+docs(task): record removal of current resolution mode
+
+- Note that the ambiguous current resolution mode is removed, not retained as legacy support
+```
+
+The only dirty archive extra is still the live Kato conversation transcript.
+
+# djradon_2026-05-18_2247_29
+
+and yes, we can omit `artifactResolutionMode_pinned` now that exact target coordinates imply exact identity
+
+# gpt-5.5_2026-05-18_2247_46
+
+Yes, that lands the model much more cleanly: exact coordinates do the pinning, not a separate mode flag. I’ll remove `artifactResolutionMode_pinned` from generated exact-state extraction-source output and fixtures, then keep reads based on `hasRequestedTargetState` rather than the mode term.
+
+# gpt-5.5_2026-05-18_2248_15
+
+I’m going to treat this as the same standard we applied to `_current`: no `pinned` mode support in runtime contracts. Exact state coordinates stand alone. That means source-state extraction returns an internal `exact` result mode for humans/tests, but the RDF will carry `hasRequestedTargetState` and omit `hasArtifactResolutionMode`.
+
+# gpt-5.5_2026-05-18_2248_33
+
+This is a wider but still mechanical pass: internal result terminology becomes `exact`, exact-source RDF drops `hasArtifactResolutionMode`, and page/raw-source labels stop saying “pinned.” I’m also leaving unrelated config policy names like `configReferencePolicy_pinnedOnly` alone because they are a different concept.
+
+# gpt-5.5_2026-05-18_2250_15
+
+I’ll carry the pinned cleanup through now. The shape I’m using is: exact target coordinates are the “pin”, so runtime RDF should omit a mode for exact-state bindings and only use explicit modes for working/latest-state behavior.
+
+# gpt-5.5_2026-05-18_2250_21
+
+I found the remaining `artifactResolutionMode_pinned` references across the runtime, tests, sflo ontology, and conformance manifests. I’m going to remove it as an ontology/runtime concept, while leaving unrelated wording like “pinned commit” and config policies alone.
+
+# gpt-5.5_2026-05-18_2251_23
+
+I’m making the core extract contract stricter now: `sourceStatePath` means exact source bytes, so the generated source registry gets `hasRequestedTargetState` and no resolution-mode triple. Explicit `working` remains the only mode emitted by extract for mutable working bytes.
+
+# gpt-5.5_2026-05-18_2254_45
+
+The code path is now updated. Next I’m cleaning the conformance manifests so exact-state source assertions no longer ask for a removed `artifactResolutionMode_pinned` triple.
+
+# gpt-5.5_2026-05-18_2256_45
+
+The ontology and specs now match the new shape: exact extraction-source bindings can omit `hasArtifactResolutionMode`, and SHACL only warns about a missing mode when there is no exact target coordinate to infer from. I’m going to run type checks next; that will flush out any stale `"pinned"` result contracts I missed.
+
+# gpt-5.5_2026-05-18_2256_57
+
+Type checking passed. That’s a good sign; I’m moving into focused tests for extract/weave behavior now, because the likely failures are expectations in fixtures rather than type contracts.
+
+# gpt-5.5_2026-05-18_2257_29
+
+Extract-side tests are green now. I’m running the weave and page-generation slice next; that’s where the exact source registry update gets exercised.
+
+# gpt-5.5_2026-05-18_2301_15
+
+Focused extract and weave tests are green. I made one more wording pass so the remaining “pinned” language is either unrelated config/reference vocabulary or test-only historical fixture normalization. Now I’ll run the repo lint/format checks.
+
+# gpt-5.5_2026-05-18_2301_58
+
+The linter and diff whitespace checks passed. I’m doing one small extra sweep over the fixture/conformance tests because the manifest JSON changed, and then I’ll summarize cleanly.
+
+# gpt-5.5_2026-05-18_2302_55
+
+Implemented the `artifactResolutionMode_pinned` removal.
+
+What changed:
+- Exact target coordinates now stand alone: exact extraction/source bindings emit `sflo:hasRequestedTargetState` and omit `sflo:hasArtifactResolutionMode`.
+- Runtime/core contracts now use internal `sourceResolutionMode: "exact"` instead of `"pinned"`.
+- `artifactResolutionMode_pinned` is removed from the sflo core ontology and no longer appears in source/docs/conformance manifests.
+- SHACL now allows exact `ExtractionSource` bindings without a mode, while still validating mode values when present.
+- Conformance JSON and specs now describe working/latest-state/exact semantics consistently.
+- Test-only fixture readers strip retired mode triples from historical branch snapshots so the current runtime does not need legacy support.
+
+Verified:
+- `deno task check`
+- `deno task lint`
+- `deno test -A src/core/extract/extract_test.ts src/runtime/mesh/inventory_test.ts tests/integration/extract_test.ts tests/e2e/extract_cli_test.ts`
+- `deno test -A src/core/weave/weave_test.ts src/runtime/weave/pages_test.ts tests/integration/weave_test.ts tests/integration/ontology_guardrails_test.ts`
+- `deno test -A tests/integration/branch_fantasy_rules_fixture_test.ts tests/scripts/fixture_ladder_test.ts`
+- `deno fmt --check ...`
+- `git diff --check` in all touched repos
+
+Separate commit messages:
+
+`weave`
+```text
+feat: remove explicit pinned extraction resolution mode
+
+- treat exact source-state coordinates as exact without an artifact-resolution mode
+- switch extract/weave runtime contracts from pinned to exact source resolution
+- omit hasArtifactResolutionMode for exact ExtractionSource bindings
+- keep working/latest-state mode handling explicit
+- update docs, tests, fixture replay normalization, and ResourcePage wording
+```
+
+`sflo`
+```text
+ontology: drop pinned artifact resolution mode
+
+- remove artifactResolutionMode_pinned from the core ontology
+- allow exact ExtractionSource coordinates to omit hasArtifactResolutionMode
+- keep SHACL validation for working/latest-state mode values
+```
+
+`semantic-flow-framework`
+```text
+docs: model exact source states without pinned mode
+
+- update behavior specs and glossary for working/latest-state/exact semantics
+- remove pinned-mode expectations from exact-state conformance assertions
+- clarify extracted reference examples around exact source-state provenance
+```
+
+`weave-dev-archive`
+```text
+docs: resolve exact-state source mode decision
+
+- mark exact-state extraction-source fixtures as omitting resolution modes
+- document removal of the old explicit pinned mode
+- capture the current remove-prepare task decisions
+```
