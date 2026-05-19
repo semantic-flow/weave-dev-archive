@@ -140,9 +140,7 @@ For ordinary weaving, use `--validate-before` and `--validate-after`. Those opti
 
 ## Open Issues
 
-No conceptual open issues currently block this task. Remaining choices are implementation details:
-
-- Should `sfcfg:hasNextStateSegmentHint` be broadened to match its current metadata/progression use, or should a core metadata property be added for explicit next-state intent?
+No conceptual open issues currently block this task. Remaining choices are implementation details.
 
 ## Decisions
 
@@ -281,7 +279,7 @@ No conceptual open issues currently block this task. Remaining choices are imple
 - [x] Refactor [[sf.api]] into an overview that links to specs instead of restating each operation contract.
 - [x] Add config ontology vocabulary for persisted publication profiles.
 - [x] Update the core ontology with working/latest-state resolution mode vocabulary and clarified default exact/history semantics.
-- [ ] Define the payload versioning-intent surface: `weave set history`, `weave set next-state`, and explicit `weave version` state creation.
+- [x] Define and implement the payload versioning-intent surface: `weave set history`, `weave set next-state`, and explicit `weave version` state creation.
 - [x] Update core SHACL to add local working source-binding validation, repository-backed source-binding mode guidance, mutable-ref warnings, and warning/info severity distinctions.
 - [x] Remove the old ambiguous artifact-resolution mode from ontology, SHACL, runtime support, examples, and conformance fixtures.
 - [x] Omit resolution-mode triples from generated exact-state extraction-source fixtures now that exact target coordinates imply exact identity.
@@ -299,11 +297,11 @@ No conceptual open issues currently block this task. Remaining choices are imple
 - [x] Add `weave validate mesh` for whole-mesh validation, with room to grow as mesh validation becomes more complete.
 - [x] Add `weave validate publication` for publication-readiness validation.
 - [x] Add `weave --validate-before` and `weave --validate-after`, both calling whole-mesh validation.
-- [ ] Align or replace `sfcfg:hasNextStateSegmentHint` so explicit payload next-state intent has a clean metadata/progression contract.
+- [x] Align `sfcfg:hasNextStateSegmentHint` with current/progression metadata usage for payload ArtifactHistory version intent.
 - [x] Remove the `prepare gh-pages` command surface.
 - [x] Remove the legacy `src/runtime/deploy/gh_pages.ts` implementation island and its dedicated integration tests; retained behavior is now either covered by mesh create publication profiles or deferred to integrate/source-binding/import work.
-- [x] Remove runnable `prepare gh-pages` examples from [[wu.cli-reference]] and the SFLO CLI examples.
-- [ ] Replace remaining branch-published examples and release runbooks with the composed release sequence once the integrate/source-binding CLI surface exists.
+- [x] Remove runnable `prepare gh-pages` examples from [[wu.cli-reference]], the SFLO CLI examples, and the current SFLO release runbook.
+- [ ] Replace remaining branch-published conformance examples with the composed release sequence once the integrate/source-binding CLI surface exists.
 - [ ] Add automated release rerun tests covering unchanged source/config/designator no-op behavior.
 
 The branch-published conformance manifests still mention the old replay commands because the current `integrate` CLI can follow allowed local working bytes but cannot yet record repository/ref/commit source bindings without copying source files into the publication root. Rewrite those manifests with the composed sequence after that source-binding surface lands.

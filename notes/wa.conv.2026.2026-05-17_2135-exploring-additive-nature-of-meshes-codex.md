@@ -2412,3 +2412,152 @@ docs: resolve exact-state source mode decision
 - document removal of the old explicit pinned mode
 - capture the current remove-prepare task decisions
 ```
+
+# djradon_2026-05-18_2312_37
+
+proceed
+
+# gpt-5.5_2026-05-18_2312_55
+
+I’ll keep moving on the same task rather than opening a new thread of work. First I’m going to re-read the task checklist and current CLI/runtime shape so I can pick the next implementation slice without trampling the changes we just landed.
+
+# gpt-5.5_2026-05-18_2313_13
+
+The task checklist says the next still-actionable piece is no longer pinned/current cleanup; it’s the release/runbook side that still talks about `prepare gh-pages`. I’m going to update the SFLO release notes/runbooks to match the current composed workflow, and I’ll be careful not to pretend the future repository-backed `integrate` surface exists yet.
+
+# gpt-5.5_2026-05-18_2315_05
+
+I’ll keep moving on the remove-prepare thread, and I’m going to take the conservative next slice: scrub the SFLO release runbook/task of the old `prepare gh-pages` path and make the current validation/generation story explicit. The implementation gap is still detached-source `integrate`, so I’ll avoid pretending CI can version detached payloads cleanly before that exists.
+
+# gpt-5.5_2026-05-18_2315_12
+
+Before touching files I’m doing the repo-guidance pass the workspace asks for. Then I’ll patch the runbook/task notes directly and keep the scope to documentation until the next implementation boundary is clear.
+
+# gpt-5.5_2026-05-18_2315_18
+
+The guidance confirms the right bias here: no compatibility shim before v1.0, and behavior belongs in specs/tasks when it’s external. I’m removing the old manual `prepare gh-pages` instructions now and replacing them with the composed commands we actually want people to see.
+
+# gpt-5.5_2026-05-18_2316_05
+
+The first pass exposed a few leftover phrases that still made the old symmetry task sound like the blocker. I’m tightening those so the blocker is named more accurately: detached-source integration, not `prepare` cleanup.
+
+# gpt-5.5_2026-05-18_2316_45
+
+The docs are now aligned for the SFLO runbook path. I’m going one layer deeper and checking the existing versioning/progression code before deciding whether the next safe slice is the `set history` / `set next-state` CLI or whether it needs a separate implementation pass.
+
+# gpt-5.5_2026-05-18_2318_51
+
+Done. I updated the SFLO release docs to remove the old runnable `prepare gh-pages` path and replace it with the current composed operations:
+
+- [ont.dev.release-runbook.md](../../sflo/notes/ont.dev.release-runbook.md:116): now uses `weave mesh create`, `weave validate mesh`, `weave validate publication`, and `weave generate`; also says Weave does not manage `CNAME`.
+- [ont.task.2026.2026-03-24-release-runbook.md](../../sflo/notes/ont.task.2026.2026-03-24-release-runbook.md:28): reframes the blocker as detached-source `integrate`/source-binding, not prepare symmetry.
+- [wa.task.2026.2026-05-18_0627-remove-prepare.md](wa.task.2026.2026-05-18_0627-remove-prepare.md:303): marks the SFLO release runbook cleanup done and leaves conformance examples waiting on integrate/source-binding.
+
+I also checked the `set history` / `set next-state` code path. I did not implement it in this slice because simply persisting `currentArtifactHistory` before a first version would currently confuse first-payload weave detection; that needs a deliberate runtime change, not a quick CLI wrapper.
+
+Verification:
+`git -C dependencies/github.com/semantic-flow/sflo diff --check`
+`git -C dependencies/github.com/semantic-flow/weave-dev-archive diff --check`
+
+Suggested commit messages:
+
+sflo:
+```text
+docs(ontology): remove prepare from release runbook
+
+- replace prepare gh-pages instructions with composed mesh create, validate, and generate commands
+- document that GitHub Pages profile manages nojekyll but not CNAME
+- record detached-source integrate as the blocker for automated payload publication
+```
+
+weave-dev-archive:
+```text
+docs(tasks): track prepare runbook cleanup
+
+- mark SFLO release runbook prepare examples as removed
+- narrow remaining branch-published cleanup to conformance examples pending source-binding integrate
+```
+
+# djradon_2026-05-18_2330_30
+
+continue
+
+# gpt-5.5_2026-05-18_2330_41
+
+I’ll pick up the next implementation boundary: the payload versioning intent commands. I’m going to read the current inventory/weave paths again, then implement the smallest honest surface for `weave set history` and `weave set next-state` without making either command mint a state.
+
+# gpt-5.5_2026-05-18_2331_28
+
+There’s one important wrinkle: setting `currentArtifactHistory` before a state exists is valid intent, but today the first-payload detector treats “has any current history pointer” as “already woven.” I’m adjusting that detector so an inert history pointer does not accidentally hide the first real version.
+
+# gpt-5.5_2026-05-18_2334_29
+
+I’m about to add a small payload version-intent module rather than mixing this into `payload update`. The commands will only edit the current Knop inventory intent: no snapshots, no generated pages, no hidden versioning.
+
+# gpt-5.5_2026-05-18_2339_22
+
+The first implementation is in place: core planning, runtime execution, CLI subcommands, docs, and tests. I’m running the focused checks now; this is where we find whether the detector and hint consumption line up with the existing weave planner.
+
+# gpt-5.5_2026-05-18_2341_02
+
+Focused tests are green now. One semantic follow-through is needed before I call this slice done: because the runtime now uses `sfcfg:hasNextStateSegmentHint` on payload history/progression records, I’m going to align the config ontology comment/domain instead of leaving that vocabulary looking config-only.
+
+# gpt-5.5_2026-05-18_2342_02
+
+The code-level slice is now backed by the ontology/spec/docs updates: `hasNextStateSegmentHint` is no longer config-only on paper, and the task note marks that resolved. I’m moving from focused tests into type/lint checks now.
+
+# gpt-5.5_2026-05-18_2344_06
+
+Continued and landed the payload version-intent slice.
+
+What changed:
+- Added `weave set history <designatorPath> <historySegment>` and `weave set next-state <designatorPath> <stateSegment>` in [src/cli/run.ts](../../../../../src/cli/run.ts:600).
+- Added core/runtime payload version-intent planners in [version_intent.ts](../../../../../src/core/payload/version_intent.ts:49) and runtime execution.
+- Updated weave planning so inert `currentArtifactHistory` / `sfcfg:hasNextStateSegmentHint` intent is consumed by the next version, without the setter creating states.
+- Updated CLI docs in [wu.cli-reference.md](../../../../../documentation/notes/wu.cli-reference.md:187).
+- Updated SFLO config ontology so next history/state hints are current/progression metadata, not config-only: [semantic-flow-config-ontology.ttl](../../sflo/semantic-flow-config-ontology.ttl:435).
+- Updated `sf.api`, weave behavior spec, and the remove-prepare task note.
+
+Validation passed:
+- `deno task check`
+- `deno task lint`
+- `deno test -A src/core/payload/version_intent_test.ts src/core/weave/weave_test.ts tests/e2e/weave_cli_test.ts`
+- `deno fmt --check ...`
+- `git diff --check` across weave, sflo, semantic-flow-framework, and weave-dev-archive
+
+Commit messages per repo:
+
+weave:
+```text
+feat(payload): add explicit version intent setters
+
+- add payload history and next-state intent planning/runtime surfaces
+- expose weave set history and weave set next-state CLI commands
+- teach weave version planning to consume persisted payload intent
+- document the payload-only intent workflow and cover it in core/e2e tests
+```
+
+sflo:
+```text
+docs(ontology): align next segment hints with progression metadata
+
+- scope next history hints to DigitalArtifact progression metadata
+- scope next state hints to ArtifactHistory progression metadata
+- clarify that hint facts do not replace ordinal counters or belong in immutable snapshots
+```
+
+semantic-flow-framework:
+```text
+docs(api): describe payload version intent
+
+- add payload version intent to the API operation map
+- clarify that history and next-state selection steer later versioning without creating states
+```
+
+weave-dev-archive:
+```text
+docs(tasks): mark payload version intent implemented
+
+- record set history and set next-state as completed remove-prepare work
+- resolve hasNextStateSegmentHint as progression metadata
+```
