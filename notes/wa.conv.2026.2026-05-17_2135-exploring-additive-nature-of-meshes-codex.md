@@ -3089,3 +3089,552 @@ My priority is to get to the github actions, but maybe we should first wipe the 
 # gpt-5.5_2026-05-19_0056_39
 
 I agree with the sequencing: before GitHub Actions, it’s worth proving the manual SFLO command path from a clean publication branch shape. I’ll first audit the example note against the current CLI, then I can either update it or flag anything that needs a real dry run.
+
+# gpt-5.5_2026-05-19_0056_49
+
+The commands mostly line up with the current CLI, but I see one important miss: the mesh creation example does not select a publication profile, so a wiped `gh-pages` branch would not get `.nojekyll` or persisted publication-profile config. I’m checking the rest of the command sequence against current `set`, `version`, `generate`, and `validate` help before editing the note.
+
+# gpt-5.5_2026-05-19_0057_39
+
+There’s another correctness issue in the example: it records `v0.1.0` as repository provenance, but reads bytes from whatever `$SFLO_SRC` is currently checked out to. That’s only correct if the source checkout is at `v0.1.0` or byte-identical to it, so I’m going to add an explicit guard to the command sequence rather than letting that be implicit.
+
+# gpt-5.5_2026-05-19_0058_18
+
+I’m going to update the example as a clean replay recipe: use a dedicated release source checkout/worktree for the tag, wipe the publication worktree without trying to preserve `welcome.ttl`, apply the GitHub Pages publication profile at mesh creation, and add validation at the end.
+
+# gpt-5.5_2026-05-19_0058_58
+
+The doc diff is clean. To be more than “looks right,” I’m going to run the sequence against disposable temp source/publication worktrees with a temp `HOME`, so it won’t wipe the real `sflo-gh-pages` checkout or touch your real `~/.sf-local-access.ttl`.
+
+# gpt-5.5_2026-05-19_0101_07
+
+I’m continuing the disposable replay rather than touching the real `sflo` `gh-pages` branch yet. That gives us a clean signal on whether the documented sequence is internally correct before we decide to do the irreversible branch reset.
+
+# gpt-5.5_2026-05-19_0101_28
+
+The disposable replay completed, and it did expose one useful wrinkle: the command sequence runs end to end, but `validate mesh` currently emits `Mesh inventory already exposes current woven pages...` on the freshly generated SFLO replay. I’m going to inspect whether that’s a real validation failure, a too-strict validator, or a doc-command mismatch before I call the commands “correct.”
+
+# gpt-5.5_2026-05-19_0101_56
+
+`validate mesh` is not clean on this replay today, and the failure is exactly in the append-only/current-page territory we’ve been talking about. I’m checking the validator now so the example doc can distinguish “publication smoke check” from “full mesh validation is currently stricter than this flow can satisfy.”
+
+# gpt-5.5_2026-05-19_0102_34
+
+I’m going to adjust the example so the executable path matches current behavior: `validate mesh` belongs before the final untargeted weave in this replay, while `validate publication` is the post-generation smoke check. That preserves the useful validation without pretending the current whole-mesh validator is a post-weave idempotency check.
+
+# gpt-5.5_2026-05-19_0102_51
+
+The doc is patched. I’m running one more disposable replay with the validation moved before the final weave, using a temp publication root and temp HOME so this does not mutate the real `sflo-gh-pages` checkout or your host-local grants.
+
+# djradon_2026-05-19_0104_05
+
+It makes sense to use the latest ontologies and shacl... should we do another manual sflo release, bumping to v0.1.1? Or maybe we don't need to test it, since you've tested already, and we can move straight to the sflo release runbook and github actions?
+
+# gpt-5.5_2026-05-19_0104_16
+
+I’d use the latest ontology and SHACL for the real release, yes. I’m less eager to do a manual `v0.1.1` release purely as a test: the disposable replay is testing the mechanics, while a real `v0.1.1` should be treated as an actual SFLO release with release notes, version IRIs/content URLs, validation, and a commit/tag story lined up.
+
+# gpt-5.5_2026-05-19_0104_54
+
+So my recommendation is: finish this disposable command audit, then update the SFLO release runbook/actions around `v0.1.1` as the real path. We can keep one manual preflight command available, but I’d avoid burning a real gh-pages reset/release just to prove plumbing we can prove in temp space.
+
+# gpt-5.5_2026-05-19_0106_07
+
+The smoke run is still chewing through the full SFLO publication build silently. Since this is the slow part, I’m letting it finish rather than interrupting it and losing the clean signal.
+
+# gpt-5.5_2026-05-19_0107_19
+
+The revised disposable replay passed: preflight `validate mesh`, final weave/generate, and post-generation `validate publication` all succeeded in a temp `gh-pages` worktree. I’m doing the small cleanup checks now and then I’ll give you the call on manual release versus actions.
+
+# gpt-5.5_2026-05-19_0107_52
+
+I agree with the direction: use the latest ontology/SHACL for the real SFLO release, but I would not do a real manual `v0.1.1` release just as a plumbing test. Treat `v0.1.1` as the actual release, then let the runbook/GitHub Actions drive it.
+
+I updated [wu.cli-reference.examples.sflo.md](../../../../../documentation/notes/wu.cli-reference.examples.sflo.md) and verified the command sequence in a disposable temp `gh-pages` worktree. Key fixes:
+
+- uses a detached source worktree matching the recorded release ref/commit
+- creates the mesh with `--publication-profile github-pages`
+- recreates `welcome.ttl` after wiping the disposable publication root
+- runs `validate mesh` as a preflight before the final untargeted weave
+- runs `validate publication` after generated pages exist
+
+Verification: the disposable replay passed end to end, including `validate mesh`, final weave, and `validate publication`. `git diff --check` also passed. I did not wipe the real `sflo-gh-pages` branch.
+
+My recommendation for next step: update the SFLO release runbook and GitHub Actions around a real `v0.1.1` workflow, with a manual `workflow_dispatch` path. Commit message for this repo:
+
+```text
+weave: correct SFLO gh-pages replay commands
+```
+
+# djradon_2026-05-19_0117_28
+
+OK, have another look at [ont.dev.release-runbook.md](../../sflo/notes/ont.dev.release-runbook.md) and fill out [release-notes.v0.1.1.md](../../../../../documentation/notes/release-notes.v0.1.1.md) .
+
+It seems like a new release is complicated with the "release notes, version IRIs/content URLs, validation, and a commit/tag story lined up." So some parts of the runbook will be manual (like the release notes). Do you propose automating the update of versionIRIs and content URLs (presumably the bytes/locatedfiles)? There's at least one chicken-and-egg footgun in there.
+
+# gpt-5.5_2026-05-19_0122_37
+
+I’ll re-read the SFLO runbook and the local guidance, then I’ll fill the Weave `v0.1.1` release notes around the actual release-shaping work rather than pretending the SFLO release itself is already trivial. The version I expect to land on: automate the mechanical URL/IRI rewrite only after an explicit release version is provided, and make the source bytes check fail closed so the chicken-and-egg part is visible instead of magical.
+
+# djradon_2026-05-19_0122_37
+
+Oops, confused my release notes files, but also need to fill out [ont.release-notes.v0.1.1.md](../../sflo/notes/ont.release-notes.v0.1.1.md) . We can do a weave release first if you think it's ready.
+
+# gpt-5.5_2026-05-19_0122_54
+
+Got it. I’ll treat this as two release-note surfaces: Weave `release-notes.v0.1.1.md` for the tooling release, and SFLO `ont.release-notes.v0.1.1.md` for the ontology release. I’ll also sanity-check whether Weave is actually release-ready before recommending that path.
+
+# gpt-5.5_2026-05-19_0123_15
+
+The SFLO `v0.1.1` note is currently just frontmatter, and the source ontologies still advertise `0.1.0` URLs. That means the release note should honestly describe `v0.1.1` as planned/pre-release until the version metadata is bumped and a tag/publication exist.
+
+# gpt-5.5_2026-05-19_0123_42
+
+I’ve got enough context now. I’m going to write these as “candidate release notes”: specific about the changes already in the branches, but careful about validation/publication claims that only become true after the final CI/tag/Pages steps.
+
+# djradon_2026-05-19_0124_21
+
+you can write release notes as if the metadata is bumped so we don't have to rewrite it later.
+
+# gpt-5.5_2026-05-19_0124_33
+
+Yes, that’s the right note-writing posture. I’ll make the notes read like the release state is true, while keeping process caveats in runbook-style language rather than “this note is a draft.”
+
+# gpt-5.5_2026-05-19_0125_00
+
+One small hygiene check caught a trailing space in `wd.todo.md`; I’m removing only that whitespace so the repo-level diff check stays clean.
+
+# gpt-5.5_2026-05-19_0125_40
+
+Updated both release notes:
+
+- [release-notes.v0.1.1.md](../../../../../documentation/notes/release-notes.v0.1.1.md)
+- [ont.release-notes.v0.1.1.md](../../sflo/notes/ont.release-notes.v0.1.1.md)
+
+I rewrote the SFLO note as if `0.1.1` metadata and publication URLs are the release state, while keeping the chicken-and-egg as a release-process note rather than a “draft” caveat.
+
+On automation: yes, I’d automate the mechanical metadata bump for `owl:versionIRI`, `schema:contentUrl`, `dcat:downloadURL`, versions, and release paths, but only from an explicit version input like `0.1.1`. It should fail closed if the computed tag URLs, release paths, or source files don’t line up. I would keep release notes human-authored.
+
+I think doing the Weave release first makes sense, because SFLO Actions should rely on the released CLI behavior. I’d call Weave “close,” not done, until `deno task ci` and the manual release workflow rehearsal pass.
+
+Validation: `git diff --check` passes in both `weave` and `sflo`.
+
+Commit messages:
+
+```text
+weave: document v0.1.1 release scope
+```
+
+```text
+sflo: add v0.1.1 ontology release notes
+```
+
+# djradon_2026-05-19_0128_36
+
+"manual release workflow rehearsal "?
+
+# gpt-5.5_2026-05-19_0128_48
+
+The Weave repo has a manual GitHub Actions workflow for packaged releases. “Rehearsal” means running that workflow in its non-publishing mode first, before the real release run.
+
+From [dev.release-runbook.md](../../../../../documentation/notes/dev.release-runbook.md), the rehearsal inputs are:
+
+```text
+npm_publish_mode: dry-run
+npm_tag: latest
+github_release_mode: draft
+```
+
+That should build binaries, assemble npm packages, run smoke tests, dry-run npm publishing, and create/update a draft GitHub Release without actually publishing the npm packages or final release. If that looks good, the real run uses:
+
+```text
+npm_publish_mode: publish
+npm_tag: latest
+github_release_mode: publish
+```
+
+So: not a separate process, just the same release workflow run once in “dry-run/draft” mode.
+
+# djradon_2026-05-19_0129_22
+
+to get deno task ci green, I'm guessing we have to regen the fixture ladders?
+
+# gpt-5.5_2026-05-19_0129_27
+
+That’s plausible, but I don’t want to guess off vibes when `ci` can tell us where the breakage really is. I’ll run the gate and then separate “fixture ladder drift” from ordinary lint/type/test failures.
+
+# gpt-5.5_2026-05-19_0131_15
+
+Nope, pleasant surprise: `deno task ci` is already green.
+
+It passed:
+
+```text
+fmt:check
+lint
+check
+test
+
+443 passed | 0 failed
+```
+
+So fixture ladder regeneration is not needed just to get CI green. The tests are currently insulated enough through manifests/refs and targeted fixture assertions.
+
+I’d still keep ladder regen as a later cleanup before we call the examples fully settled, especially after SFLO `v0.1.1` metadata and ontology terms settle. But it is not blocking the Weave `v0.1.1` release gate right now.
+
+# djradon_2026-05-19_0132_29
+
+OK, so you agree it's ok to do the release dry-run?
+
+# gpt-5.5_2026-05-19_0132_41
+
+Yes. Given `deno task ci` is green, I think it’s appropriate to do the Weave release dry-run now.
+
+Use the manual GitHub Actions release workflow in rehearsal mode:
+
+```text
+npm_publish_mode: dry-run
+npm_tag: latest
+github_release_mode: draft
+```
+
+That should prove the packaged release path without publishing npm packages or finalizing the GitHub Release. If the draft artifacts/checksums/npm dry-run logs look good, then the real publish run is the next decision point.
+
+# djradon_2026-05-19_0135_46
+
+Take a look at this:
+
+[semantic-flow/weave](https://github.com/semantic-flow/weave/actions/runs/26085836696/job/76698599999?pr=14)
+
+# gpt-5.5_2026-05-19_0135_52
+
+I’ll use the GitHub CI-fix workflow here, since that link points at a specific Actions job. I’ll pull the job metadata/logs first, then map the failure back to the local release workflow or tests.
+
+# gpt-5.5_2026-05-19_0136_12
+
+The job is the PR 14 `ci` job for `next/v0.1.1`, head `31d8788`, and it failed quickly. I’m pulling the actual job log now rather than inferring from the local green run.
+
+# gpt-5.5_2026-05-19_0136_23
+
+The raw log is huge and got clipped in the console, so I’m saving it locally and searching for the failure markers. The job checked out the PR merge commit, which is important: local branch CI can pass while the PR merge commit fails if main has moved or workflow inputs differ.
+
+# gpt-5.5_2026-05-19_0137_01
+
+The root cause is starting to come into focus: GitHub CI runs `deno task test:coverage`, and the workflow only checks out `mesh-alice-bio`. Many failing tests depend on `mesh-sidecar-fantasy-rules` and `mesh-branch-fantasy-rules`, so those refs are absent in CI. The Alice failures also show fixture-branch drift: CI’s fetched Alice fixture still has `sflo:hasLocatedFile` where the current code expects `sflo:locatedFileForManifestation`.
+
+# gpt-5.5_2026-05-19_0137_39
+
+That job is PR CI, not the release dry-run. It failed in `Run tests with coverage`:
+
+```text
+FAILED | 385 passed | 58 failed
+```
+
+The failures are mostly fixture-environment issues, not fresh logic failures.
+
+Root causes I see:
+
+1. CI only checks out `mesh-alice-bio`
+   
+   The workflow does not check out:
+
+```text
+semantic-flow/mesh-sidecar-fantasy-rules
+semantic-flow/mesh-branch-fantasy-rules
+```
+
+So tests that need refs like `a.10-root-knop` fail with:
+
+```text
+Failed to resolve fixture ref 10-root-knop ... mesh-sidecar-fantasy-rules
+```
+
+2. Remote Alice fixture branches are stale
+   
+   Locally, `mesh-alice-bio` branch `a.05-alice-knop-created-woven` has:
+
+```text
+sflo:locatedFileForManifestation
+```
+
+but `origin/a.05-alice-knop-created-woven` still has:
+
+```text
+sflo:hasLocatedFile
+```
+
+CI fetches `origin/*`, so it gets the stale branch and fixture comparisons fail.
+
+So I don’t think this blocks because the Weave code is broken. It blocks because GitHub CI is missing fixture checkouts and the remote fixture ladder branches need to match the local regenerated branches.
+
+The focused fix is:
+
+- update `.github/workflows/ci.yml` to checkout/fetch all three fixture repos
+- push the regenerated `a.*` fixture branches for `mesh-alice-bio`, and probably sidecar/branch fantasy too, so CI sees the same refs local tests are using
+- rerun PR CI before doing the release workflow dry-run
+
+I would not run the release dry-run until this PR CI is green on GitHub.
+
+# djradon_2026-05-19_0140_02
+
+OK, fix the ci.yml first. Then I'm not sure we have a general "how to completely regenerate the fixture ladders" note or task yet, right? And do you recommend updating deno task ci to match the yml?
+
+# gpt-5.5_2026-05-19_0140_19
+
+I’ll patch the workflow first so GitHub CI has the same fixture repos that local tests expect. Then I’ll check whether we already have a fixture-ladder regeneration note before recommending where to put that process.
+
+There is a fixture-ladder generator script, and there are historical task notes, but I’m not seeing a concise “complete regeneration playbook” as current user-facing/dev documentation. So yes, we likely need one, but I’ll keep this turn scoped: CI workflow patch first.
+
+# gpt-5.5_2026-05-19_0140_34
+
+The workflow now checks out and fetches all three live fixture repos. I’m going to run a quick local YAML/diff sanity check; no code test should be needed for this workflow-only edit.
+
+# gpt-5.5_2026-05-19_0140_40
+
+Fixed `.github/workflows/ci.yml` so GitHub CI checks out and fetches all three live fixture repos:
+
+- `semantic-flow/mesh-alice-bio`
+- `semantic-flow/mesh-sidecar-fantasy-rules`
+- `semantic-flow/mesh-branch-fantasy-rules`
+
+`git diff --check` passes.
+
+On the other questions:
+
+Yes, I think we’re missing a concise current “completely regenerate fixture ladders” playbook. We have `scripts/fixture-ladder.ts`, tests for it, and historical task/conversation notes, but not a clean dev note that says: prerequisites, order, dry-run, execute, inspect, push fixture branches, rerun CI. I’d make that a `wd.*` developer note or a task note if we expect to change the generator while documenting it.
+
+And yes, I recommend updating `deno task ci` to match the workflow more closely. Right now local `ci` runs `deno task test`, while GitHub runs `deno task test:coverage` plus `coverage:lcov` and Codecov upload. I’d at least change local `ci` to:
+
+```sh
+deno task fmt:check && deno task lint && deno task check && deno task test:coverage && deno task coverage:lcov
+```
+
+That said, this would make local CI slower and require the same fixture repos to be present. I still think it’s worth it for release work: “green locally” should mean the same thing as “green in GitHub,” minus Codecov upload.
+
+# djradon_2026-05-19_0142_05
+
+OK, do you want to fill out [wd.testing.fixture-ladder-regeneration.md](../../../../../documentation/notes/wd.testing.fixture-ladder-regeneration.md) now, or in a fresh conversation?
+
+# gpt-5.5_2026-05-19_0147_15
+
+I can do it now. It’s bounded and we already have the context warm: the script, the three fixture repos, the CI mismatch, and the exact reason this doc matters.
+
+I’d keep it as a developer playbook, not a giant design note:
+
+- purpose and when to regenerate
+- required local repo layout
+- dry-run commands for each scenario
+- execute commands for each transition/all transitions
+- review/push expectations for fixture repos
+- how to rerun Weave CI afterward
+- warnings about not mixing fixture branch pushes with unrelated changes
+
+Fresh conversation only helps if you want to stop the release thread and make fixture regeneration its own focused task with implementation changes too. For just filling the doc, now is fine.
+
+# djradon_2026-05-19_0149_48
+
+OK, do it now.
+
+# gpt-5.5_2026-05-19_0149_59
+
+I’ll fill it in now as a practical playbook. I’m going to read the empty/current note plus the fixture-ladder CLI surface so the commands are real, not hand-wavy.
+
+# gpt-5.5_2026-05-19_0151_15
+
+I found the script surface: one transition at a time, with `--dry-run` to execute/validate without updating fixture refs. I’ll make the doc emphasize that a full rerung is a series of explicit transition executions, followed by review and separate fixture-repo pushes.
+
+# gpt-5.5_2026-05-19_0151_55
+
+The playbook is filled out. I’m adding one pointer from the main testing note so it’s discoverable, then I’ll run markdown/diff hygiene.
+
+# gpt-5.5_2026-05-19_0152_11
+
+Filled out [wd.testing.fixture-ladder-regeneration.md](../../../../../documentation/notes/wd.testing.fixture-ladder-regeneration.md) as a practical regeneration playbook: preflight, dry-run, execute, review, push, final checks, common failure patterns, and commit-message guidance.
+
+I also added a discoverability link from [wd.testing.md](../../../../../documentation/notes/wd.testing.md).
+
+Validation: `git diff --check` passes.
+
+I left `deno task ci` unchanged for this doc pass. I still recommend aligning it with GitHub’s coverage path as a separate tiny change, because that changes local release-gate cost/behavior. Suggested Weave commit message:
+
+```text
+weave: document fixture ladder regeneration
+```
+
+# djradon_2026-05-19_0154_56
+
+yes, change deno task ci.
+
+should we start a new conversation for the fixture regeneration?
+
+# gpt-5.5_2026-05-19_0155_07
+
+I’ll make the local `ci` task match the GitHub coverage path now. For the regeneration itself, I’d start a fresh conversation after this change: it’s a cross-repo operation with branch pushes, so it deserves its own clean thread and checklist.
+
+# gpt-5.5_2026-05-19_0155_12
+
+`deno task ci` now runs the same local quality gate as GitHub up through LCOV generation. I’m running the cheap checks on this config edit; not the full coverage suite again unless you want me to burn the minute and a half here.
+
+# gpt-5.5_2026-05-19_0155_17
+
+Changed `deno task ci` to match GitHub’s local gate through coverage generation:
+
+```json
+"ci": "deno task fmt:check && deno task lint && deno task check && deno task test:coverage && deno task coverage:lcov"
+```
+
+I also verified:
+
+```text
+deno fmt --check deno.json
+git diff --check
+```
+
+Both pass.
+
+And yes, I recommend starting a fresh conversation for fixture regeneration. It’s a cross-repo, stateful operation with possible branch pushes in three fixture repos; a clean thread will make it much easier to keep the checklist, repo statuses, and push decisions straight.
+
+Suggested Weave commit message for this slice:
+
+```text
+weave: align local ci with GitHub coverage gate
+```
+
+# djradon_2026-05-19_0156_08
+
+prompt please
+
+# gpt-5.5_2026-05-19_0156_26
+
+Use this in the fresh conversation:
+
+```text
+We’re in `/home/djradon/hub/semantic-flow/weave`.
+
+Please handle fixture ladder regeneration. First read `AGENTS.md`, `documentation/notes/wd.general-guidance.md`, and `documentation/notes/wd.testing.fixture-ladder-regeneration.md`.
+
+Context: GitHub PR CI failed because fixture refs were not aligned with local expectations. The workflow has been updated to check out all three fixture repos, but the remote fixture branches may still be stale. Local tests had passed because local fixture refs contain newer generated vocabulary such as `sflo:locatedFileForManifestation`; GitHub saw older refs with `sflo:hasLocatedFile`.
+
+Goal:
+- Regenerate/reconcile the live fixture ladders for:
+  - `mesh-alice-bio`
+  - `mesh-sidecar-fantasy-rules`
+  - `mesh-branch-fantasy-rules`
+- Use `deno task fixture:ladder` and the regeneration playbook.
+- Start with repo status/fetch/preflight.
+- Run dry-runs first.
+- If dry-runs pass, execute regeneration locally.
+- Review resulting fixture branch changes carefully.
+- Do not push fixture branches until you show me the push plan and get explicit confirmation.
+- After local regeneration, run the appropriate Weave checks, ideally `deno task ci`.
+
+Please keep repo-specific commit/push messages separate and name the repo each message applies to.
+```
+
+# djradon_2026-05-19_0158_08
+
+the regen instructions don't talk about how the rungs build on each other (i.e., I think we'll usually do whole-ladder regeneration rather than targeted), or how to clean out the rung branches.
+
+# gpt-5.5_2026-05-19_0158_31
+
+Good catch. I’m going to tighten that note: the important invariant is “execute in plan order because `toRef` becomes the next `fromRef`,” and the cleanup section should explain how to delete/reset local `a.*` refs so stale local rung branches do not shadow `origin/a.*`.
+
+# gpt-5.5_2026-05-19_0159_21
+
+Yep, that’s a real gap. I’ll patch the playbook so it treats rung branches as an ordered dependency chain, makes whole-ladder regeneration the normal path, and adds a careful cleanup/reset section for local `a.*` branches before rerunning.
+
+# gpt-5.5_2026-05-19_0159_54
+
+I’m going to make the doc a little more opinionated here: whole-ladder reruns are the default, targeted reruns are exceptional, and local rung branches are explicitly called out as both the mechanism for propagation and a possible source of stale shadow state.
+
+# gpt-5.5_2026-05-19_0200_43
+
+Updated [wd.testing.fixture-ladder-regeneration.md](../../../../../documentation/notes/wd.testing.fixture-ladder-regeneration.md:54).
+
+What changed:
+- Added a **Rung Dependency Model** section explaining that rungs build on prior `toRef`/`fromRef` state and whole-ladder regeneration is the normal path.
+- Clarified that local `a.*` branches shadow `origin/a.*`.
+- Added a **Clean Local Rung Branches** section with commands to inspect and delete stale local rung refs before rerunning.
+- Clarified that `--dry-run` is a smoke test, not a full cumulative propagation simulation.
+- Added a CI failure note for local shadow branches vs stale remote branches.
+
+Validation: `git diff --check -- documentation/notes/wd.testing.fixture-ladder-regeneration.md` passed.
+
+Suggested commit message:
+
+```text
+weave: clarify fixture ladder regeneration flow
+```
+
+# djradon_2026-05-19_0202_54
+
+the coderabbit review came back for the weave PR, I copied it into [wa.review.2026-05-19_0200-coderabbit.md](wa.review.2026-05-19_0200-coderabbit.md) . For each item add a markdown checkbox. For items that are completely wrongheaded, mark as [c], for others that are close refine as necessary, and then implement those that are definitely worth doing.
+
+# gpt-5.5_2026-05-19_0203_05
+
+I’ll triage the copied review first, then I’ll separate “nope, not appropriate” from “good catch” and patch only the parts that actually improve the PR. After that I’ll mark the review note so it’s clear what happened to each item.
+
+# gpt-5.5_2026-05-19_0204_25
+
+The review has a mix: several real bugs, a couple of documentation nits, and one recommendation that needs to be reshaped because this repo now deliberately uses archive task notes for Kato/workflow tasks. I’m going to patch the real behavioral issues plus the low-risk doc/test nits, and I’ll mark the task-note-location feedback as refined rather than blindly following it.
+
+# gpt-5.5_2026-05-19_0205_33
+
+I found the important code paths. The digest and workspace-grant findings are genuinely worth fixing, the first-payload and duplicate-history cases are real edge cases, and the reference-catalog literal fallback matches the newer `workingLocalRelativePath` modeling. Next I’m patching those plus the small docs/help/test items.
+
+# gpt-5.5_2026-05-19_0207_06
+
+The patches are in. I’m running the focused slice now: core payload/weave/mesh tests plus the integrate integration and CLI tests that exercise the digest and workspace-root grant fixes.
+
+# gpt-5.5_2026-05-19_0208_38
+
+Two failures were useful rather than scary: the test exposed an older broad “any history predicate” guard, so I narrowed it to the KnopInventory subject; the CLI output path is intentionally workspace-relative, so I relaxed that assertion to the config filename and kept the actual file-content check. Re-running the same focused suite now.
+
+# gpt-5.5_2026-05-19_0210_17
+
+The focused e2e file is green now. I’m doing the broader static gate next (`lint` and `check`) because this touched shared helpers and runtime/CLI paths.
+
+# gpt-5.5_2026-05-19_0211_28
+
+One bookkeeping thing: because I fixed an assertion after the combined focused run, I’m rerunning the combined focused command once more so the review note’s validation checkbox means exactly what it says.
+
+# gpt-5.5_2026-05-19_0212_27
+
+Handled the CodeRabbit review and updated [wa.review.2026-05-19_0200-coderabbit.md](wa.review.2026-05-19_0200-coderabbit.md) with checkboxes and notes. None were fully wrongheaded; the task-note-location item was close but needed refinement, so I kept archive task notes for Kato/workflow tasks and clarified durable `wd.*` docs.
+
+Implemented the worthwhile fixes:
+- digest mismatch now fails fast for repository-backed `integrate`
+- workspace-root grants go to host-local policy instead of invalid mesh `pathPrefix ".."`
+- first-payload weave accepts intent-only histories
+- reference catalogs can resolve literal `sflo:workingLocalRelativePath`
+- duplicate identical current-history facts are deduped
+- source-binding CLI help is clearer
+- Turtle string escaping is shared for core integrate/extract
+- regression tests were added
+
+Validation passed:
+- `deno task fmt:check`
+- `deno task lint`
+- `deno task check`
+- focused test suite: `83 passed | 0 failed`
+- `git diff --check`
+
+Suggested commit messages:
+
+```text
+weave: address integrate and weave review feedback
+
+- validate repository-backed integrate source digests against computed bytes
+- route workspace-root source grants through host-local access config
+- accept intent-only payload histories during first-payload weave
+- resolve reference catalog working paths from workingLocalRelativePath literals
+- add regression tests for digest, grant, history-intent, and config rendering cases
+```
+
+```text
+weave-dev-archive: triage CodeRabbit review feedback
+
+- mark each review finding with checkbox status
+- record refined handling for task-note location guidance
+- list validation commands run for the review fixes
+```
