@@ -3792,3 +3792,479 @@ weave-dev-archive: record first-release source-binding refresh gap
 - note that initial branch replay no longer uses prepare gh-pages
 - defer first-release replay until existing source bindings have an explicit refresh surface
 ```
+
+# djradon_2026-05-19_0252_54
+
+regarding "it needs an explicit source-binding provenance refresh/update API for already-integrated external working sources" -- I thought we had source-binding update API surface already, but if not, fill out [wa.task.2026.2026-05-19_0249-source-binding-update.md](wa.task.2026.2026-05-19_0249-source-binding-update.md) please. 
+
+Regardless, why aren't we using the "working file" to specify the source?
+
+# gpt-5.5_2026-05-19_0253_05
+
+I’ll pin down whether there’s actually a source-binding update surface hiding somewhere, then I’ll fill the task note with the gap, proposed command/API shape, and the “working file as source” clarification.
+
+# gpt-5.5_2026-05-19_0253_50
+
+The search confirms the distinction: there is a `weave set extraction-source` update path for extracted term provenance, but not a corresponding update path for payload source bindings created by `integrate`. So the missing piece is narrower than “all source bindings”: it is payload-source binding refresh for an already integrated payload.
+
+# gpt-5.5_2026-05-19_0254_57
+
+Filled out [wa.task.2026.2026-05-19_0249-source-binding-update.md](wa.task.2026.2026-05-19_0249-source-binding-update.md).
+
+Short answer: we do have `weave set extraction-source`, but that is extraction-term specific. We do not yet have the analogous payload source-binding update surface for payloads created by `integrate`.
+
+On “why aren’t we using the working file”: we are, for byte resolution. The existing source binding points at the external working source with `sflo:targetLocalRelativePath` under working mode. The missing part is not “which file do I read?”; it is “refresh the repository ref/commit/digest evidence in `_knop/_sources/sources.ttl` when the same working path now represents a newer source branch.”
+
+I proposed:
+
+```sh
+weave set source-binding <designatorPath> \
+  --mesh-root <meshRoot> \
+  --source <path-or-file-url> \
+  --grant-source-directory <path> \
+  --source-binding-id <id> \
+  --source-repository-url <url> \
+  --source-repository-ref <ref> \
+  --source-repository-commit <commit> \
+  --source-repository-path <path>
+```
+
+Doc-only change; `diff --check` passed for the task note.
+
+Commit message:
+
+```text
+weave-dev-archive: specify payload source-binding update task
+
+- distinguish extraction-source updates from payload source-binding refresh
+- define first-pass CLI shape for refreshing repository ref, commit, and digest evidence
+- clarify that external working files remain source locators, not imported mesh files
+```
+
+# djradon_2026-05-19_0256_45
+
+It seems like we shouldn't be including the ref/commit/digest when we're trying to just keep up with the latest working version.
+
+# gpt-5.5_2026-05-19_0257_07
+
+I agree with that correction. For a floating working-source binding, commit/digest evidence should not masquerade as the contract; I’m going to adjust the task so the “latest working” case records the locator/policy, while exact evidence is opt-in or audit/observation-only.
+
+# gpt-5.5_2026-05-19_0258_23
+
+Yes, agreed. For “keep up with latest working version,” ref/commit/digest should not be part of the durable source-resolution contract by default. They make the binding smell exact or stale.
+
+I updated the task note to say:
+
+- floating working update should use `--source` plus local path policy and `targetLocalRelativePath`
+- no `sourceRepositoryRef`, `sourceRepositoryCommit`, `expectsContentDigest`, or locator digest by default
+- old ref/commit/digest evidence should be removed when switching/refreshing a binding as floating working
+- deterministic ref/commit/digest evidence is opt-in, for exact/replayable source policy or audit observation
+
+So the first-pass branch case is now more like:
+
+```sh
+weave set source-binding ontology \
+  --mesh-root "$PUBLICATION_ROOT" \
+  --source "$SOURCE_ROOT/ontology/fantasy-rules-ontology.ttl" \
+  --grant-source-directory "$SOURCE_ROOT" \
+  --source-binding-id branch-source-ontology
+```
+
+`diff --check` passed for the task note.
+
+# djradon_2026-05-19_0259_03
+
+exact evidence should only be provided (is only meaningful) when pinning to an exact state. In that case the evidence matters, but that is not our case here.
+
+# gpt-5.5_2026-05-19_0259_13
+
+That feels right: for this task, the update surface should be working-only. Exact evidence belongs with an exact source-state binding, not with “follow this working file,” so I’ll trim the task note away from deterministic repo/digest mode and leave exact-state as a separate future capability.
+
+# gpt-5.5_2026-05-19_0259_58
+
+Agreed. I updated the task note so the first-pass API is explicitly working-only.
+
+The proposed command is now just:
+
+```sh
+weave set source-binding ontology \
+  --mesh-root "$PUBLICATION_ROOT" \
+  --source "$SOURCE_ROOT/ontology/fantasy-rules-ontology.ttl" \
+  --grant-source-directory "$SOURCE_ROOT" \
+  --source-binding-id branch-source-ontology
+```
+
+I removed the `--source-policy working|exact`, repository ref/commit/path, and digest options from the first-pass surface. The note now says exact evidence belongs only with an exact source-state binding, likely a future `--source-state` style surface, and not with “follow this working file.”
+
+`diff --check` passed.
+
+Commit message:
+
+```text
+weave-dev-archive: narrow source-binding update to working sources
+
+- remove exact/repository evidence from the first-pass source-binding update surface
+- clarify that ref, commit, and digest evidence belongs with exact source-state pinning
+- keep branch-published source refresh focused on following approved working files
+```
+
+# djradon_2026-05-19_0302_32
+
+So we need to change goals? "Add an explicit update surface for payload source bindings that already exist because of `integrate`." Shouldn't that be part of later work?  
+
+And we shouldn't need to use "set source-binding" here, integrate should take care of that already... no?
+
+# gpt-5.5_2026-05-19_0302_42
+
+You’re right to push on that. If the source binding is truly “follow the approved working file,” then the durable binding should already be correct after `integrate`; the later release should not need `set source-binding` just because the bytes at that working path changed. I’m going to re-check the actual payload update/weave assumptions and then adjust the task note accordingly.
+
+# gpt-5.5_2026-05-19_0303_44
+
+I’m going to check the actual `integrate` option handling before editing the task note, because I think your instinct is right: ordinary “keep following this working file” should be established by `integrate`, not repaired afterward by a separate `set source-binding` command.
+
+# gpt-5.5_2026-05-19_0303_54
+
+The current CLI confirms the tension: `integrate`’s help text treats source bindings as “repository-backed” and requires repo URL/ref/path when any binding option is supplied. That’s probably the wrong contract for the working-source case, so I’m going to rewrite the task from “add a later update command” into “make initial integrate able to record a floating working binding; defer any true retarget/update command.”
+
+# gpt-5.5_2026-05-19_0304_10
+
+The core planner already supports a source binding with no `repositorySource`; the CLI is the thing forcing repo facts. So I’m going to make the note say the goal is to unlock that initial `integrate` shape, and move true source-binding updates into a separate later concern.
+
+# gpt-5.5_2026-05-19_0305_18
+
+I’ve flipped the new task note around. I’m also cleaning up the older notes that still say first-release is blocked on a source-binding refresh command, because that statement is now misleading.
+
+# gpt-5.5_2026-05-19_0306_05
+
+Yes, I think we should change the goal. Your read is right: for the normal “follow this working file” case, `integrate` should create the binding up front, and later release/weave runs should just read the existing working locator.
+
+I confirmed the implementation shape too: the core `integrate` planner already supports a source binding without repository metadata. The CLI is the restrictive part: it currently requires repo URL/ref/path when any source-binding option is supplied. So the next real implementation task is to let `integrate --source-binding-id ...` create a working-only source binding without ref/commit/digest evidence.
+
+Updated:
+- [source-binding task](wa.task.2026.2026-05-19_0249-source-binding-update.md:11): reframed away from `set source-binding` and toward `integrate` working-only bindings.
+- [remove-prepare task](wa.task.2026.2026-05-18_0627-remove-prepare.md:308): corrected the first-release blocker.
+- [fixture ladder regeneration note](../../../../../documentation/notes/wd.testing.fixture-ladder-regeneration.md:276): clarified that stable external working locators should not be re-integrated or updated.
+
+No tests run; these were note/doc updates only.
+
+Commit messages:
+- `weave-dev-archive: Reframe source-binding update around integrate working bindings`
+- `weave: Clarify fixture replay for stable external working locators`
+
+# djradon_2026-05-19_0307_13
+
+"integrate --source-binding-id"?
+
+# gpt-5.5_2026-05-19_0307_34
+
+Yeah, shorthand. I meant the full shape:
+
+```sh
+weave integrate <source> <designatorPath> \
+  --mesh-root <meshRoot> \
+  --grant-source-directory <sourceRoot> \
+  --source-binding-id <id>
+```
+
+But your eyebrow is justified: `--source-binding-id` is a weird flag to make carry the semantic meaning “please create a source binding.” It names the binding; it doesn’t describe the operation.
+
+Better CLI shape might be:
+
+```sh
+weave integrate <source> <designatorPath> \
+  --record-source-binding \
+  --source-binding-id <id>
+```
+
+or maybe:
+
+```sh
+weave integrate <source> <designatorPath> \
+  --source-binding <id>
+```
+
+I lean toward `--source-binding <id>` if we’re willing to change the CLI before it hardens. It says “create a source binding” and gives the id in one move. `--source-binding-id` can remain an internal-ish/legacy spelling only if already documented enough to matter, but we’ve said no legacy support, so cleaner is better.
+
+# djradon_2026-05-19_0309_18
+
+but why would the user need to provide the --source-binding-id at all? I don't even know what it is, but I suspect it's not necessary.
+
+# gpt-5.5_2026-05-19_0309_34
+
+That’s a good simplification pressure. I’m going to adjust the task note so the user-facing path doesn’t require a binding id; the id should be an internal deterministic detail unless we later support multiple source bindings for one payload.
+
+# gpt-5.5_2026-05-19_0310_07
+
+Agreed. The user should not need to provide `--source-binding-id`.
+
+It’s just the fragment id for the internal `ArtifactResolutionTarget` node in `_knop/_sources/sources.ttl`, something like `#payload-source`. For the normal single-source payload case, Weave can generate that deterministically.
+
+I updated the task note accordingly: the desired command is now just:
+
+```sh
+weave integrate "$SOURCE_ROOT/ontology/fantasy-rules-ontology.ttl" ontology \
+  --mesh-root "$PUBLICATION_ROOT" \
+  --grant-source-directory "$SOURCE_ROOT"
+```
+
+with Weave creating the working-only source binding automatically for the external working source. A source-binding id should only become user-facing later if we genuinely support multiple source bindings for one payload or need migration tooling to preserve old ids.
+
+# djradon_2026-05-19_0318_32
+
+OK, ready to implement? fresh convo or this one?
+
+# gpt-5.5_2026-05-19_0318_43
+
+This one is still usable, but I’d start a fresh convo for the implementation.
+
+Reason: we’ve got enough shared context to preserve the design, but the active thread is carrying a lot of older branches of thought. The implementation wants a clean runway: inspect `integrate`, adjust CLI/runtime/tests/manifests, then run focused fixture tests.
+
+Prompt:
+
+```text
+Implement the working-only integrate source-binding task.
+
+Context:
+- Task note: /home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/weave-dev-archive/notes/wa.task.2026.2026-05-19_0249-source-binding-update.md
+- We decided ordinary floating working-source publication should not need `weave set source-binding`.
+- For external working sources, `weave integrate <source> <designatorPath> --mesh-root <publicationRoot> --grant-source-directory <sourceRoot>` should create a working-only source binding automatically.
+- Users should not provide `--source-binding-id`; Weave should use a deterministic internal id for the single-source case.
+- Floating working bindings should not include source repository ref/commit/path/digest or `expectsContentDigest`.
+- Exact source-state evidence is later work.
+- Update branch fixture manifests/tests so initial branch integrations use working-only source bindings, and first-release replay weaves from existing working locators instead of `payload.update`, `prepare gh-pages`, or source-binding update.
+- Do not regenerate full fixture ladders yet; run focused tests.
+
+Please inspect current `integrate` CLI/runtime behavior, implement the change, update docs/manifests/tests as needed, run lint/check/focused fixture tests, and provide separate commit messages per repo.
+```
+
+# djradon_2026-05-19_1533_06
+
+working-only integrate is complete see [wa.completed.2026.2026-05-19_0249-source-binding-update.md](wa.completed.2026.2026-05-19_0249-source-binding-update.md), ladders are regenerated, Can you help me "Decide later whether a dedicated latest-state conformance fixture is worth adding during a fixture-ladder regeneration pass."
+
+# gpt-5.5_2026-05-19_1533_19
+
+I’ll look at the latest-state task and the completed working-only integrate note, then I’ll give you a concrete recommendation rather than leaving it in that “decide later” fog bank.
+
+# gpt-5.5_2026-05-19_1533_24
+
+The key bit I’m seeing: latest-state is now implemented for payload-backed `ResourcePageSource`, but the note still treats a conformance fixture as optional. I’m checking whether that behavior is already covered only by unit/integration tests or also by regenerated conformance manifests.
+
+# gpt-5.5_2026-05-19_1533_46
+
+My recommendation is “yes, fixture-worthy, but not release-blocking.” I’m going to record that in the task note: don’t disturb the just-regenerated ladders solely for this, but the next conformance pass should add one small Alice page-source transition because latest-state is now externally visible behavior.
+
+# gpt-5.5_2026-05-19_1534_09
+
+I’d say: yes, a dedicated latest-state conformance fixture is worth adding, but not worth reopening the just-completed ladder regeneration just for that.
+
+I updated [wa.task.2026.2026-05-19_0022-lateststate-improvement.md](wa.task.2026.2026-05-19_0022-lateststate-improvement.md:140) with that decision. The proposed future fixture is a small Alice Bio transition: make `alice/page-main` have settled content, mutate its working file to a visible draft, configure a page source with `artifactResolutionMode_latestState`, weave, and assert the page used the settled state rather than the working draft.
+
+No tests run; note-only edit.
+
+Commit message:
+
+`weave-dev-archive: Decide latestState conformance fixture timing`
+
+# djradon_2026-05-19_1537_26
+
+Could you fill out [wd.task.2026.2026-05-19_1536-latest-state-conformance.md](wd.task.2026.2026-05-19_1536-latest-state-conformance.md)
+
+# gpt-5.5_2026-05-19_1537_38
+
+I’ll fill it as a concrete task note, using the latest-state decision we just made: small Alice Bio conformance transition, next regen pass, not a blocker for the current regenerated ladders.
+
+# gpt-5.5_2026-05-19_1537_49
+
+The note has a tiny frontmatter typo (`C---`) and an unfinished title, so I’ll clean those while filling the task. I’m also going to anchor the plan to the existing Alice page-source rungs so the future implementer has an obvious place to add the transition.
+
+# gpt-5.5_2026-05-19_1538_55
+
+I’ll structure it as an append-only fixture addition: add transitions after the current Alice ladder instead of renumbering the existing 20-25 rungs. That keeps the conformance story clear without creating avoidable churn.
+
+# gpt-5.5_2026-05-19_1539_35
+
+Filled out [wd.task.2026.2026-05-19_1536-latest-state-conformance.md](wd.task.2026.2026-05-19_1536-latest-state-conformance.md:1).
+
+I also fixed the frontmatter typo and completed the title. The task now recommends an append-only Alice Bio fixture pair, `26`/`27`, to prove `latestState` reads settled `alice/page-main` content instead of a draft working file. It explicitly defers this until the next broader fixture-ladder pass.
+
+No tests run; note-only edit. The note is currently untracked in `weave-dev-archive`.
+
+Commit message:
+
+`weave-dev-archive: Add latest-state conformance fixture task`
+
+# djradon_2026-05-19_1540_43
+
+The recent push had a CI failure, I should've checked first:
+
+ ERRORS 
+
+weave --version reports the root package version => ./tests/support/test_tmp.ts:53:7
+error: AssertionError: Values are not equal.
+
+    [Diff] Actual / Expected
+
+-   [1mweave[22m [94m0.1.1[39m
++   weave 0.1.1
+
+  throw new AssertionError(message);
+        ^
+    at assertEquals (https://jsr.io/@std/assert/1.0.19/equals.ts:67:9)
+    at file:///home/runner/work/weave/weave/tests/e2e/weave_cli_test.ts:81:3
+    at async file:///home/runner/work/weave/weave/tests/support/test_tmp.ts:80:7
+
+branch Fantasy Rules manifests use working-only source bindings for branch-published sources => ./tests/support/test_tmp.ts:53:7
+error: AssertionError: Values are not equal.
+
+    [Diff] Actual / Expected
+
+-   true
++   false
+
+  throw new AssertionError(message);
+        ^
+    at assertEquals (https://jsr.io/@std/assert/1.0.19/equals.ts:67:9)
+    at file:///home/runner/work/weave/weave/tests/integration/branch_fantasy_rules_fixture_test.ts:89:5
+    at async file:///home/runner/work/weave/weave/tests/support/test_tmp.ts:80:7
+
+active ontology and defaults RDF parses as Turtle => ./tests/support/test_tmp.ts:53:7
+error: NotFound: No such file or directory (os error 2): readfile '/home/runner/work/weave/weave/dependencies/github.com/semantic-flow/sflo/semantic-flow-core-ontology.ttl'
+  const turtle = await Deno.readTextFile(absolutePath);
+                            ^
+    at Object.readTextFile (ext:deno_fs/30_fs.js:814:24)
+    at parseRepoTurtle (file:///home/runner/work/weave/weave/tests/integration/ontology_guardrails_test.ts:133:29)
+    at file:///home/runner/work/weave/weave/tests/integration/ontology_guardrails_test.ts:21:25
+    at file:///home/runner/work/weave/weave/tests/support/test_tmp.ts:80:13
+
+active ontology and defaults RDF avoids duplicate triples => ./tests/support/test_tmp.ts:53:7
+error: Test failed
+error: NotFound: No such file or directory (os error 2): readfile '/home/runner/work/weave/weave/dependencies/github.com/semantic-flow/sflo/semantic-flow-core-ontology.ttl'
+  const turtle = await Deno.readTextFile(absolutePath);
+                            ^
+    at Object.readTextFile (ext:deno_fs/30_fs.js:814:24)
+    at parseRepoTurtle (file:///home/runner/work/weave/weave/tests/integration/ontology_guardrails_test.ts:133:29)
+    at file:///home/runner/work/weave/weave/tests/integration/ontology_guardrails_test.ts:28:25
+    at file:///home/runner/work/weave/weave/tests/support/test_tmp.ts:80:13
+
+config ontology uses the canonical sflo namespace => ./tests/support/test_tmp.ts:53:7
+error: NotFound: No such file or directory (os error 2): readfile '/home/runner/work/weave/weave/dependencies/github.com/semantic-flow/sflo/semantic-flow-config-ontology.ttl'
+  return await Deno.readTextFile(join(REPO_ROOT, relativePath));
+                    ^
+    at Object.readTextFile (ext:deno_fs/30_fs.js:814:24)
+    at readRepoFile (file:///home/runner/work/weave/weave/tests/integration/ontology_guardrails_test.ts:142:21)
+    at file:///home/runner/work/weave/weave/tests/integration/ontology_guardrails_test.ts:43:32
+    at file:///home/runner/work/weave/weave/tests/support/test_tmp.ts:80:13
+
+active config terms use flat namespace-local IRIs => ./tests/support/test_tmp.ts:53:7
+error: NotFound: No such file or directory (os error 2): readfile '/home/runner/work/weave/weave/dependencies/github.com/semantic-flow/sflo/semantic-flow-core-ontology.ttl'
+  const turtle = await Deno.readTextFile(absolutePath);
+                            ^
+    at Object.readTextFile (ext:deno_fs/30_fs.js:814:24)
+    at parseRepoTurtle (file:///home/runner/work/weave/weave/tests/integration/ontology_guardrails_test.ts:133:29)
+    at file:///home/runner/work/weave/weave/tests/integration/ontology_guardrails_test.ts:75:25
+    at file:///home/runner/work/weave/weave/tests/support/test_tmp.ts:80:13
+
+old config names and boolean policy switches stay retired => ./tests/support/test_tmp.ts:53:7
+error: NotFound: No such file or directory (os error 2): readfile '/home/runner/work/weave/weave/dependencies/github.com/semantic-flow/sflo/semantic-flow-config-ontology.ttl'
+  return await Deno.readTextFile(join(REPO_ROOT, relativePath));
+                    ^
+    at Object.readTextFile (ext:deno_fs/30_fs.js:814:24)
+    at readRepoFile (file:///home/runner/work/weave/weave/tests/integration/ontology_guardrails_test.ts:142:21)
+    at file:///home/runner/work/weave/weave/tests/integration/ontology_guardrails_test.ts:121:28
+    at file:///home/runner/work/weave/weave/tests/support/test_tmp.ts:80:13
+
+executeValidate publication reports host-local path leakage => ./tests/support/test_tmp.ts:53:7
+error: AssertionError: Values are not equal.
+
+    [Diff] Actual / Expected
+
+    [
+      {
+-       message: "Publication file leaky.ttl contains an absolute host-local path.",
++       message: "Publication file leaky.html contains a host-local file URL.",
+        severity: "error",
+      },
+      {
+-       message: "Publication file leaky.html contains a host-local file URL.",
++       message: "Publication file leaky.ttl contains an absolute host-local path.",
+        severity: "error",
+      },
+    ]
+
+  throw new AssertionError(message);
+        ^
+    at assertEquals (https://jsr.io/@std/assert/1.0.19/equals.ts:67:9)
+    at file:///home/runner/work/weave/weave/tests/integration/validate_version_generate_test.ts:333:3
+    at async file:///home/runner/work/weave/weave/tests/support/test_tmp.ts:80:7
+
+planFixtureLadder exposes the Sidecar Fantasy Rules transition sequence => ./tests/support/test_tmp.ts:53:7
+error: AssertionError: Values are not equal.
+
+    [Diff] Actual / Expected
+
+-   0
++   61
+
+  throw new AssertionError(message);
+        ^
+    at assertEquals (https://jsr.io/@std/assert/1.0.19/equals.ts:67:9)
+    at file:///home/runner/work/weave/weave/tests/scripts/fixture_ladder_test.ts:523:5
+    at async file:///home/runner/work/weave/weave/tests/support/test_tmp.ts:80:7
+
+planFixtureLadder exposes the Branch-Published Fantasy Rules source transition => ./tests/support/test_tmp.ts:53:7
+error: AssertionError: Values are not equal.
+
+    [Diff] Actual / Expected
+
+    [
+      "integrate",
+      "{sourceRoot}/ontology/fantasy-rules-ontology.ttl",
+      "ontology",
+      "--mesh-root",
+      "{publicationRoot}",
+      "--grant-source-directory",
+      "{sourceRoot}",
+-     "--source-binding-id",
+-     "branch-source-ontology",
+-     "--source-repository-url",
+-     "https://github.com/semantic-flow/mesh-branch-fantasy-rules.git",
+-     "--source-repository-ref",
+-     "{sourceRef}",
+-     "--source-repository-commit",
+-     "{sourceCommit}",
+-     "--source-repository-path",
+-     "ontology/fantasy-rules-ontology.ttl",
+    ]
+
+  throw new AssertionError(message);
+        ^
+    at assertEquals (https://jsr.io/@std/assert/1.0.19/equals.ts:67:9)
+    at file:///home/runner/work/weave/weave/tests/scripts/fixture_ladder_test.ts:613:5
+    at async file:///home/runner/work/weave/weave/tests/support/test_tmp.ts:80:7
+
+ FAILURES 
+
+weave --version reports the root package version => ./tests/support/test_tmp.ts:53:7
+branch Fantasy Rules manifests use working-only source bindings for branch-published sources => ./tests/support/test_tmp.ts:53:7
+active ontology and defaults RDF parses as Turtle => ./tests/support/test_tmp.ts:53:7
+active ontology and defaults RDF avoids duplicate triples => ./tests/support/test_tmp.ts:53:7
+config ontology uses the canonical sflo namespace => ./tests/support/test_tmp.ts:53:7
+active config terms use flat namespace-local IRIs => ./tests/support/test_tmp.ts:53:7
+old config names and boolean policy switches stay retired => ./tests/support/test_tmp.ts:53:7
+executeValidate publication reports host-local path leakage => ./tests/support/test_tmp.ts:53:7
+planFixtureLadder exposes the Sidecar Fantasy Rules transition sequence => ./tests/support/test_tmp.ts:53:7
+planFixtureLadder exposes the Branch-Published Fantasy Rules source transition => ./tests/support/test_tmp.ts:53:7
+
+FAILED | 442 passed | 10 failed (1m18s)
+
+---
+
+Can you investigate? Maybe we just don't have the new fixtures checked out ?
+
+# gpt-5.5_2026-05-19_1540_48
+
+I’ll investigate locally first using the GitHub CI-fix workflow, since the pasted failures already give us the useful log slice. The pattern looks mixed: a real ANSI-color test issue, a stale fixture expectation, missing sflo checkout in CI, nondeterministic validation order, and possibly fixture repos not available or not fetched in GitHub Actions.
+
+# gpt-5.5_2026-05-19_1542_18
+
+I can reproduce the failure classes from the code without pulling more logs. I’m going to patch the tests/workflow where the failures are clearly environment or expectation issues, then run the focused tests locally. The only one that may need CI config is the missing `sflo` checkout.

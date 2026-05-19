@@ -138,6 +138,23 @@ Add a `latestState` ladder only when we want to demonstrate this specific behavi
 - Do not revive `artifactResolutionMode_current` or `artifactResolutionMode_pinned`.
 - Do not make latest-across-all-histories guess from filesystem mtimes or lexical path ordering.
 
+## Conformance Fixture Decision
+
+Dedicated `latestState` conformance is worth adding, but it is not worth reopening the just-completed fixture-ladder regeneration solely for this behavior.
+
+The current implementation has focused integration coverage for payload-backed `ResourcePageSource` latest-state resolution. That is enough for the immediate release/regen path. The reason to add a conformance fixture later is that latest-state page-source resolution is externally visible Semantic Flow behavior: a portable implementation should be able to demonstrate that a page source can follow the latest settled payload state without reading mutable working bytes.
+
+When the next conformance-ladder pass is already happening, add one small Alice Bio transition rather than a new ladder:
+
+- start after `alice/page-main` has a settled payload state.
+- mutate the `alice/page-main` working file so it visibly differs from the settled state.
+- configure an Alice page region source with `sflo:hasTargetArtifact <.../alice/page-main>` and `sflo:hasArtifactResolutionMode sflo:artifactResolutionMode_latestState`.
+- weave the page.
+- assert that the rendered ResourcePage uses the settled `alice/page-main` state, not the draft working file.
+- assert the source triples show `ResourcePageSource`, `hasTargetArtifact`, and `artifactResolutionMode_latestState`.
+
+That fixture would prove the key semantic distinction: `working` follows editable current bytes, while `latestState` follows settled mesh history. More exotic cases, such as requested-history latest-state, ambiguous no-history failure, or exact-state redundancy, can stay in unit/integration tests until they become conformance-level behavior.
+
 ## Implementation Plan
 
 - [x] Inventory existing resolver-like code paths for page sources, extraction sources, source registries, and payload history progression.
@@ -148,7 +165,7 @@ Add a `latestState` ladder only when we want to demonstrate this specific behavi
 - [x] Wire the first operation-level consumer: page-source generation.
 - [x] Update behavior specs and glossary after the first consumer is implemented.
 - [x] Add focused integration tests for working versus latest-state behavior in page-source generation.
-- [ ] Decide later whether a dedicated latest-state conformance fixture is worth adding during a fixture-ladder regeneration pass.
+- [d] Add a dedicated latest-state conformance fixture during the next fixture-ladder regeneration pass that is already happening; do not reopen the just-completed regeneration solely for this.
 
 ## Implementation Progress
 
