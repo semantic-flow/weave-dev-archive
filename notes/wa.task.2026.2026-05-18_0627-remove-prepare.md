@@ -18,14 +18,17 @@ created: 1779110867573
 
 ## Summary
 
-The current `prepare gh-pages` shape bundles too many responsibilities: detached/root bootstrap, publication-root checks, GitHub Pages control files, source binding, provenance updates, stale-output checks, local path leakage validation, optional source copying, and optional commits.
+The current `prepare gh-pages` shape bundles too many responsibilities: detached/root bootstrap, publication-root checks, GitHub Pages control files, source binding, provenance updates, local path leakage validation, optional source copying, and optional commits.
 
 Those responsibilities should be dissolved into reusable pieces:
 
 - `mesh.create` bootstraps the mesh support surface.
 - `integrate` binds available source bytes to target designators and payload artifacts without moving those bytes.
 - `import` copies a working file into the mesh or publication tree when the copy itself should become governed local working content.
-- `weave`, `version`, `validate`, and `generate` record and render the governed mesh state.
+- `weave` records eligible governed working artifacts into the mesh.
+- `version` explicitly appends versioned payload states.
+- `validate` reports mesh or publication problems without recording new state.
+- `generate` renders ResourcePages and other generated surfaces from the current mesh state.
 - publication-host presets apply host-specific controls such as GitHub Pages `.nojekyll`.
 - publication validation checks publishability without caring whether the mesh is sidecar, whole-repository, or branch-published.
 - optional git output handling commits, tags, pushes, or otherwise hands the result to CI/CD.
@@ -34,9 +37,11 @@ The important asymmetry to remove is not "branch publication is bad"; it is that
 
 ## Discussion
 
-### `prepare gh-pages` should become a wrapper at most
+### `prepare gh-pages` should be removed immediately
 
-A transitional Weave CLI may keep `prepare gh-pages` while the smaller pieces are being implemented. If it remains, it should call the same primitives that a sidecar or whole-repository publication path would call. It should not become the durable API name.
+There should be no deprecation period or long-lived compatibility wrapper for `prepare gh-pages`. Remove the command surface and replace its useful behavior with explicit generic primitives: mesh creation, source integration, host publication profiles, publication validation, generation, and optional git output handling.
+
+The old command shape is actively misleading because it makes branch-published meshes look semantically special. If someone tries to follow old documentation, the answer should be updated docs and examples, not a wrapper that keeps the old boundary alive.
 
 ### `mesh.create` owns mesh bootstrap only
 
@@ -92,6 +97,20 @@ The desired distinction is:
 
 `Pinned` is therefore less central than earlier notes implied. Targeting an exact state, manifestation, commit, or digest already pins identity. Targeting a history is bounded but not pinned; by default it asks for the latest state in that requested history. `artifactResolutionMode_current` should be replaced or retired in favor of less ambiguous mode terms before the API hardens.
 
+### Versioning intent should be explicit
+
+Supplying an `ArtifactHistory` or changing the selected history should not by itself append a new state. History selection and state creation are different acts:
+
+- `weave set history <payload-designator-path> <history-segment>` selects the payload artifact history that the next explicit versioning operation should use.
+- `weave set next-state <payload-designator-path> <state-segment>` selects the next payload state segment, such as a release segment.
+- `weave version <payload-designator-path>` is the operation that actually creates a new versioned state and consumes the selected history/next-state intent.
+
+This user-facing surface should apply to payload DigitalArtifact Knops. Supporting artifacts such as inventories, page definitions, extracted term catalogs, generated ResourcePages, manifests, and internal metadata have their own lifecycle rules; there is no good reason to let users steer those with release-oriented `set history` or `set next-state` commands.
+
+Unversioned payloads can still be woven without creating versioned states. The `set history` and `set next-state` controls only matter when a payload is being explicitly versioned.
+
+`currentArtifactHistory` remains the persisted default lane for payload versioning. Changing it should be a metadata/configuration update, not a hidden weave. Setting a `next-state` hint should likewise be inert until `weave version` is invoked. If a caller wants to mint a release state, the CLI/API should say that directly instead of relying on "a different ArtifactHistory was supplied" as an implicit trigger.
+
 ### `weave` should not be a fetcher
 
 `weave` should follow governed working-byte locators only under explicit operational policy. It should not fetch source repositories, copy source files into a publication tree, update source provenance, apply host presets, or commit/push changes.
@@ -100,15 +119,30 @@ That keeps reruns explainable. If source bytes, config, and target designators h
 
 ### Publication validation is generic
 
-Stale generated-output checks, local path leakage validation, dirty worktree warnings, source-root/publication-root checks, and host preset validation should be usable across sidecar, whole-repository, and branch-published meshes.
+Use the `weave validate` namespace for validation, with explicit scopes:
 
-Dirty publication worktrees should usually warn rather than fail by default. A human may intentionally add static files such as a favicon before committing.
+- `weave validate mesh` is whole-mesh validation. It should grow over time into the comprehensive mesh integrity check, and should include retained publication-readiness checks when the mesh has a publication surface or profile.
+- `weave validate publication` is publication-readiness validation only. It can stay as a narrower standalone convenience for release/page-regeneration workflows, but the main `weave` command does not need a publication-only validation option.
+
+Publication validation checks should be justified individually rather than inherited from the old `prepare gh-pages` bundle. First-pass candidates are local path leakage, host preset validation, and commit-time dirty worktree warnings. Some may belong in `weave validate mesh`, some may belong in `weave validate publication`, and some may not be valuable enough to keep.
+
+Dirty publication worktrees should not be a general validation concern. They should warn only when an operation is about to make an optional local commit, because that is the moment when generated output could be mixed with unrelated human changes.
+
+Candidate check assessment:
+
+- Local path leakage has high value. Public RDF/HTML should not accidentally expose `/home/...`, `file:///...`, or other machine-local paths. This is cheap and should probably be part of both mesh and publication validation once public surfaces exist.
+- Host preset validation has high value when a publication profile is configured. For GitHub Pages that currently means checking `.nojekyll` behavior. It is cheap and directly tied to whether published identifiers dereference as expected.
+- Dirty publication worktree warnings have conditional value. They are useful only when an operation requests an optional local commit; then a warning helps avoid committing unrelated human edits with generated output. They are git-specific and not semantic validity.
+- Stale generated-output validation is out of scope for now. "Stale" depends on generation policy, current renderer/config, and what the caller expected. If needed later, it should be designed as generation check behavior rather than a default publication validation rule.
+- Source-root/publication-root boundary validation is deferred. It is valuable as a path-resolution safety check, but it needs explicit planned read/write sets or strong operation-level path policy to avoid guessing. When revisited, it should confirm that source reads stay inside approved source/workspace roots, publication writes stay inside the publication/mesh root, and source discovery does not accidentally ingest generated publication output. Sidecar and whole-repository layouts can be valid; branch-published and separate-repository layouts need stronger guardrails because source and publication roots are often distinct worktrees.
+
+For ordinary weaving, use `--validate-before` and `--validate-after`. Those options should run `weave validate mesh`; they should not introduce a publication-only validation mode on the `weave` command.
 
 ## Open Issues
 
-- Should publication validation be an explicit command, an option on `weave`, or both?
-- How should CI distinguish "no semantic changes" from "semantic changes were expected but not produced"?
-- When should the transitional `prepare gh-pages` wrapper be removed rather than deprecated?
+No conceptual open issues currently block this task. Remaining choices are implementation details:
+
+- Should `sfcfg:hasNextStateSegmentHint` be broadened to match its current metadata/progression use, or should a core metadata property be added for explicit next-state intent?
 
 ## Decisions
 
@@ -120,6 +154,14 @@ Dirty publication worktrees should usually warn rather than fail by default. A h
 - GitHub Pages behavior belongs to a modular publication-host preset, and that preset only creates or validates `.nojekyll` for now.
 - Custom-domain host files are human-owned for now. Weave should not create, validate, or derive them from mesh base.
 - `prepare gh-pages` is not a durable Semantic Flow API operation.
+- `prepare gh-pages` should be removed immediately rather than deprecated or kept as a transitional wrapper.
+- Validation should use scoped commands, starting with `weave validate mesh` and `weave validate publication`.
+- `weave validate mesh` should include retained publication-readiness checks when a publication surface or profile exists.
+- `weave validate publication` may remain as a narrower standalone convenience, but ordinary `weave` does not need a publication-only validation option.
+- `weave --validate-before` and `weave --validate-after` should invoke whole-mesh validation before and after ordinary weaving.
+- Stale generated-output checks are not part of publication validation for now.
+- Dirty publication worktree checks should warn only when an optional local commit is requested.
+- Source-root/publication-root boundary checking is deferred until operations expose clear planned read/write sets or equivalent path-policy hooks.
 - `integrate` remains the ordinary semantic operation for binding source-lane payload bytes to target designators, regardless of whether the source is intra-repo or inter-repo.
 - Bringing a working file into the mesh/publication tree by copying it is `import`, not `integrate`.
 - Sidecar and branch-published ontology source files should normally use `integrate` with working, latest-state, or exact source policy, not `import`.
@@ -136,6 +178,14 @@ Dirty publication worktrees should usually warn rather than fail by default. A h
 - `artifactResolutionMode_latestState` should mean "resolve the latest settled `HistoricalState` for the target artifact across histories."
 - A requested `HistoricalState`, manifestation, commit, or digest should imply exact byte identity even without `artifactResolutionMode_pinned`.
 - A requested `ArtifactHistory` should imply latest state in that history unless an explicit exact state is also supplied.
+- Supplying or selecting a different `ArtifactHistory` should not implicitly append a new state.
+- `weave set history` should change the selected `currentArtifactHistory` for a payload artifact without versioning it.
+- `weave set next-state` should store explicit next-state intent for a payload artifact without versioning it.
+- `weave version` should remain the operation that actually appends a payload state and consumes any selected history/next-state intent.
+- The `set history` and `set next-state` surface is for payload DigitalArtifact Knops only, not supporting artifacts.
+- Unversioned payload weaving remains valid; versioning-intent controls do not decide whether an unversioned payload may be woven.
+- Next-state intent belongs with current/progression metadata, not in immutable historical snapshots. Weave already has `sfcfg:hasNextStateSegmentHint` as a consumed hint; the ontology/runtime contract should be aligned before hardening the CLI.
+- CI should express the intended workflow explicitly, such as regenerate, validate, release-validate, or version, instead of depending on a generic dirty-source heuristic to infer whether a semantic change was expected.
 - SHACL should distinguish `Violation`, `Warning`, and `Info`: invalid graph structure is a violation; reproducibility risk is a warning; omitted but inferable defaults are informational.
 - `weave` must not hide source fetch/copy/import or host publication setup.
 - `sf.api` should stay an overview and link to behavior specs for detailed contracts.
@@ -147,6 +197,12 @@ Dirty publication worktrees should usually warn rather than fail by default. A h
 - Add or revise core ontology artifact-resolution mode vocabulary for working-source resolution and latest-settled-state resolution.
 - Update or retire `artifactResolutionMode_current` before the API hardens so it no longer conflates working bytes with latest settled state.
 - Clarify the role of `artifactResolutionMode_pinned`: exact target coordinates pin identity by default; the mode should not be required to make a requested state, manifestation, commit, or digest exact.
+- Add or clarify payload-versioning vocabulary and API affordances for selected history and explicit next-state intent, distinct from source resolution modes.
+- Keep user-directed `set history` / `set next-state` behavior scoped to payload DigitalArtifact Knops; support artifacts should reject those commands or remain unreachable through that surface.
+- Remove the `prepare gh-pages` CLI/API surface and replace docs/tests with the composed operation sequence.
+- Add scoped validation commands: `weave validate mesh` and `weave validate publication`.
+- Add `weave --validate-before` and `weave --validate-after`, both invoking the `weave validate mesh` routine.
+- Align the existing `sfcfg:hasNextStateSegmentHint` term with current/progression metadata usage, or add a dedicated core metadata term for payload next-state intent.
 - Add SHACL guidance for resolution-mode severity:
   - missing mode on local or repository working-source bindings is a warning when it leaves operational behavior ambiguous.
   - missing mode on exact state/manifestation bindings can be informational because the coordinate already fixes identity.
@@ -184,6 +240,12 @@ Dirty publication worktrees should usually warn rather than fail by default. A h
   - a requested `HistoricalState`, manifestation, commit, or digest is exact by default.
   - ambiguous omitted mode on local/repository working bindings produces the intended SHACL warning.
   - malformed or contradictory mode combinations produce the intended SHACL severity.
+- Add payload versioning-intent tests:
+  - `weave set history` updates the selected payload history without appending a state.
+  - `weave set next-state` stores the next payload state segment without appending a state.
+  - `weave version` appends the state and consumes the selected history/next-state intent.
+  - supplying a different history to a non-versioning operation does not create a state.
+  - `set history` and `set next-state` reject or ignore supporting artifacts rather than steering inventory, ResourcePage, or internal metadata histories.
 - Add `weave import` tests only for the explicit copy-into-mesh boundary:
   - same-repository source path copies exact bytes with provenance.
   - separate-repository source path copies exact bytes with provenance.
@@ -192,17 +254,24 @@ Dirty publication worktrees should usually warn rather than fail by default. A h
   - unchanged source/config/designators produce a no-op or identical output.
   - changed source digest produces a new governed current surface only through an explicit update/refresh path.
 - Add publication validation tests:
-  - absolute local paths such as `/home/...` and `file:///...` do not leak into public RDF/HTML.
-  - stale generated output is detected generically.
-  - dirty publication worktree warns by default.
-  - source root and publication/mesh root boundary checks work for sidecar and branch-published layouts.
+  - `weave validate publication` runs the retained publication-readiness checks.
+  - `weave validate mesh` includes retained publication-readiness checks when publication is configured.
+  - `weave --validate-before` runs whole-mesh validation before ordinary weaving.
+  - `weave --validate-after` runs whole-mesh validation after ordinary weaving.
+  - retained checks work across sidecar and branch-published layouts.
+  - dirty publication worktree checks warn only when optional local commit is requested.
+- Evaluate candidate publication checks before hardening them:
+  - absolute local path leakage such as `/home/...` and `file:///...`.
+  - host preset issues.
+  - commit-time dirty publication worktree warnings.
 - Add CLI/integration tests replacing `prepare gh-pages` with the composed command sequence once the primitives exist.
+- Add CLI/integration tests proving `prepare gh-pages` is no longer accepted.
 
 ## Non-Goals
 
 - Do not make `weave` perform live network fetches by default.
 - Do not turn publication-host presets into ontology-specific semantics.
-- Do not require immediate removal of a transitional `prepare gh-pages` wrapper before equivalent primitives exist.
+- Do not keep a deprecated `prepare gh-pages` compatibility wrapper.
 - Do not design a general CMS, broad remote-content pipeline, or arbitrary graph-refactoring system as part of this task.
 - Do not make sidecar, whole-repository, and branch-published meshes use different artifact models.
 
@@ -212,6 +281,7 @@ Dirty publication worktrees should usually warn rather than fail by default. A h
 - [x] Refactor [[sf.api]] into an overview that links to specs instead of restating each operation contract.
 - [x] Add config ontology vocabulary for persisted publication profiles.
 - [ ] Update the core ontology with working/latest-state resolution mode vocabulary and clarified default exact/history semantics.
+- [ ] Define the payload versioning-intent surface: `weave set history`, `weave set next-state`, and explicit `weave version` state creation.
 - [ ] Update core SHACL to add local working source-binding validation, repository-backed source-binding mode guidance, mutable-ref warnings, and warning/info severity distinctions.
 - [ ] Update existing examples and conformance fixtures that currently use `artifactResolutionMode_current` or overstate `artifactResolutionMode_pinned`.
 - [ ] Introduce a publication-host preset abstraction in Weave, starting with a GitHub Pages preset for `.nojekyll`.
@@ -223,7 +293,12 @@ Dirty publication worktrees should usually warn rather than fail by default. A h
 - [ ] Defer manifest-driven integrate to [[wa.task.2026.2026-05-19_1846-integrate-manifest]].
 - [ ] Define the later update/refresh surface for refreshing already-imported or source-bound artifacts.
 - [ ] Ensure `integrate` can bind mesh-local, policy-approved live local, and repository-backed working files without copying them.
-- [ ] Add generic publication validation for stale output, local path leakage, root-boundary checks, and dirty worktree warnings.
-- [ ] Make `prepare gh-pages` a thin transitional wrapper over the generic primitives, or deprecate it once the composed command sequence is ergonomic.
+- [ ] Define the initial `weave validate publication` scope around concrete publication safety checks, not generated-output freshness.
+- [ ] Defer source-root/publication-root boundary validation until path planning and policy hooks make it precise.
+- [ ] Add `weave validate mesh` for whole-mesh validation, with room to grow as mesh validation becomes more complete.
+- [ ] Add `weave validate publication` for publication-readiness validation.
+- [ ] Add `weave --validate-before` and `weave --validate-after`, both calling whole-mesh validation.
+- [ ] Align or replace `sfcfg:hasNextStateSegmentHint` so explicit payload next-state intent has a clean metadata/progression contract.
+- [ ] Remove the `prepare gh-pages` command surface.
 - [ ] Update [[wu.cli-reference]], [[wu.repository-options]], and release-runbook examples to show the composed release sequence instead of durable `prepare gh-pages` usage.
 - [ ] Add automated release rerun tests covering unchanged source/config/designator no-op behavior.

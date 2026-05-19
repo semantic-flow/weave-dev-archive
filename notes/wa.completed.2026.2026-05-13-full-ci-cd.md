@@ -2,7 +2,7 @@
 id: uy550h4ot52nhmj1owavxrv
 title: 2026 05 13 Full CI/CD
 desc: ''
-updated: 1778686137322
+updated: 1779157970700
 created: 1778686130323
 ---
 
@@ -401,5 +401,5 @@ The runbook should include:
 - [x] Update `documentation/notes/release-notes.v0.1.0.md` convention or stub.
 - [x] Update [[dev.release-runbook]] for the current version/binary-build and package state.
 - [x] Update [[dev.release-runbook]] again after the release workflow becomes the primary path.
-- [ ] Run `deno task ci`.
-- [ ] Run a release rehearsal with npm dry-run and draft GitHub Release before publishing `v0.1.0`.
+- [x] Run `deno task ci`.
+- [x] Run a release rehearsal with npm dry-run and draft GitHub Release before publishing `v0.1.0`.

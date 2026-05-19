@@ -1141,3 +1141,377 @@ refactor: remove managed CNAME publication controls
 # gpt-5.5_2026-05-18_1854_40
 
 I’ll re-ground this in the actual implementation before theorizing. I’m going to look for how `weave`, deploy/prepare, and payload/version code decide whether bytes changed or a run is a no-op.
+
+# gpt-5.5_2026-05-18_1859_51
+
+The broad search confirms this is not currently a single clean “dirty working artifacts” check. I’m drilling into `executeWeave` and the versioning planner now to see whether it fingerprints bytes, relies on candidate state, or just versions whatever is requested.
+
+# gpt-5.5_2026-05-18_1901_22
+
+Right, the open issue is really about CI expectation, not just change detection.
+
+Currently Weave has partial checks:
+
+- For ordinary `weave`, payload freshness is checked by reading the working Turtle and the latest historical snapshot, then doing raw string comparison. See [weave.ts](../../../../../src/runtime/weave/weave.ts:1248) and the candidate check at [weave.ts](../../../../../src/runtime/weave/weave.ts:1628).
+- If explicit payload version naming is supplied, Weave can treat the target as weaveable even when bytes are unchanged. That is the “force a new named release state” path. See [weave.ts](../../../../../src/runtime/weave/weave.ts:1628).
+- Candidate detection is structural: “does this Knop/artifact have pending first weave, pending second payload weave, page definition weave, etc.?” See [weave.ts](../../../../../src/core/weave/weave.ts:664).
+- Generated files are upserted by content equality: if generated contents match existing contents, no update is reported. See [weave.ts](../../../../../src/runtime/weave/weave.ts:3872).
+- `prepare gh-pages` currently compares materialized source bytes directly and only runs payload update/weave when bytes differ. It also computes SHA-256 for source registry provenance. See [gh_pages.ts](../../../../../src/runtime/deploy/gh_pages.ts:672) and [gh_pages.ts](../../../../../src/runtime/deploy/gh_pages.ts:918).
+
+So: no, there is not currently a general mesh-wide “working files changed since last versioned/woven” status check. It is implemented as slice-specific full-content comparisons while planning a weave/preparation. No timestamp cache, no persistent fingerprint cache, and no RDF-semantic canonical graph comparison. It is mostly raw bytes/text.
+
+I think the right design is a separate `status` / `plan` check:
+
+- `clean`: working bytes equal latest settled state.
+- `dirty`: working bytes differ from latest settled state.
+- `unversioned`: integrated/created but never woven.
+- `unavailable`: locator cannot be read under policy.
+- `forced`: explicit target naming asks for a new state even if bytes match.
+
+CI then needs an explicit expectation:
+
+- `expect-clean`: fail if anything is dirty/unversioned.
+- `expect-change`: fail if no dirty/unversioned/forced target exists.
+- `expect-targets`: fail if the expected designators are not dirty or not weaveable.
+- plain rerun: no changes is success.
+
+I would not rely on timestamps as truth. Use `stat`/mtime/size only as a local optimization cache. The durable answer should be digest or byte comparison against latest settled state, with RDF canonical digest as a later upgrade if we truly mean semantic graph change rather than file content change.
+
+# djradon_2026-05-18_1911_44
+
+THe “force a new named release state” might be problematic. If a different ArtifactHistory is supplied it should also force a new state. And since currentArtifactHistory is persisted, we need to check against that. Can you confirm?
+
+unversioned things still get woven (without versioning), just not versioned
+
+The thing about CI, and we're talking in the context of CI for dogfooding the sflo repo/mesh, is it's entirely possible someone would want to regenerate the mesh and perhaps even do a release with working files not matching the latest versions. So I'm not even sure change detection is that important here. 
+
+If you agree, is "CI then needs an explicit expectation" still valid?
+
+# gpt-5.5_2026-05-18_1917_02
+
+I’ll confirm this against the version layout code, because the distinction between “same history new state” and “different history new state” matters a lot here. I’ll keep this read-only.
+
+# djradon_2026-05-18_1917_02
+
+And now that I think of it, just supplying a new ArtifactHistory shouldn't NECESSARILY cause a new state. We need an API/CLI surface?
+
+# gpt-5.5_2026-05-18_1917_19
+
+Yes, confirmed: today the implementation treats `historySegment` as versioning intent.
+
+Current behavior:
+
+- If no `historySegment` is supplied, payload versioning uses persisted `currentArtifactHistory`.
+- If `historySegment` is supplied, the layout switches to that history path.
+- If that history does not exist, it creates the first state in that history.
+- If that history exists, it creates the next state there, or the named `stateSegment`.
+- The mere presence of `historySegment`, `stateSegment`, or `manifestationSegment` makes the payload target weaveable even if bytes match the latest snapshot.
+
+So your concern is right: supplying a different `ArtifactHistory` currently forces a new state. That is too overloaded if we want “target/check/read this history” to be separate from “append a new state to this history.”
+
+I think the API/CLI needs to split two intents:
+
+- **Resolution intent**: “which settled/working bytes should I read or compare?”
+  Examples: working, latest state, latest in this history, exact state.
+- **Versioning intent**: “append a new historical state now.”
+  Examples: create state in `releases`, create `v0.1.0`, create next ordinal state.
+
+So `ArtifactHistory` alone should probably not mean “create.” It should mean a bounded resolution target unless paired with an explicit versioning action.
+
+A cleaner CLI shape might be:
+
+```sh
+weave status --history releases
+weave generate --source-history releases
+weave version alice/bio --new-history releases --state v0.1.0
+weave version alice/bio --history releases --create-state v0.1.1
+```
+
+Names aside, the key is that `--history releases` by itself should be selection/resolution, while `--create-state`, `--state`, or `weave version` with explicit release intent creates. For CI, that means we can stop pretending change detection is the main switch. CI can say what it wants: validate/regenerate latest settled output, publish an explicitly requested release state, or assert cleanliness.
+
+# djradon_2026-05-18_1931_39
+
+on versioning, maybe "weave set history [designatorPath]" and --(set state) control what the next version will use, and we preserve the meaning of "weave version" to actually generate a version.
+
+# gpt-5.5_2026-05-18_1931_51
+
+Yes, that feels much cleaner.
+
+I’d phrase the split like this:
+
+- `weave set history <designatorPath> <historySegment>` changes the artifact’s selected/current versioning lane.
+- `weave set state <designatorPath> <stateSegment>` or maybe `weave set next-state <designatorPath> <stateSegment>` sets the next state name/hint for that lane.
+- `weave version <designatorPath>` actually creates the next historical state from the working bytes.
+- `weave` can remain the composed “version + generate” operation, but only versions things that are currently weaveable under the selected lane/state hints.
+
+So instead of:
+
+```sh
+weave version alice/bio --history releases --state v0.1.0
+```
+
+the more additive/stateful flow is:
+
+```sh
+weave set history alice/bio releases
+weave set next-state alice/bio v0.1.0
+weave version alice/bio
+```
+
+That makes `history` a property of the artifact’s versioning config/current pointers, not an accidental “please create now” flag. It also matches the mesh philosophy better: first update the intended current/next metadata, then version. And in CI, this gives a release action a boring shape:
+
+```sh
+weave set history ontology releases
+weave set next-state ontology v0.1.0
+weave version ontology
+weave generate ontology
+```
+
+Small naming pushback: I’d prefer `next-state` over `state`, because `state` could sound like retargeting current state. The dangerous ambiguity is exactly what we’re trying to remove.
+
+# djradon_2026-05-18_1945_20
+
+ok, next-state is good. You can update the task
+
+obviously this only affects DigitalArtifact knops, and there's no good reason to use it on supporting artifacts, so really only Payload knops, right?
+
+Then, regarding [ont.task.2026.2026-03-24-release-runbook.md](../../sflo/notes/ont.task.2026.2026-03-24-release-runbook.md) ... I'm thinking two actions: "Re-generate Resource Pages" (which should also "weave validate", but maybe we make that an actions checkbox whether to "weave validate" or not), and release (which does not do a generate by default, but perhaps we also have a checkbox that triggers generate after release-validation passes). So two kinds of validation, "weave validation" and "sflo release validation". 
+
+That note has lots of outdated stuff now, please update. Since we're not re-weaving, only re-generating, I don't think were blocked on append-onlyish-inventory. We might be blocked on prepare-symmetry though, or at least I want to take care of those major changes before we do the github actions.
+
+# gpt-5.5_2026-05-18_1945_31
+
+I’ll update the remove-prepare/design task with the `set history` / `set next-state` split, then refresh the SFLO release-runbook task around the two GitHub Actions shapes: regenerate pages and release. I’ll keep the edits focused so we don’t accidentally turn this into implementation work.
+
+# gpt-5.5_2026-05-18_1946_34
+
+I’ll fold the `next-state` decision into the remove-prepare task first, then refresh the SFLO release-runbook task around the two-action model. After that I’ll do a quick markdown sanity pass so the notes don’t pick up formatting shrapnel.
+
+# gpt-5.5_2026-05-18_1946_40
+
+The remove-prepare note already has the right bones. I’m going to add one more plank: history selection and “next state” are versioning intent for payload artifacts, while `version` remains the thing that actually appends a state.
+
+# gpt-5.5_2026-05-18_1947_14
+
+The SFLO runbook task is more stale than surgical; I’m going to rewrite the body around the two workflows. The key correction is: regeneration is rendering existing mesh state, while release validation is source/release policy, and neither should sneak in a top-level re-weave.
+
+# gpt-5.5_2026-05-18_1948_00
+
+The first pass is in. I’m checking for stale phrases now, especially anything that still implies batch `prepare`, hidden versioning, or the old inventory blocker.
+
+# gpt-5.5_2026-05-18_1948_12
+
+One nuance I want in the task explicitly: unversioned payloads still weave. The new `set history` / `next-state` controls only the versioning lane, not whether an unversioned artifact can be rendered or governed.
+
+# gpt-5.5_2026-05-18_1948_47
+
+Updated both notes.
+
+In [wa.task.2026.2026-05-18_0627-remove-prepare.md](wa.task.2026.2026-05-18_0627-remove-prepare.md:95), I added the `weave set history`, `weave set next-state`, and explicit `weave version` model. I scoped it to payload DigitalArtifact Knops only, and called out that unversioned payloads can still be woven without creating versioned states.
+
+In [ont.task.2026.2026-03-24-release-runbook.md](../../sflo/notes/ont.task.2026.2026-03-24-release-runbook.md:23), I rewrote the stale CI/runbook framing around two actions:
+
+- Re-generate Resource Pages: optional `weave validate`, then generation only; no payload weaving/versioning.
+- Release: SFLO release validation by default; optional post-validation generation checkbox.
+
+I also separated “weave validation” from “SFLO release validation”, removed the old append-onlyish-inventory blocker framing for page regeneration, and kept prepare/publication symmetry as the real blocker before automated publication commits.
+
+Validation: `git diff --check` passed for both edited notes.
+
+# djradon_2026-05-18_1957_22
+
+"Should publication validation be an explicit command, an option on `weave`, or both?" -- both (now obvious)
+
+"When should the transitional `prepare gh-pages` wrapper be removed rather than deprecated?" -- immediate removal.
+
+Read to tackle [wa.task.2026.2026-05-18_0627-remove-prepare.md](wa.task.2026.2026-05-18_0627-remove-prepare.md) ? Any new open issues?
+
+# gpt-5.5_2026-05-18_1957_39
+
+I’ll update the task with those two decisions, then I’ll do a quick pass for the next layer of unresolved questions. My instinct: those two were the last conceptual blockers; what remains is mostly command spelling and implementation ordering.
+
+# gpt-5.5_2026-05-18_1957_51
+
+There are a couple contradictions left in the note from the earlier “wrapper at most” compromise. I’m going to clean those up so the task says what you just decided: no deprecation period, no wrapper, shared validation primitive exposed two ways.
+
+# gpt-5.5_2026-05-18_1958_13
+
+The note now says immediate removal. I also marked publication validation as both: a standalone command and a `weave` option, sharing one implementation.
+
+# gpt-5.5_2026-05-18_1958_24
+
+Updated [wa.task.2026.2026-05-18_0627-remove-prepare.md](wa.task.2026.2026-05-18_0627-remove-prepare.md:37).
+
+It now says:
+
+- `prepare gh-pages` should be removed immediately, with no deprecation wrapper.
+- Publication validation is both a standalone command and a `weave` option, backed by the same implementation.
+- Tests/docs should prove `prepare gh-pages` is gone and show the composed replacement workflow.
+
+I’d say yes, this is ready to tackle. No new conceptual open issues jumped out. I did leave three implementation-detail questions in the note:
+
+- exact CLI spelling for standalone publication validation;
+- exact `weave` option name/placement;
+- where explicit payload `next-state` intent should be persisted once the ontology term exists.
+
+`git diff --check` passed for the edited task note.
+
+# djradon_2026-05-18_2004_53
+
+maybe we do "weave validate mesh" for whole-mesh validation (to be developed more completely as we go along) and "weave validate publication" to do a simpler check. Of the listed checks ("Stale generated-output checks, local path leakage validation, dirty worktree warnings, source-root/publication-root checks, and host preset validation") I'm not even sure which are really valuable. Maybe the split isn't even valuable. 
+
+Nit: "`weave`, `version`, `validate`, and `generate` record and render the governed mesh state." could read like all four of those things both record and validate. Can you make it more explicit and correct?
+
+# gpt-5.5_2026-05-18_2005_04
+
+Good nit. I’ll make the verb responsibilities explicit, and soften the publication-validation checklist so it doesn’t pretend every possible check is already justified. `weave validate mesh` / `weave validate publication` feels like a better namespace than inventing a separate validation verb.
+
+# gpt-5.5_2026-05-18_2005_15
+
+I’m going to treat `weave validate mesh` / `weave validate publication` as the preferred shape in the task, while leaving the exact “option on weave” spelling as an implementation detail. The publication check list will become candidate checks, not a preordained bucket of obligations.
+
+# gpt-5.5_2026-05-18_2005_37
+
+The wording is corrected now: `validate` no longer sounds like it records state, and `generate` is explicitly rendering from current mesh state. I’m doing one pass for consistency around the validation command shape.
+
+# gpt-5.5_2026-05-18_2005_43
+
+One inconsistency shook loose: the open-issue list still asked for the standalone command spelling even though the note now picks `weave validate publication`. I’ll remove that dangling question.
+
+# gpt-5.5_2026-05-18_2005_54
+
+Updated [wa.task.2026.2026-05-18_0627-remove-prepare.md](wa.task.2026.2026-05-18_0627-remove-prepare.md:28).
+
+Changes made:
+
+- Split the unclear sentence into explicit responsibilities:
+  - `weave` records eligible governed working artifacts.
+  - `version` appends versioned payload states.
+  - `validate` reports problems without recording state.
+  - `generate` renders from current mesh state.
+- Added the scoped validation shape:
+  - `weave validate mesh`
+  - `weave validate publication`
+- Reframed publication checks as candidates to evaluate, not inherited obligations from `prepare gh-pages`.
+- Updated decisions, contract changes, tests, and implementation plan to match that softer validation scope.
+
+I agree the split is only valuable if `publication` stays narrower and practical. If it starts becoming “mesh validation, but again,” it should collapse back into `validate mesh` plus perhaps a publish-mode option.
+
+Validation: `git diff --check` passed.
+
+# djradon_2026-05-18_2008_19
+
+for weave options, how about --validate-before and --validate-after. I don't think we need publication-only validation for the weave command. But "validate mesh" should also validate publication, right?
+
+Help me understand the candidate checks, with an assessment of their value.
+
+next-state intent goes in meta (already?), doesn't it?
+
+# gpt-5.5_2026-05-18_2008_30
+
+I’ll check the existing meta/config vocabulary before I answer the next-state bit, because I don’t want to confidently invent a property that already exists under a slightly different name. Then I’ll fold the validation option decision back into the task if it’s as clean as it sounds.
+
+# gpt-5.5_2026-05-18_2008_41
+
+The quick search shows `currentArtifactHistory` and `nextStateOrdinal` are already meta-ish in current implementation, but I’m going to narrow it to ontology definitions and metadata fixtures so we can distinguish “already supported” from “pattern exists but not a named next-state hint yet.”
+
+# gpt-5.5_2026-05-18_2009_10
+
+I found a useful distinction: `sflo:nextStateOrdinal` already exists as allocator state on `ArtifactHistory`, and `sfcfg:hasNextStateSegmentHint` already exists as a config hint. So “next-state intent” is not missing conceptually; the design question is where the per-payload hint is attached and how `weave version` consumes it.
+
+# gpt-5.5_2026-05-18_2009_21
+
+One stale thing surfaced while checking the ontology: the config ontology still mentions optional CNAME in the GitHub Pages profile comment. That’s against the “remove CNAME everywhere” decision, so I’m going to clean that up along with the task wording.
+
+# gpt-5.5_2026-05-18_2010_01
+
+I’m going to record this as: `weave --validate-before` and `weave --validate-after` run whole-mesh validation; `weave validate publication` can exist as a smaller standalone convenience, but the main `weave` command doesn’t need a publication-only switch. That keeps the option surface blessedly un-fussy.
+
+# gpt-5.5_2026-05-18_2010_39
+
+Updated the task note and fixed one stale ontology comment.
+
+Validation shape I recorded in [wa.task.2026.2026-05-18_0627-remove-prepare.md](wa.task.2026.2026-05-18_0627-remove-prepare.md:120):
+
+- `weave validate mesh` is the whole-mesh check.
+- `weave validate publication` can remain a narrower standalone convenience.
+- `weave --validate-before` and `weave --validate-after` run whole-mesh validation.
+- No publication-only validation option on ordinary `weave`.
+- `validate mesh` should include retained publication-readiness checks when the mesh has a publication surface/profile.
+
+Candidate check assessment:
+
+- Local path leakage: high value, cheap, should likely be in both mesh and publication validation.
+- Host preset validation: high value when a profile exists; `.nojekyll` for GitHub Pages is cheap and concrete.
+- Source/publication root boundary: medium-high value, especially for branch/separate repo layouts; maybe more setup-time than every run.
+- Stale generated output: medium value; useful for CI, but may belong in `generate --check` reused by validation.
+- Dirty publication worktree: low-medium value; git-specific, warning-only, useful before automated commits.
+
+On `next-state`: yes-ish, it belongs with current/progression metadata, not immutable historical snapshots. We already have `sflo:currentArtifactHistory`, `sflo:nextStateOrdinal`, and `sfcfg:hasNextStateSegmentHint`; Weave already consumes `sfcfg:hasNextStateSegmentHint` as a hint. The wrinkle is ontology cleanliness: that term is currently config vocabulary, while runtime uses it in metadata/progression context. I captured that as the remaining implementation detail: broaden/align `sfcfg:hasNextStateSegmentHint`, or add a dedicated core metadata term.
+
+Also removed the lingering CNAME mention from [semantic-flow-config-ontology.ttl](../../sflo/semantic-flow-config-ontology.ttl:76). `diff --check` passed, and `rg "CNAME|cname"` now finds nothing in the active docs/code/ontology paths I checked.
+
+# djradon_2026-05-18_2020_00
+
+OK, let's remove stale generated output: who's to say what stale means? make dirty publication a warning only when the commit option is provided. What exactly is Source/publication root boundary checking?
+
+# gpt-5.5_2026-05-18_2020_18
+
+I’ll trim “stale generated output” from the validation candidates and tighten dirty-worktree warnings to commit/publish flows only. I’ll also add a plain definition of root-boundary checking so it doesn’t sound like vague ceremonial safety tape.
+
+# gpt-5.5_2026-05-18_2020_35
+
+I agree on stale output. “Stale” is secretly a policy question, and if we need it later it belongs closer to `generate --check` than validation. I’ll update the task so publication validation starts with concrete safety checks, not speculative freshness.
+
+# gpt-5.5_2026-05-18_2020_58
+
+Updated [wa.task.2026.2026-05-18_0627-remove-prepare.md](wa.task.2026.2026-05-18_0627-remove-prepare.md:127).
+
+I removed stale generated-output validation from the candidate checks. Agreed: “stale” is too policy-dependent for validation. If it comes back, it should be something like `generate --check`, not a default publication validator.
+
+I also changed dirty publication worktree handling: it should warn only when an operation requests an optional local commit. Otherwise a dirty worktree is not semantic validity.
+
+Source/publication root boundary checking means path safety, not “these roots must always be distinct.” Concretely:
+
+- source reads stay inside approved source/workspace roots;
+- publication writes stay inside the publication/mesh root;
+- source discovery does not accidentally ingest generated publication output;
+- sidecar and whole-repo layouts can still be valid;
+- branch-published and separate-repo layouts need stronger checks because source and publication are often distinct worktrees.
+
+`git diff --check` passed for the task note.
+
+# djradon_2026-05-18_2028_06
+
+ok, root boundary checking seems okay, but it might be hard to check whether reads/writes HAVE stayed within the boundary, etc. Maybe we defer the boundary checking?
+
+# gpt-5.5_2026-05-18_2028_12
+
+Yes, I’d defer it. Boundary checking is valuable in principle, but unless operations report their planned read/write sets cleanly, validation would either guess or become a pile of filesystem heuristics. I’ll mark it as deferred and keep first-pass validation to checks we can make crisp.
+
+# gpt-5.5_2026-05-18_2028_29
+
+Agreed. I updated [wa.task.2026.2026-05-18_0627-remove-prepare.md](wa.task.2026.2026-05-18_0627-remove-prepare.md:127) to defer source/publication root boundary validation.
+
+The note now says first-pass publication validation candidates are only:
+
+- local path leakage;
+- host preset validation;
+- commit-time dirty worktree warnings.
+
+Boundary checking is now explicitly deferred until operations expose planned read/write sets or equivalent path-policy hooks. That feels right: without that, we’d be guessing from filesystem state instead of validating actual behavior.
+
+`git diff --check` passed.
+
+# djradon_2026-05-18_2030_06
+
+commit message for sflo's config ontology change
+
+# gpt-5.5_2026-05-18_2030_06
+
+```text
+docs(sflo): remove CNAME from GitHub Pages profile comment
+
+- update semantic-flow-config-ontology.ttl so the GitHub Pages publication profile only mentions .nojekyll
+- keep custom-domain/CNAME handling out of the ontology contract for now
+```
