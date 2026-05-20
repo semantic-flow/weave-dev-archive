@@ -16,6 +16,8 @@ The root `weave` flow had been validating by calling the version planner, then c
 
 The recursive version planner also reloads staged mesh state and reloads weaveable knop candidates for each remaining designator path. That preserves the current overlay semantics, but it likely means repeated RDF parsing, inventory lookup, and source/reference resolution across the same files.
 
+First `WEAVE_TIMING=1` run against the settled regenerated SFLO `gh-pages` worktree recorded `validate mesh` at about 13.8s for 335 validate/planning candidates. The dominant phase was repeated loop candidate loading at about 11.7s total, far ahead of loop planning at about 1.5s. This supports doing a command-scoped read/parse/candidate cache before chasing smaller planner costs.
+
 ## Ideas
 
 - Keep version planning single-pass in root `weave`; do not reintroduce a separate validate-then-version planning sequence.
@@ -27,7 +29,7 @@ The recursive version planner also reloads staged mesh state and reloads weaveab
 
 ## Proposed Sequence
 
-- [ ] Add opt-in timing instrumentation with an environment variable first, probably `WEAVE_TIMING=1`, before doing deeper optimization.
+- [x] Add opt-in timing instrumentation with an environment variable first, probably `WEAVE_TIMING=1`, before doing deeper optimization.
 - [ ] Re-run against the regenerated SFLO `gh-pages` worktree, or a copied fixture, and capture which phases dominate. Record runs in `timings/weave-performance.csv` in the weave-dev-archive repo.
 - [ ] Add a command-scoped in-memory file/RDF parse cache with planned-output overlay invalidation for files written during the command.
 - [ ] Cache enough candidate discovery state that recursive planning does not rescan and reparse the whole mesh from scratch for each remaining candidate.

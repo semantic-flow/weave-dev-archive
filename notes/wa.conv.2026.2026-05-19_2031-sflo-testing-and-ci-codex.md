@@ -2098,3 +2098,77 @@ ready to implement?
 # gpt-5.5_2026-05-20_1628_02
 
 Yes. I’ll start with the first implementation slice we just settled on: env-driven timing instrumentation, plus enough structure that the later in-memory planning context has a place to plug in. I’ll be careful around the existing dirty Weave changes from the SFLO work and won’t disturb unrelated archive/Kato edits.
+
+# gpt-5.5_2026-05-20_1628_18
+
+The current Weave repo status only shows `weave.code-workspace` modified, so the earlier floating-source changes are no longer sitting as uncommitted code here. I’ll leave that workspace file alone and work in the runtime/CLI/test files.
+
+# gpt-5.5_2026-05-20_1629_54
+
+I’m going to add this as a small runtime utility instead of burying more machinery inside `weave.ts`. The first pass will emit aggregate phase timings to stderr when `WEAVE_TIMING=1`; repeated loop phases will be summed with counts so SFLO-sized runs don’t dump hundreds of lines.
+
+# gpt-5.5_2026-05-20_1633_06
+
+The timing utility is in place now, and I’ve threaded it through validate/version/generate/weave at the phase level. I’m going to format and type-check this slice before I add tests, because this touched a hot file and I want syntax/type drift caught early.
+
+# gpt-5.5_2026-05-20_1633_50
+
+The CLI test now checks the important contract: `WEAVE_TIMING=1` writes aggregate timing lines to stderr while leaving normal command output on stdout. I’m going to run the focused test set next.
+
+# gpt-5.5_2026-05-20_1634_12
+
+Focused weave CLI tests pass. I’m marking the first task item done, then I’ll run the full repo checks because this touched shared runtime execution.
+
+# gpt-5.5_2026-05-20_1634_30
+
+`fmt:check`, `lint`, and type checking are clean. I’m running the full test task now; this is the part where the code gets to complain if I made the timing hooks too clever.
+
+# gpt-5.5_2026-05-20_1636_18
+
+Full tests are green too. I’m doing one real `/tmp/sflo` timing run for `validate mesh` now, just as a smoke check that the instrumentation is useful on the SFLO-scale mesh rather than only in the tiny e2e fixture.
+
+# gpt-5.5_2026-05-20_1637_28
+
+Implemented the first performance slice: `WEAVE_TIMING=1`.
+
+What changed:
+- Added [src/runtime/timing.ts](../../../../../src/runtime/timing.ts) for command-scoped aggregate timing.
+- Threaded timings through `validate`, `version`, `generate`, and `weave` phases in [src/runtime/weave/weave.ts](../../../../../src/runtime/weave/weave.ts).
+- Added an e2e test proving timings go to stderr and normal command output stays on stdout.
+- Updated the perf task note and recorded the first SFLO timing row in `weave-dev-archive/timings/weave-performance.csv`.
+
+Interesting first result from `/tmp/sflo`:
+
+`WEAVE_TIMING=1 weave validate mesh --mesh-root /tmp/sflo` took about `13.8s`; repeated loop candidate loading dominated at about `11.7s`, versus about `1.5s` for loop planning. So the data agrees with our hunch: next move should be command-scoped read/parse/candidate caching, not planner micro-tuning.
+
+Validation:
+- `deno task fmt:check`
+- `deno task lint`
+- `deno task check`
+- `deno task test` -> 464 passed
+
+Unrelated dirty files still present:
+- `weave.code-workspace`
+- `weave-dev-archive/notes/wa.conv.2026.2026-05-19_2031-sflo-testing-and-ci-codex.md`
+
+Suggested Weave commit message:
+
+```text
+Add env-driven weave timing instrumentation
+
+- add command-scoped runtime timing support behind WEAVE_TIMING=1
+- emit aggregate phase timings for validate, version, generate, and weave
+- aggregate repeated recursive planning phases with count and average duration
+- keep timing output on stderr so normal CLI output remains stable
+- add e2e coverage for timing output on weave commands
+```
+
+Suggested weave-dev-archive commit message:
+
+```text
+Record first Weave performance timing baseline
+
+- mark env-driven timing instrumentation complete in the performance task
+- record settled SFLO gh-pages validate mesh timing data
+- note candidate loading as the dominant measured phase
+```
