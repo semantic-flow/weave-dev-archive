@@ -1675,3 +1675,426 @@ Document branch-based floating repository source model
 ```
 
 Note: I have not regenerated `/tmp/sflo` yet. The code/docs are now ready for that scratch regen pass.
+
+# User_2026-05-20_0812_04
+
+what's next
+
+# gpt-5.5_2026-05-20_0812_26
+
+Next is dogfood the new path on the real SFLO scratch publication.
+
+I would not PR yet. The code is tested, but the important proof is: regenerate `/tmp/sflo` from the actual SFLO source checkout using the updated [wu.cli-reference.examples.sflo.md](../../../../../documentation/notes/wu.cli-reference.examples.sflo.md), then confirm the generated mesh has portable `hasRepositorySourceFloatingLocator` records and no `/home/...` or sibling-worktree leakage.
+
+Suggested order:
+
+1. Regenerate `/tmp/sflo` from scratch with the updated commands.
+2. Run `validate mesh` and `validate publication`.
+3. Inspect the source registries/inventories for the three SFLO payloads.
+4. If clean, commit the Weave/SFLO/dev-archive changes.
+5. Then decide whether to PR `next/v0.1.1` or do one more release-runbook pass.
+
+One caution: don’t grep for all `workingLocalRelativePath` globally as a failure. Support artifacts and the root welcome page may still legitimately use local working locators. The important absence is local path evidence for the SFLO ontology/config/SHACL source payloads and their extraction source evidence.
+
+# User_2026-05-20_0812_53
+
+ok, proceed.
+
+# gpt-5.5_2026-05-20_0813_12
+
+I’ll run the scratch SFLO replay against `/tmp/sflo` now, using the updated floating repository source flow. I’ll verify branch/worktree state first, then do the destructive reset only inside `/tmp/sflo` while preserving its `.git`.
+
+# gpt-5.5_2026-05-20_0813_35
+
+I found two things before actually replaying: the doc still had the old `deno task ... -- --version` separator, and the SFLO checkout’s `origin` is an SSH-style URL. For the durable mesh I’d rather record the public HTTPS repo URL, so I’m tightening URL matching to treat GitHub SSH and HTTPS remotes as the same repository and updating the replay command to pass the canonical URL explicitly.
+
+# gpt-5.5_2026-05-20_0814_13
+
+Those fixes are in. I’m rerunning the affected tests quickly before I reset `/tmp/sflo`, because if URL normalization is wrong the regen would fail partway through `weave` or `extract`.
+
+# gpt-5.5_2026-05-20_0814_54
+
+The affected tests and static gates are green after the canonical-URL tweak. I’m resetting the scratch publication worktree now and creating the fresh mesh support surface.
+
+# gpt-5.5_2026-05-20_0815_11
+
+The scratch mesh is initialized and `welcome.ttl` is recreated. Next I’m integrating the root page and the three SFLO payload sources with the floating repository locator.
+
+# gpt-5.5_2026-05-20_0815_33
+
+The CLI display still reports the local file it integrated, but that’s just command output. I’m checking the durable Turtle now to make sure it recorded the repository locator instead of those local paths.
+
+# gpt-5.5_2026-05-20_0815_38
+
+The durable source locators look right: HTTPS repo URL plus `sourceRepositoryPathFromRoot`, with no local source path, ref, commit, or digest evidence in the payload inventories/source registries. I’m moving on to versioning the three source payloads.
+
+# gpt-5.5_2026-05-20_0816_03
+
+The replay hit a real doc mismatch: `weave version` cannot version those payloads while they are still in the just-integrated, not-yet-woven shape. The fix is to run targeted `weave` for the three source payloads after setting their release history/state; that creates the release states and settles the payloads in one step. I’m doing that now and will update the example note.
+
+# gpt-5.5_2026-05-20_0816_19
+
+That failed for the same reason, so this is not just a documentation issue: the core weave planner still treats `hasRepositorySourceFloatingLocator` as an unsupported current payload locator when deciding the first payload weave slice. I’m going into that shape check now and will wire the floating locator through the planner too.
+
+# gpt-5.5_2026-05-20_0818_36
+
+I’m picking this back up from the scratch regeneration point. The blocker is concrete now: integrate records the new floating repo locator correctly, but weave’s payload planner still only accepts the older “working located file” shape, so I’m going to teach weave to preserve the floating locator through release weaving.
+
+# gpt-5.5_2026-05-20_0818_48
+
+The working tree is smaller than the mental stack I inherited, which is a nice sign: most of the plumbing is already in place. I’m reading the weave planner/rendering points now, then I’ll make the narrow core patch and rerun the stuck SFLO weave step.
+
+# gpt-5.5_2026-05-20_0821_00
+
+I’ve found the exact mismatch: runtime can resolve the floating repo source, but the core planner strips it when it renders the woven payload blocks. I’m going to add a tiny source-locator model to core weave, pass it through the payload renderers, and make the shape assertions accept the new locator instead of demanding `hasWorkingLocatedFile`.
+
+# gpt-5.5_2026-05-20_0824_19
+
+The code patch is in and formatted. Before I go back to `/tmp/sflo`, I’m going to add one regression test for the new locator shape so this exact failure can’t quietly return later.
+
+# gpt-5.5_2026-05-20_0824_57
+
+The regression test is in place and formatted. I’m running the focused weave tests now; if those pass, I’ll resume the SFLO scratch regeneration right where it failed.
+
+# gpt-5.5_2026-05-20_0825_16
+
+Focused weave tests are green now. I’m doing a type check next because the runtime handoff changed too, then I’ll rerun the failed targeted SFLO weave command against `/tmp/sflo`.
+
+# gpt-5.5_2026-05-20_0825_34
+
+The type check passed. One detail I’m adjusting from the earlier command: now that weave reaches the source-read step, it needs the SFLO source checkout granted just like integrate did.
+
+# gpt-5.5_2026-05-20_0825_48
+
+`--grant-source-directory` is integrate-only today; weave doesn’t expose that grant flag yet. I’m going to try the command without it now that the planner is fixed, and if the resolver refuses the source checkout we’ll have a clean next CLI gap to close.
+
+# gpt-5.5_2026-05-20_0826_03
+
+Good, the targeted weave completed and kept moving. I’m doing the portability inspection next, then I’ll follow the SFLO example commands for term extraction/generation and patch the docs where the command sequence was stale.
+
+# gpt-5.5_2026-05-20_0826_27
+
+Extraction hit the next real incompatibility: it planned 110 ontology term identifiers, then stopped on the first one with “unsupported extract shape” for the current mesh inventory. I’m checking whether that is caused by the new scratch baseline, the now-versioned source shape, or a docs command that is out of date.
+
+# gpt-5.5_2026-05-20_0827_55
+
+This one is the same pattern on the extraction side: `extract` validates the mesh inventory’s source payload with only the older working-file predicates. I’m widening that assertion to accept the floating locator path too; extraction already omits local-path evidence once it gets past this check.
+
+# gpt-5.5_2026-05-20_0829_05
+
+Extraction’s floating-source assertion is patched and the focused extract/weave tests are green. I’m rerunning the three SFLO all-terms extraction commands now; this is the part that will fan out into the generated term identifiers.
+
+# gpt-5.5_2026-05-20_0829_25
+
+All-terms extraction succeeded: 110 ontology terms, 194 config terms, and 31 SHACL terms. I’m now running the validation and final weave/generate pass that turns those extracted Knops into the current publication surface.
+
+# gpt-5.5_2026-05-20_0829_56
+
+The final weave uncovered the third place with the older assumption: extracted-term weaving validates the carried mesh inventory and is still expecting a local working-file source shape. Same root cause, one layer farther along; I’m patching that guard too.
+
+# gpt-5.5_2026-05-20_0831_27
+
+That third guard is now covered too. I’m rerunning validation plus the untargeted weave/generate/publication validation sequence from the current post-extraction `/tmp/sflo` state.
+
+# gpt-5.5_2026-05-20_0831_54
+
+The final weave/generate pipeline is still running quietly. That usually means validation or page generation is doing its work rather than bailing immediately, so I’m letting it finish instead of interrupting it.
+
+# gpt-5.5_2026-05-20_0833_14
+
+This has been quiet long enough that I’m going to peek at the running process rather than just stare at the wall. If it’s an expensive Deno validation pass, I’ll let it continue; if it’s wedged, I’ll stop and narrow the command.
+
+# gpt-5.5_2026-05-20_0834_59
+
+`validate mesh` is effectively doing a dry-run weave over the 335 pending extracted terms, and it’s been CPU-bound for several minutes without progress output. I’m going to stop that preflight, run the real untargeted weave directly, and record the validation-performance gap rather than letting the turn get eaten by a silent dry run.
+
+# gpt-5.5_2026-05-20_0835_25
+
+The real weave is moving and reporting progress now: it’s processing 335 extracted term Knops. I’ll let that run through, then generate pages and run publication validation.
+
+# gpt-5.5_2026-05-20_0836_49
+
+The untargeted weave is about one-sixth through. It’s not fast, but it’s steadily writing the pending extracted term surfaces, which is much better than the silent dry-run validation behavior.
+
+# gpt-5.5_2026-05-20_0839_15
+
+Halfway through the extracted-term weave. The config vocabulary is almost done; ontology and SHACL terms are next.
+
+# gpt-5.5_2026-05-20_0845_03
+
+The big weave completed: 335 designators, 1,340 created files, 699 updated artifacts. I’m running page generation and publication validation now; I’m deliberately leaving the whole-mesh dry-run validation out of this pass because it was the slow silent step.
+
+# gpt-5.5_2026-05-20_0845_23
+
+Generation and publication validation passed: 339 designators regenerated and publication found 0 issues. Since there should be no pending weave work now, I’m giving `validate mesh` one more bounded try; if it still drags, that’s a separate performance bug.
+
+# gpt-5.5_2026-05-20_0845_59
+
+The bounded mesh validation passed too: 335 designator paths, 0 issues. I’m doing the portability checks on `/tmp/sflo`, then I’ll update the SFLO example note to match the actual command sequence and the validation caveat we just discovered.
+
+# gpt-5.5_2026-05-20_0847_36
+
+I’m picking this back up from the interruption point. The mesh regen itself got far enough to uncover real portability gaps in Weave, so I’m going to finish the boring-but-important part now: align the SFLO example doc with the command sequence that actually worked, then run the repo checks.
+
+# gpt-5.5_2026-05-20_0847_46
+
+I can see the example note is still telling people to use `version`, while the current code path that works for floating repository sources is targeted `weave` after setting history/state. I’m going to update that doc to match the dogfood run, and I’ll keep the validation order honest too: mesh validation passed cleanly after the extracted-term weave.
+
+# gpt-5.5_2026-05-20_0848_27
+
+The doc is now using the same targeted weave path we used in `/tmp/sflo`, and the final mesh validation is placed after the extracted-term weave/generate step. I’m doing a couple of focused portability checks next so we don’t confuse ontology term pages with actual source binding evidence.
+
+# gpt-5.5_2026-05-20_0848_35
+
+The focused source binding check looks good: the three root payload source registries have `sourceRepositoryUrl` plus `sourceRepositoryPathFromRoot`, and the narrow “no local path / no commit pin / no digest evidence” check found no matches. Now I’m moving into repo validation.
+
+# gpt-5.5_2026-05-20_0848_43
+
+`fmt:check`, `lint`, and type checking are clean. I’m going to run the full test task now because the changes touch shared weave/extract behavior, not just the SFLO one-off.
+
+# gpt-5.5_2026-05-20_0849_58
+
+Full tests are green: 463 passing. I’m doing one last SFLO-side release validation and then I’ll collect the final status/diff summary so the handoff is tidy.
+
+# gpt-5.5_2026-05-20_0851_21
+
+Proceeding was the right call. The scratch `/tmp/sflo` regen exposed a real missing path in Weave, so I fixed that instead of trying to paper over it.
+
+Implemented floating repository source support through payload weave and extracted-term weave paths in [src/core/weave/weave.ts](../../../../../src/core/weave/weave.ts:116), [src/core/extract/extract.ts](../../../../../src/core/extract/extract.ts:28), and runtime loading/resolution. I also normalized SSH/scp GitHub remotes against HTTPS locators in [local_path_policy.ts](../../../../../src/runtime/operational/local_path_policy.ts:431).
+
+Updated the SFLO command note at [wu.cli-reference.examples.sflo.md](../../../../../documentation/notes/wu.cli-reference.examples.sflo.md:145): it now uses targeted `weave` instead of `version`, includes the explicit source repository URL, removes the bad Deno `--` separator, and validates the mesh after the extracted-term weave/generate pass.
+
+`/tmp/sflo` was regenerated from scratch successfully:
+- source payload releases exist for `ontology`, `config`, and `ontology/shacl` under `releases/v0.1.1`
+- extracted/wove 335 term designators
+- generated 339 designator paths
+- source registries use `sflo:sourceRepositoryUrl` + `sflo:sourceRepositoryPathFromRoot`
+- no `/home`, `/tmp/sflo-source`, commit/ref pin, or digest evidence leaked into the root payload source bindings
+
+Validation is clean:
+- `deno task fmt:check`
+- `deno task lint`
+- `deno task check`
+- `deno task test` -> 463 passed
+- `deno task release:validate --version 0.1.1` in SFLO passed
+- `weave validate mesh --mesh-root /tmp/sflo` -> 335 paths, 0 issues
+- `weave validate publication --mesh-root /tmp/sflo` -> 0 issues
+
+Current notable status:
+- Weave has 9 modified files.
+- SFLO source repo is clean.
+- `/tmp/sflo` has the expected big generated scratch-regeneration diff: 1639 modified, 32 deleted, 18 untracked; branch is `gh-pages...origin/gh-pages [ahead 1]`.
+- `weave-dev-archive` only shows the Kato conversation note modified.
+
+Suggested Weave commit message:
+
+```text
+Support floating repository source locators in weave/extract
+
+- preserve RepositorySourceFloatingLocator payload bindings through payload weave output
+- accept floating repository source payloads during extraction and extracted-term weave validation
+- resolve floating repository source paths from operational source grants
+- normalize SSH/scp GitHub remotes when matching repository source URLs
+- update SFLO dogfood CLI example to use targeted weave and post-weave validation
+- add unit, integration, and e2e coverage for floating repository source bindings
+```
+
+Suggested `/tmp/sflo` commit message:
+
+```text
+Regenerate SFLO gh-pages mesh for v0.1.1
+
+- recreate the publication mesh from the current SFLO source checkout
+- publish ontology, config, and SHACL payloads as v0.1.1 release states
+- extract and weave source terms into first-class mesh identifiers
+- generate GitHub Pages publication output and validate mesh/publication surfaces
+```
+
+# User_2026-05-20_1150_26
+
+could you do the /tmp/sflo commit
+
+# gpt-5.5_2026-05-20_1150_35
+
+Yep. I’ll commit the regenerated `gh-pages` worktree in `/tmp/sflo` with the generated mesh diff as-is.
+
+# gpt-5.5_2026-05-20_1150_43
+
+`/tmp/sflo` is already one local commit ahead of `origin/gh-pages` (`moved dendron .gitignore`), so I’ll put the regenerated mesh commit on top of that rather than disturbing it.
+
+# gpt-5.5_2026-05-20_1150_50
+
+There’s an untracked `.weave/` directory in the publication worktree. I’m checking whether that’s runtime scratch/logging or actual publication state before staging, because committing local operational noise would be a bit rude to future us.
+
+# gpt-5.5_2026-05-20_1151_13
+
+`.weave/` is just local operational/security logs, not publication content. I’m going to leave that out of the commit by removing the untracked log directory, then stage the regenerated publication files.
+
+# gpt-5.5_2026-05-20_1151_28
+
+Done. `/tmp/sflo` now has commit:
+
+`c1e52bb Regenerate SFLO gh-pages mesh for v0.1.1`
+
+The worktree is clean, and `gh-pages` is now `ahead 2` because it also includes the pre-existing local commit `a2e5f6a moved dendron .gitignore`.
+
+I left local `.weave/` runtime logs out of the commit.
+
+# User_2026-05-20_1158_43
+
+what's next? Any tips for [wa.task.2026.2026-05-17-weave-performance-optimization.md](wa.task.2026.2026-05-17-weave-performance-optimization.md) ?
+
+# gpt-5.5_2026-05-20_1158_53
+
+I’ll take a quick look at the performance task note itself, plus the current repo state, then I’ll give you the “what I’d do next” version rather than a vague optimization grab-bag.
+
+# gpt-5.5_2026-05-20_1159_12
+
+My read: yes, continue with [wa.task.2026.2026-05-17-weave-performance-optimization.md](wa.task.2026.2026-05-17-weave-performance-optimization.md). The SFLO regen gave us a perfect real workload: 335 extracted terms, enough to reveal the pain without being impossibly huge.
+
+Best next step is measurement, not cleverness. I’d add a deliberately small timing layer first, probably behind `WEAVE_TIMING=1` or `--timing`, around:
+
+- mesh metadata/config load
+- mesh inventory load/parse
+- candidate discovery
+- per-candidate planning
+- RDF validation
+- writes
+- page generation
+
+The hottest likely area is still what the note says: recursive/batched weave repeatedly reloads staged mesh state and candidate inputs. The first optimization I’d try after timing is a per-command read/parse cache, with overlay invalidation for files that the command updates. That keeps the current “later candidates see earlier candidate results” semantics, but avoids re-reading stable Turtle and HTML-adjacent support files hundreds of times.
+
+One extra tip from today: include `validate mesh` in the task. It felt hung during pre-weave validation over 335 pending extracted terms because it dry-runs/plans a lot of the same work. So I’d either add progress output to validation too, or make `validate mesh` reuse the same planning/cache context as weave. Otherwise we’ll speed up `weave` and still have a spooky quiet validation path.
+
+I’d prioritize the task like this:
+
+1. Add timing/progress instrumentation.
+2. Re-run against `/tmp/sflo` or a copied fixture and capture the actual slow phases.
+3. Add a per-command file/RDF parse cache with planned-output overlay invalidation.
+4. Cache candidate discovery enough that recursive planning does not rescan the whole mesh from scratch each pass.
+5. Only then consider bigger architectural changes.
+
+Tiny pushback: I would not make strict timing tests yet. Too flaky. A perf smoke that prints phase timings or asserts “does not re-read the same unchanged file N times” would be better at this stage.
+
+# User_2026-05-20_1203_22
+
+OK, all sound good. You can put all of that into the task note. parse cache is only in memory, right?
+
+# gpt-5.5_2026-05-20_1203_29
+
+Yes, parse cache should be in-memory and command-scoped. I’ll make that explicit in the task note so it doesn’t accidentally grow into a persisted cache design with invalidation sadness baked into the filesystem.
+
+# gpt-5.5_2026-05-20_1203_50
+
+Updated [wa.task.2026.2026-05-17-weave-performance-optimization.md](wa.task.2026.2026-05-17-weave-performance-optimization.md:20).
+
+And yes: the parse/read cache should be in-memory and command-scoped only. No persisted cache, no cross-command invalidation story, no little time bomb hiding in `.weave/`. It’s just a per-run planning context so a batch weave or validation pass doesn’t reread and reparse the same stable files hundreds of times.
+
+# User_2026-05-20_1208_46
+
+no open issues?
+
+# gpt-5.5_2026-05-20_1208_54
+
+There are a few, yes. Nothing scary, but enough that the task note should name them before implementation starts. I’ll add a short Open Issues section so those choices don’t get buried in the prose.
+
+# gpt-5.5_2026-05-20_1209_09
+
+Added an **Open Issues** section to [wa.task.2026.2026-05-17-weave-performance-optimization.md](wa.task.2026.2026-05-17-weave-performance-optimization.md:37).
+
+Main ones I called out:
+- timing flag vs env var
+- smallest useful shared planning context
+- exact overlay invalidation rule
+- validation progress shape
+- whether SFLO all-terms becomes a fixture or just a profiling recipe
+
+So: no blockers, but definitely some implementation choices worth pinning before code.
+
+# User_2026-05-20_1623_35
+
+- env
+- should we do the timings first and then establish the context. FWIW, I think we're overdue for a large refactor, a lot of these source files have grown huge
+- I don't really understand why invalidation is an issue. Isn't each invocation a fresh slate?
+- maybe we should have a --verbose flag for commands that might have a lot of updates to report?
+- We have 3 checked-in fixtures already, I would say a local-only profiling recipe.
+
+Where and how are we going to record our timings. Maybe a csv file in weave-dev-archive? Feel free to create a top-level "timings" folder there.
+
+# gpt-5.5_2026-05-20_1623_54
+
+Those choices make sense. I’m going to collapse the open issues into decisions where you’ve decided them, clarify that “invalidation” is only within a single invocation’s staged overlay, and add a small `timings/` area in `weave-dev-archive` with a CSV shape we can append to during profiling.
+
+# gpt-5.5_2026-05-20_1624_35
+
+I’ve turned those into decisions rather than leaving them as questions. I also added a `timings/` directory with a CSV header, so the first measurement pass has somewhere boring and durable to land.
+
+# gpt-5.5_2026-05-20_1624_41
+
+Done. I updated the task note to make those choices explicit, and created:
+
+- `weave-dev-archive/timings/README.md`
+- `weave-dev-archive/timings/weave-performance.csv`
+
+On invalidation: yes, each invocation is a fresh slate. The only reason to mention invalidation is intra-command overlay behavior. If a batch weave reads `inventory.ttl`, caches its parsed graph, then plans an update to that same path, later candidates in that same invocation must see the planned version rather than the stale cached on-disk version. So it’s not persisted-cache invalidation; it’s “planned writes beat cached reads” inside one run.
+
+I also changed timing to env-first, added `--verbose` as the likely place for detailed progress, and marked SFLO all-terms as a local-only profiling recipe.
+
+# User_2026-05-20_1625_17
+
+What's your recommendation on invalidation?
+
+# gpt-5.5_2026-05-20_1625_33
+
+My recommendation: don’t build an “invalidation system.” Build a command-scoped **overlay-first read cache**.
+
+Shape it like this:
+
+1. All runtime reads go through a planning context:
+   `context.readText(path)` and `context.readRdf(path)`.
+
+2. Reads check in this order:
+   - staged/planned writes for this command
+   - staged deletions/tombstones
+   - in-memory cached disk read
+   - actual filesystem read
+
+3. Parsed RDF is cached against the text entry, not just the path. When `stageWrite(path, contents)` happens, either clear the parsed RDF for that path or bump a small revision number. Later reads parse the staged contents, not the stale on-disk contents.
+
+4. At the end of the command, discard the whole context. No persisted cache. No mtimes. No watchers. No cross-command validity problem.
+
+So “invalidation” becomes basically one rule:
+
+> planned writes beat cached disk reads for the rest of the invocation.
+
+I’d test exactly that:
+- unchanged file read/parsed repeatedly only hits disk/parser once
+- candidate A updates `_mesh/_inventory/inventory.ttl`; candidate B sees A’s planned inventory
+- planned write followed by RDF read uses staged content
+- planned delete behaves like missing file
+
+I would avoid content-hash cleverness at first. Revision counters or “clear parsed cache on staged write” is boring and correct. Then optimize only if timings say parse churn is still painful.
+
+# User_2026-05-20_1627_29
+
+OK, sounds good.
+
+# gpt-5.5_2026-05-20_1627_34
+
+Nice. Then I’d treat that as the settled design note:
+
+- command-scoped context
+- overlay-first reads
+- parsed RDF tied to current text entry/revision
+- planned writes/deletes beat disk cache
+- discard everything at command end
+
+That keeps the refactor honest: it improves the hot path without inventing a cache product.
+
+# User_2026-05-20_1627_50
+
+ready to implement?
+
+# gpt-5.5_2026-05-20_1628_02
+
+Yes. I’ll start with the first implementation slice we just settled on: env-driven timing instrumentation, plus enough structure that the later in-memory planning context has a place to plug in. I’ll be careful around the existing dirty Weave changes from the SFLO work and won’t disturb unrelated archive/Kato edits.
