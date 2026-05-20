@@ -2,13 +2,13 @@
 id: 5b9rmj647tzgloxp9jyrz86
 title: 2026 05 18_1846 Integrate Manifest
 desc: ''
-updated: 1779155218792
+updated: 1779246652822
 created: 1779155218792
 ---
 
 ## Goals
 
-- Sketch a later manifest-driven `integrate` workflow for discovering and binding source files in bulk.
+- Sketch a later manifest-driven `integrate` workflow for discovering and binding source files in bulk and/or binding old versions to ArtifactHistory and HistoricalStates
 - Keep manifest-driven integration distinct from `import`; matching files stay where they are unless a separate explicit import copies them.
 - Support release workflows where new ontology, SHACL, or example files should be integrated automatically when they match configured directories, extensions, or globs.
 - Preserve additive mesh behavior: unchanged bindings are no-ops, new matching files add new governed surfaces, and existing settled states are not rewritten.

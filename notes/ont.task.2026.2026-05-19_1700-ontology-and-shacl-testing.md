@@ -22,6 +22,14 @@ This task sets up a first Deno test harness in `sflo`, ports the ontology guardr
 
 ## Discussion
 
+### First Implementation Slice
+
+The first sflo-owned Deno harness is now in place with RDF guardrails for all active Turtle files and a GitHub Actions CI workflow that runs `deno task ci`.
+
+The SHACL validator spike found that `rdf-validate-shacl` is not a good first dependency for this repo: under Deno it pulls unresolved npm type metadata during `deno check`, and the package explicitly does not support SHACL-SPARQL constraints. Since `semantic-flow-core-shacl.ttl` uses `sh:sparql` for important source-binding and resolution-mode checks, the first SHACL slice uses targeted tests against selected SHACL constraints instead of pretending full SHACL validation exists. A later slice can choose a stronger validator or add a small purpose-built evaluator for the SPARQL subset sflo actually uses.
+
+Weave has been split back to Weave-owned defaults/runtime guardrails. Ordinary Weave CI no longer needs to check out `semantic-flow/sflo`.
+
 ### Current State
 
 The `sflo` repo currently has Turtle ontology files, Dendron notes, release notes, and runbooks, but no code-based test harness.
@@ -170,17 +178,17 @@ For SHACL validation, add focused tests that assert both positive and negative b
 
 ## Implementation Plan
 
-- [ ] Add `deno.json` to `semantic-flow/sflo` with Deno-native fmt/lint/check/test/ci tasks.
-- [ ] Add `tests/helpers/rdf.ts` or similar utilities for reading repo files, parsing Turtle with `n3`, and normalizing RDF terms.
-- [ ] Add RDF parseability tests for all active ontology/SHACL Turtle files.
-- [ ] Add duplicate-triple tests for all active RDF files.
-- [ ] Port config namespace and flat-term guardrails from Weave into `sflo`.
-- [ ] Add retired-term guardrails for old config names, boolean policy switches, `_current`, and `_pinned`.
-- [ ] Spike a Deno-compatible SHACL validator.
-- [ ] Add first conforming/non-conforming SHACL example tests, or defer with a clear task if the validator spike needs more work.
-- [ ] Add or update `sflo` GitHub Actions CI to run `deno task ci`.
-- [ ] Update `sflo` release runbook to require the new CI/test command.
-- [ ] Split Weave's `ontology_guardrails_test.ts` into a Weave-owned defaults/runtime guardrail.
-- [ ] Remove `semantic-flow/sflo` checkout from Weave CI once no Weave test reads active `sflo` files.
-- [ ] Run `deno task ci` in both `sflo` and Weave after the split.
-- [ ] Provide separate commit messages for `sflo`, Weave, and `weave-dev-archive`.
+- [x] Add `deno.json` to `semantic-flow/sflo` with Deno-native fmt/lint/check/test/ci tasks.
+- [x] Add `tests/helpers/rdf.ts` or similar utilities for reading repo files, parsing Turtle with `n3`, and normalizing RDF terms.
+- [x] Add RDF parseability tests for all active ontology/SHACL Turtle files.
+- [x] Add duplicate-triple tests for all active RDF files.
+- [x] Port config namespace and flat-term guardrails from Weave into `sflo`.
+- [x] Add retired-term guardrails for old config names, boolean policy switches, `_current`, and `_pinned`.
+- [x] Spike a Deno-compatible SHACL validator.
+- [x] Add first conforming/non-conforming SHACL example tests, or defer with a clear task if the validator spike needs more work.
+- [x] Add or update `sflo` GitHub Actions CI to run `deno task ci`.
+- [x] Update `sflo` release runbook to require the new CI/test command.
+- [x] Split Weave's `ontology_guardrails_test.ts` into a Weave-owned defaults/runtime guardrail.
+- [x] Remove `semantic-flow/sflo` checkout from Weave CI once no Weave test reads active `sflo` files.
+- [x] Run `deno task ci` in both `sflo` and Weave after the split.
+- [x] Provide separate commit messages for `sflo`, Weave, and `weave-dev-archive`.
