@@ -4268,3 +4268,139 @@ I’ll investigate locally first using the GitHub CI-fix workflow, since the pas
 # gpt-5.5_2026-05-19_1542_18
 
 I can reproduce the failure classes from the code without pulling more logs. I’m going to patch the tests/workflow where the failures are clearly environment or expectation issues, then run the focused tests locally. The only one that may need CI config is the missing `sflo` checkout.
+
+# gpt-5.5_2026-05-19_1543_15
+
+The focused local run is clean: the version test, branch working-only manifest test, validation ordering test, and fixture ladder tests all passed here. That points away from the fixture repos being inherently broken locally and toward two CI/revision issues: the pushed commit likely didn’t include all local test updates, and the workflow definitely isn’t checking out `semantic-flow/sflo`, which explains the ontology guardrail failures.
+
+# gpt-5.5_2026-05-19_1543_32
+
+There’s one concrete workflow bug to fix in Weave: CI never checks out `semantic-flow/sflo`, yet the guardrail tests read it. The other fixture/test failures are consistent with CI pulling dependency repos at their default branch while your local run uses regenerated dependency checkouts. I’m going to inspect the dependency repo refs so we can decide whether CI should pin them to a branch for this PR or the fixture commits need to land first.
+
+# gpt-5.5_2026-05-19_1543_42
+
+I found the dependency repos are now on `origin/main` with the regenerated SFF manifests, so the branch/sidecar fixture failures are likely from CI running before those dependency pushes were visible, or from a workflow checkout omission. I’m still going to harden the environment-sensitive assertions: disable/strip ANSI for the version test, make publication finding order deterministic, and add the missing `sflo` checkout to CI.
+
+# gpt-5.5_2026-05-19_1544_19
+
+I’ve patched the three actionable local issues: added the missing `sflo` checkout in CI, stripped ANSI from the version assertion, and made publication path-leak findings deterministic by sorting directory entries. Now I’m running the focused tests plus the normal static gates.
+
+# gpt-5.5_2026-05-19_1544_59
+
+The focused failure set is green now. I’m going to run the full local `deno task ci` once because the CI failure was broad enough that a partial pass would leave too much “probably.”
+
+# gpt-5.5_2026-05-19_1547_33
+
+Investigated and patched the Weave-side CI issues.
+
+What changed:
+- Added missing `semantic-flow/sflo` checkout to CI, which directly explains the ontology guardrail `NotFound` failures: [.github/workflows/ci.yml](../../../../../.github/workflows/ci.yml:33)
+- Made the `weave --version` assertion strip ANSI, matching the CI colored output: [weave_cli_test.ts](../../../../../tests/e2e/weave_cli_test.ts:81)
+- Sorted publication text-file traversal so path-leak findings are deterministic: [presets.ts](../../../../../src/runtime/publication/presets.ts:140)
+
+On “new fixtures checked out?”: partly. CI did not check out `sflo` at all. The branch/sidecar fixture failures look like CI saw stale dependency manifests; current local `semantic-flow-framework` `origin/main` has the regenerated working-only manifest shape, and the focused tests now pass against it.
+
+Validation:
+- `deno task fmt:check`
+- `deno task lint`
+- `deno task check`
+- Focused failed test set: `87 passed`
+- Full `deno task ci`: `452 passed | 0 failed`
+
+Commit message:
+
+```text
+weave: fix CI dependency checkout and harden environment-sensitive tests
+
+- Check out semantic-flow/sflo in CI so ontology guardrail tests can read active ontology files.
+- Strip ANSI escapes from the CLI version assertion because CI may color Cliffy version output.
+- Sort publication validation file traversal for deterministic host-local leakage findings.
+```
+
+# djradon_2026-05-19_1547_33
+
+what guardrail tests depend on sflo?
+
+# gpt-5.5_2026-05-19_1547_39
+
+The failing `sflo` dependency is only from [ontology_guardrails_test.ts](../../../../../tests/integration/ontology_guardrails_test.ts:7).
+
+It reads these files from `dependencies/github.com/semantic-flow/sflo`:
+
+```ts
+dependencies/github.com/semantic-flow/sflo/semantic-flow-core-ontology.ttl
+dependencies/github.com/semantic-flow/sflo/semantic-flow-core-shacl.ttl
+dependencies/github.com/semantic-flow/sflo/semantic-flow-config-ontology.ttl
+dependencies/github.com/semantic-flow/sflo/semantic-flow-job-ontology.ttl
+dependencies/github.com/semantic-flow/sflo/semantic-flow-prov-ontology.ttl
+```
+
+Those are used by five tests:
+
+- `active ontology and defaults RDF parses as Turtle`
+- `active ontology and defaults RDF avoids duplicate triples`
+- `config ontology uses the canonical sflo namespace`
+- `active config terms use flat namespace-local IRIs`
+- `old config names and boolean policy switches stay retired`
+
+So yes: the CI failure there is simply that the workflow checked out SFF and fixture repos, but not `semantic-flow/sflo`, while these guardrails explicitly read active ontology files from that checkout.
+
+# djradon_2026-05-19_1640_25
+
+These seem horribly misplaced. Why are they in weave?
+
+# gpt-5.5_2026-05-19_1645_43
+
+Yeah, I agree. They are mostly misplaced in Weave.
+
+They probably landed there as a dogfooding canary: Weave was changing ontology-adjacent behavior, so checking the active `sflo` TTL files from Weave CI caught namespace drift, duplicate triples, and retired config terms while the implementation was moving fast. That’s useful, but it’s the wrong long-term ownership.
+
+Better split:
+
+- **Move to `sflo` CI**:
+  - active ontology parses as Turtle
+  - ontology avoids duplicate triples
+  - config ontology uses canonical namespace
+  - config terms use flat IRIs
+  - retired config names stay retired
+
+- **Keep in Weave CI only for Weave-owned files**:
+  - `defaults/application.ttl`
+  - `defaults/config-resolution.ttl`
+  - runtime behavior that consumes those defaults
+
+- **Optional cross-repo dogfood workflow**:
+  - A separate non-core workflow can check “current Weave + current sflo + current SFF fixtures” if we want an integration canary.
+
+So the `sflo` checkout fix is pragmatic for the current PR, but architecturally it’s a smell. I’d follow up by moving `tests/integration/ontology_guardrails_test.ts` either into `sflo`, or splitting it so Weave only validates its own defaults.
+
+# djradon_2026-05-19_1702_32
+
+Fill out [ont.task.2026.2026-05-19_1700-ontology-and-shacl-testing.md](ont.task.2026.2026-05-19_1700-ontology-and-shacl-testing.md) -- there's currently no code-based testing going on there, so this task can be "set up a testing framework" , ideally with deno, as well as remove the smell from weave.
+
+# gpt-5.5_2026-05-19_1702_43
+
+I’ll turn this into a concrete cross-repo cleanup task: give `sflo` its own Deno-based ontology/SHACL test harness, then shrink Weave’s guardrails back to Weave-owned defaults and runtime assumptions.
+
+# gpt-5.5_2026-05-19_1702_59
+
+I found `sflo` currently has no `deno.json`, no test directory, and no local code-based test harness. I’ll write the task as “stand up sflo CI/tests first, then remove the temporary cross-repo guardrail smell from Weave.”
+
+# gpt-5.5_2026-05-19_1703_33
+
+I’ve filled the task with the repo split and the first test slices. I’m doing a quick readback now to catch any awkward phrasing or accidental hard-wrap weirdness before I hand it back.
+
+Filled out [ont.task.2026.2026-05-19_1700-ontology-and-shacl-testing.md](ont.task.2026.2026-05-19_1700-ontology-and-shacl-testing.md:1).
+
+I framed it as:
+- set up a Deno test harness in `semantic-flow/sflo`;
+- port the ontology-owned guardrails out of Weave;
+- add first RDF parse/duplicate/namespace/retired-term checks;
+- spike SHACL validation under Deno;
+- then remove the temporary `sflo` checkout and ontology guardrail smell from Weave CI.
+
+No tests run; note-only edit. The task note is untracked in `weave-dev-archive`.
+
+Commit message:
+
+`weave-dev-archive: Add ontology and SHACL testing task`
