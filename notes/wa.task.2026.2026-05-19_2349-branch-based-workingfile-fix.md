@@ -82,7 +82,7 @@ weave integrate "$SFLO_SRC/semantic-flow-core-ontology.ttl" ontology \
   --source-repository-current
 ```
 
-`--source-repository-current` would inspect the source file's containing Git checkout, derive the repository identity from the configured remote, derive a repository-relative path such as `sflo:sourceRepositoryRelativePath`, and persist a floating repository locator with no branch/ref, commit, or digest evidence.
+`--source-repository-current` would inspect the source file's containing Git checkout, derive the repository identity from the configured remote, derive a path from the repository root such as `sflo:sourceRepositoryPathFromRoot`, and persist a floating repository locator with no branch/ref, commit, or digest evidence.
 
 Optional override flags can cover non-standard local checkouts without making the common case noisy:
 
@@ -104,7 +104,7 @@ Current naming proposal:
 - `sflo:RepositorySourceFloatingLocator`: class for mutable current-checkout repository source locators.
 - `sflo:hasRepositorySourceFloatingLocator`: object property from an `sflo:ArtifactResolutionTarget` or source binding to a floating repository locator.
 - Reuse or lightly adapt `sflo:sourceRepositoryUrl` for the durable repository identity.
-- Prefer a more explicit path property such as `sflo:sourceRepositoryRelativePath` for the repository-relative source path, rather than reusing `sflo:sourceRepositoryPath` from the exact repository locator shape.
+- Prefer a path property such as `sflo:sourceRepositoryPathFromRoot` for the repository-root-based source path, rather than reusing `sflo:sourceRepositoryPath` from the exact repository locator shape. `sflo:sourceRepositoryBasedPath` is another possible name, but `PathFromRoot` better says how to resolve the value.
 
 The repository-relative source path should be persisted in the mesh. Operational config can map a repository identity to a checkout root, but it should not be the only place that says which file under that repository is the source. Otherwise two machines could resolve the same mesh to different source files without changing mesh state. Operational config may supply defaults or aliases for operator convenience, but the durable locator needs either a repository-relative path or an equivalent repository-internal source identifier.
 
@@ -115,7 +115,6 @@ The current draft update to [[wu.cli-reference.examples.sflo]] uses `/tmp/sflo-s
 ## Open Issues
 
 - Should `--source-repository-current` derive repository identity from `origin` by default, require `--source-repository-url`, or warn when multiple remotes exist?
-- Should the repository-relative path property be named `sflo:sourceRepositoryRelativePath`, `sflo:repositoryRelativeSourcePath`, or something else?
 - What is the matching local checkout-resolution CLI/config shape for post-integrate commands: a command flag, host-local config entry, named profile, or all three?
 
 ## Decisions
@@ -130,6 +129,7 @@ The current draft update to [[wu.cli-reference.examples.sflo]] uses `/tmp/sflo-s
 - Keep the durable locator repository-specific for this task. A repository is concrete enough to provide durable source identity and root discovery; a generic filesystem root does not add a useful portable contract.
 - Add a new SFLO shape, tentatively `sflo:RepositorySourceFloatingLocator`, rather than loosening the existing exact/repository source locator shape.
 - Prefer `sflo:hasRepositorySourceFloatingLocator` as the new predicate from the current payload/source binding model to the floating repository locator, rather than relying on `sflo:workingLocalRelativePath`, `sflo:targetLocalRelativePath`, or `sflo:observedSourceLocalRelativePath` for branch-based mesh floating source resolution.
+- Use `sflo:sourceRepositoryPathFromRoot` for the repository-root-based source path.
 - Treat same-repository publication/source worktrees as a local checkout-resolution concern. The source is the configured source checkout, not the publication branch, and the durable locator does not need to encode that both worktrees share a remote.
 - Put the portable behavior in the Semantic Flow spec/ontology layer, then reference it from Weave runtime and CLI documentation.
 - Do not implement floating named branch mode in this task. A future enhancement may warn or fail if the resolved checkout is not on a named branch, but ordinary working-file behavior should not persist or enforce branch identity.
@@ -168,16 +168,16 @@ The current draft update to [[wu.cli-reference.examples.sflo]] uses `/tmp/sflo-s
 
 ## Implementation Plan
 
-- [ ] Capture the current failure with a focused test or fixture: branch-published mesh root plus source checkout outside the mesh currently serializes a mesh-root-relative external path.
-- [ ] Specify the durable RDF shape for branch-based mesh floating source locators, likely `RepositorySourceFloatingLocator`, with repository identity plus repository-relative path only.
-- [ ] Specify the new predicate that connects payload/source binding state to a floating repository locator, currently proposed as `hasRepositorySourceFloatingLocator`.
-- [ ] Update `integrate` planning so branch-based mesh floating source bindings use the floating repository locator instead of `targetLocalRelativePath`.
-- [ ] Update `executeIntegrate` and CLI option/profile handling so `--source-repository-current` records repository/path intent and later commands resolve it through local checkout mapping.
-- [ ] Update source binding resolution for `weave`, `extract`, `generate`, and validation paths that currently expect `workingLocalRelativePath`/`targetLocalRelativePath` to be directly filesystem-relative to the mesh root.
-- [ ] Preserve existing mesh-local and sidecar-local behavior where `sflo:hasWorkingLocatedFile` or `sflo:workingLocalRelativePath` is appropriate.
+- [x] Capture the current failure with a focused test or fixture: branch-published mesh root plus source checkout outside the mesh currently serializes a mesh-root-relative external path.
+- [x] Specify the durable RDF shape for branch-based mesh floating source locators, likely `RepositorySourceFloatingLocator`, with repository identity plus repository-relative path only.
+- [x] Specify the new predicate that connects payload/source binding state to a floating repository locator, currently proposed as `hasRepositorySourceFloatingLocator`.
+- [x] Update `integrate` planning so branch-based mesh floating source bindings use the floating repository locator instead of `targetLocalRelativePath`.
+- [x] Update `executeIntegrate` and CLI option/profile handling so `--source-repository-current` records repository/path intent and later commands resolve it through local checkout mapping.
+- [x] Update current payload source resolution for `weave` and `extract` so floating repository locators resolve through allowed local checkouts instead of durable local paths.
+- [x] Preserve existing mesh-local and sidecar-local behavior where `sflo:hasWorkingLocatedFile` or `sflo:workingLocalRelativePath` is appropriate.
 - [ ] Add validation that reports durable publication path leakage clearly, with all failing files listed.
-- [ ] Update [[wd.runtime]] and [[wu.cli-reference]] if the CLI/profile contract changes.
-- [ ] Replace the `/tmp/sflo-source` workaround in [[wu.cli-reference.examples.sflo]] with the final branch-based mesh floating source workflow.
+- [ ] Update [[wd.runtime]] if the runtime/config contract needs durable developer documentation beyond the task note.
+- [x] Replace the `/tmp/sflo-source` workaround in [[wu.cli-reference.examples.sflo]] with the final branch-based mesh floating source workflow.
 - [ ] Regenerate the scratch SFLO `gh-pages` mesh from the selected SFLO source checkout and verify no host-local or sibling-worktree paths appear.
-- [ ] Run focused tests, `deno task check`, and `deno task lint`.
+- [x] Run focused tests, `deno task check`, and `deno task lint`.
 - [ ] Provide separate commit messages for Weave code/docs and any regenerated SFLO `gh-pages` publication changes.

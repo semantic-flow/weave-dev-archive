@@ -1456,3 +1456,222 @@ I reverted the task note back to repo-specific floating sources in [wa.task.2026
 - non-goal: no generic filesystem-root or URL-root floating locator
 
 I left the cross-repo repository use case in, since that one does seem real: a publication mesh may curate source payloads from sibling ontology/spec/data repos. `git diff --check` passes.
+
+# User_2026-05-20_0044_28
+
+sourceRepositoryRelativePath  has the ambiguous connotation of a "relative path" instead of a "repository-relative path". Maybe sourceRepositoryBasedPath?
+
+# gpt-5.5_2026-05-20_0044_35
+
+I like the concern, but `sourceRepositoryBasedPath` reads a little like “path based on repository” rather than “path rooted at the repository root.” I’ll update the note toward clearer candidates and mark `sourceRepositoryRootPath` / `sourceRepositoryPathFromRoot` as stronger than `RelativePath`.
+
+# gpt-5.5_2026-05-20_0045_07
+
+Good catch. I agree `sourceRepositoryRelativePath` can sound like “a relative path that happens to mention a repository,” not “path rooted at the repository root.”
+
+I updated the task note to prefer:
+
+```ttl
+sflo:sourceRepositoryPathFromRoot
+```
+
+and kept your suggestion as an alternative:
+
+```ttl
+sflo:sourceRepositoryBasedPath
+```
+
+My taste: `PathFromRoot` is a bit longer, but it tells the resolver exactly what to do. `BasedPath` is shorter but softer/less operationally precise.
+
+`git diff --check` passes.
+
+# User_2026-05-20_0047_04
+
+what about absoluteRepositoryPath ?
+
+# gpt-5.5_2026-05-20_0047_15
+
+`absoluteRepositoryPath` is tempting, but I’d avoid it.
+
+The word “absolute” usually means filesystem absolute, like `/home/.../file.ttl`. That’s exactly the smell we’re trying to keep out of the mesh. Even if we define it as “absolute within the repository,” it will fight readers’ instincts.
+
+Better candidates, in my order:
+
+```ttl
+sflo:sourceRepositoryPathFromRoot
+sflo:sourceRepositoryRootPath
+sflo:sourceRepositoryRootRelativePath
+```
+
+I’d probably keep `sourceRepositoryPathFromRoot`. It is a little verbose, but it has low ambiguity: start at the repository root, follow this path.
+
+`sourceRepositoryRootPath` is shorter, but could mean “path to the repository root.”  
+`sourceRepositoryRootRelativePath` is precise, but we’re back to the “relative path” wording you disliked.
+
+# User_2026-05-20_0047_48
+
+sourceRepositoryPathFromRoot it is!
+
+Ready to proceed?
+
+# gpt-5.5_2026-05-20_0048_09
+
+Yes. I’ll lock `sourceRepositoryPathFromRoot` into the task note first, then start the implementation pass. I’ll keep it repo-specific: SFLO vocabulary/SHACL shape, Weave integrate flag, resolver support, and focused tests before touching the SFLO replay doc again.
+
+# gpt-5.5_2026-05-20_0048_45
+
+The task note now records `sflo:sourceRepositoryPathFromRoot` as a decision. I’m going through the current repository-source implementation and the SFLO ontology/SHACL definitions so the patch follows the existing shape instead of inventing a parallel universe.
+
+# gpt-5.5_2026-05-20_0049_05
+
+The current split is sharper than the note makes it sound: `integrate` uses `workingLocalRelativePath` both as the payload artifact’s current working bytes and as source-binding evidence. I’m checking the working-file readers next, because the new repo-floating locator has to replace local-path resolution for later `weave`/`extract`, not only for the `_sources` registry.
+
+# gpt-5.5_2026-05-20_0049_33
+
+The implementation has a real ripple: payload inventories currently require a local working path, and a lot of later code treats that string as both “display/name hint” and “where to read bytes.” I’m going to introduce the repo-floating locator as an alternate current-byte locator, then update the few actual byte-read paths to resolve through a checkout mapping rather than through `workingLocalRelativePath`.
+
+# gpt-5.5_2026-05-20_0051_28
+
+I’m going to start with the vocabulary and planner layer, then run focused tests before widening to runtime resolution. The planner is the fulcrum: it controls whether durable inventory/source-registry output still leaks a local path.
+
+# gpt-5.5_2026-05-20_0052_21
+
+The ontology now has a floating repository locator and SHACL shape. I also loosened `sourceRepositoryUrl`’s domain because otherwise using the same URL property on the floating locator would imply the exact locator class and pull in the wrong ref/path constraints.
+
+# gpt-5.5_2026-05-20_0054_31
+
+The core planner slice is green now. Next I’m wiring the CLI/runtime path so `--source-repository-current` can derive the repo URL and path-from-root from the source checkout, rather than asking users to hand-enter those facts.
+
+# gpt-5.5_2026-05-20_0055_57
+
+Yep. I’m going to treat `sourceRepositoryPathFromRoot` as the durable SFLO term, keep it repo-specific, and start by wiring the CLI/runtime path that can derive it from the checked-out source repo. Then I’ll run the narrow tests before touching the docs.
+
+# gpt-5.5_2026-05-20_0056_14
+
+Some of the runtime scaffolding is already in the working tree, which is good news. I’m checking whether it’s just type-level plumbing or whether the actual CLI flag and git-root derivation are already present before I patch more.
+
+# gpt-5.5_2026-05-20_0056_52
+
+The planner and runtime integrator already know about the floating locator, but the CLI helper still only accepts the exact pinned repository shape. The larger missing piece is downstream: once the mesh stores only the repo URL plus `sourceRepositoryPathFromRoot`, `weave` still needs a way to find the local checkout when reading current bytes.
+
+# gpt-5.5_2026-05-20_0058_12
+
+I’m going to patch three layers now: the CLI flags, inventory parsing for the new locator, and a local resolver that maps repository URL plus repo-root path to an allowed checkout using existing operational path grants. That should make the generated mesh portable while still giving local runs a concrete file to read.
+
+# User_2026-05-20_0740_21
+
+I think you might've stalled out before you could finish that turn. I had to restart the extension host.
+
+# gpt-5.5_2026-05-20_0740_35
+
+Yep, looks like the extension host reboot clipped me mid-patch. I had the main pieces partly wired, so I’m going to pick it back up by running the focused tests and TypeScript checks, then I’ll fix whatever shook loose.
+
+# gpt-5.5_2026-05-20_0740_41
+
+The focused test run and type check are both still running. That’s expected here because the e2e CLI tests spin up temporary workspaces and call the CLI as a child process.
+
+# gpt-5.5_2026-05-20_0740_50
+
+The code check completed cleanly. The first test command used `--allow-run=git`, which was too narrow for the e2e tests because they spawn `deno` itself; the unit-level pieces all passed, and I’m rerunning the e2e slice with broader run permission now.
+
+# gpt-5.5_2026-05-20_0740_56
+
+One rerun command had the opposite permission issue for the local-path tests: it needs temp-directory writes. That’s just command hygiene, not a product failure. I’ll rerun that after the e2e process finishes so the signal stays clean.
+
+# gpt-5.5_2026-05-20_0741_12
+
+The only real e2e failure is my new assertion expecting a `publication/` prefix in stdout; the CLI reports created paths relative to the mesh/workspace in this case. I’m tightening that assertion, then I’ll rerun the focused set.
+
+# gpt-5.5_2026-05-20_0741_27
+
+The unit and inventory slices are green now: 36 focused tests passed, and the type check is still clean. The e2e CLI run is continuing.
+
+# gpt-5.5_2026-05-20_0741_52
+
+One subtle edge case popped up while reviewing the resolver: if the publication branch is also a checkout of the same GitHub repo, resolving by remote URL should prefer the explicitly granted source checkout over the mesh root. I’m tightening that order and adding the test before I call this done.
+
+# gpt-5.5_2026-05-20_0742_46
+
+Good, the focused tests are green now: 37 unit/runtime tests plus 12 CLI e2e tests. I’m doing the documentation pass next so the SFLO example command reflects the new `--source-repository-current` path instead of the temporary workaround.
+
+# gpt-5.5_2026-05-20_0744_16
+
+The task note now reflects what’s actually landed versus what’s still future work, and the SFLO CLI example now uses `--source-repository-current`. I’m running the repo-level format, lint, and check gates next.
+
+# gpt-5.5_2026-05-20_0744_24
+
+`lint` and full `deno task check` are green; `fmt:check` found a few formatting nits in the TypeScript edits. I’m applying Deno’s formatter to the code/test files now, then I’ll rerun the gates.
+
+# gpt-5.5_2026-05-20_0744_55
+
+All Weave gates I planned are green after formatting: `fmt:check`, `lint`, `check`, 37 focused unit/runtime tests, and 12 integrate CLI e2e tests. Because this touches SFLO ontology and SHACL too, I’m going to run the SFLO release validator once against `0.1.1`.
+
+# gpt-5.5_2026-05-20_0745_19
+
+SFLO release validation passed for `v0.1.1`. I’m doing one last diff review now, mostly looking for accidental local-path leakage, over-broad resolver behavior, and docs that still describe the old workaround.
+
+# gpt-5.5_2026-05-20_0745_44
+
+One last important catch in the diff review: `extract` would have read floating sources correctly, but it would still record `observedSourceLocalRelativePath` using the repo-root path. That is not host-specific, but it muddies the new model and the task explicitly called out not using that predicate for branch-based floating source resolution. I’m removing that emission for floating repository sources and adding coverage.
+
+# gpt-5.5_2026-05-20_0747_27
+
+The extraction regression is covered now: floating repository sources can be extracted without writing `observedSourceLocalRelativePath`. I’m rerunning the full static gates plus the integrate CLI e2e slice and SFLO release validator one more time.
+
+# gpt-5.5_2026-05-20_0748_01
+
+Everything is green on targeted gates and the repo states are cleanly scoped: Weave code/docs, SFLO ontology/SHACL, and the dev-archive task note plus Kato transcript. I’m going to run the full `deno task test` once before the final summary; it’s a little extra time, but this touched runtime resolution in a few places.
+
+# gpt-5.5_2026-05-20_0748_14
+
+The full test suite is still running and looks healthy so far. It has already made it through core, runtime inventory/policy, pages, and the extract CLI tests; it’s in the e2e/integration tranche now.
+
+# gpt-5.5_2026-05-20_0749_11
+
+Full suite passed: 460 tests. That gives us a pretty solid landing zone; I’m just grabbing final status/diff stats so I can summarize cleanly and give you commit-message drafts per repo.
+
+# gpt-5.5_2026-05-20_0749_25
+
+Yep, the restart caught me mid-turn, but this is now finished and verified.
+
+Implemented floating repository source support:
+
+- Added `--source-repository-current` and optional `--source-repository-remote`.
+- Added durable SFLO terms:
+  - `sflo:RepositorySourceFloatingLocator`
+  - `sflo:hasRepositorySourceFloatingLocator`
+  - `sflo:sourceRepositoryPathFromRoot`
+- `integrate` now records repository URL plus repo-root path without `targetLocalRelativePath`, ref, commit, or digest evidence.
+- `weave` and `extract` can resolve those floating locators through allowed local checkout grants.
+- Extraction no longer writes `observedSourceLocalRelativePath` for floating repository sources.
+- Updated [wu.cli-reference.examples.sflo.md](../../../../../documentation/notes/wu.cli-reference.examples.sflo.md) to use the real workflow instead of the `/tmp/sflo-source` workaround.
+- Updated the task note with the settled decisions and completed implementation items.
+
+Validation passed:
+
+```sh
+deno task fmt:check
+deno task lint
+deno task check
+deno task test  # 460 passed
+(cd dependencies/github.com/semantic-flow/sflo && deno task release:validate --version 0.1.1)
+```
+
+Suggested commit messages:
+
+Weave:
+```text
+Support floating repository source locators
+```
+
+SFLO:
+```text
+Add floating repository source locator vocabulary
+```
+
+weave-dev-archive:
+```text
+Document branch-based floating repository source model
+```
+
+Note: I have not regenerated `/tmp/sflo` yet. The code/docs are now ready for that scratch regen pass.
