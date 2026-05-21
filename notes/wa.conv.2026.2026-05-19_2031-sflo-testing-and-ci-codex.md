@@ -2273,3 +2273,792 @@ could you fill out [wd.codebase-overview.caching.md](../../../../../documentatio
 # gpt-5.5_2026-05-20_2011_23
 
 I’ll fill this in as a developer-facing overview rather than a deep implementation trace, and I’ll keep it linked back to the performance task so the rationale stays findable. First I’m grabbing the nearby docs and the task note so it fits the local style.
+
+# gpt-5.5_2026-05-20_2011_36
+
+The note is currently just frontmatter, so I’m going to give it a compact “how this cache works today” shape: purpose, lifecycle, invalidation, timing, and future work. I’ll keep the durable facts here and leave the run-by-run measurements in the task/timings artifacts.
+
+# gpt-5.5_2026-05-20_2012_00
+
+The overview is filled in. I’m doing a quick readback/status check now so I can catch any awkward wording or accidental unrelated churn before I hand it back.
+
+# gpt-5.5_2026-05-20_2012_05
+
+Filled out [wd.codebase-overview.caching.md](../../../../../documentation/notes/wd.codebase-overview.caching.md) with a developer overview of the current command-scoped caching model.
+
+It covers the purpose, in-memory scope, `TextFileOverlay` responsibilities, read/candidate cache behavior, dependency-aware invalidation, `WEAVE_TIMING=1` counters, non-goals, and the likely next pass around parsed RDF or planner-level reuse. It also references `[[wa.task.2026.2026-05-17-weave-performance-optimization]]`.
+
+No tests run since this was docs-only.
+
+# User_2026-05-20_2012_16
+
+ok what's next?
+
+# gpt-5.5_2026-05-20_2012_35
+
+I’d do this in order:
+
+1. Commit the current slice before it gets mixed with the next refactor.
+   - `weave`: cache implementation + caching overview doc
+   - `weave-dev-archive`: task note + timing CSV + Kato convo note if desired
+
+2. Add one link from [wd.codebase-overview.md](../../../../../documentation/notes/wd.codebase-overview.md) to `[[wd.codebase-overview.caching]]`, so the new note is discoverable.
+
+3. Take one more clean `WEAVE_TIMING=1` run after commit, just to establish the “post-cache baseline” from a stable commit.
+
+4. For the next optimization pass, don’t jump straight into a graph cache yet. I’d first add finer timing inside the remaining `prepare.loop.planVersion` phase, because that’s now the biggest bucket. We need to know whether it’s RDF parsing, inventory traversal, planned-file rendering, source resolution, or just repeated planner setup.
+
+My recommendation: commit now, then do a small instrumentation-only pass around version planning internals. After that, the next real code change will be much less guessy.
+
+# User_2026-05-20_2013_12
+
+ok, run the clean timing
+
+# gpt-5.5_2026-05-20_2013_27
+
+I’ll run the SFLO `validate mesh` timing against `/tmp/sflo` now. Since the cache/doc slice is still uncommitted, I’ll treat this as a clean repeat of the workload, but label it as a working-tree run if I record it.
+
+# gpt-5.5_2026-05-20_2013_32
+
+`/tmp/sflo` has an untracked `.weave/` directory, but the mesh validation workload itself should still be readable for timing. Running the timed command now.
+
+# gpt-5.5_2026-05-20_2013_42
+
+The repeat run is stable: `3.769s` total, essentially matching the previous `3.741s`. I’m going to append that as a repeat post-cache row in the timings CSV so we have the baseline trail.
+
+# gpt-5.5_2026-05-20_2014_28
+
+Ran the clean repeat timing:
+
+```bash
+WEAVE_TIMING=1 deno run -A src/main.ts validate mesh --mesh-root /tmp/sflo
+```
+
+Result: `3.769s` total, `335` validated paths, `0` findings.
+
+Key timings:
+
+- candidate loading: `1.609s`
+- version planning: `1.799s`
+- RDF validation: `15.3ms`
+- publication validation: `157.8ms`
+- cache hits: `56280` candidate hits, `1002` read-cache hits
+
+That’s basically stable with the previous post-cache run (`3.741s`), so the new baseline looks real.
+
+I appended the run to [weave-performance.csv](../timings/weave-performance.csv). Note: recorded as `e300c88+working` because the docs/timing files are still dirty, though the weave runtime code itself appears clean.
+
+# User_2026-05-20_2015_27
+
+Slightly off-topic, but currently resource pages for RdfDocuments are displaying the workingFile, but probably should display the last-woven state? Trouble is there might be more than one manifestation. But we could match the working file's file extension to get a sense of the "preferred manifestation".
+
+What do you think?
+
+# gpt-5.5_2026-05-20_2015_46
+
+Yes, I think that instinct is right.
+
+For a published ResourcePage, the primary RDF document view should prefer the last woven/current settled state, not the mutable `workingFile`. Otherwise the page can accidentally describe bytes that have not been versioned into the mesh yet, which weakens the whole “published state” model.
+
+For the manifestation problem, I’d use the working file extension only as a preference hint, not as authority:
+
+1. Resolve the RdfDocument’s current/latest woven HistoricalState.
+2. Collect that state’s manifestations.
+3. Prefer the manifestation whose path/media type matches the working file extension, e.g. `.ttl` working file prefers the `.ttl` manifestation.
+4. If there is no match, fall back to a deterministic default, probably Turtle first for RdfDocuments.
+5. Still list the other manifestations as alternates.
+
+So the working file remains useful metadata: “this is the editable source shape we expect,” but the page’s main rendered/downloaded document should come from the settled state.
+
+One caveat: for never-woven RdfDocuments, showing the working file may still be appropriate, but it should read as pending/working source rather than published state. That distinction matters.
+
+# User_2026-05-20_2018_17
+
+OK, fill out [wa.task.2026.2026-05-20_2016-resourcepages-show-latest-state.md](wa.task.2026.2026-05-20_2016-resourcepages-show-latest-state.md) please. 
+
+Regarding never-woven: if it hasn't been woven, there can't be a resourcepage for it, right?
+
+# gpt-5.5_2026-05-20_2018_29
+
+I’ll turn this into a concrete task note with the model distinction baked in: ResourcePages should present settled state bytes when there is a current woven state, and working files should be metadata/context rather than the main published document. On the never-woven point: agreed, in the normal model there should not be a generated ResourcePage for an un-woven resource, so I’ll write that as an invariant/check rather than a fallback path.
+
+# gpt-5.5_2026-05-20_2018_38
+
+I found the task shell and the nearby docs. I’m going to keep the note focused on the decision and implementation path, with “never-woven ResourcePage” treated as a bug/edge-condition to verify rather than a supported display mode.
+
+# gpt-5.5_2026-05-20_2019_31
+
+I’ve traced the relevant seam: `addPayloadRawSourcePanels` currently adds “Current working file” to the public identifier page, and only adds the historical bytes to the manifestation page. The task note should point the change right at that assembly layer, plus the renderer rule that only displays raw panels for identifier pages with a working file.
+
+# gpt-5.5_2026-05-20_2020_06
+
+The task note is filled out. I’m doing a quick readback now, mostly looking for one thing: whether I overgeneralized “never-woven” around current-only support artifacts.
+
+# gpt-5.5_2026-05-20_2020_16
+
+Filled out [wa.task.2026.2026-05-20_2016-resourcepages-show-latest-state.md](wa.task.2026.2026-05-20_2016-resourcepages-show-latest-state.md).
+
+I wrote it around this contract: current `sflo:RdfDocument` ResourcePages should prefer latest woven state bytes, while `workingLocalRelativePath` stays metadata and a manifestation-selection hint.
+
+On never-woven: yes, for normal payload/governed resources, I agree. If it has not been woven, there should not be a generated current ResourcePage for it. I added that as an invariant rather than a fallback. The one caveat I left noted is current-only support artifacts, where there may intentionally be no historical state; that probably needs role-specific handling rather than muddying the main rule.
+
+No tests run; docs/task note only.
+
+# User_2026-05-20_2032_06
+
+open issues:
+- all current artifact pages, including the supporting artifacts (if ResourcePage generation is turned on)
+- i don't think we have any content type, it'll have to be based on extension. But maybe we should introduce a canonicalManifestation property?
+- skip the panel and emit an warn into logging?
+- working should stay out entirely. it could leak info not intended for publication.
+
+# gpt-5.5_2026-05-20_2032_10
+
+Good calls. I’m going to fold those into the task as decisions, trim the resolved open issues, and leave `canonicalManifestation` as a future ontology/design question rather than something this implementation has to invent.
+
+# gpt-5.5_2026-05-20_2032_27
+
+I’ve moved those from “still fuzzy” into the actual decision set. I’m checking the updated section once so the note doesn’t contradict itself.
+
+# gpt-5.5_2026-05-20_2032_40
+
+One small correction as I reread your last point: “working should stay out entirely” should include the visible Working File row/link, not just the raw bytes. I’m tightening the note so the working path is an internal selection hint, not published page content.
+
+# gpt-5.5_2026-05-20_2033_09
+
+Updated the task note with those decisions.
+
+I also tightened the “working should stay out entirely” point: the note now says current published ResourcePages should not display working-file paths or bytes, including the `Working File` metadata row/link. The working file can still be used internally as an extension hint for choosing the preferred latest-state manifestation.
+
+The only remaining open design questions are now:
+
+- whether SFLO should eventually add something like `canonicalManifestation`
+- whether missing-latest-state warnings stay as structured logs or become user-visible findings later
+
+# User_2026-05-20_2040_18
+
+If the raw file is in the mesh (i.e., whole-repo meshes), it'll be available regardless. Regardless, I don't think we have to hide the workingfile property, but maybe we make than option later.
+
+http://127.0.0.1:4507/sflo/ontology/ is missing the properties panel. can you investigate?
+
+# gpt-5.5_2026-05-20_2040_36
+
+I’ll look at the generated `/tmp/sflo/ontology/index.html` first, then trace what raw RDF panel/model data the page generator would need in order to render the properties section. If it’s just a page-generation bug rather than stale output, I’ll patch the smallest seam.
+
+# gpt-5.5_2026-05-20_2040_50
+
+The HTML isn’t totally empty: it has the child taxonomy rows, but it has no direct RDF properties section (`<details class="wf-properties">`). That means the page model didn’t have raw source panels for the ontology resource, so `extractPropertyRows(...)` had nothing to read. I’m tracing why the `ontology` payload raw panel didn’t get attached.
+
+# gpt-5.5_2026-05-20_2041_05
+
+I found the concrete failure mode. `ontology` uses `RepositorySourceFloatingLocator` with `sourceRepositoryPathFromRoot "semantic-flow-core-ontology.ttl"`, and the actual release snapshot exists at `ontology/releases/v0.1.1/ttl/semantic-flow-core-ontology.ttl`. But `addPayloadRawSourcePanels` tries to read `semantic-flow-core-ontology.ttl` under `/tmp/sflo`, catches `NotFound`, and returns before it ever attaches the historical snapshot panel. That explains why the direct properties panel is missing.
+
+# gpt-5.5_2026-05-20_2041_50
+
+I’m going to patch the payload page raw-panel selection, not the whole future task. The narrow fix is: if a payload has a latest historical snapshot, attach that snapshot panel to the current identifier page; only fall back to the working file when no latest state exists. That should restore the properties panel for `ontology` and move us in the direction we just captured.
+
+# User_2026-05-20_2041_54
+
+Exposes a good point. All those panels (children,  properties) should use the latest version too.
+
+# gpt-5.5_2026-05-20_2042_29
+
+Agreed. The page’s semantic panels should all be sourced from the settled/current version view, not whatever the mutable working file happens to say today. I’m tightening the code around the raw-source panel selection first, because that is what feeds titles, summaries, direct properties, blank-node rows, and a good chunk of RDF classification.
+
+# gpt-5.5_2026-05-20_2043_50
+
+The first filtered run was a little too clever and matched nothing. I’m rerunning the actual new test by a simpler filter, then I’ll broaden to the nearby integration tests.
+
+# gpt-5.5_2026-05-20_2044_23
+
+The broader test found one expectation that was explicitly checking the old behavior: it wanted the current page raw link to point at `alice-bio.ttl`. With latest-state panels, that should now point at the historical manifestation. I’m updating that assertion to the new contract.
+
+# gpt-5.5_2026-05-20_2044_55
+
+The focused runtime/page tests are green now. I’m going to regenerate just `/tmp/sflo`’s `ontology` page with the patched generator and inspect the HTML, so we verify the live-server symptom directly.
+
+# gpt-5.5_2026-05-20_2045_22
+
+The regenerated `/tmp/sflo/ontology/index.html` now has the direct Properties panel, title/summary/classes from the latest release TTL, and the raw panel points at `/sflo/ontology/releases/v0.1.1/ttl/semantic-flow-core-ontology.ttl`. I’m also correcting the task note to match your latest view: don’t hide the `workingFile` property by default; make that a later publication option if we want it.
+
+# gpt-5.5_2026-05-20_2045_51
+
+I adjusted the task note: working-file locator metadata can stay visible, while semantic panels should come from the latest settled source. I’m running lint/typecheck now, then I’ll run the full test suite if those are clean.
+
+# gpt-5.5_2026-05-20_2045_54
+
+Lint and typecheck are clean. Since this changes generated page behavior, I’m running the full test suite too; it’s the patient-but-less-surprising move here.
+
+# gpt-5.5_2026-05-20_2047_03
+
+Full suite is clean: 465 passed. I’m doing final status/diff triage now, including separating my changes from existing/user-open docs so I don’t blur the repo state.
+
+# gpt-5.5_2026-05-20_2047_26
+
+One more quick validation against `/tmp/sflo` is worth it because I rewrote generated pages there while checking the browser symptom. It should be fast with the cache work.
+
+# gpt-5.5_2026-05-20_2047_53
+
+Found it and patched the generator.
+
+Root cause: `ontology` is using a `RepositorySourceFloatingLocator`, so the working source path is `semantic-flow-core-ontology.ttl`, but that file is not inside `/tmp/sflo`. The old ResourcePage raw-panel code tried to read that as `/tmp/sflo/semantic-flow-core-ontology.ttl`, hit `NotFound`, and returned before attaching the latest historical manifestation. No raw source panel meant no RDF-derived title/summary/classes/properties.
+
+I changed [weave.ts](../../../../../src/runtime/weave/weave.ts) so current payload `RdfDocument` pages prefer the latest historical manifestation panel. They fall back to the working file only when there is no latest state. That means properties and RDF-derived page facts now come from the latest woven state.
+
+I added coverage in [weave_test.ts](../../../../../tests/integration/weave_test.ts): mutate a working ontology source after weaving, run `generate`, and assert the current page still uses the latest historical state rather than leaking the draft working bytes.
+
+I also updated the task note to match your correction: working-file locator metadata can remain visible; hiding it can be a later publication option. The semantic panels should use latest settled state.
+
+Verified:
+
+- `deno task lint`
+- `deno task check`
+- focused page/runtime tests: `77 passed`
+- full suite: `465 passed`
+- `/tmp/sflo` validation: `335 designator paths`, `0 issues`
+
+I regenerated `/tmp/sflo/ontology/index.html`; it now has the `Properties` panel and a `Latest historical manifestation file` raw panel pointing at `/sflo/ontology/releases/v0.1.1/ttl/semantic-flow-core-ontology.ttl`.
+
+# User_2026-05-20_2135_46
+
+I'm glad we got the repo-floating working file working (let's make sure it's documented in the [wu.cli-reference.integrate.md](../../../../../documentation/notes/wu.cli-reference.integrate.md) , but for a public repo, probably the easiest approach would be to use the github raw URL. Can you think of any downsides to using the URL, other than it's very fixed? Maybe it makes it so that you have to push changes before you can verion, but that might have some upside too.
+
+What is the state of URL support for workingFiles?
+
+# gpt-5.5_2026-05-20_2136_05
+
+I’ll check the integrate docs and the runtime path/URL handling before I edit. My hunch is: raw GitHub URLs are conceptually clean for publication, but current local `workingFile` behavior may still be intentionally file/local/repo-checkout oriented rather than remote-fetch oriented.
+
+# gpt-5.5_2026-05-20_2136_16
+
+The integrate reference is currently just a stub, so I’m going to add a practical section there rather than squeeze this into some unrelated page. I’ve confirmed from the runtime that `weave integrate` accepts local paths and `file:` URLs only for the source bytes; HTTP(S) working-file fetching is not implemented today.
+
+# gpt-5.5_2026-05-20_2137_01
+
+I’ve got the state clearly enough to document it: floating repository source is working today, but URL-backed working bytes are still a spec-shaped future feature. I’m filling the integrate subpage with the practical commands and the sharp edge around HTTP(S).
+
+# gpt-5.5_2026-05-20_2137_32
+
+The integrate note now has a concrete source-locator section, including `--source-repository-current` and the current HTTP(S) limitation. I’m doing a quick readback/status pass so I can give you a clean answer with the current implementation state.
+
+# gpt-5.5_2026-05-20_2137_49
+
+Updated [wu.cli-reference.integrate.md](../../../../../documentation/notes/wu.cli-reference.integrate.md) with:
+
+- local path and `file:` URL source support
+- extra-mesh source grants
+- `--source-repository-current`
+- floating repository locator behavior
+- pinned repository provenance
+- raw GitHub URL tradeoffs
+
+Current state of URL support: `file:` URLs work as local filesystem sources. HTTP(S) working files do not work yet. The SFLO vocabulary has `sflo:workingAccessUrl`, and config has remote-access policy terms, but Weave’s local runtime does not fetch remote working bytes from them today. `weave integrate` rejects non-`file:` URLs.
+
+For public repos, I agree raw GitHub URLs are attractive, especially for release discipline. Main downsides: network dependency, mutable branch URLs unless pinned/digested, GitHub raw/cache behavior, and losing repository-structured identity unless paired with repo/ref/path metadata. For now, best practical path is still local checkout + `--source-repository-current`; use raw URLs inside RDF metadata like `owl:versionIRI`, `schema:contentUrl`, or `dcat:downloadURL`.
+
+# User_2026-05-20_2156_23
+
+OO, I'd never considered that branch URLs could change. caveat ingestor!  But a major bonus is that the source-repository float only provides guidance, it still dependends on a local checkout and a user managing the branch correctly. A "main" raw URL I would imagine to be quite popular... it's simple, and it captures "usually the latest version of the artifact".
+
+Fill out workingAccessUrl task please.
+
+# gpt-5.5_2026-05-20_2156_34
+
+I’ll fill it as an implementation task rather than a vague idea bucket: what `workingAccessUrl` means, how it differs from floating repository checkout resolution, what “main raw URL” is good for, and where the operational guardrails need to live.
+
+# gpt-5.5_2026-05-20_2157_28
+
+I’m going to turn that thought into the task shape now: `workingAccessUrl` as the simple public-URL working-source path, with the branch-URL mutability caveat treated as an explicit operational tradeoff rather than a blocker.
+
+# gpt-5.5_2026-05-20_2157_32
+
+I’ve got the template and the repo guidance in view. I’m checking the exact ontology/config vocabulary now so the task note names the current terms cleanly instead of inventing near-misses.
+
+# gpt-5.5_2026-05-20_2157_37
+
+I’m going to fill the task as a spec-oriented implementation note: what the URL locator buys us, where it differs from repo-floating, and the fail-closed pieces Weave needs before it starts following network locators.
+
+# gpt-5.5_2026-05-20_2158_16
+
+The note is drafted. I’m doing a quick read-through now for phrasing and link/style nits, then I’ll summarize the pieces I put in.
+
+# gpt-5.5_2026-05-20_2158_25
+
+Filled out [wa.task.2026.2026-05-20_2152-workingAccessUrl.md](wa.task.2026.2026-05-20_2152-workingAccessUrl.md:9).
+
+I framed `workingAccessUrl` as the direct remote current-byte locator: great for public raw URLs and especially “latest-ish” branch URLs, but deny-by-default and distinct from immutable release evidence. The task now covers open policy questions, mutable branch URL caveats, digest/fail-closed behavior, redirect/timeout/size concerns, expected contract changes, and a test plan with a local HTTP server.
+
+No tests run; this was a task-note-only edit.
+
+# User_2026-05-20_2200_48
+
+OK, picking up [wa.task.2026.2026-05-20_2016-resourcepages-show-latest-state.md](wa.task.2026.2026-05-20_2016-resourcepages-show-latest-state.md) I thought I'd responded to those open issues. 
+- later, I put it in [ont.todo.md](../../sflo/notes/ont.todo.md) 
+- user-visible findings too
+- yes, eventually. add it to [wd.todo.md](../../../../../documentation/notes/wd.todo.md) 
+
+Read to implement?
+
+# gpt-5.5_2026-05-20_2201_02
+
+I’ll re-open the resource-page task and the two todo notes, then I’ll fold your answers into the task before touching code. If the implementation is already mostly there from the latest-state panel fix, I’ll verify what remains rather than doubling back blindly.
+
+# gpt-5.5_2026-05-20_2201_18
+
+Your bullets map pretty cleanly: canonical manifestation becomes an ontology backlog item, missing-state warnings should eventually be surfaced as user-visible findings, and hiding working-file metadata belongs in Weave’s backlog. I’m going to update those notes first, then check the remaining implementation delta.
+
+# gpt-5.5_2026-05-20_2204_18
+
+I found the implementation is partway there: payload pages now prefer the latest state, but support artifacts and mesh support artifacts still mostly read current files, and the task still lists settled questions as open. I’m going to make the notes match your answers, then patch the raw-source selector so historical support artifacts get the same treatment.
+
+# gpt-5.5_2026-05-20_2205_01
+
+I’m going to change the selector in the narrowest useful way: if a current artifact has a latest historical state, current pages use that manifestation; if a support artifact has no history at all, its existing current-file panel remains. That preserves the useful current-only support pages while fixing the leak for governed/versioned artifacts.
+
+# gpt-5.5_2026-05-20_2206_03
+
+The code patch is in. I added the mesh-support regression test too, using a deliberately stale `_mesh/_config/config.ttl` so the page must prove it’s rendering the historical snapshot instead of current working bytes. Now I’m formatting and running the focused tests.
+
+# gpt-5.5_2026-05-20_2206_32
+
+Focused page-generation coverage is green: 78 tests passed. I’m going to run the broader checks now, because this touched shared ResourcePage source selection rather than a leaf-only path.
+
+# gpt-5.5_2026-05-20_2206_35
+
+Type-check passed; lint caught a small leftover parameter in the support-panel helper. I’m trimming that and rerunning lint.
+
+# gpt-5.5_2026-05-20_2206_53
+
+Lint is clean and the focused suite stayed green after the cleanup. I’m kicking off the full test suite now so we don’t leave a ResourcePage regression hiding in a less obvious path.
+
+# gpt-5.5_2026-05-20_2208_14
+
+Full suite passed. I noticed the new selector has extension-preference behavior but only implicit coverage, so I’m going to add one small regression test for the multi-manifestation case before I call this done.
+
+# gpt-5.5_2026-05-20_2208_52
+
+That new test exposed a real older assumption: the inventory resolver still treated `hasManifestation` as unique before the page selector could apply its preference. I’m going to relax that resolver so `locatedFileForState` can disambiguate multi-manifestation states, which is exactly why that shortcut is useful.
+
+# gpt-5.5_2026-05-20_2209_49
+
+The multi-manifestation test is now green; the inventory resolver needed to accept multiple manifestations when `locatedFileForState` identifies the preferred file. I’m rerunning check, lint, and then the full suite once more after that resolver change.
+
+# gpt-5.5_2026-05-20_2211_06
+
+Everything is green now: check, lint, and the full suite. I’m marking the task note to reflect what landed and what got explicitly deferred into todo instead of leaving the checklist stale.
+
+# gpt-5.5_2026-05-20_2211_53
+
+Implemented the ResourcePage latest-state slice.
+
+What changed:
+- Current RDF ResourcePages now prefer latest HistoricalState manifestation panels for payloads, Knop support artifacts, and mesh support artifacts when those artifacts have histories.
+- Current-only support artifacts still keep their current-file panels, so thin support artifacts remain useful.
+- Multi-manifestation states now choose by working-file extension first, then deterministic fallback.
+- Inventory resolution now tolerates multiple `sflo:hasManifestation` values when `sflo:locatedFileForState` disambiguates the preferred located file.
+- Added todo items for later user-visible findings and working-file metadata suppression.
+- Updated the task note to close the answered open issues and mark the implemented checklist.
+
+Key files:
+- [weave.ts](../../../../../src/runtime/weave/weave.ts:3504)
+- [inventory.ts](../../../../../src/runtime/mesh/inventory.ts:999)
+- [weave_test.ts](../../../../../tests/integration/weave_test.ts:2032)
+- [wd.todo.md](../../../../../documentation/notes/wd.todo.md:20)
+- [task note](wa.task.2026.2026-05-20_2016-resourcepages-show-latest-state.md:42)
+
+Validation:
+- `deno test --allow-read --allow-write --allow-env --allow-run=git tests/integration/weave_test.ts src/runtime/weave/pages_test.ts src/runtime/mesh/inventory_test.ts` passed
+- `deno task check` passed
+- `deno task lint` passed
+- `deno task test` passed: 467 passed, 0 failed
+
+Commit message for Weave:
+
+```text
+resource pages prefer latest historical RDF panels
+
+- resolve current RDF ResourcePage raw panels from latest historical manifestations for payload, Knop support, and mesh support artifacts when histories exist
+- choose preferred manifestations by working-file extension with deterministic fallback
+- allow inventory resolution for multi-manifestation states when locatedFileForState disambiguates the preferred file
+- preserve current-file panels for current-only support artifacts
+- add regression coverage for stale payload/support working files and multi-manifestation selection
+- track deferred ResourcePage findings and working-file metadata hiding in wd.todo
+```
+
+# User_2026-05-20_2239_26
+
+I'd also like to add support in the ResourcePages top table for the other kinds of working files, below Ontology IRI. For URLs, it's obvious, and can be a link. For floating source, it's not well-defined enough to make it a link, but you could at least display the filename.
+
+# gpt-5.5_2026-05-20_2239_38
+
+I’ll wire this into the page metadata rather than the raw RDF panels: URLs can render as links, and floating repository sources can show the repository-root filename/path as locator context without pretending it’s dereferenceable.
+
+# gpt-5.5_2026-05-20_2245_40
+
+I found the page model only knows about `workingLocalRelativePath` today, so repo-floating locators get flattened into a path-ish value and `workingAccessUrl` never reaches the renderer. I’m going to carry those two locator shapes through the model and add hero-table rows for them.
+
+# gpt-5.5_2026-05-20_2247_31
+
+The renderer and runtime plumbing are patched, with a generated-page regression that exercises both a raw URL and a repo-floating locator. I’m formatting and running the focused ResourcePage tests now.
+
+# gpt-5.5_2026-05-20_2247_51
+
+Focused coverage is green: URL and repo-floating locator rows render in the hero table, and generated pages receive those locators from inventory. I’m running the repo-wide check/lint and then the full suite because the model type changed.
+
+# gpt-5.5_2026-05-20_2249_38
+
+Implemented it. ResourcePage top metadata now includes working source locator rows directly under `Canonical IRI`:
+
+- `Working URL` renders as a clickable link when `sflo:workingAccessUrl` is present.
+- `Repository Source` renders as plain text for `RepositorySourceFloatingLocator`, using `sflo:sourceRepositoryPathFromRoot`.
+- Local `Working File` still renders as before, but is suppressed when the source is repo-floating so we do not create a misleading mesh-local link.
+
+I also wired `workingAccessUrl` through inventory resolution and page models, then added unit and integration coverage for URL and floating repository locators.
+
+Validation passed:
+
+```bash
+deno task check
+deno task lint
+deno task test
+```
+
+Full suite result: `469 passed | 0 failed`.
+
+Suggested commit message:
+
+```text
+Display ResourcePage working source locators
+
+Add ResourcePage hero metadata rows for non-local working source locators.
+Working URLs now render as links, while repository-floating sources render
+as plain repo-root paths without pretending to be mesh-local files.
+
+Thread workingAccessUrl and repository floating locator data through inventory,
+generation context, and page models. Add unit and integration coverage for URL
+and repository-floating ResourcePage metadata.
+```
+
+# User_2026-05-20_2326_03
+
+To see all our great changes, can I just regenerate ResourcePages, or do we need to start from scratch?
+
+# gpt-5.5_2026-05-20_2326_14
+
+I’m going to sanity-check the current SFLO example command shape before answering, so I don’t hand you a stale incantation.
+
+# gpt-5.5_2026-05-20_2326_39
+
+You can just regenerate pages for the display changes. No scratch rebuild needed unless the mesh facts themselves are stale.
+
+From the Weave checkout:
+
+```sh
+cd /home/djradon/hub/semantic-flow/weave
+
+deno run -A src/main.ts generate \
+  --mesh-root /tmp/sflo
+
+deno run -A src/main.ts validate mesh \
+  --mesh-root /tmp/sflo
+```
+
+That should pick up the ResourcePage renderer changes: latest-state content/panels, `Working URL` links, and plain `Repository Source` rows.
+
+The one caveat: `generate` only re-renders from the mesh it has. If `/tmp/sflo` was integrated before the repo-floating locator work, it may still contain older local working-file facts, so you would not see the new `Repository Source` row until those payloads are re-integrated or the mesh is rebuilt. But for renderer-only changes, `generate` is the right lightweight move.
+
+# User_2026-05-20_2330_03
+
+still no properties  panel on http://127.0.0.1:4507/sflo/ontology/
+
+# User_2026-05-20_2343_28
+
+nvm, they're there. 
+
+But in the properties panel, the objects' text is getting compact to the final segment of the IRI: versionIRI is compacted to just the filename, createor is compacted to dave-richardson; We should either  probably show the full IRI or else implement a UI switch between full and compact. 
+
+I'd hade to give full IRIs for all curried terms like owl:Ontology; but "sflo:releases/v0.1.1" shouldn't be curried, because sflo: is not declared as a prefix.
+
+# gpt-5.5_2026-05-20_2343_36
+
+Good catch. I’m going to trace the property-value formatter rather than guessing at the renderer, because this smells like a shared IRI compaction helper doing one useful thing and one over-eager thing.
+
+# gpt-5.5_2026-05-20_2343_41
+
+I’ve got the likely fault line: the property panel has different concerns than the hero table. I’m reading that formatter now and will make the compacting rule stricter instead of throwing away compact display entirely.
+
+# gpt-5.5_2026-05-20_2344_26
+
+The rule I’m leaning toward is: compact only against known vocabulary prefixes or prefixes actually declared in the RDF source; otherwise show the full IRI. That keeps `owl:Ontology`, `dcterms:creator`, etc. readable while stopping invented `sflo:` labels for base-relative SFLO release IRIs.
+
+# gpt-5.5_2026-05-20_2344_35
+
+I’m going to patch the compaction helper and add a regression test with the SFLO ontology shape: declared `owl`/`dcterms` stay compact, undeclared SFLO-base and external object IRIs stay full.
+
+# User_2026-05-20_2344_39
+
+I would say the properties should follow the source RDF. If curried, display the short curry form, if fully written out, display that?
+
+# gpt-5.5_2026-05-20_2344_50
+
+Yes, I agree. My first patch made the compaction rule stricter, but it still inferred some compact forms from declared/common prefixes. Your rule is better: the Properties panel should respect how the source authored the term, with only minimal normalization for links/tooltips. I’m going to adjust toward lexical labels from the source text.
+
+# gpt-5.5_2026-05-20_2347_17
+
+I’ve shifted the implementation to record labels from the source text itself. The fallback still exists for generated/internal rows, but source-derived properties now prefer source-authored tokens or full IRIs instead of inventing a last-segment label.
+
+# gpt-5.5_2026-05-20_2348_12
+
+The focused renderer test is green now. I noticed my earlier broad patch added `dcterms` declarations to a few unrelated fixture snippets too, so I’m tidying that test noise before running the broader checks.
+
+# gpt-5.5_2026-05-20_2348_46
+
+The regression test now covers exactly the SFLO-flavored case: `dcterms:*` and `owl:*` stay compact because the source declared them, while full object IRIs remain full link text. I’m running the repo checks now.
+
+# gpt-5.5_2026-05-20_2350_23
+
+The code side is fixed. Since you were looking at the local `/tmp/sflo` server, I’m checking that worktree before deciding whether to regenerate it in place.
+
+# gpt-5.5_2026-05-20_2350_50
+
+Agreed, and I changed it that way.
+
+ResourcePage source-derived RDF labels now prefer the source spelling:
+
+- Declared/prefixed terms stay compact, like `owl:Ontology`, `dcterms:creator`, `owl:versionIRI`.
+- Full IRI object values stay full, like `https://djradon.github.io/ns/dave-richardson` and raw GitHub URLs.
+- We no longer invent fallback labels like `dave-richardson` or `sflo:releases/v0.1.1` for undeclared/non-prefixed IRIs.
+
+Changed [pages.ts](../../../../../src/runtime/weave/pages.ts) and added regression coverage in [pages_test.ts](../../../../../src/runtime/weave/pages_test.ts).
+
+Validation passed:
+
+```sh
+deno task check
+deno task lint
+deno task test
+```
+
+Full suite: `469 passed | 0 failed`.
+
+I checked `/tmp/sflo`; it’s already very broadly dirty/ahead, so I did not regenerate it automatically. To see this on the local server, rerun:
+
+```sh
+deno run -A src/main.ts generate --mesh-root /tmp/sflo
+```
+
+# User_2026-05-20_2350_50
+
+regen!
+
+# gpt-5.5_2026-05-20_2351_00
+
+On it. I’ll regenerate the `/tmp/sflo` ResourcePages with the current local Weave code, then run mesh validation so the preview worktree isn’t quietly weird.
+
+# gpt-5.5_2026-05-20_2351_14
+
+Regenerated `/tmp/sflo`.
+
+Result:
+
+```text
+Generated 339 designator paths
+Created 0 files
+Updated 1368 existing pages
+Validated 335 designator paths
+Found 0 issues
+```
+
+You should be able to refresh `http://127.0.0.1:4507/sflo/ontology/` and see the source-shaped property labels now.
+
+# User_2026-05-21_0022_26
+
+For the "Repository Source" row... in the floating repo source case, do we record the commit that was in place when the integrate was executed? If so, we could link to the file in that exact commit, at least for the... I forget the term, but if there's more than one regular source it's supposed to display the original and the latest. Or at least if we record the repo (via its URL), we could at least provide the repo for context, i.e., make the repo part of the URL clickable. What do you think?
+
+# gpt-5.5_2026-05-21_0022_36
+
+I’m going to check the current locator shape before answering, because this is exactly the place where “floating” vs “observed” source evidence can get fuzzy fast.
+
+# gpt-5.5_2026-05-21_0022_46
+
+The code confirms the current shape: floating repo source records `sourceRepositoryUrl` and `sourceRepositoryPathFromRoot`, and explicitly does not record commit/ref/digest. That was the portability choice we made for `--source-repository-current`.
+
+# gpt-5.5_2026-05-21_0023_08
+
+Currently: no. In the floating repo source case we intentionally do **not** record commit/ref/digest. The stored locator is just:
+
+- `sflo:sourceRepositoryUrl`
+- `sflo:sourceRepositoryPathFromRoot`
+
+That’s the right semantic split, I think. Floating means “resolve current bytes from an allowed checkout of this repo/path,” so recording the commit at integrate time would look like provenance pinning while not actually governing later versioning.
+
+For the UI, I’d do this:
+
+- Make the repository URL clickable in the `Repository Source` row.
+- Keep the path plain text, e.g. `semantic-flow/sflo / semantic-flow-core-ontology.ttl`.
+- Do **not** link the path to a guessed GitHub branch for floating sources. That would quietly imply a branch/default-branch contract we did not record.
+
+For exact external file links, use the non-floating repository source shape: `sourceRepositoryUrl + sourceRepositoryRef + sourceRepositoryPath + optional sourceRepositoryCommit`. If `sourceRepositoryCommit` exists and the URL is GitHub-ish, then linking to `/blob/<commit>/<path>` is solid.
+
+So my recommendation: first improve the row with repo-context link only. Later, add exact commit-file links for pinned repository provenance, not for floating current sources.
+
+# User_2026-05-21_0025_07
+
+Agreed. Can you implement without a task?
+
+# gpt-5.5_2026-05-21_0025_23
+
+Yep. I’ll keep it scoped: no task note, just make the floating repository row show a clickable repo URL plus the repo-root path as plain text, then update the renderer tests.
+
+# gpt-5.5_2026-05-21_0025_37
+
+The row now carries the repo URL as the only link and leaves the path as plain text. I’m formatting and running the focused tests first, then I’ll do check/lint since this touches renderer behavior.
+
+# gpt-5.5_2026-05-21_0026_09
+
+The implementation and tests are green. Since this affects the live preview pages too, I’m refreshing `/tmp/sflo` once so the local server shows the new linked repo row.
+
+# gpt-5.5_2026-05-21_0026_24
+
+Implemented without a task note.
+
+`Repository Source` now renders as:
+
+- clickable repository URL
+- plain repo-root path after it
+- no implied branch/commit/file link
+
+Example shape:
+
+```html
+Repository Source: https://github.com/semantic-flow/sflo.git / semantic-flow-core-ontology.ttl
+```
+
+Updated:
+- [pages.ts](../../../../../src/runtime/weave/pages.ts)
+- [pages_test.ts](../../../../../src/runtime/weave/pages_test.ts)
+- [weave_test.ts](../../../../../tests/integration/weave_test.ts)
+
+Validated with:
+
+```sh
+deno test --allow-read --allow-write --allow-env --allow-run=git src/runtime/weave/pages_test.ts tests/integration/weave_test.ts
+deno task check
+deno task lint
+```
+
+Also regenerated `/tmp/sflo`; validation found `0 issues`.
+
+Suggested commit message:
+
+```text
+Link floating repository source context
+
+Render ResourcePage floating repository source metadata with the repository URL
+as a link and the repository-root path as plain text. This gives readers useful
+source context without implying a pinned branch, commit, or file URL for
+floating current-source bindings.
+```
+
+# User_2026-05-21_0754_09
+
+what's next? don't make any changes, I just want to discuss.
+
+# gpt-5.5_2026-05-21_0754_20
+
+I won’t touch files. I’m just going to look at the current review note and repo status so the “what’s next” answer is grounded in the actual queue, not vibes in a trench coat.
+
+# gpt-5.5_2026-05-21_0754_36
+
+I’d treat the CodeRabbit note as the immediate queue. My recommended order:
+
+1. **Handle the still-valid correctness items first**
+   The important ones are the first-payload page model metadata, complete floating-locator validation, and current/canonical/extraction raw-source panels. Those are all about “does the generated page accurately reflect the source contract?” They’re more important than docs polish.
+
+2. **Do the local path policy tightening**
+   The mesh-owned vs host-local boundary distinction is worth doing carefully. It is small, but it touches trust boundaries, so it deserves focused tests.
+
+3. **Strengthen the floating-source extracted-term test**
+   I’d probably do this alongside the complete locator validation, because it sounds like the test currently can’t express the full model without the model change.
+
+4. **Clean up the easy docs nits**
+   The `live-server` typo is trivial. The Repository Source nit is already handled in code and `/tmp/sflo` was regenerated, but the review note still has it unchecked because I didn’t edit it.
+
+5. **Then release notes**
+   I’d leave `release-notes.v0.1.2.md` until after those fixes land, otherwise we’ll keep revising the same prose.
+
+One thing I would not do next: add commit/file links for floating repository sources. We made the right call there. The repo link gives useful context without pretending the floating binding is pinned.
+
+Also, current Weave repo status looked clean from `git status --short`; `/tmp/sflo` is dirty/ahead from regenerated pages, which is expected.
+
+# User_2026-05-21_0756_39
+
+Let's do some task grooming. I think we can move [wa.task.2026.2026-05-17-weave-performance-optimization.md](wa.task.2026.2026-05-17-weave-performance-optimization.md) to completed?
+
+# gpt-5.5_2026-05-21_0756_53
+
+I’ll inspect the task note and its repo state first. Since renaming task notes to completed is one of those Dendron/Kato-sensitive operations, I’ll verify before saying yes with a straight face.
+
+# gpt-5.5_2026-05-21_0757_09
+
+Yes, I think it’s fair to move it to completed, with one housekeeping caveat.
+
+The core task is done: timing instrumentation exists, SFLO timing evidence was recorded, command-scoped read/candidate caching landed, `validate mesh` improved from roughly `13.8s` to `3.7s`, and the caching overview doc captures the current model.
+
+The remaining unchecked items feel like follow-up optimization work, not blockers:
+
+- parsed RDF reuse
+- `--verbose`
+- validation progress detail
+- perf smoke/instrumentation regression
+
+I’d mark those as deferred or spin them into a later task before renaming, so the completed note doesn’t look half-done. Then rename:
+
+```text
+wa.task.2026.2026-05-17-weave-performance-optimization.md
+```
+
+to:
+
+```text
+wa.completed.2026.2026-05-17-weave-performance-optimization.md
+```
+
+Since task-note renames can affect references, I’d also update any wikilinks that point to the old task name, especially `wd.codebase-overview.caching.md`.
+
+# User_2026-05-21_0759_38
+
+I'll leave open for now.
+
+What about @remove-prepare? The idempotency tests might be good... if we haven't implemented yet?
+
+# gpt-5.5_2026-05-21_0759_48
+
+I’ll leave the performance task alone. For `remove-prepare`, I’m going to read the task and grep the current test suite for idempotency coverage so we can separate “already covered” from “still worth doing.”
+
+# gpt-5.5_2026-05-21_0800_00
+
+I found partial coverage, but not the specific “release automation can be rerun safely” contract. So I’d keep `remove-prepare` open, but narrow its remaining work rather than letting the big original task keep sprawling.
+
+# gpt-5.5_2026-05-21_0800_38
+
+I’d keep `remove-prepare` open for now, but narrow it. The big conceptual work is mostly done; the remaining valuable bit is exactly the idempotency/release-rerun contract.
+
+We have partial coverage already:
+
+- `prepare gh-pages` is rejected.
+- `generate` only mutates HTML, not RDF artifacts.
+- `validate mesh` / `validate publication` have scoped tests.
+- `extract --all-terms` rerun is explicitly no-op.
+- several commands fail closed when generated targets already exist.
+
+But I don’t see a focused CI-action idempotency suite yet. The missing tests I’d add are:
+
+1. Re-run `executeGenerate` with a fixed `now` / `WEAVE_GENERATED_AT`; second run should create/update nothing and HTML should be byte-identical.
+2. Re-run `executeValidate({ scope: "mesh" })`; no findings and no file changes.
+3. Re-run `executeVersion` or top-level `executeWeave` with the same explicit release state, e.g. `releases/v0.1.1`; second run should fail closed and not create duplicate states/files.
+4. Maybe a black-box CLI variant with `WEAVE_GENERATED_AT` pinned, since CI will use CLI-shaped workflows.
+
+One wrinkle: real `generate` uses `new Date()` unless `WEAVE_GENERATED_AT` is set, so byte-idempotent generated pages probably require pinning that env var or changing the “Generated on” policy. That’s worth making explicit before relying on automation.
+
+So: yes, the idempotency tests are good, and I think they’re the best remaining reason not to complete `remove-prepare` yet.

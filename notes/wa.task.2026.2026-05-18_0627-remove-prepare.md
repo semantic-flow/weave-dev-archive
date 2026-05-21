@@ -2,7 +2,7 @@
 id: k0dlgpu89rtrd5kr80kbvbg
 title: 2026 05 18_0627 Remove Prepare
 desc: ''
-updated: 1779110867573
+updated: 1779375684203
 created: 1779110867573
 ---
 
@@ -304,7 +304,7 @@ No conceptual open issues currently block this task. Remaining choices are imple
 - [d] Defer latest-state and exact source-policy support for `integrate` until a workflow needs settled source-state resolution instead of checked-out working bytes plus commit/digest evidence.
 - [d] Implement the first general `weave import` CLI/runtime surface for one-target copy acquisition into the mesh/publication tree, with repository/ref/path/digest provenance where available. There is no supported `weave import` command yet; current repository-backed source support is `integrate`, which records source bindings while leaving bytes in place.
 - [d] Defer manifest-driven or batch import until a workflow proves it is useful.
-- [ ] Defer manifest-driven integrate to [[wa.task.2026.2026-05-19_1846-integrate-manifest]].
+- [d] Defer manifest-driven integrate to [[wa.task.2026.2026-05-18_1846-integrate-manifest]].
 - [d] Defer the later update/retarget surface for already-imported or already-source-bound artifacts. The ordinary floating working-source release path should not need it when `integrate` has already recorded a stable working locator.
 - [x] Ensure `integrate` can bind mesh-local, policy-approved live local, and repository-backed working files without copying them.
 - [x] Define the initial `weave validate publication` scope around concrete publication safety checks, not generated-output freshness.
