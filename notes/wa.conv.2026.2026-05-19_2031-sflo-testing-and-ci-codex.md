@@ -2172,3 +2172,104 @@ Record first Weave performance timing baseline
 - record settled SFLO gh-pages validate mesh timing data
 - note candidate loading as the dominant measured phase
 ```
+
+# User_2026-05-20_1657_37
+
+ok, proceed
+
+# gpt-5.5_2026-05-20_1657_55
+
+Proceeding with the next slice: command-scoped caching. The timing baseline points hard at repeated candidate loading, so I’m going to start by putting reads behind an overlay-first execution context, then use that context through the recursive weave/validate planning loop.
+
+# gpt-5.5_2026-05-20_1658_52
+
+I’m going to keep the first cache change deliberately small: make the existing staged overlay object also cache disk reads. That gives us overlay-first behavior without rewriting the whole runtime yet, and it directly targets the recursive loop that kept rereading the same Knop inventories.
+
+# gpt-5.5_2026-05-20_1659_27
+
+The overlay now caches filesystem reads inside the command and reports `cachedReadFiles`, `readCacheHits`, and `stagedReadHits` in timing output. I’m going to re-run the SFLO validation timing to see how much of the 11.7s was plain reread cost.
+
+# gpt-5.5_2026-05-20_1700_09
+
+Read caching bought us about three seconds, but the loop is still spending almost nine seconds rebuilding candidates. I’m going one step deeper now: cache loaded candidate models with read-dependency tracking, and invalidate only if a later planned write touches a file that candidate actually read.
+
+# gpt-5.5_2026-05-20_1701_24
+
+Candidate caching is wired into the recursive planning loop and invalidates from recorded read dependencies. I’m going to run the focused weave tests before measuring again; this is exactly the kind of optimization where a missed overlay dependency would show up as a subtle behavioral regression.
+
+# gpt-5.5_2026-05-20_1701_55
+
+Focused weave/validation tests are still clean. Now for the useful part: remeasure `/tmp/sflo` and see whether dependency-aware candidate caching actually moved the needle.
+
+# gpt-5.5_2026-05-20_1702_48
+
+That’s the useful result: `validate mesh` on `/tmp/sflo` dropped from 13.8s to 3.7s. Candidate loading is no longer the monster; loop planning is now the biggest phase. I updated the timing CSV and task note, and I’m running the full validation pass again now.
+
+# gpt-5.5_2026-05-20_1704_28
+
+I’m back in the same thread of work: the cache slice is implemented and the full validation is still running. I’m going to let that finish, then I’ll give you the real status instead of pretending the test suite is instant.
+
+# gpt-5.5_2026-05-20_1704_37
+
+Full validation came back clean: 464 tests passed. I’m doing one last status/diff pass so I can tell you exactly what changed and where the unrelated dirt still is.
+
+# gpt-5.5_2026-05-20_1704_56
+
+Implemented the first performance slice.
+
+In `weave`, [src/runtime/weave/weave.ts](../../../../../src/runtime/weave/weave.ts) now has a command-scoped overlay cache for recursive planning:
+
+- caches text-file reads for the command invocation
+- caches weaveable candidate discovery
+- tracks read dependencies for each cached candidate
+- invalidates cached candidates when staged generated files touch one of those dependencies
+- reports cache stats through existing `WEAVE_TIMING=1` output
+
+The `/tmp/sflo` result is nicely real: `validate mesh` dropped from about `13.8s` to `3.741s`. The big former hotspot, `prepare.loop.loadCandidates`, dropped from `11.688s` to `1.594s`; `prepare.loop.planVersion` is now the next obvious target at `1.783s`.
+
+I also updated the performance task and timing log in `weave-dev-archive`:
+
+- `notes/wa.task.2026.2026-05-17-weave-performance-optimization.md`
+- `timings/weave-performance.csv`
+
+Validation passed:
+
+- `deno fmt src/runtime/weave/weave.ts`
+- `deno check src/runtime/weave/weave.ts`
+- focused integration/e2e tests: `95 passed`
+- full repo validation: `deno task fmt:check`, `lint`, `check`, `test`
+- full test suite: `464 passed | 0 failed`
+
+Current dirty state:
+
+- `weave`: only `src/runtime/weave/weave.ts`
+- `weave-dev-archive`: performance task note, timing CSV, and the Kato conversation note
+
+Suggested commit message for `weave`:
+
+```text
+Cache recursive weave candidate discovery
+
+- add command-scoped cached file reads for weave planning overlays
+- cache weaveable candidate resolution across recursive planning passes
+- invalidate cached candidates when staged files touch recorded read dependencies
+- expose cache counters in WEAVE_TIMING output
+```
+
+Suggested commit message for `weave-dev-archive`:
+
+```text
+Record Weave performance cache results
+
+- mark read and candidate cache work complete in the performance task
+- record SFLO validate mesh timing after cache implementation
+- note loop planning as the next dominant validation phase
+```
+
+# User_2026-05-20_2011_11
+
+could you fill out [wd.codebase-overview.caching.md](../../../../../documentation/notes/wd.codebase-overview.caching.md) with an overview? You can reference the task ticket.
+
+# gpt-5.5_2026-05-20_2011_23
+
+I’ll fill this in as a developer-facing overview rather than a deep implementation trace, and I’ll keep it linked back to the performance task so the rationale stays findable. First I’m grabbing the nearby docs and the task note so it fits the local style.

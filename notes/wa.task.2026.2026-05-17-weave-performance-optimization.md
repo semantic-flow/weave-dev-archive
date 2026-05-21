@@ -18,6 +18,8 @@ The recursive version planner also reloads staged mesh state and reloads weaveab
 
 First `WEAVE_TIMING=1` run against the settled regenerated SFLO `gh-pages` worktree recorded `validate mesh` at about 13.8s for 335 validate/planning candidates. The dominant phase was repeated loop candidate loading at about 11.7s total, far ahead of loop planning at about 1.5s. This supports doing a command-scoped read/parse/candidate cache before chasing smaller planner costs.
 
+After adding command-scoped read caching and dependency-aware candidate caching, the same `validate mesh` workload dropped to about 3.7s. Repeated loop candidate loading dropped from about 11.7s to about 1.6s, and loop planning is now the largest remaining phase at about 1.8s. The next performance pass should focus on parsed RDF reuse or planner-level reuse rather than filesystem read avoidance.
+
 ## Ideas
 
 - Keep version planning single-pass in root `weave`; do not reintroduce a separate validate-then-version planning sequence.
@@ -30,9 +32,10 @@ First `WEAVE_TIMING=1` run against the settled regenerated SFLO `gh-pages` workt
 ## Proposed Sequence
 
 - [x] Add opt-in timing instrumentation with an environment variable first, probably `WEAVE_TIMING=1`, before doing deeper optimization.
-- [ ] Re-run against the regenerated SFLO `gh-pages` worktree, or a copied fixture, and capture which phases dominate. Record runs in `timings/weave-performance.csv` in the weave-dev-archive repo.
-- [ ] Add a command-scoped in-memory file/RDF parse cache with planned-output overlay invalidation for files written during the command.
-- [ ] Cache enough candidate discovery state that recursive planning does not rescan and reparse the whole mesh from scratch for each remaining candidate.
+- [x] Re-run against the regenerated SFLO `gh-pages` worktree, or a copied fixture, and capture which phases dominate. Record runs in `timings/weave-performance.csv` in the weave-dev-archive repo.
+- [x] Add a command-scoped in-memory file-read cache with planned-output overlay invalidation for files written during the command.
+- [x] Cache enough candidate discovery state that recursive planning does not rescan and reparse the whole mesh from scratch for each remaining candidate.
+- [ ] Consider parsed RDF reuse now that filesystem rereads and candidate rebuilding are no longer the dominant cost.
 - [ ] Add `--verbose` for commands that may have lots of update/progress details. Default output should remain reassuring but not noisy, while `--silent` should stay suitable for automation.
 - [ ] Add progress output to expensive validation phases, especially `validate mesh` when it is dry-running many pending extracted-term weaves. Detailed per-candidate validation chatter can live behind `--verbose`.
 - [ ] Prefer a perf smoke or instrumentation-oriented regression test over strict wall-clock assertions. Timing gates are likely to be flaky; a better early check is something like “unchanged files are not reread/reparsed repeatedly during a batch weave.”
