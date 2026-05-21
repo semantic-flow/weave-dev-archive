@@ -20,7 +20,7 @@ Manifest-driven import is probably the wrong framing for the ontology release wo
 
 A future integrate manifest can describe source sets such as "all Turtle files under `ontology/`" or "all SHACL files under `shacl/`", derive target designators from path rules, and create source bindings for files that are not yet integrated. It is a convenience layer over repeated `integrate` calls, not a new source-copying mechanism.
 
-This should be saved for later. The immediate remove-prepare work can proceed with explicit one-target integration and the ontology/source-binding cleanup in [[wa.task.2026.2026-05-18_0627-remove-prepare]].
+This should be saved for later. The immediate remove-prepare work can proceed with explicit one-target integration and the ontology/source-binding cleanup in [[wa.completed.2026.2026-05-18_0627-remove-prepare]].
 
 ## Discussion
 

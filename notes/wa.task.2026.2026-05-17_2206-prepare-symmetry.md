@@ -14,7 +14,7 @@ created: 1779080820388
 
 ## Summary
 
-This task is now resolved by [[wa.task.2026.2026-05-18_0627-remove-prepare]].
+This task is now resolved by [[wa.completed.2026.2026-05-18_0627-remove-prepare]].
 
 The earlier question was whether `prepare gh-pages` contained a genuine branch-only responsibility. The answer is no. Branch publication still has operational concerns, but they are not a separate Semantic Flow operation:
 
@@ -87,13 +87,13 @@ Automated release workflows should be explicit about their phase:
 - release/version payload state: `weave set history`, `weave set next-state`, and `weave version`, or equivalent target flags.
 - release validation: `weave validate mesh` plus SFLO-specific release validation.
 
-CI should not infer intent from a generic dirty-source heuristic. The needed idempotency checks are release-action-specific and are tracked in [[wa.task.2026.2026-05-18_0627-remove-prepare]].
+CI should not infer intent from a generic dirty-source heuristic. The needed idempotency checks are release-action-specific and are tracked in [[wa.completed.2026.2026-05-18_0627-remove-prepare]].
 
 ## Open Issues
 
 No open issues remain in this task. The remaining work is tracked elsewhere:
 
-- remove-prepare implementation and deferred work: [[wa.task.2026.2026-05-18_0627-remove-prepare]]
+- remove-prepare implementation and deferred work: [[wa.completed.2026.2026-05-18_0627-remove-prepare]]
 - manifest-driven integrate: [[wa.task.2026.2026-05-18_1846-integrate-manifest]]
 - latest-state page-source/runtime improvement: [[wa.task.2026.2026-05-19_0022-lateststate-improvement]]
 
@@ -116,7 +116,7 @@ No open issues remain in this task. The remaining work is tracked elsewhere:
 
 ## Contract Changes
 
-- Superseded by [[wa.task.2026.2026-05-18_0627-remove-prepare]] and [[sf.spec.2026-05-18-publication-source-binding]].
+- Superseded by [[wa.completed.2026.2026-05-18_0627-remove-prepare]] and [[sf.spec.2026-05-18-publication-source-binding]].
 - The CLI reference should describe composed mesh/source/publication flows, not `prepare gh-pages`.
 
 ## Testing
@@ -126,7 +126,7 @@ No open issues remain in this task. The remaining work is tracked elsewhere:
   - publication profiles create/validate `.nojekyll`.
   - `weave validate mesh`, `weave validate publication`, `--validate-before`, and `--validate-after` are covered.
   - repository-backed `integrate` records source provenance while leaving bytes in place.
-- Future CI idempotency tests are tracked in [[wa.task.2026.2026-05-18_0627-remove-prepare]].
+- Future CI idempotency tests are tracked in [[wa.completed.2026.2026-05-18_0627-remove-prepare]].
 
 ## Non-Goals
 
@@ -144,6 +144,6 @@ No open issues remain in this task. The remaining work is tracked elsewhere:
 - [x] Move source-lane binding to `integrate`.
 - [x] Document that `import` is the future copy boundary, not a hidden prepare/weave behavior.
 - [x] Defer manifest-driven integrate to [[wa.task.2026.2026-05-18_1846-integrate-manifest]].
-- [x] Defer source refresh/update, explicit import, optional git output, boundary validation, and CI idempotency tests to [[wa.task.2026.2026-05-18_0627-remove-prepare]].
+- [x] Defer source refresh/update, explicit import, optional git output, boundary validation, and CI idempotency tests to [[wa.completed.2026.2026-05-18_0627-remove-prepare]].
 - [c] Do not add a `prepare gh-pages` deprecation path.
 - [d] Add top-level dry-run/planner behavior only if a future workflow needs it.

@@ -225,3 +225,233 @@ docs(review): close v0.1.2 CodeRabbit checklist
 - keep the broad executeWeave startup try/catch suggestion canceled
 - record formatting, lint, typecheck, and test validation
 ```
+
+# User_2026-05-21_0815_51
+
+please clean up the review/base-v0.1.1
+and
+review/weave-since-v0.1.1 branches locally and at origin
+
+# gpt-5.5_2026-05-21_0816_04
+
+I’ll remove those two review branches both locally and on `origin`. First I’m checking whether they exist and making sure we’re not currently sitting on either one.
+
+# gpt-5.5_2026-05-21_0816_09
+
+Both branches exist locally and on `origin`, and you’re on `next/v0.1.2`, so deletion is straightforward. I’m leaving your current working tree changes alone.
+
+# gpt-5.5_2026-05-21_0816_18
+
+Remote deletion succeeded. I’m doing one quick verification pass so the final answer can be boring in the best possible way.
+
+# gpt-5.5_2026-05-21_0816_20
+
+Done. Deleted both branches locally and from `origin`:
+
+- `review/base-v0.1.1`
+- `review/weave-since-v0.1.1`
+
+Verified they no longer show up locally or as remote-tracking branches. Your working tree changes were left untouched.
+
+# User_2026-05-21_0821_07
+
+OK, fill out the release notes.
+
+# gpt-5.5_2026-05-21_0821_15
+
+I’ll refresh the repo context and the current draft, then I’ll derive the release notes from the actual diff/history so they line up with what’s really in `v0.1.2`.
+
+# gpt-5.5_2026-05-21_0821_22
+
+The existing draft has the main spine, but I’m going to widen it from the actual commit range and the current doc work in-tree. That should keep the notes from underselling the release.
+
+# gpt-5.5_2026-05-21_0822_04
+
+I’ve got the shape now: this is not just “a couple fixes,” it’s a compact release around floating source provenance, ResourcePage stability, and large recursive weave ergonomics. I’m going to rewrite the notes with clearer user-facing sections and add the new CLI reference work without pretending those docs are code behavior.
+
+# gpt-5.5_2026-05-21_0822_36
+
+The release notes are now filled out with a proper narrative rather than just a skeleton. I’m doing a quick consistency pass against the actual flags and note links so we don’t bake a tiny lie into a release doc.
+
+# gpt-5.5_2026-05-21_0822_54
+
+Filled out [release-notes.v0.1.2.md](../../../../../documentation/notes/release-notes.v0.1.2.md:8).
+
+I expanded it around the actual `v0.1.1..HEAD` changes: floating repository source locators, ResourcePage latest-historical behavior, source metadata rendering, recursive weave caching, `WEAVE_TIMING`, targeted SHACL child row fixes, local defaults guardrails, validation coverage, known limitations, and the new CLI/user docs.
+
+I did not run tests since this was a Markdown-only release note edit. Existing dirty CLI reference docs were left untouched, though the release notes now link to them.
+
+Suggested commit message:
+
+```text
+docs(release): fill v0.1.2 release notes
+
+- document floating repository source locator behavior and limitations
+- describe latest-historical ResourcePage rendering and source metadata changes
+- cover recursive weave caching, WEAVE_TIMING diagnostics, and targeted SHACL fixes
+- link expanded CLI, environment variable, and SFLO dogfooding documentation
+```
+
+# User_2026-05-21_0830_16
+
+commit message for weave please
+
+# gpt-5.5_2026-05-21_0830_24
+
+I’ll peek at the current staged/unstaged shape first so the message matches what’s actually in the Weave repo, not just the last thing I touched.
+
+# gpt-5.5_2026-05-21_0830_33
+
+The changes are staged already and look like one broad release-prep/code-review commit: ResourcePage/source-locator fixes plus the expanded docs. I’m checking the staged code diff keywords once so the bullets land cleanly.
+
+# gpt-5.5_2026-05-21_0831_35
+
+For the currently staged Weave changes, I’d use:
+
+```text
+docs(release): prepare v0.1.2 docs
+
+- expand v0.1.2 release notes with source locator, ResourcePage, caching, timing, and validation details
+- add focused CLI reference pages for weave, validate, version, generate, mesh, integrate, extract, payload, knop, set, target, and root-designator commands
+- document WEAVE_LOG_DIR, WEAVE_TIMING, WEAVE_GENERATED_AT, and host-local policy environment behavior
+- apply formatter cleanup to touched weave runtime/source files
+```
+
+Small pushback: because source files are staged too, I would not make the subject `docs(cli)` unless you unstage the formatter/runtime files first.
+
+# User_2026-05-21_0834_22
+
+Verify each finding against current code. Fix only still-valid issues, skip the
+rest with a brief reason, keep changes minimal, and validate.
+
+Inline comments:
+In `@src/runtime/weave/pages.ts`:
+- Around line 1035-1047: The code builds an <a href> from repositoryUrl inside
+the rows.push block (variables repositoryUrl, repositoryPathFromRoot) without
+validating its scheme; update this rendering so you first validate
+repositoryUrl's scheme (e.g., using a URL parse or regex) and only emit an <a
+href="..."> when the scheme is http or https; if the scheme is invalid, render
+the escaped repositoryUrl as plain text (or an anchor without an executable
+href) and ensure any anchor you do emit includes safe attributes
+(rel="noreferrer noopener" and target="_blank" if desired). Locate the rows.push
+block around repositorySourceFloatingLocator and change the html/value
+generation to perform this validation and conditional rendering instead of
+directly interpolating repositoryUrl into href.
+
+# gpt-5.5_2026-05-21_0834_37
+
+I’ll verify the finding against the current staged/working code first, then make the smallest change if the unsafe link rendering is still present. After that I’ll run the narrow relevant tests/checks.
+
+# gpt-5.5_2026-05-21_0834_42
+
+The finding is still valid: `Repository Source` renders `repositoryUrl` straight into `href`. I’m going to add a tiny URL-scheme helper in `pages.ts`, make repository links conditional on `http:`/`https:`, and update/add focused tests for both safe and unsafe values.
+
+# gpt-5.5_2026-05-21_0835_17
+
+I’ve made the repository URL rendering conditional and added a regression test for an unsafe scheme. Next I’m formatting and then running the focused page/integration tests plus lint/check as validation.
+
+# gpt-5.5_2026-05-21_0835_26
+
+Formatting touched only the three relevant files. I’m running the focused tests now, then lint/check so the link-safety patch gets both behavioral and static validation.
+
+# gpt-5.5_2026-05-21_0835_36
+
+The first direct `deno test` run failed before executing tests because this repo’s test setup needs env permission from the npm RDF dependency path. Lint and typecheck passed; I’m rerunning the focused tests with the same permission shape the repo tasks expect.
+
+# gpt-5.5_2026-05-21_0835_52
+
+Focused tests now pass with permissions, and lint/check were clean. I’m doing a quick final diff/status pass so I can separate the valid finding from anything skipped.
+
+# gpt-5.5_2026-05-21_0836_13
+
+One note: `deno fmt` would have added a lot of unrelated formatting churn in these files, which is the opposite of the “minimal” part of your request. I’m trimming that back so the final diff is only the URL-safety fix and the test expectation changes.
+
+# gpt-5.5_2026-05-21_0837_12
+
+The diff is now down to the actual link-safety change and tests. I’m rerunning validation after trimming the formatter churn, so the final status reflects the exact patch that remains.
+
+# gpt-5.5_2026-05-21_0837_41
+
+Verified the finding. It was still valid, so I fixed it.
+
+Changed [pages.ts](../../../../../src/runtime/weave/pages.ts:1017) so floating repository URLs only render as clickable links when they parse as `http:` or `https:`. Safe links now include `rel="noreferrer noopener"` and `target="_blank"`; unsafe schemes render as escaped plain text.
+
+Added coverage in [pages_test.ts](../../../../../src/runtime/weave/pages_test.ts:111) for a `javascript:` repository URL, and updated the integration expectation in `tests/integration/weave_test.ts`.
+
+No skipped findings: there was only one, and it was valid.
+
+Validation passed:
+- `deno test -A src/runtime/weave/pages_test.ts tests/integration/weave_test.ts`
+- `deno task lint`
+- `deno task check`
+
+# User_2026-05-21_0837_41
+
+Are we using npm here? I'd expected pnpm.
+
+# gpt-5.5_2026-05-21_0837_48
+
+I’ll check the repo’s package/release scripts before answering, because “npm package” and “npm client” are easy to accidentally blur together.
+
+# gpt-5.5_2026-05-21_0837_58
+
+The quick read says this repo is Deno-first, with npm used for registry packaging and a few npm-hosted dependencies, not as the project package manager. I’ll grab exact line refs so this is grounded rather than vibes in a trench coat.
+
+# gpt-5.5_2026-05-21_0838_11
+
+Mostly no. This repo is Deno-first, not npm/pnpm-managed.
+
+What I found:
+
+- No root `package.json`
+- No `pnpm-lock.yaml`
+- No `package-lock.json`
+- `deno.json` defines the dev/test/release tasks and imports a few npm-hosted deps via Deno’s `npm:` specifiers: [deno.json](../../../../../deno.json:21)
+- Release tooling assembles and publishes npm registry packages, using the `npm` CLI by default: [publish-npm-packages.ts](../../../../../scripts/publish-npm-packages.ts:43)
+- The release runbook also says the packaged release path includes npm package assembly, smoke install, and optional publish: [dev.release-runbook.md](../../../../../documentation/notes/dev.release-runbook.md:13)
+
+So “npm packages” in the release notes means “packages published to the npm registry,” not “this project is developed with npm.” The actual project package manager is basically Deno.
+
+I’d keep the release notes wording as `npm packages` because that’s the artifact/registry name. I would not switch the repo docs to `pnpm` unless we intentionally change the release scripts and CI to use pnpm for pack/install/publish smoke paths.
+
+# User_2026-05-21_0838_56
+
+"deno fmt would have added a lot of unrelated formatting churn" in which files?
+
+# gpt-5.5_2026-05-21_0839_01
+
+The churn was in these three files, caused by running:
+
+```sh
+deno fmt src/runtime/weave/pages.ts src/runtime/weave/pages_test.ts tests/integration/weave_test.ts
+```
+
+Files affected:
+
+- `src/runtime/weave/pages.ts`: lots of existing multiline template-string formatting changed around unrelated rendering code.
+- `src/runtime/weave/pages_test.ts`: several unrelated `assert(...)` indentation changes.
+- `tests/integration/weave_test.ts`: one unrelated indentation change near the page-customized weave fixture assertion.
+
+I reversed that whole formatter diff and reapplied only the repository-link safety patch plus the two expected-output test updates.
+
+# User_2026-05-21_0839_25
+
+I'm not sure why, don't we want them formatted?
+
+# gpt-5.5_2026-05-21_0839_37
+
+Yeah, good instinct. I treated “keep changes minimal” as stronger than “normalize formatting” for that inline-review fix, but the repo’s merge gate does want formatter-clean code. I’m checking the actual fmt status now so we can separate principle from guesswork.
+
+# gpt-5.5_2026-05-21_0839_55
+
+Yes, we do want them formatted. My wording was too broad.
+
+What I meant was: for the narrow CodeRabbit item, I backed out formatter-only changes because you had asked to “fix only still-valid issues” and “keep changes minimal.” Those formatting edits were unrelated to the repository URL safety bug.
+
+But for a release-ready commit, yes: they should be formatted. I just checked:
+
+```sh
+deno fmt --check src/runtime/weave/pages.ts src/runtime/weave/pages_test.ts tests/integration/weave_test.ts
+```
+
+It currently fails on those same three files. Since `deno task ci` includes `deno task fmt:check`, we should run `deno fmt` before the final commit or make a separate format-only commit. My recommendation: format them now before the release commit.

@@ -8,7 +8,7 @@ created: 1779175354969
 
 ## Goals
 
-- Define the remaining `artifactResolutionMode_latestState` runtime/API work as a separate follow-up from [[wa.task.2026.2026-05-18_0627-remove-prepare]].
+- Define the remaining `artifactResolutionMode_latestState` runtime/API work as a separate follow-up from [[wa.completed.2026.2026-05-18_0627-remove-prepare]].
 - Make latest-state resolution useful for source bindings and page/source resolution when callers want settled bytes but do not know the exact `HistoricalState` IRI.
 - Keep mutable working-source resolution and settled-state resolution sharply separated.
 - Confirm that this work is not required before fixture-ladder regeneration unless a regenerated ladder is meant to demonstrate `latestState` specifically.
@@ -99,7 +99,7 @@ Add a `latestState` ladder only when we want to demonstrate this specific behavi
 
 ## Decisions
 
-- Treat this as a separate follow-up task, not as remaining work inside [[wa.task.2026.2026-05-18_0627-remove-prepare]].
+- Treat this as a separate follow-up task, not as remaining work inside [[wa.completed.2026.2026-05-18_0627-remove-prepare]].
 - Do not block fixture-ladder regeneration on `latestState` unless the ladder's purpose is to demonstrate latest-state resolution.
 - Keep `artifactResolutionMode_latestState` in the ontology; the improvement is runtime/API behavior, not new vocabulary naming.
 - Implement the first resolver fail-closed rather than guessing when no unambiguous latest settled state is available.

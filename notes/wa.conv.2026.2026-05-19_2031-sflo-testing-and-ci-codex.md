@@ -3062,3 +3062,25 @@ But I don’t see a focused CI-action idempotency suite yet. The missing tests I
 One wrinkle: real `generate` uses `new Date()` unless `WEAVE_GENERATED_AT` is set, so byte-idempotent generated pages probably require pinning that env var or changing the “Generated on” policy. That’s worth making explicit before relying on automation.
 
 So: yes, the idempotency tests are good, and I think they’re the best remaining reason not to complete `remove-prepare` yet.
+
+# User_2026-05-21_0819_57
+
+OK, create a new task for idempotency or continue with remove-prepare not?
+
+# gpt-5.5_2026-05-21_0820_12
+
+I’d split it out. `remove-prepare` is a big architectural dissolution task; idempotency is now a concrete release-safety task with its own acceptance criteria. I’ll create a focused task note and add a small cross-reference from `remove-prepare` so the trail stays tidy.
+
+# gpt-5.5_2026-05-21_0820_34
+
+I’m going to split the open checkbox into a new focused task, then mark the original `remove-prepare` item as deferred to that task. That keeps `remove-prepare` from becoming the junk drawer while preserving the dependency.
+
+# gpt-5.5_2026-05-21_0821_00
+
+I split it out into a focused task:
+
+[wa.task.2026.2026-05-21_0820-ci-idempotency-tests.md](wa.task.2026.2026-05-21_0820-ci-idempotency-tests.md)
+
+I also changed the `remove-prepare` checkbox to deferred with a wikilink to the new task, so `remove-prepare` can stay focused on decomposing/removing the old command surface.
+
+My take: this is cleaner than continuing inside `remove-prepare`. The idempotency work is now concrete test coverage with its own small acceptance criteria.
