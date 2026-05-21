@@ -26,13 +26,14 @@ This is a code-extraction refactor of the weave planner. It is not a refactor of
 Current rough shape:
 
 - `src/core/weave/weave.ts` is about 8,700 lines.
-- `src/runtime/weave/weave.ts` is about 4,800 lines and is also a candidate for later cleanup, but the first pass should focus on the core planner.
+- `src/runtime/weave/weave.ts` is about 4,900 lines and has its own cleanup track in [[wa.task.2026.2026-05-21_1035-runtime-weave-module-decomposition]] and [[wa.task.2026.2026-05-21_1036-runtime-resource-page-generation-decomposition]]. This core planner task should not absorb those runtime refactors.
 - The core file mixes high-level orchestration with low-level RDF/Turtle utilities. That makes small behavior changes feel like broad edits and makes review harder.
+- `core/targeting.ts` now owns portable target request semantics after [[wa.task.2026.2026-04-08_1615-weave-orchestration-refactor]]. Do not pull target normalization, shared target derivation, or requested-target coverage back into `src/core/weave/weave.ts` during this extraction.
 - Several helper families already have natural names and call boundaries: slice detection, payload state layout, rendered artifact history collection, ResourcePage model builders, Turtle block editing, RDF fact assertions/queries, and current-working-file source locator rendering.
 
 Suggested extraction order:
 
-1. Type/model extraction first: move ResourcePage model interfaces, payload candidate models, and planning result shapes into small type modules if that can be done without import cycles.
+1. First executable slice: [[wa.task.2026.2026-05-21_1037-core-weave-first-extraction-slice]] should move shared type/model definitions while preserving façade re-exports from `src/core/weave/weave.ts`.
 2. Pure helpers next: move RDF query helpers and Turtle block helpers that do not depend on planner state.
 3. Slice classification: move `detectPendingWeaveSlice`, `classifyWeaveSlice`, and related policy checks into a slice module.
 4. Payload version layout: move `PayloadVersionLayout`, first/second payload layout resolution, and guarded overwrite-state planning helpers into a payload-version module.
@@ -42,9 +43,9 @@ The healthiest end state is probably a small `src/core/weave/weave.ts` that coor
 
 ## Open Issues
 
-- Should public imports from `src/core/weave/weave.ts` remain valid indefinitely as a compatibility surface, or can internal imports move directly to new modules after v0.1.2?
-- Which extraction should go first if type cycles appear: ResourcePage models or RDF/Turtle helpers?
-- Should the runtime planner seam in `src/runtime/weave/weave.ts` be split in the same task, or should this task stop after core extraction and leave runtime cleanup for a separate note?
+- [x] Public imports from `src/core/weave/weave.ts` should remain valid during this refactor. New internal modules may be imported directly by internal callers when useful, but `weave.ts` remains the compatibility façade for the current public core weave surface.
+- [x] The first extraction slice should be model/type extraction, tracked separately in [[wa.task.2026.2026-05-21_1037-core-weave-first-extraction-slice]].
+- [x] Runtime planner cleanup should not be done in this task. Use [[wa.task.2026.2026-05-21_1035-runtime-weave-module-decomposition]] for runtime orchestration/candidate/version seams and [[wa.task.2026.2026-05-21_1036-runtime-resource-page-generation-decomposition]] for runtime page-generation seams.
 - Are legacy Alice Bio specific render helpers still needed as code, or can some be replaced by generalized renderers after the move-only phase?
 
 ## Decisions
@@ -54,6 +55,8 @@ The healthiest end state is probably a small `src/core/weave/weave.ts` that coor
 - Keep `planWeave`, `planVersion`, `WeaveInputError`, and current public type exports available through `src/core/weave/weave.ts` during the extraction.
 - Prefer Deno-native module boundaries and existing local helper APIs. Do not add build tooling or code generation.
 - Run focused tests after each meaningful slice and full `deno task test` before considering the refactor complete.
+- Keep this task focused on core planner decomposition. Runtime module decomposition and runtime ResourcePage generation decomposition are related but separate tasks.
+- Treat `core/targeting.ts` as an already-extracted shared dependency for target semantics, not as part of the remaining core weave planner split.
 
 ## Contract Changes
 
@@ -84,8 +87,7 @@ The healthiest end state is probably a small `src/core/weave/weave.ts` that coor
 
 - [ ] Re-read [[wd.general-guidance]], [[wd.testing]], and the latest `src/core/weave/weave.ts` before editing.
 - [ ] Record the starting line count and current public exports from `src/core/weave/weave.ts`.
-- [ ] Identify import-cycle risks and choose the first extraction slice.
-- [ ] Extract shared model/type definitions into one or more small modules while preserving re-exports from `src/core/weave/weave.ts`.
+- [ ] Use [[wa.task.2026.2026-05-21_1037-core-weave-first-extraction-slice]] for the first model/type extraction slice.
 - [ ] Extract RDF query/assertion helpers that are pure and planner-independent.
 - [ ] Extract Turtle block editing/render support helpers that are pure and planner-independent.
 - [ ] Extract weave slice detection/classification helpers.
