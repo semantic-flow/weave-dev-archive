@@ -66,10 +66,10 @@ This is also the right time to keep the refactor boundary sharp:
 
 ## Open Issues
 
-- The exact split between `runtime/weave/weave.ts` and `core/targeting.ts` is still open.
-- The name of the prepared execution object is still open.
-- Some candidate loading may later need performance-aware caching, but correctness boundaries matter more than micro-optimization in the first refactor.
-- The final seam between orchestration refactor work and page-model refactor work should stay explicit.
+- [x] The split between `runtime/weave/weave.ts` and `core/targeting.ts`: portable request/target semantics belong in `core/targeting.ts`; runtime keeps filesystem loading, logging, timing, local-path policy, staged planning, and writes. The useful-for-REST heuristic is right when the behavior is transport-neutral, but runtime-only execution state should not move just because a daemon may eventually call it.
+- [x] The prepared runtime object name is `PreparedWeaveExecution`. Shared target preparation uses `PreparedWeaveTargets` so the core seam names the portable request semantics without implying filesystem execution.
+- [d] Candidate loading caching remains opportunistic and runtime-local in this slice; correctness boundaries stay ahead of further performance work.
+- [x] Page-model refactor work stays out of this task. This refactor may pass coherent generate targets, but should not redesign page model inputs or rendering.
 
 ## Decisions
 
@@ -79,6 +79,9 @@ This is also the right time to keep the refactor boundary sharp:
 - Future target-shape additions should have one canonical normalization path.
 - This refactor should preserve current external behavior unless a deliberate follow-up task changes it.
 - Payload history/state naming remains supported for `weave`; the refactor is not a reason to narrow that contract.
+- `core/targeting.ts` should carry shared target preparation that a future REST API can reuse: version-target normalization, shared validate/generate target derivation, ancestor generate-target expansion for exact targets, duplicate collapse, and requested-target coverage policy.
+- `runtime/weave/weave.ts` should prepare `PreparedWeaveExecution` once, then dispatch version and generate work from that object rather than re-reading target semantics from the raw request.
+- Runtime-local concerns should remain runtime-local even when the daemon may eventually call them: local path policy, mesh-state loading, candidate loading, overlays/caches, RDF file validation, writes, logging, audit, and timing.
 
 ## Contract Changes
 
@@ -103,9 +106,10 @@ This is also the right time to keep the refactor boundary sharp:
 
 ## Implementation Plan
 
-- [ ] Identify the current request-normalization and target-adaptation seams inside `src/runtime/weave/weave.ts`.
-- [ ] Define a prepared execution object for `executeWeave`.
-- [ ] Move requested-target coverage and exact-versus-recursive policy into a shared targeting seam.
-- [ ] Refactor `executeWeave` to consume the prepared execution object rather than re-normalizing per phase.
-- [ ] Add focused unit and runtime tests that pin the shared target-preparation contract.
-- [ ] Update [[wd.codebase-overview]] when the new seams land.
+- [x] Identify the current request-normalization and target-adaptation seams inside `src/runtime/weave/weave.ts`.
+- [x] Define a prepared execution object for `executeWeave`.
+- [x] Move requested-target coverage and exact-versus-recursive policy into a shared targeting seam.
+- [x] Refactor `executeWeave` to consume the prepared execution object rather than re-normalizing per phase.
+- [x] Add focused unit and runtime tests that pin the shared target-preparation contract.
+- [x] Run before/after `WEAVE_TIMING=1` measurements for the refactor on a stable local workload and record whether the orchestration seam changes phase timings materially.
+- [x] Update [[wd.codebase-overview]] when the new seams land.

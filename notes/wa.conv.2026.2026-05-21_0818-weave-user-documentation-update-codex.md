@@ -122,3 +122,56 @@ docs: add detailed CLI command reference notes
 - document Weave environment variables with links back to relevant command notes
 - link the compact CLI reference to the expanded command notes
 ```
+
+# User_2026-05-21_0857_25
+
+why no cli-reference page for weave import?
+
+# gpt-5.5_2026-05-21_0857_31
+
+I’ll check the live CLI surface before answering, because this is exactly the sort of docs gap that can be either “missed page” or “the command does not exist yet.”
+
+# gpt-5.5_2026-05-21_0857_43
+
+Because `weave import` does not exist as a live CLI command right now.
+
+I checked the CLI registration in `src/cli/run.ts`; it has `weave`, `validate`, `version`, `generate`, `extract`, `set ...`, `integrate`, `payload update`, `mesh create`, and `knop ...`, but no `import` subcommand. The release notes also call it future work:
+
+- `release-notes.v0.1.1.md`: “First-class `weave import` … is not part of this release.”
+- `release-notes.v0.1.2.md`: “first-class source import/copy acquisition remain future work.”
+
+So I intentionally did not create a `wu.cli-reference.import` page, since user CLI reference pages should map to commands users can actually run.
+
+That said, you caught a real ambiguity: `wu.cli-reference.md` currently says “integration/import” in one paragraph. I’d tighten that wording so it doesn’t imply `weave import` exists yet.
+
+# User_2026-05-21_0907_47
+
+Weave import should be easy! Could you fill out [wa.task.2026.2026-05-21_0907-import.md](wa.task.2026.2026-05-21_0907-import.md)
+
+# gpt-5.5_2026-05-21_0907_58
+
+I’ll fill the task note as a scoped implementation plan, and I’ll sanity-check the existing task template plus the repository-options note so this lands in the same vocabulary as the rest of the vault. “Easy” is plausible here, but I’ll keep the boundaries explicit so import doesn’t accidentally grow into integrate/version/publish.
+
+# gpt-5.5_2026-05-21_0908_07
+
+The shell is bare, and the repository-options note frames import as copy/materialization policy rather than semantic registration. I’m going to pull a few adjacent notes and current integrate/path-policy behavior so the task is concrete enough to implement without hand-waving.
+
+# gpt-5.5_2026-05-21_0908_25
+
+The older Bob import-boundary note is useful: import is not “live remote page source”; it is the operation that brings outside bytes into a governed in-tree working artifact. I’m checking the carried fixture shape now so the new task can point at something implementable rather than inventing a parallel model.
+
+# gpt-5.5_2026-05-21_0909_49
+
+I’ve got enough context now. I’m going to make the task explicit about a small first slice: active acquisition into a mesh-local working file, not ambient remote-following, not weaving, and not a new publication/deploy command.
+
+# gpt-5.5_2026-05-21_0910_34
+
+The task note is filled. I’m giving it one pass for obvious formatting/link weirdness and to make sure the implementation plan is concrete enough without overcommitting the first slice.
+
+# gpt-5.5_2026-05-21_0910_48
+
+Filled it out: [wa.task.2026.2026-05-21_0907-import.md](wa.task.2026.2026-05-21_0907-import.md).
+
+I scoped `weave import` as the explicit copy/fetch acquisition boundary: source bytes become a mesh-local governed working file, while `weave` / `generate` continue following the local artifact, not the remote URL. I also added a first CLI shape, open issues around HTTP(S), overwrite behavior, digest expectations, tests, non-goals, and an implementation checklist.
+
+No linter run; this was a task-note-only edit in `weave-dev-archive`. The note is currently untracked in that nested repo.

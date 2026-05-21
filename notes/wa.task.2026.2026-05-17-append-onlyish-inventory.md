@@ -11,7 +11,7 @@ created: 1779079677519
 - Make inventory writes append-onlyish: normal operations append new settled facts, no-op when those facts already exist, and fail closed on conflicting settled facts.
 - Stop treating "graph-preserving rewrite" as the target abstraction. A rewrite that preserves more triples is still a rewrite; inventory mutation should be fact-level append/no-op/fail unless an explicit repair, regeneration, or retraction mode is active.
 - Keep current/progression pointers out of inventory working files. Inventory should describe settled membership and artifact structure; metadata/progression surfaces should say what is current, latest, or next.
-- Make automated release reruns boring: `weave`, `weave version`, `weave generate`, and `weave prepare gh-pages` should not churn inventory files when source bytes, config, target history, and generated-page policy inputs have not changed.
+- Make automated release reruns boring: `weave`, `weave version`, `weave generate`, and composed branch-published release operations should not churn inventory files when source bytes, config, target history, and generated-page policy inputs have not changed.
 - Preserve dereferenceability and local static-host usefulness without making generated ResourcePage facts a reason to rewrite settled inventory.
 
 ## Summary
@@ -59,7 +59,7 @@ The RDF subject can still be the artifact or history IRI. The important distinct
 
 Generated ResourcePage files are derived outputs, but the fact that a ResourcePage exists for a resource can become a settled inventory fact once the page is materialized or promised by policy. ResourcePage policy should control whether new page facts are appended and whether page bytes are generated. It should not remove already-settled page facts from inventory during ordinary runs.
 
-If renderer behavior, page config, or publication policy changes and historical pages need to be rebuilt, that is a regeneration mode. Regeneration may rewrite generated HTML bytes and may repair stale page facts if explicitly requested, but it should not be the default inventory mutation path for `weave` or `prepare gh-pages`.
+If renderer behavior, page config, or publication policy changes and historical pages need to be rebuilt, that is a regeneration mode. Regeneration may rewrite generated HTML bytes and may repair stale page facts if explicitly requested, but it should not be the default inventory mutation path for `weave`, `generate`, or composed branch-published release operations.
 
 ### Retractions And Repairs
 
@@ -100,7 +100,7 @@ For CI/CD, rerunning publication should be safe because the command either sees 
 - `weave version` must not rewrite an inventory file when it has no new settled facts to append.
 - `weave` must not rewrite an inventory file merely because the renderer can produce a prettier or more complete canonical block.
 - `weave generate` must not remove existing inventory ResourcePage facts as a side effect of page generation policy; it should append new page facts only when the policy says the page surface is materialized or promised.
-- `weave prepare gh-pages` must be idempotent for unchanged source bytes, source metadata, target designator, target `releases/<version>` state, and config.
+- Composed branch-published release operations must be idempotent for unchanged source bytes, source metadata, target designator, target `releases/<version>` state, and config.
 - A requested append that contradicts a single-valued settled fact must fail before writes with an error that names the existing fact and the requested fact.
 - Historical state files and historical inventory snapshots remain immutable once written.
 - Metadata files may update mutable progression facts during ordinary runs, but those updates should be narrowly scoped to the predicates the operation owns.
@@ -109,7 +109,7 @@ For CI/CD, rerunning publication should be safe because the command either sees 
 
 - Add unit coverage for an inventory append planner: duplicate triples no-op, new triples append, conflicting settled triples fail, unknown existing triples are preserved byte-for-byte.
 - Add tests that normal `weave` over an already-settled workspace produces no inventory writes when source and config are unchanged.
-- Add tests that `prepare gh-pages` rerun over the same source commit leaves publication inventory files unchanged.
+- Add tests that a composed branch-published release rerun over the same source commit leaves publication inventory files unchanged.
 - Add tests that a new release state appends `sflo:hasHistoricalState <D/releases/vX.Y.Z>` to inventory while writing `sflo:latestHistoricalState` and next-state progression to metadata.
 - Add guardrail tests that newly generated inventory files do not contain mutable progression predicates such as `sflo:currentArtifactHistory`, `sflo:latestHistoricalState`, `sflo:nextHistoryOrdinal`, or `sflo:nextStateOrdinal`.
 - Add regression coverage for the source-registry/reference-catalog case: adding `_sources` must not drop `_references`, and neither path should rewrite unrelated inventory facts.
@@ -130,7 +130,7 @@ For CI/CD, rerunning publication should be safe because the command either sees 
 - Move remaining current/progression writes out of inventory renderers and into metadata writers. MeshInventory is already partially split; KnopInventory, payload histories, ReferenceCatalog histories, ResourcePageDefinition histories, and source-registry-related progression need the same treatment.
 - Update runtime readers so current/latest resolution reads metadata/progression graphs rather than assuming the current pointers live in inventory. The reader should reject conflicting metadata/inventory current-pointer facts rather than picking one silently.
 - Change ResourcePage policy filtering so it prevents appending disallowed new page facts and controls generated bytes, but does not remove already-settled inventory facts during ordinary generation.
-- Update `prepare gh-pages` source-registry handling so linking `_knop/_sources` from Knop inventory is append-only and idempotent, while source registry detail replacement/retargeting remains outside inventory.
+- Update branch-published source-registry handling so linking `_knop/_sources` from Knop inventory is append-only and idempotent, while source registry detail replacement/retargeting remains outside inventory.
 - Correct CLI/test examples that use `--payload-history-segment release` for ArtifactHistory IRIs to `--payload-history-segment releases`.
 
 ## Required Documentation Changes
@@ -138,8 +138,8 @@ For CI/CD, rerunning publication should be safe because the command either sees 
 - Replace the stale TODO entry about graph-preserving subject rewrites with this append/no-op/fail-closed task.
 - Update [[wd.codebase-overview]] after implementation to describe inventory as settled additive membership and metadata as the current/progression graph.
 - Add a [[wd.decision-log]] entry before closing the task that records the append-onlyish inventory contract and the explicit exception modes.
-- Update [[wu.cli-reference]] to use `releases` consistently for release ArtifactHistory examples, especially `prepare gh-pages`.
-- Update or add user-facing release automation guidance that says automated reruns should use `prepare gh-pages`, stable source refs/commits, and explicit `releases/<version>` targets, and that unchanged reruns must not rewrite inventory.
+- Update [[wu.cli-reference]] to use `releases` consistently for release ArtifactHistory examples.
+- Update or add user-facing release automation guidance that says automated reruns should use composed mesh/source/publication operations, stable source refs/commits, and explicit `releases/<version>` targets, and that unchanged reruns must not rewrite inventory.
 - If the storage split becomes part of the portable Semantic Flow contract rather than only Weave runtime behavior, update the relevant SFLO ontology summary/spec notes to clarify settled inventory facts versus metadata-hosted progression facts.
 
 ## Implementation Plan
@@ -148,7 +148,7 @@ For CI/CD, rerunning publication should be safe because the command either sees 
 - [ ] Implement the shared RDF-aware inventory append planner.
 - [ ] Refactor MeshInventory writers to use append-only settled-fact writes and metadata-hosted progression only.
 - [ ] Refactor KnopInventory and payload/support history writers to append settled facts and move current/latest/next progression to metadata.
-- [ ] Refactor `prepare gh-pages` source-registry inventory updates to use the append planner.
+- [ ] Refactor branch-published source-registry inventory updates to use the append planner.
 - [ ] Adjust ResourcePage fact handling so normal generation never removes settled inventory facts.
 - [ ] Update runtime current/latest readers to resolve from metadata and fail closed on conflicting current-pointer facts.
 - [ ] Regenerate or update fixture expectations for the new inventory/meta split.

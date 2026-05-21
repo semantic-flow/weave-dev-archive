@@ -143,7 +143,7 @@ This task is related to but distinct from forced unchanged state creation. The s
 
 - [x] Update this task note and related sidecar/all-terms notes with the settled extraction-source resolution contract.
 - [x] Update [[wu.cli-reference]] with `--source`, `--source-state`, `--accept-preview`, and `weave set extraction-source`.
-- [ ] Update the relevant Semantic Flow behavior spec, likely [[sf.spec.2026-04-05-extract-behavior]], for current and pinned source-resolution semantics.
+- [x] Update the relevant Semantic Flow behavior spec, likely [[sf.spec.2026-04-05-extract-behavior]], for current and exact source-resolution semantics.
 - [x] Extend extraction planning so `ExtractionSource` can be rendered in current or pinned mode.
 - [x] Update single-target extract runtime and CLI parsing to use `--source` and `--source-state`.
 - [x] Update all-terms extract runtime and CLI parsing to use `--source` / `--source-state` and `--accept-preview`.

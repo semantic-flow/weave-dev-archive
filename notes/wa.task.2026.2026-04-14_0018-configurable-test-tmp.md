@@ -22,6 +22,10 @@ This task should introduce a configurable test temp root named `WEAVE_TEST_TMP_R
 
 This is not a substitute for cleanup correctness. We should still treat leftover temp workspaces as a signal that some test path bypassed the harness, crashed before cleanup, or was run with an explicit keep flag. The change is meant to keep those leftovers out of the repo and make the temp location intentional.
 
+## Audit 2026-05-21
+
+Current `createTestTmpDir()` already uses `Deno.makeTempDir({ prefix })`, so normal shared-helper test workspaces are outside the repository by default, and the direct `.test-tmp` writer in `tests/scripts/publish_npm_packages_test.ts` has been migrated to the helper. The specifically configurable `WEAVE_TEST_TMP_ROOT` surface was not implemented. If stable grouping of preserved temp workspaces becomes useful again, track that small follow-up in [[wd.todo]] rather than keeping this whole historical cleanup task open.
+
 ## Discussion
 
 Current state:

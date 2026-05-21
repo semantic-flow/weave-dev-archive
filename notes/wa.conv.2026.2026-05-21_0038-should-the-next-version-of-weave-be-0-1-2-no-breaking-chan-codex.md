@@ -455,3 +455,254 @@ deno fmt --check src/runtime/weave/pages.ts src/runtime/weave/pages_test.ts test
 ```
 
 It currently fails on those same three files. Since `deno task ci` includes `deno task fmt:check`, we should run `deno fmt` before the final commit or make a separate format-only commit. My recommendation: format them now before the release commit.
+
+# User_2026-05-21_0855_29
+
+OK, I think we're ready to release. Any loose ends?
+
+# gpt-5.5_2026-05-21_0855_43
+
+I’ll do a release-readiness sweep rather than answer from memory: current branch/status, version/tag alignment, release notes/runbook shape, and the validation gate. If something is loose, I’ll call it out plainly.
+
+# gpt-5.5_2026-05-21_0855_51
+
+So far the Weave repo itself is clean, `deno.json` is already `0.1.2`, and there is no local `v0.1.2` tag yet. The archive repo has two note edits, which are not release blockers for Weave unless you want those committed first.
+
+# gpt-5.5_2026-05-21_0856_08
+
+A couple likely loose ends are already visible: `next/v0.1.2` has not been merged to `main` and there’s no `v0.1.2` tag yet, which is expected pre-release. I also noticed the release notes’ Documentation section has a lead-in sentence but no list under it, so I’m checking validation now before I make that a definite recommendation.
+
+# gpt-5.5_2026-05-21_0856_20
+
+`deno task fmt:check` is a real blocker: `src/runtime/operational/local_path_policy.ts` is unformatted, so `deno task ci` would fail. I’m going to fix that one formatting issue and restore the missing release-note Documentation links; both are small, release-readiness fixes.
+
+# gpt-5.5_2026-05-21_0856_31
+
+Those two small fixes are in place: one formatter cleanup and one release-notes content gap. I’m running the full release source gate now, because that is the main thing that can still surprise us.
+
+# gpt-5.5_2026-05-21_0856_34
+
+The gate is underway. `fmt:check`, lint, and typecheck have already passed; it’s in the coverage test phase now.
+
+# gpt-5.5_2026-05-21_0857_08
+
+The full CI gate is still moving, and the long e2e/integration stretch is passing so far. I’ll keep it running to completion rather than calling this early.
+
+# gpt-5.5_2026-05-21_0858_05
+
+`deno task ci` passed: 479 tests, 0 failures, coverage report generated. I’m doing one last status check now because coverage commands sometimes leave files behind.
+
+# gpt-5.5_2026-05-21_0858_11
+
+One surprise from the final status: `documentation/notes/wu.logging.md` is modified, but I did not touch it in this sweep. I’m checking that diff only enough to tell whether it looks like intentional release-doc work or an accidental stray.
+
+# gpt-5.5_2026-05-21_0858_21
+
+The `wu.logging.md` change looks like real user-facing docs, not accidental binary/coverage output. It is currently uncommitted alongside the two small fixes I just made, so that is one of the final “commit or deliberately drop” decisions.
+
+# gpt-5.5_2026-05-21_0858_42
+
+I spotted one more documentation consistency nit before I wrap this: since `wu.logging.md` is now part of the working tree changes, the v0.1.2 release notes should list it with the other expanded user docs. I’m adding that link and then I’ll do a cheap final whitespace/status check.
+
+# gpt-5.5_2026-05-21_0859_07
+
+Yes, a few, but they’re small and concrete.
+
+I found and fixed two release-readiness issues:
+
+- `deno task fmt:check` was failing on [local_path_policy.ts](../../../../../src/runtime/operational/local_path_policy.ts:429); formatted it.
+- [release-notes.v0.1.2.md](../../../../../documentation/notes/release-notes.v0.1.2.md:60) had a Documentation lead-in with the link list missing; restored the links and added `[[wu.logging]]`.
+
+Validation:
+
+- `deno task ci` passed: `479 passed | 0 failed`
+- `deno task fmt:check` passed after the final markdown-only tweak
+- `git diff --check` is clean
+
+Remaining loose ends before release:
+
+- Weave has uncommitted changes in:
+  - `documentation/notes/release-notes.v0.1.2.md`
+  - `documentation/notes/wu.logging.md`
+  - `src/runtime/operational/local_path_policy.ts`
+- `next/v0.1.2` is 4 commits ahead of `origin/main`; release workflow wants a reviewed commit on `main`.
+- No `v0.1.2` tag exists yet. That’s expected before the release workflow / GitHub Release step.
+- `weave-dev-archive` also has uncommitted note edits; not a Weave release blocker unless you want the archive tidied first.
+
+Suggested final Weave commit message:
+
+```text
+release: finish v0.1.2 readiness cleanup
+
+- link expanded CLI, environment, and logging docs from v0.1.2 release notes
+- add user-facing logging documentation
+- format local path policy for the source quality gate
+- verify deno task ci
+```
+
+Then: push, get GitHub CI green, merge to `main`, run the Release Manual rehearsal with npm dry-run + draft GitHub Release, inspect artifacts, then publish.
+
+# User_2026-05-21_0901_14
+
+what's a "detatch mesh workflow" -- it that "sidecar"?
+
+# gpt-5.5_2026-05-21_0901_20
+
+I meant **detached mesh workflow**, not “detatch.” And no, it is not the same as **sidecar**, though they’re related.
+
+- **Sidecar mesh**: the mesh lives inside the source repo, usually under something like `docs/`. Same checkout, publishable subdirectory.
+- **Detached / branch-published mesh**: the mesh output lives in a separate checkout or branch, commonly `gh-pages`, while source files live in the source branch checkout.
+
+So:
+
+```text
+source repo main branch:
+  ontology/
+  shacl/
+  examples/
+
+publication checkout / gh-pages:
+  _mesh/
+  ontology/
+  shacl/
+  examples/
+  index.html
+```
+
+That second shape is what I was calling “detached.” Better wording in release notes would be **“branch-published mesh workflows”** or **“separate publication checkout workflows.”** I’d avoid “detached mesh” unless we define it first.
+
+# User_2026-05-21_0904_50
+
+what are the current changes to local_path_policy.ts about?
+
+# gpt-5.5_2026-05-21_0904_52
+
+I’ll inspect the current diff for that file against `HEAD` and summarize only what’s actually changed.
+
+# gpt-5.5_2026-05-21_0904_58
+
+The current `local_path_policy.ts` changes are formatting-only.
+
+They came from running `deno fmt` after `deno task fmt:check` reported that file as unformatted. No behavior changed.
+
+Specifically, Deno reformatted:
+
+- indentation in `repositoryUrlsMatch`
+- multiline template strings in `renderMeshConfigTurtle`
+- multiline template strings in `renderHostLocalConfigTurtle`
+- indentation in `collectOperationalConfigSubjects`
+
+So this is just making the file pass the release gate, not a logic fix.
+
+# User_2026-05-21_1002_06
+
+My pnpm command isn't upgrading weave:
+
+pnpm add -g @semantic-flow/weave@latest                                                                                                                                                                    ─╯
+Packages: +2
+++
+Progress: resolved 5, reused 2, downloaded 0, added 0, done
+
+global:
++ @semantic-flow/weave 0.1.1 (0.1.2 is available)
+
+Done in 127ms using pnpm v11.1.3
+
+# gpt-5.5_2026-05-21_1002_17
+
+I’ll verify the registry metadata directly. That output usually means npm’s `latest` dist-tag is still on `0.1.1` even though version `0.1.2` exists under another tag or as an untagged version.
+
+# gpt-5.5_2026-05-21_1002_36
+
+Registry metadata now says `latest` is `0.1.2`, so the npm side looks updated. The suspicious bit is pnpm choosing `0.1.1` while admitting `0.1.2 is available`; I’m checking pnpm config next, because a minimum-release-age setting can intentionally hold back fresh packages.
+
+# gpt-5.5_2026-05-21_1002_43
+
+No minimum-release-age config is set here, and the global install currently has `@semantic-flow/weave@0.1.1`. I’m checking the global package manifest/lockfile shape; pnpm may be preserving a pinned exact version there.
+
+# gpt-5.5_2026-05-21_1003_01
+
+The global pnpm project is currently recording `@semantic-flow/weave` as `^0.1.1` and locked to `0.1.1`. Since the registry latest is fine, this looks like pnpm preserving/updating the existing global project oddly rather than an npm publish problem. I’ll check the platform package tags too, just in case the wrapper can see 0.1.2 but the native package cannot.
+
+# gpt-5.5_2026-05-21_1003_10
+
+The registry is correct now:
+
+```text
+@semantic-flow/weave latest = 0.1.2
+all platform packages latest = 0.1.2
+```
+
+So this is not an npm publish/dist-tag problem.
+
+What’s happening locally: pnpm’s global project has `@semantic-flow/weave` recorded as `^0.1.1` and locked to `0.1.1`. Your `pnpm add -g @semantic-flow/weave@latest` seems to have reused that existing global resolution instead of moving it. Slightly annoying, very pnpm-shaped.
+
+Try this:
+
+```sh
+pnpm update -g @semantic-flow/weave --latest
+weave --version
+```
+
+If that still sticks, force the exact version:
+
+```sh
+pnpm add -g @semantic-flow/weave@0.1.2
+weave --version
+```
+
+And if pnpm is still being stubborn, remove/re-add:
+
+```sh
+pnpm remove -g @semantic-flow/weave
+pnpm add -g @semantic-flow/weave@0.1.2
+weave --version
+```
+
+I’d also update the runbook’s post-release smoke line to prefer the exact version:
+
+```sh
+pnpm add -g "@semantic-flow/weave@$VERSION"
+```
+
+rather than `@latest`, because exact-version install proves the package version you just released, not whatever the client decides to do with tags/cache/global lock state.
+
+# User_2026-05-21_1004_09
+
+pnpm update -g @semantic-flow/weave worked. So [README.md](../../../../../README.md) needs to be updated for pnpm?
+
+# gpt-5.5_2026-05-21_1004_15
+
+I’ll check the current README install wording before deciding. The distinction I’m looking for is whether it says “npm only” versus “npm registry package, install with your preferred package manager.”
+
+# gpt-5.5_2026-05-21_1004_21
+
+The README already mentions pnpm, but it uses `pnpm add -g ...@latest` for both install and upgrade. Since we just confirmed `pnpm update -g ... --latest` is the reliable upgrade path, I’m going to make that distinction explicit.
+
+# gpt-5.5_2026-05-21_1004_27
+
+That keeps the README user-facing and avoids turning it into release-process notes. I’ll do a quick diff check so we know exactly what changed.
+
+# gpt-5.5_2026-05-21_1004_30
+
+Yes. The README had pnpm, but it blurred install and upgrade.
+
+I updated [README.md](../../../../../README.md:6) to say:
+
+- `pnpm add -g @semantic-flow/weave@latest` for first install
+- `pnpm update -g @semantic-flow/weave --latest` for upgrading an existing global install
+
+No tests run; README-only change.
+
+# User_2026-05-21_1004_39
+
+just to confirm, npm i -g will do install OR upgrade, right?
+
+# gpt-5.5_2026-05-21_1004_46
+
+Yes. `npm i -g @semantic-flow/weave@latest` works for both:
+
+- if it is not installed, it installs it
+- if it is already installed globally, it updates/replaces it with the version resolved by `latest`
+
+So the README wording for npm is fine. The pnpm nuance is the one we hit: `pnpm add -g ...@latest` may not behave as the reliable upgrade path, while `pnpm update -g @semantic-flow/weave --latest` does.
