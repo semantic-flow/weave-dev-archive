@@ -453,3 +453,49 @@ The extracted modules are now formatted, linted, and type-checked. Next I’m ru
 # gpt-5.5_2026-05-22_1439_13
 
 The behavior checks passed: 56 core weave tests and 72 focused integration tests. The move left `weave.ts` at 7,703 lines; I also backed out a transient `deno.lock` entry that came from my one-off graph script rather than the code change. Next is durable note/overview cleanup.
+
+# gpt-5.5_2026-05-22_1440_57
+
+Implemented the slice-classification extraction.
+
+Changed:
+- Added [slice_classification.ts](../../../../../src/core/weave/slice_classification.ts) for `detectPendingWeaveSlice`, `classifyWeaveSlice`, and classification-only helpers.
+- Added [artifact_history_queries.ts](../../../../../src/core/weave/artifact_history_queries.ts) for shared history checks used by classification plus existing payload/overwrite code.
+- Updated [weave.ts](../../../../../src/core/weave/weave.ts) to keep `detectPendingWeaveSlice` publicly available through the façade.
+- Updated [wd.codebase-overview.md](../../../../../documentation/notes/wd.codebase-overview.md), the slice task, and the parent task.
+
+Result: `src/core/weave/weave.ts` went from 8,026 lines to 7,703 lines. Post-slice graph audit stayed clean: 22 local modules, 67 edges, 20 direct root imports, 0 `core -> runtime` edges, 0 cycles.
+
+Verification passed:
+- `deno task fmt`
+- `deno task lint`
+- `deno task check`
+- core weave test: 56 passed
+- focused integration tests: 72 passed
+- `git diff --check`
+- targeted archive task-note whitespace check
+
+No orthogonal bugs or performance opportunities surfaced.
+
+Suggested root commit message:
+
+```text
+refactor(core-weave): extract slice classification helpers
+
+- move pending weave slice detection into slice_classification.ts
+- move shared artifact-history query helpers into artifact_history_queries.ts
+- preserve detectPendingWeaveSlice through the weave.ts compatibility façade
+- update the codebase overview with the extracted helper modules
+- verify with fmt, lint, check, core weave tests, integration weave tests, and import-cycle audit
+```
+
+Suggested archive commit message:
+
+```text
+docs(tasks): record core weave slice classification extraction
+
+- update the slice-classification task with implementation results and verification
+- update the parent core weave refactor task with completed classification slice status
+```
+
+This task is ready to move to completed. Next likely slice: payload version layout and guarded overwrite-state planning.

@@ -101,7 +101,20 @@ The clean dependency shape is `weave.ts` importing classification helpers, and c
 
 Record performance optimization opportunities, bugs, and suspicious behavior found while implementing this task here. Do not fix them in this slice unless they block the behavior-preserving extraction.
 
-- None recorded yet.
+- No performance optimization opportunities, behavior bugs, or suspicious planner behavior were found during this move-only slice.
+
+## Implementation Results
+
+- Baseline `src/core/weave/weave.ts` size was 8,026 lines.
+- Baseline public surface from `src/core/weave/weave.ts` included the existing `detectPendingWeaveSlice` export, plus `planWeave`, `planVersion`, type re-exports, `WeaveInputError`, and `planMeshSupportResourcePages`.
+- Baseline import graph rooted at `src/core/weave/weave.ts`: 20 local `src/` modules, 53 local edges, 18 direct local imports from the root, 0 `src/core/` -> `src/runtime/` edges, and 0 local cycles.
+- Added `src/core/weave/slice_classification.ts` for `detectPendingWeaveSlice`, `classifyWeaveSlice`, and classification-only helpers such as `hasPayloadVersionNamingTarget` and `hasNextStateSegmentHint`.
+- Added `src/core/weave/artifact_history_queries.ts` for `isDeclaredArtifactHistory` and `requirePayloadCurrentStatePathFromInventory` so existing payload/overwrite helpers do not import from the classification module.
+- Kept `countArtifactHistoryPaths` in `weave.ts`; it is history-related but not needed by classification and can move later with payload/render history helpers if that becomes useful.
+- Preserved `detectPendingWeaveSlice` from the `weave.ts` public façade via a direct re-export from `slice_classification.ts`.
+- Post-slice `src/core/weave/weave.ts` size is 7,703 lines.
+- Post-slice import graph rooted at `src/core/weave/weave.ts`: 22 local `src/` modules, 67 local edges, 20 direct local imports from the root, 0 `src/core/` -> `src/runtime/` edges, and 0 local cycles. The added direct root imports are the intentional `slice_classification.ts` and `artifact_history_queries.ts` helper modules.
+- Verification passed with `deno task fmt`, `deno task lint`, `deno task check`, the core weave test, the focused validate/version/generate integration test, the focused weave integration test, and the post-slice import graph/cycle audit.
 
 ## Deferred Follow-Up Ideas
 
@@ -112,16 +125,28 @@ Record performance optimization opportunities, bugs, and suspicious behavior fou
 
 ## Implementation Plan
 
-- [ ] Re-read [[wd.general-guidance]], [[wd.testing]], [[ont.summary.core]], and [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] before editing.
-- [ ] Record current line count and exported function/type names from `src/core/weave/weave.ts`; latest handoff count is 8,026 lines.
-- [ ] Run a pre-slice import graph/circular-dependency audit rooted at `src/core/weave/weave.ts`.
-- [ ] Identify the exact helper set to move first, especially whether a tiny shared history-query module is warranted.
-- [ ] Move `detectPendingWeaveSlice` into `src/core/weave/slice_classification.ts`.
-- [ ] Move `classifyWeaveSlice` into `src/core/weave/slice_classification.ts` for internal planner use.
-- [ ] Keep `detectPendingWeaveSlice` available from `src/core/weave/weave.ts`.
-- [ ] Preserve `weave.ts` planner functions and generated output logic.
-- [ ] Run `deno task check` after the first classification module move.
-- [ ] Run `deno task fmt`, `deno task lint`, `deno task check`, post-slice graph audit, and focused core/integration tests.
-- [ ] Record any discovered bugs or performance opportunities under "Orthogonal Opportunities" instead of widening this implementation slice.
-- [ ] Update [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] and [[wd.codebase-overview]] with the resulting module layout.
-- [ ] Provide a commit message that clearly says this is a behavior-preserving slice-classification extraction.
+- [x] Re-read [[wd.general-guidance]], [[wd.testing]], [[ont.summary.core]], and [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] before editing.
+- [x] Record current line count and exported function/type names from `src/core/weave/weave.ts`; latest handoff count is 8,026 lines.
+- [x] Run a pre-slice import graph/circular-dependency audit rooted at `src/core/weave/weave.ts`.
+- [x] Identify the exact helper set to move first, especially whether a tiny shared history-query module is warranted.
+- [x] Move `detectPendingWeaveSlice` into `src/core/weave/slice_classification.ts`.
+- [x] Move `classifyWeaveSlice` into `src/core/weave/slice_classification.ts` for internal planner use.
+- [x] Keep `detectPendingWeaveSlice` available from `src/core/weave/weave.ts`.
+- [x] Preserve `weave.ts` planner functions and generated output logic.
+- [x] Run `deno task check` after the first classification module move.
+- [x] Run `deno task fmt`, `deno task lint`, `deno task check`, post-slice graph audit, and focused core/integration tests.
+- [x] Record any discovered bugs or performance opportunities under "Orthogonal Opportunities" instead of widening this implementation slice.
+- [x] Update [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] and [[wd.codebase-overview]] with the resulting module layout.
+- [x] Provide a commit message that clearly says this is a behavior-preserving slice-classification extraction.
+
+## Suggested Commit Message
+
+```text
+refactor(core-weave): extract slice classification helpers
+
+- move pending weave slice detection into slice_classification.ts
+- move shared artifact-history query helpers into artifact_history_queries.ts
+- preserve detectPendingWeaveSlice through the weave.ts compatibility façade
+- keep payload layout, overwrite planning, shape assertions, and renderers in weave.ts
+- verify with fmt, lint, check, core weave tests, integration weave tests, and import-cycle audit
+```
