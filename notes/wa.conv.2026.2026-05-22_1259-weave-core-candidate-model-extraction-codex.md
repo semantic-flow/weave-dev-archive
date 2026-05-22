@@ -499,3 +499,109 @@ docs(tasks): record core weave slice classification extraction
 ```
 
 This task is ready to move to completed. Next likely slice: payload version layout and guarded overwrite-state planning.
+
+# User_2026-05-22_1442_37
+
+OK, fill out this new task
+
+# gpt-5.5_2026-05-22_1442_49
+
+I’ll treat this as the next conservative planning slice: read the blank task, re-check the parent/current code shape around payload layout and overwrite planning, then fill the note with boundaries, risks, and verification steps.
+
+# gpt-5.5_2026-05-22_1442_56
+
+The new note is still a blank template, and the parent already expects this exact slice. I’m checking the payload layout and overwrite code now so the task names the real functions and avoids accidentally dragging renderers into the slice.
+
+# gpt-5.5_2026-05-22_1443_32
+
+The payload slice has a couple of sharp edges: some naming/path helpers are shared with reference-catalog rendering, while overwrite-state planning is a small `WeavePlan` producer. I’m going to encode that explicitly so implementation can choose a clean split without turning this into a renderer extraction.
+
+# gpt-5.5_2026-05-22_1444_17
+
+Filled out the new task note:
+
+[wa.task.2026.2026-05-22_1441-payload-version-layout-and-overwrite-state-planning.md](wa.task.2026.2026-05-22_1441-payload-version-layout-and-overwrite-state-planning.md)
+
+I made the scope conservative: extract payload version layout and overwrite-state planning, but keep `planWeave`, `planVersion`, large Turtle renderers, ResourcePage builders, and broad path helpers in place unless dependency direction clearly says otherwise.
+
+I also called out the main implementation choice: likely split into `payload_version_layout.ts` and `payload_overwrite.ts`, with an optional narrow manifestation-path helper only if it genuinely reduces coupling.
+
+No trailing whitespace in the new note. Ready to implement when you are.
+
+# User_2026-05-22_1445_31
+
+implement
+
+# gpt-5.5_2026-05-22_1446_26
+
+I’ll implement this as a move-only extraction: first capture the current state and dependency shape, then move layout helpers before deciding whether overwrite planning is clean enough as a separate module. I’ll keep an eye on shared manifestation/path helpers so we don’t accidentally turn this into a renderer refactor.
+
+# gpt-5.5_2026-05-22_1446_34
+
+Baseline is clean in the code repo: `weave.ts` is 7,703 lines, graph audit is 22 modules / 67 edges / 0 cycles, and the only current archive changes are the parent task plus this new task note. I’m running the baseline check and core test before editing, per the task.
+
+# gpt-5.5_2026-05-22_1447_03
+
+The baseline checks passed. I’m going to extract three small pieces: a narrow manifestation-path helper for shared state/manifestation path construction, `payload_version_layout.ts` for path/layout resolution, and `payload_overwrite.ts` for the guarded overwrite `WeavePlan` producer.
+
+# gpt-5.5_2026-05-22_1447_22
+
+I’m going to make the extraction now. There will be a little private duplication of simple path segment parsing inside the payload layout module, which keeps the slice narrow and avoids pulling general renderer/mesh-inventory helpers into the payload module.
+
+# gpt-5.5_2026-05-22_1450_12
+
+The first extracted shape type-checks. Lint is now catching stale leftovers in `weave.ts` from the move, so I’m trimming only those unused imports/helpers and then I’ll rerun the full formatting/lint/check cycle.
+
+# gpt-5.5_2026-05-22_1450_45
+
+The extracted modules are formatted, linted, and type-checked. I’m running the behavior tests and graph audit now; if those stay green, the remaining work is just updating the overview and task notes with the results.
+
+# gpt-5.5_2026-05-22_1451_08
+
+Tests and graph audit stayed clean: 56 core weave tests and 72 focused integration tests passed, with 0 core-to-runtime edges and 0 cycles. I’m updating the durable notes now with the actual module split and verification trail.
+
+# gpt-5.5_2026-05-22_1454_38
+
+Implemented the payload layout / overwrite planning slice.
+
+Changed:
+- Added [payload_version_layout.ts](../../../../../src/core/weave/payload_version_layout.ts) for payload history/state/manifestation layout resolution and naming guards.
+- Added [payload_overwrite.ts](../../../../../src/core/weave/payload_overwrite.ts) for `overwriteExistingState` validation and guarded overwrite planning.
+- Added [artifact_manifestation_paths.ts](../../../../../src/core/weave/artifact_manifestation_paths.ts) for the shared state-to-manifestation path helper.
+- Updated [weave.ts](../../../../../src/core/weave/weave.ts), [wd.codebase-overview.md](../../../../../documentation/notes/wd.codebase-overview.md), the new task, and the parent task.
+
+Result: `src/core/weave/weave.ts` went from 7,703 lines to 7,135 lines. Post-slice graph audit stayed clean: 25 local modules, 92 edges, 23 direct root imports, 0 `core -> runtime` edges, 0 cycles.
+
+Verification passed:
+- `deno task fmt`
+- `deno task lint`
+- `deno task check`
+- core weave test: 56 passed
+- focused integration tests: 72 passed
+- `git diff --check`
+- targeted task-note trailing whitespace check
+
+No orthogonal bugs or performance opportunities surfaced.
+
+Suggested root commit message:
+
+```text
+refactor(core-weave): extract payload version layout planning
+
+- move payload history/state/manifestation layout resolution into payload_version_layout.ts
+- move guarded overwriteExistingState validation and planning into payload_overwrite.ts
+- move shared artifact manifestation path construction into artifact_manifestation_paths.ts
+- keep payload renderers, ResourcePage builders, shape assertions, and planner façade behavior in weave.ts
+- verify with fmt, lint, check, core weave tests, integration weave tests, and import-cycle audit
+```
+
+Suggested archive commit message:
+
+```text
+docs(tasks): record payload version layout extraction
+
+- fill and complete the payload layout and overwrite planning task
+- update the parent core weave refactor task with the completed fourth slice status
+```
+
+This slice is ready to move to completed. Next I’d choose between payload render helpers and shape assertion families; I’d lean shape assertions next, because render helpers are still verbose and fixture-sensitive.
