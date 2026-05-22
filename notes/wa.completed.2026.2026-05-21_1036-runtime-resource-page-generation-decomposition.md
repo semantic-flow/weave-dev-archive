@@ -39,7 +39,7 @@ This task should coordinate with [[wa.task.2026.2026-05-21_0849_careful-extracti
 
 ## Open Issue Resolutions
 
-- ResourcePage model types should move out of `src/core/weave/weave.ts` into a shared core model module before the runtime page-generation split goes far. Use the current shared layer, likely `src/core/weave/resource_page_models.ts`, rather than adding a new top-level `src/shared/` convention in this task unless [[wa.task.2026.2026-05-21_1037-core-weave-first-extraction-slice]] makes that architecture decision first.
+- ResourcePage model types must move out of `src/core/weave/weave.ts` into a shared core model module before broad runtime page-generation extraction. Hard gate: do not proceed past the model move step until [[wa.task.2026.2026-05-21_1037-core-weave-first-extraction-slice]] has landed the `ResourcePageModel` move, or absorb that move into this task. The current working slice absorbed it by adding `src/core/weave/resource_page_models.ts` and preserving `src/core/weave/weave.ts` re-exports.
 - The helpers that are truly runtime-only today are the workspace readers, raw-source panel file readers, `OperationalLocalPathPolicy` calls, floating repository source resolution, effective-config loading, ResourcePageDefinition artifact loading, best-effort child context loading, and generated HTML writing.
 - The helpers most likely to become shared/core are ResourcePage model types, pure history group parsing/merging/modeling, pure ReferenceCatalog parsing/model conversion, path-to-resource helpers, small RDF query helpers, and maybe byte-limit raw-source panel model construction once an API/service wants to present source excerpts.
 - `writeGeneratedPagesUpsert` should move with `page_generation.ts`, not with general planned-file writing. Its timestamp-only skip behavior is generated-HTML-specific and depends on the current ResourcePage footer shape.
@@ -52,8 +52,9 @@ This task should coordinate with [[wa.task.2026.2026-05-21_0849_careful-extracti
 - Keep page visual redesign, page content-model redesign, and generated HTML changes out of scope.
 - Keep `executeGenerate` and `executeWeave` import/call surfaces stable.
 - Put API/service-shareable models and pure helpers in the shared core layer. Prefer modules under `src/runtime/weave/` only when a helper depends on local filesystem runtime behavior, operational policy, logging/timing, or best-effort local recovery.
-- Move `ResourcePageModel` and related model types first, or coordinate so [[wa.task.2026.2026-05-21_1037-core-weave-first-extraction-slice]] does it before this task starts significant runtime extraction.
+- Move `ResourcePageModel` and related model types first. Do not proceed into significant runtime extraction until [[wa.task.2026.2026-05-21_1037-core-weave-first-extraction-slice]] has landed that move, or this task has explicitly absorbed it.
 - Treat `page_generation.ts` as the final assembly/orchestration module, not the first extraction target.
+- Audit the import graph before cutting each new helper family, then run a circular-dependency check after each slice. `deno task check` is still required, but it is not a substitute for reviewing dependency direction and cycles.
 
 ## Contract Changes
 
@@ -71,6 +72,8 @@ This task should coordinate with [[wa.task.2026.2026-05-21_0849_careful-extracti
   - e2e focused baseline: 35 passed, 0 failed, 13.15s real
   - representative `WEAVE_TIMING=1 weave generate --target designatorPath=alice/bio`: `generate.total 139.3ms`, `generate.collectGeneratedPageFiles 125.1ms`, `generate.collectGeneratedPageFiles.renderResourcePages 107.9ms`, `generate.writePages 3.6ms`
 - After each extraction, run the smallest tests that cover the moved helper family, usually selected `executeGenerate` and `executeWeave` tests from `tests/integration/weave_test.ts`.
+- Before each extraction slice, inspect the import graph rooted at `src/runtime/weave/weave.ts` and the candidate destination module. One concrete pattern is `deno info --json src/runtime/weave/weave.ts` plus a local cycle scan over `file://.../src/` modules.
+- After each extraction slice, verify there are no new `src/core/` -> `src/runtime/` edges and no circular imports among local `src/` modules. Passing type-checks are necessary but not enough for this decomposition.
 - After moving shared model types, run at least `deno task check` plus core weave tests that assert `createdPages`.
 - After moving history/reference/raw-source/page-context helpers, run the focused `executeGenerate` tests covering sidecar histories, managed references, latest-state raw panels, floating repository source locators, Semantic Flow metadata, and support artifact source panels.
 - Before finishing, run `deno task fmt`, `deno task lint`, `deno task check`, and the focused integration/e2e page-generation tests.
@@ -88,15 +91,21 @@ This task should coordinate with [[wa.task.2026.2026-05-21_0849_careful-extracti
 
 - [x] Re-read [[wd.general-guidance]], [[wd.testing]], and the latest `src/runtime/weave/weave.ts` page-generation section before editing.
 - [x] Record the starting line count and list the page-generation helper families currently in `src/runtime/weave/weave.ts`; review baseline was 3,430 lines.
-- [x] Coordinate with [[wa.task.2026.2026-05-21_1037-core-weave-first-extraction-slice]] and move ResourcePage model types from `src/core/weave/weave.ts` into a shared core model module before broad runtime extraction.
+- [x] Hard gate: coordinate with [[wa.task.2026.2026-05-21_1037-core-weave-first-extraction-slice]] and do not proceed past this item until it has landed the `ResourcePageModel` move, or absorb that move into this task. Current slice absorbed it by adding `src/core/weave/resource_page_models.ts` and keeping `src/core/weave/weave.ts` re-exports stable.
+- [x] Run the first import-graph audit before the next extraction slice. Current `deno info --json src/runtime/weave/weave.ts` scan sees 40 local `src/` modules, 131 local import edges, 28 direct local imports from `src/runtime/weave/weave.ts`, 0 `src/core/` -> `src/runtime/` edges, and 0 local cycles.
 - [x] Extract pure history group model helpers into a shared core module if dependency direction stays clean; keep runtime inventory-loading wrappers under `src/runtime/weave/`.
-- [ ] Extract pure ReferenceCatalog parsing and reference target model helpers; leave canonical reference source raw-panel loading with raw-source/runtime helpers.
-- [ ] Extract raw source panel helpers under `src/runtime/weave/raw_source_panels.ts`, with any obviously pure byte-limit/model construction helper separated only if it keeps the module simpler.
-- [ ] Extract `GenerateDesignatorContext`, `loadGenerateDesignatorContexts`, best-effort child context loading, child identifier collection, owner title resolution, and Knop artifact link collection into `src/runtime/weave/page_contexts.ts`.
-- [ ] Extract the page model assembly helpers that are still local to generation, such as generated resource path selection, displayed child path collection, favicon resolution, and Semantic Flow resource descriptions.
-- [ ] Move `collectGeneratedPageFiles` and `generatePreparedPages` into `src/runtime/weave/page_generation.ts` after lower-level helpers have clean module homes.
-- [ ] Move `writeGeneratedPagesUpsert` and timestamp-footer normalization into `page_generation.ts` with generated page collection/write behavior.
-- [ ] Keep timing phase names stable during move-only slices; if clearer page-generation timing names are desired, land them as a distinct slice with e2e timing assertions updated.
-- [ ] Run focused tests after each slice and keep diffs reviewable.
-- [ ] Update [[wd.codebase-overview]] if the runtime page-generation module layout changes materially.
-- [ ] Provide commit message(s) that identify move-only page-generation slices and any timing diagnostic changes separately.
+- [x] Audit direct dependencies of `src/runtime/weave/weave.ts` before the page-context slice so dependency direction and cycle risk are visible before cutting. Pre-slice scan had 42 local `src/` modules, 145 local import edges, 30 direct local imports from `src/runtime/weave/weave.ts`, 0 `src/core/` -> `src/runtime/` edges, and 0 local cycles.
+- [x] Run import graph/circular-dependency checks after the reference-link and raw-source-panel slices. Latest raw-source-panel scan has 42 local `src/` modules, 145 local import edges, 30 direct local imports from `src/runtime/weave/weave.ts`, 0 `src/core/` -> `src/runtime/` edges, and 0 local cycles.
+- [x] Run an import graph/circular-dependency check after the page-context slice. Current scan has 43 local `src/` modules, 157 local import edges, 26 direct local imports from `src/runtime/weave/weave.ts`, 0 `src/core/` -> `src/runtime/` edges, and 0 local cycles.
+- [x] Run import graph/circular-dependency checks before and after the page-model assembly slice. Pre-slice scan had 43 local `src/` modules, 157 local import edges, 26 direct local imports from `src/runtime/weave/weave.ts`, 0 `src/core/` -> `src/runtime/` edges, and 0 local cycles. Post-slice scan has 44 local `src/` modules, 163 local import edges, 22 direct local imports from `src/runtime/weave/weave.ts`, 0 `src/core/` -> `src/runtime/` edges, and 0 local cycles.
+- [x] Run import graph/circular-dependency checks before and after the final page-generation slice. Pre-slice scan had 44 local `src/` modules, 163 local import edges, 22 direct local imports from `src/runtime/weave/weave.ts`, 0 `src/core/` -> `src/runtime/` edges, and 0 local cycles. Post-slice scan has 45 local `src/` modules, 162 local import edges, 16 direct local imports from `src/runtime/weave/weave.ts`, 0 `src/core/` -> `src/runtime/` edges, and 0 local cycles.
+- [x] Extract pure ReferenceCatalog parsing and reference target model helpers into `src/core/weave/resource_page_reference_links.ts`; leave canonical reference source raw-panel loading with raw-source/runtime helpers.
+- [x] Extract raw source panel helpers under `src/runtime/weave/raw_source_panels.ts`, with byte-limit/model construction kept in the same runtime module because the current callers are all filesystem-backed.
+- [x] Extract `GenerateDesignatorContext`, `loadGenerateDesignatorContexts`, best-effort child context loading, child identifier collection, owner title resolution, and Knop artifact link collection into `src/runtime/weave/page_contexts.ts`.
+- [x] Extract the page model assembly helpers that are still local to generation, such as generated resource path selection, displayed child path collection, favicon resolution, and Semantic Flow resource descriptions, into `src/runtime/weave/page_model_assembly.ts`.
+- [x] Move `collectGeneratedPageFiles` and `generatePreparedPages` into `src/runtime/weave/page_generation.ts` after lower-level helpers have clean module homes.
+- [x] Move `writeGeneratedPagesUpsert` and timestamp-footer normalization into `page_generation.ts` with generated page collection/write behavior.
+- [x] Keep timing phase names stable during move-only slices; if clearer page-generation timing names are desired, land them as a distinct slice with e2e timing assertions updated.
+- [x] Run focused tests after each slice and keep diffs reviewable. Final slice verification passed `deno task fmt`, `deno task lint`, `deno task check`, `WEAVE_GENERATED_AT=2026-05-03T00:00:00.000Z deno test --preload=tests/support/test_tmp_harness.ts --allow-read --allow-write --allow-run=git,deno --allow-env tests/integration/weave_test.ts tests/integration/validate_version_generate_test.ts`, and `WEAVE_GENERATED_AT=2026-05-03T00:00:00.000Z deno test --preload=tests/support/test_tmp_harness.ts --allow-read --allow-write --allow-run=git,deno --allow-env tests/e2e/weave_cli_test.ts`.
+- [x] Update [[wd.codebase-overview]] if the runtime page-generation module layout changes materially.
+- [x] Provide commit message(s) that identify move-only page-generation slices and any timing diagnostic changes separately.

@@ -11,7 +11,7 @@ created: 1779384959022
 - Reduce the size and review risk of `src/runtime/weave/weave.ts` by extracting runtime orchestration, prepared execution, candidate loading, and version-write helpers into cohesive modules.
 - Preserve CLI/runtime behavior, generated RDF, generated ResourcePage output, timing counters, logging behavior, and local-path policy semantics.
 - Keep `executeValidate`, `executeVersion`, `executeGenerate`, and `executeWeave` available from the current runtime weave module while moving implementation details behind smaller seams.
-- Leave runtime ResourcePage generation decomposition to [[wa.task.2026.2026-05-21_1036-runtime-resource-page-generation-decomposition]] so this task does not become another broad rewrite.
+- Leave runtime ResourcePage generation decomposition to [[wa.completed.2026.2026-05-21_1036-runtime-resource-page-generation-decomposition]] so this task does not become another broad rewrite.
 
 ## Summary
 
@@ -74,7 +74,7 @@ The page-generation block is large enough to deserve its own task. In this task,
 
 ## Non-Goals
 
-- Do not redesign ResourcePage generation, page models, raw source panels, reference rendering, or history group collection; use [[wa.task.2026.2026-05-21_1036-runtime-resource-page-generation-decomposition]].
+- Do not redesign ResourcePage generation, page models, raw source panels, reference rendering, or history group collection; use [[wa.completed.2026.2026-05-21_1036-runtime-resource-page-generation-decomposition]].
 - Do not split `src/core/weave/weave.ts`; use [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] and [[wa.task.2026.2026-05-21_1037-core-weave-first-extraction-slice]].
 - Do not change target semantics, exact-vs-recursive coverage behavior, or version target parsing.
 - Do not add persistent caches, file watchers, or daemon-level state.

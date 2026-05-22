@@ -26,7 +26,7 @@ This is a code-extraction refactor of the weave planner. It is not a refactor of
 Current rough shape:
 
 - `src/core/weave/weave.ts` is about 8,700 lines.
-- `src/runtime/weave/weave.ts` is about 4,900 lines and has its own cleanup track in [[wa.task.2026.2026-05-21_1035-runtime-weave-module-decomposition]] and [[wa.task.2026.2026-05-21_1036-runtime-resource-page-generation-decomposition]]. This core planner task should not absorb those runtime refactors.
+- `src/runtime/weave/weave.ts` is about 4,900 lines and has its own cleanup track in [[wa.task.2026.2026-05-21_1035-runtime-weave-module-decomposition]] and [[wa.completed.2026.2026-05-21_1036-runtime-resource-page-generation-decomposition]]. This core planner task should not absorb those runtime refactors.
 - The core file mixes high-level orchestration with low-level RDF/Turtle utilities. That makes small behavior changes feel like broad edits and makes review harder.
 - `core/targeting.ts` now owns portable target request semantics after [[wa.task.2026.2026-04-08_1615-weave-orchestration-refactor]]. Do not pull target normalization, shared target derivation, or requested-target coverage back into `src/core/weave/weave.ts` during this extraction.
 - Several helper families already have natural names and call boundaries: slice detection, payload state layout, rendered artifact history collection, ResourcePage model builders, Turtle block editing, RDF fact assertions/queries, and current-working-file source locator rendering.
@@ -45,7 +45,7 @@ The healthiest end state is probably a small `src/core/weave/weave.ts` that coor
 
 - [x] Public imports from `src/core/weave/weave.ts` should remain valid during this refactor. New internal modules may be imported directly by internal callers when useful, but `weave.ts` remains the compatibility façade for the current public core weave surface.
 - [x] The first extraction slice should be model/type extraction, tracked separately in [[wa.task.2026.2026-05-21_1037-core-weave-first-extraction-slice]].
-- [x] Runtime planner cleanup should not be done in this task. Use [[wa.task.2026.2026-05-21_1035-runtime-weave-module-decomposition]] for runtime orchestration/candidate/version seams and [[wa.task.2026.2026-05-21_1036-runtime-resource-page-generation-decomposition]] for runtime page-generation seams.
+- [x] Runtime planner cleanup should not be done in this task. Use [[wa.task.2026.2026-05-21_1035-runtime-weave-module-decomposition]] for runtime orchestration/candidate/version seams and [[wa.completed.2026.2026-05-21_1036-runtime-resource-page-generation-decomposition]] for runtime page-generation seams.
 - Are legacy Alice Bio specific render helpers still needed as code, or can some be replaced by generalized renderers after the move-only phase?
 
 ## Decisions
