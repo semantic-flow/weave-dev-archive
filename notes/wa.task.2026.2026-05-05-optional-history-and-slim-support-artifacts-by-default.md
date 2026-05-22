@@ -11,7 +11,7 @@ created: 1778082622196
 - we should be able to turn history on and off manually for any DigitalArtifact, including supporting digital artifacts like meta and config
   - I think by default, support artifacts don't need history?
   - ideally we can specify whether history is on or off at the mesh level, any submesh level (via inheritable knop config, which I think needs to be re-introduced), per-knop, and per supporting artifact. Possibly in operational config too.
-  - my sense is that config isn't really built out yet, [[ont.task.2026.2026-03-23-config-modernization]], [[wa.task.2026.2026-04-08_1735-page-definition-ontology-and-config]], and [[wa.task.2026.2026-04-11_1723-operational-config-for-runtime-resolution]], so maybe we have to address that first
+  - my sense is that config isn't really built out yet, [[ont.task.2026.2026-03-23-config-modernization]], [[wa.completed.2026.2026-04-08_1735-page-definition-ontology-and-config]], and [[wa.task.2026.2026-04-11_1723-operational-config-for-runtime-resolution]], so maybe we have to address that first
   - in the meantime, can we just turn off history generation for support artifacts, keeping in mind that we'll need it configurable later?
 
 - Keep payload artifacts historical by default. Payload history is a core user-facing value of Weave, not support-artifact noise.
@@ -155,7 +155,7 @@ Recommended default policy:
 - `_knop/_inventory`: keep history on in the immediate implementation because current weave progression depends on it; target current-only or slim history once Knop progression facts move to `_knop/_meta` or a dedicated working-state artifact.
 - `_mesh/_meta`, `_knop/_meta`: history off by default.
 - `_mesh/_config` and `_mesh/_knop-inheritable-config`: versioned by default under the grand config synthesis defaults, because portable authored config should preserve config-at-the-time for diagnostics, historical page regeneration, and audit.
-- `_knop/_assets`: no history by default; if an asset needs independent publication or versioning, model it as its own payload artifact. This aligns with [[wa.task.2026.2026-04-08_1735-page-definition-ontology-and-config]].
+- `_knop/_assets`: no history by default; if an asset needs independent publication or versioning, model it as its own payload artifact. This aligns with [[wa.completed.2026.2026-04-08_1735-page-definition-ontology-and-config]].
 - `ResourcePageDefinition` (`_knop/_page`) and `ReferenceCatalog` (`_knop/_references`): behavior-bearing support artifacts may be current-only by default. ResourcePage generation should make a best-effort current rendering when their histories are absent rather than forcing histories only to support historical page regeneration. If exact historical regeneration later matters, add a render manifest, source-state bundle, or durable generated-output checkpoint instead of making these support histories mandatory.
 
 The important boundary is operational rather than ontological: weaving should not depend on `_knop/_page` or `_knop/_references` having histories. Page generation can inspect those histories when they exist, but absence should degrade current/history panels and historical regeneration affordances rather than blocking current page generation. Current implementation status: `ReferenceCatalog` already has a current-only planner path; `ResourcePageDefinition` still has legacy planner/generator dependencies on versioned `_knop/_page` progression and needs a cleanup slice before the default policy is fully honored there.

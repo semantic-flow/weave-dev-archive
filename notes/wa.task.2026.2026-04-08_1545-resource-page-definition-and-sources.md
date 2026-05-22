@@ -98,7 +98,7 @@ The renderer/template boundary also matters. Templates should stay relatively du
 
 ## First-Pass Alignment
 
-The current recommendation from [[wa.task.2026.2026-04-08_1735-page-definition-ontology-and-config]] is:
+The current recommendation from [[wa.completed.2026.2026-04-08_1735-page-definition-ontology-and-config]] is:
 
 - `_knop/_page/page.ttl` should be modeled as a `ResourcePageDefinition` support artifact attached to the owning `Knop` with `hasResourcePageDefinition`.
 - `ResourcePageSource` should remain the page-specific source relator, but it should now specialize a generic `ArtifactResolutionTarget`
@@ -222,7 +222,7 @@ Minimal shape:
 
 ### Phase 0: Lock The Runtime Slice To The Settled Model
 
-- [x] Treat [[wa.task.2026.2026-04-08_1735-page-definition-ontology-and-config]] and [[sf.spec.2026-04-11-identifier-page-customization-and-root-lifecycle]] as the contract source, so this task implements settled `ResourcePageDefinition` / `ArtifactResolutionTarget` / `ResourcePageSource` behavior rather than reopening ontology decisions in runtime code.
+- [x] Treat [[wa.completed.2026.2026-04-08_1735-page-definition-ontology-and-config]] and [[sf.spec.2026-04-11-identifier-page-customization-and-root-lifecycle]] as the contract source, so this task implements settled `ResourcePageDefinition` / `ArtifactResolutionTarget` / `ResourcePageSource` behavior rather than reopening ontology decisions in runtime code.
 - [x] Add a behavior spec and fixture plan before implementing the runtime/model changes. See [[sf.spec.2026-04-11-identifier-page-customization-and-root-lifecycle]].
 - [x] Keep the first implementation-bearing slice narrower than the whole future model: local mesh-path sources, authority/precedence, fail-closed behavior, and `_knop/_assets` handling should land before broader in-mesh/import source support unless the code shape makes those cheap and coherent to include.
 

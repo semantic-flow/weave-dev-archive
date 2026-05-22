@@ -86,10 +86,10 @@ This task should coordinate with [[wa.task.2026.2026-05-21_0849_careful-extracti
 
 ## Implementation Plan
 
-- [ ] Re-read [[wd.general-guidance]], [[wd.testing]], and the latest `src/runtime/weave/weave.ts` page-generation section before editing.
-- [ ] Record the starting line count and list the page-generation helper families currently in `src/runtime/weave/weave.ts`; review baseline was 3,430 lines.
-- [ ] Coordinate with [[wa.task.2026.2026-05-21_1037-core-weave-first-extraction-slice]] and move ResourcePage model types from `src/core/weave/weave.ts` into a shared core model module before broad runtime extraction.
-- [ ] Extract pure history group model helpers into a shared core module if dependency direction stays clean; keep runtime inventory-loading wrappers under `src/runtime/weave/`.
+- [x] Re-read [[wd.general-guidance]], [[wd.testing]], and the latest `src/runtime/weave/weave.ts` page-generation section before editing.
+- [x] Record the starting line count and list the page-generation helper families currently in `src/runtime/weave/weave.ts`; review baseline was 3,430 lines.
+- [x] Coordinate with [[wa.task.2026.2026-05-21_1037-core-weave-first-extraction-slice]] and move ResourcePage model types from `src/core/weave/weave.ts` into a shared core model module before broad runtime extraction.
+- [x] Extract pure history group model helpers into a shared core module if dependency direction stays clean; keep runtime inventory-loading wrappers under `src/runtime/weave/`.
 - [ ] Extract pure ReferenceCatalog parsing and reference target model helpers; leave canonical reference source raw-panel loading with raw-source/runtime helpers.
 - [ ] Extract raw source panel helpers under `src/runtime/weave/raw_source_panels.ts`, with any obviously pure byte-limit/model construction helper separated only if it keeps the module simpler.
 - [ ] Extract `GenerateDesignatorContext`, `loadGenerateDesignatorContexts`, best-effort child context loading, child identifier collection, owner title resolution, and Knop artifact link collection into `src/runtime/weave/page_contexts.ts`.
