@@ -156,9 +156,9 @@ Recommended default policy:
 - `_mesh/_meta`, `_knop/_meta`: history off by default.
 - `_mesh/_config` and `_mesh/_knop-inheritable-config`: versioned by default under the grand config synthesis defaults, because portable authored config should preserve config-at-the-time for diagnostics, historical page regeneration, and audit.
 - `_knop/_assets`: no history by default; if an asset needs independent publication or versioning, model it as its own payload artifact. This aligns with [[wa.task.2026.2026-04-08_1735-page-definition-ontology-and-config]].
-- `ResourcePageDefinition` (`_knop/_page`) and `ReferenceCatalog` (`_knop/_references`): behavior-bearing support artifacts. They can become current-only by default only if generated page manifests or page-output durability preserve enough information to regenerate historical pages. Until that contract is explicit, keep them versioned or treat them as a separate policy class.
+- `ResourcePageDefinition` (`_knop/_page`) and `ReferenceCatalog` (`_knop/_references`): behavior-bearing support artifacts may be current-only by default. ResourcePage generation should make a best-effort current rendering when their histories are absent rather than forcing histories only to support historical page regeneration. If exact historical regeneration later matters, add a render manifest, source-state bundle, or durable generated-output checkpoint instead of making these support histories mandatory.
 
-The last bullet is the main pushback on "everything else can avoid history." Page definitions and reference catalogs can probably become current-only if Weave treats generated page HTML as the durable historical output or stores a manifest/render bundle that pins the source states used for historical output. But if Weave wants to regenerate old pages from mesh RDF alone, then old page definitions, source-selection policy, and reference links need historical snapshots or an equivalent render-bundle snapshot.
+The important boundary is operational rather than ontological: weaving should not depend on `_knop/_page` or `_knop/_references` having histories. Page generation can inspect those histories when they exist, but absence should degrade current/history panels and historical regeneration affordances rather than blocking current page generation. Current implementation status: `ReferenceCatalog` already has a current-only planner path; `ResourcePageDefinition` still has legacy planner/generator dependencies on versioned `_knop/_page` progression and needs a cleanup slice before the default policy is fully honored there.
 
 ### Config first?
 
@@ -195,7 +195,7 @@ The safe order is:
 ## Open Issues
 
 - Should historical generated pages be reproducible from mesh state, or is the generated HTML/file output itself the durable historical artifact?
-- Can `ResourcePageDefinition` and `ReferenceCatalog` become current-only by default, or do they need history whenever their facts influence historical page output?
+- How should the remaining `ResourcePageDefinition` planner/generator code stop depending on versioned `_knop/_page` progression while preserving best-effort current ResourcePage generation?
 - Should mutable current/progression facts live directly in `_mesh/_meta` / `_knop/_meta`, or should Weave introduce a more explicit working-state/progression artifact?
 - Is `_knop/_inventory` conceptually required to have history, or is that only a current implementation dependency that should be replaced by a more explicit Knop progression model?
 - Can `_mesh/_inventory` become current-only by default once historical page regeneration is driven by manifests/checkpoints rather than full inventory snapshots?
@@ -242,6 +242,7 @@ The safe order is:
 - Do not disable payload history by default.
 - Do not force all `_mesh/_inventory` planning paths current-only in this task; apply it only where the planner no longer depends on inventory history shape.
 - Do not disable `_knop/_inventory` history in the first implementation pass.
+- Do not require `ResourcePageDefinition` or `ReferenceCatalog` histories only for historical ResourcePage regeneration; current page generation should remain best effort when those histories are absent.
 - Do not require full inventory snapshots forever as the only way to regenerate historical resource pages.
 - Do not promise general re-weaving of old mesh states as a user-facing feature; test fixtures may capture additional mutable state in manifests when needed.
 - Do not design or expose the full inheritable config surface here; consume the terms and defaults from [[wa.task.2026.2026-05-06-grand-config-synthesis]].
@@ -261,6 +262,9 @@ The safe order is:
 - [x] Refactor first Knop and first payload weave renderers so `_knop/_meta` remains current-only by default.
 - [x] Move the first MeshInventory current/latest/next progression reads and writes from `_mesh/_inventory` into `_mesh/_meta` for first Knop, first payload, and first extracted-Knop weave planning while keeping stable MeshInventory history/state membership in inventory.
 - [x] Keep `_knop/_inventory` history rendering unchanged until a Knop-local progression seam exists.
+- [x] Confirm `ReferenceCatalog` supports current-only first weaving without creating `_knop/_references/_history001`.
+- [ ] Refactor `ResourcePageDefinition` weave planning so `_knop/_page` can be current-only when history policy says current-only, without creating page-definition history/state/manifestation snapshots.
+- [ ] Refactor custom identifier page generation so a current-only `ResourcePageDefinition` can drive best-effort current page rendering when `_knop/_page/_history001` is absent.
 - [ ] Audit generated page models and hand-rendered pages so current support pages do not link to omitted support histories.
 - [x] Update focused core tests for the first `_mesh/_meta` MeshInventory progression seam, including hinted named state minting and later ordinal advancement after a named latest state.
 - [ ] Update focused integration tests for the new default output shape after fixture regeneration removes legacy ontology IRI assumptions.

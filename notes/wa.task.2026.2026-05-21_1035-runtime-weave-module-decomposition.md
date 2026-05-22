@@ -83,18 +83,18 @@ The page-generation block is large enough to deserve its own task. In this task,
 ## Implementation Plan
 
 - [x] Re-read [[wd.general-guidance]], [[wd.testing]], [[wd.performance]], and [[wa.task.2026.2026-04-08_1615-weave-orchestration-refactor]] before editing.
-- [x] Record current line counts and public exports from `src/runtime/weave/weave.ts`. Baseline before this slice was 4,864 lines; after timing instrumentation plus `errors.ts`, `mesh_state.ts`, `planning_context.ts`, `artifact_loaders.ts`, `candidate_loader.ts`, `request_normalization.ts`, and `timing_helpers.ts`, `weave.ts` is 3,974 lines and the public façade still exports the runtime result/option types, `executeValidate`, `executeVersion`, `executeGenerate`, `executeWeave`, result describers, and `WeaveRuntimeError`.
+- [x] Record current line counts and public exports from `src/runtime/weave/weave.ts`. Baseline before this slice was 4,864 lines; after timing instrumentation plus `errors.ts`, `mesh_state.ts`, `planning_context.ts`, `artifact_loaders.ts`, `candidate_loader.ts`, `request_normalization.ts`, `prepared_execution.ts`, `version_execution.ts`, `execution_config.ts`, `workspace_paths.ts`, `progress.ts`, and `timing_helpers.ts`, `weave.ts` is 3,430 lines and the public façade still exports the runtime result/option types, progress types, `executeValidate`, `executeVersion`, `executeGenerate`, `executeWeave`, result describers, and `WeaveRuntimeError`.
 - [x] Identify import-cycle risks around `MeshState`, `TextFileOverlay`, candidate loaders, and page generation.
 - [x] If needed to avoid cycles, extract `WeaveRuntimeError` to `src/runtime/weave/errors.ts` and re-export it from the public façade.
 - [x] Extract `MeshState` and `loadMeshState` into `mesh_state.ts` while keeping existing error behavior.
 - [x] Extract command-scoped overlay/cache behavior into `planning_context.ts`, preserving staged read semantics and cache counter field names.
 - [x] Extract shared runtime artifact-loading helpers into `artifact_loaders.ts` before extracting candidate loading, so page generation does not depend on candidate-specific modules.
 - [x] Extract the smallest helper module first, preferably version-write or request-normalization helpers.
-- [ ] Extract `PreparedWeaveExecution` preparation if dependencies stay local and readable.
+- [x] Extract `PreparedWeaveExecution` preparation if dependencies stay local and readable.
 - [x] Extract candidate loading after `planning_context.ts` and `artifact_loaders.ts` are stable.
-- [ ] Extract version execution/write helpers once candidate loading boundaries are stable.
+- [x] Extract version execution/write helpers once candidate loading boundaries are stable.
 - [x] Keep timing phase names stable during extraction unless a separate diagnostic cleanup task is opened.
 - [x] Keep `src/runtime/weave/weave.ts` as the public façade for runtime commands.
 - [x] Run focused tests after each slice and keep diffs reviewable.
 - [x] Update [[wd.codebase-overview]] if the runtime module layout changes materially.
-- [ ] Provide commit message(s) that separate move-only module extraction from any incidental cleanup.
+- [x] Provide commit message(s) that separate move-only module extraction from any incidental cleanup.
