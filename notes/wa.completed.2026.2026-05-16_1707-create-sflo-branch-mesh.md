@@ -2,7 +2,7 @@
 id: ilvklxv3r9r6kdf8t5xjug4
 title: 2026 05 16_1707 Create Sflo Branch Mesh
 desc: ''
-updated: 1779484591829
+updated: 1779484781401
 created: 1778976491069
 ---
 
@@ -186,19 +186,18 @@ The config namespace now sits under the `sflo` mesh base, so ordinary mesh-scope
 - Do not add compatibility shims for old publication branch shapes unless they are necessary for the current release.
 
 ## Implementation Plan
-
-- [ ] Confirm `dependencies/github.com/semantic-flow/sflo` is clean on `main` and up to date.
-- [ ] Inspect existing remote/local branches and `git worktree list` for `sflo`.
+- [x] Confirm `dependencies/github.com/semantic-flow/sflo` is clean on `main` and up to date.
+- [x] Inspect existing remote/local branches and `git worktree list` for `sflo`.
 - [x] Decide the publication base IRI for this pass.
-- [ ] Create a separate new `gh-pages` publication worktree for `sflo`.
-- [ ] Bootstrap the branch-published mesh publication surface from the source checkout into the publication worktree.
-- [ ] Add `welcome.ttl` as the root welcome/about RDF payload and integrate it at `/`.
+- [x] Create a separate new `gh-pages` publication worktree for `sflo`.
+- [x] Bootstrap the branch-published mesh publication surface from the source checkout into the publication worktree.
+- [x] Add `welcome.ttl` as the root welcome/about RDF payload and integrate it at `/`.
 - [x] Implement or verify all-terms extraction with bulk source-reference creation.
-- [ ] Integrate or source-bind `semantic-flow-core-ontology.ttl` from `main`.
-- [ ] Weave/generate ResourcePages for the core ontology artifact.
-- [ ] Add config and SHACL once the first artifact path is healthy.
-- [ ] Defer prov/job artifacts until the core/config/SHACL slice has been inspected.
-- [ ] Preview the publication worktree locally and inspect representative pages.
-- [ ] Record any release-blocking gaps in config defaults, history/state naming, source provenance, generated links, or CLI ergonomics.
-- [ ] Run focused tests for any patches, then `deno task check`, `deno task lint`, and `deno task ci`.
-- [ ] Update [[wd.release-runbook]] with the final dogfood commands if they become release preflight steps.
+- [x] Integrate or source-bind `semantic-flow-core-ontology.ttl` from `main`.
+- [x] Weave/generate ResourcePages for the core ontology artifact.
+- [x] Add config and SHACL once the first artifact path is healthy.
+- [x] Defer prov/job artifacts until the core/config/SHACL slice has been inspected.
+- [x] Preview the publication worktree locally and inspect representative pages.
+- [x] Record any release-blocking gaps in config defaults, history/state naming, source provenance, generated links, or CLI ergonomics.
+- [x] Run focused tests for any patches, then `deno task check`, `deno task lint`, and `deno task ci`.
+- [x] Update [[wd.release-runbook]] with the final dogfood commands if they become release preflight steps.

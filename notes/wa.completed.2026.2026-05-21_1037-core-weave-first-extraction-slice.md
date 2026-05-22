@@ -8,7 +8,7 @@ created: 1779385025853
 
 ## Goals
 
-- Execute the next small slice of [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] by moving remaining shared request, candidate, and planning model definitions out of `src/core/weave/weave.ts`.
+- Execute the next small slice of [[wa.completed.2026.2026-05-22_1422-core-weave-rdf-and-turtle-helper-extraction]] by moving remaining shared request, candidate, and planning model definitions out of `src/core/weave/weave.ts`.
 - Preserve public imports from `src/core/weave/weave.ts` through façade re-exports.
 - Avoid behavior changes, generated RDF changes, generated ResourcePage changes, and semantic helper rewrites.
 - Establish a clean dependency direction for later core weave planner extraction slices.
@@ -131,7 +131,7 @@ Record performance optimization opportunities, bugs, and suspicious behavior fou
 
 ## Implementation Plan
 
-- [x] Re-read [[wd.general-guidance]], [[wd.testing]], and [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] before editing.
+- [x] Re-read [[wd.general-guidance]], [[wd.testing]], and [[wa.completed.2026.2026-05-22_1422-core-weave-rdf-and-turtle-helper-extraction]] before editing.
 - [x] Groom this note against the current post-1036 code before implementation.
 - [x] Record current line count and exported type/interface names from `src/core/weave/weave.ts`; latest handoff count is 8,597 lines.
 - [x] Run a pre-slice import graph/circular-dependency audit rooted at `src/core/weave/weave.ts`.
@@ -146,7 +146,7 @@ Record performance optimization opportunities, bugs, and suspicious behavior fou
 - [x] Run `deno task check` after the first move.
 - [x] Run focused core and integration tests.
 - [x] Record any discovered bugs or performance opportunities under "Orthogonal Opportunities" instead of widening this implementation slice.
-- [d] Update [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] if this slice reveals a better extraction order.
+- [d] Update [[wa.completed.2026.2026-05-22_1422-core-weave-rdf-and-turtle-helper-extraction]] if this slice reveals a better extraction order.
 - [x] Provide a commit message that clearly says this is a behavior-preserving type/model extraction.
 
 ## Suggested Commit Message

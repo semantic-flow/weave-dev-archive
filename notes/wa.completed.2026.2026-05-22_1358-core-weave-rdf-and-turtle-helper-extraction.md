@@ -2,13 +2,13 @@
 id: m1yk51lgpabbyjj0aaq7b8r
 title: 2026 05 22_1358 Core Weave Rdf and Turtle Helper Extraction
 desc: ''
-updated: 1779483532145
+updated: 1779484900943
 created: 1779483532145
 ---
 
 ## Goals
 
-- Execute the next small slice of [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] after [[wa.completed.2026.2026-05-21_1037-core-weave-first-extraction-slice]].
+- Execute the next small slice of [[wa.completed.2026.2026-05-22_1422-core-weave-rdf-and-turtle-helper-extraction]] after [[wa.completed.2026.2026-05-21_1037-core-weave-first-extraction-slice]].
 - Move pure RDF parsing/query/resolution helpers and pure Turtle block-editing helpers out of `src/core/weave/weave.ts`.
 - Preserve planner behavior, public TypeScript compatibility from `src/core/weave/weave.ts`, generated RDF bytes, generated ResourcePage output, and CLI/runtime behavior.
 - Establish clean leaf helper modules that make later slice-classification and payload-version extraction easier.
@@ -122,7 +122,7 @@ These are intentionally not part of this slice, but should not be lost:
 
 ## Implementation Plan
 
-- [x] Re-read [[wd.general-guidance]], [[wd.testing]], [[ont.summary.core]], and [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] before editing.
+- [x] Re-read [[wd.general-guidance]], [[wd.testing]], [[ont.summary.core]], and [[wa.completed.2026.2026-05-22_1422-core-weave-rdf-and-turtle-helper-extraction]] before editing.
 - [x] Record current line count and exported function/type names from `src/core/weave/weave.ts`; latest handoff count is 8,515 lines.
 - [x] Run a pre-slice import graph/circular-dependency audit rooted at `src/core/weave/weave.ts`.
 - [x] Identify the exact helper set to move first and leave any high-coupling helpers in `weave.ts` with a note.
@@ -133,17 +133,6 @@ These are intentionally not part of this slice, but should not be lost:
 - [x] Run `deno task check` after the first helper module move.
 - [x] Run `deno task fmt`, `deno task lint`, `deno task check`, post-slice graph audit, and focused core/integration tests.
 - [x] Record any discovered bugs or performance opportunities under "Orthogonal Opportunities" instead of widening this implementation slice.
-- [x] Update [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] and [[wd.codebase-overview]] with the resulting module layout.
+- [x] Update [[wa.completed.2026.2026-05-22_1422-core-weave-rdf-and-turtle-helper-extraction]] and [[wd.codebase-overview]] with the resulting module layout.
 - [x] Provide a commit message that clearly says this is a behavior-preserving RDF/Turtle helper extraction.
 
-## Suggested Commit Message
-
-```text
-refactor(core-weave): extract RDF and Turtle helpers
-
-- move core weave RDF parser/query/resolution helpers into rdf_helpers.ts
-- move Turtle subject-block editing helpers into turtle_blocks.ts
-- keep source-locator helpers, SFLO semantic shorthands, shape assertions, slice classification, and renderer behavior in weave.ts
-- preserve weave.ts planner surface and generated RDF/Page behavior
-- verify with fmt, lint, check, core weave tests, integration weave tests, and import-cycle audit
-```

@@ -35,7 +35,7 @@ The extraction should proceed from low-risk helper clusters outward. The safest 
 
 Do not extract `generatePreparedPages` or `collectGeneratedPageFiles` first. Those functions sit at the top of the page-generation dependency cone and will either drag most helper families with them or create awkward temporary cycles. Create the destination file name early only if it helps land imports, then move leaf clusters first.
 
-This task should coordinate with [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] and [[wa.completed.2026.2026-05-21_1037-core-weave-first-extraction-slice]] because core and runtime both use ResourcePage model names. Avoid creating duplicate incompatible type families.
+This task should coordinate with [[wa.completed.2026.2026-05-22_1422-core-weave-rdf-and-turtle-helper-extraction]] and [[wa.completed.2026.2026-05-21_1037-core-weave-first-extraction-slice]] because core and runtime both use ResourcePage model names. Avoid creating duplicate incompatible type families.
 
 ## Open Issue Resolutions
 
@@ -83,7 +83,7 @@ This task should coordinate with [[wa.task.2026.2026-05-21_0849_careful-extracti
 
 - Do not redesign generated page visuals, CSS, HTML structure, page content models, or raw source panel semantics.
 - Do not split candidate loading, version execution, or prepared weave orchestration; use [[wa.task.2026.2026-05-21_1035-runtime-weave-module-decomposition]].
-- Do not split the core weave planner; use [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]].
+- Do not split the core weave planner; use [[wa.completed.2026.2026-05-22_1422-core-weave-rdf-and-turtle-helper-extraction]].
 - Do not introduce a new rendering engine or template system.
 - Do not regenerate fixture ladders unless an existing test reveals drift that must be resolved.
 

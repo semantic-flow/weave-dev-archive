@@ -2,7 +2,7 @@
 id: 0rel5ok0mf2onxigtybqjb1
 title: 2026 05 19_2349 Branch Based Mesh Floating Source Fix
 desc: ''
-updated: 1779259750960
+updated: 1779485759601
 created: 1779259750960
 ---
 
@@ -180,4 +180,3 @@ The current draft update to [[wu.cli-reference.examples.sflo]] uses `/tmp/sflo-s
 - [x] Replace the `/tmp/sflo-source` workaround in [[wu.cli-reference.examples.sflo]] with the final branch-based mesh floating source workflow.
 - [ ] Regenerate the scratch SFLO `gh-pages` mesh from the selected SFLO source checkout and verify no host-local or sibling-worktree paths appear.
 - [x] Run focused tests, `deno task check`, and `deno task lint`.
-- [ ] Provide separate commit messages for Weave code/docs and any regenerated SFLO `gh-pages` publication changes.

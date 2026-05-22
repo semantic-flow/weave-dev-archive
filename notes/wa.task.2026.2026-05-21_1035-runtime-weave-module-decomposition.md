@@ -75,7 +75,7 @@ The page-generation block is large enough to deserve its own task. In this task,
 ## Non-Goals
 
 - Do not redesign ResourcePage generation, page models, raw source panels, reference rendering, or history group collection; use [[wa.completed.2026.2026-05-21_1036-runtime-resource-page-generation-decomposition]].
-- Do not split `src/core/weave/weave.ts`; use [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] and [[wa.completed.2026.2026-05-21_1037-core-weave-first-extraction-slice]].
+- Do not split `src/core/weave/weave.ts`; use [[wa.completed.2026.2026-05-22_1422-core-weave-rdf-and-turtle-helper-extraction]] and [[wa.completed.2026.2026-05-21_1037-core-weave-first-extraction-slice]].
 - Do not change target semantics, exact-vs-recursive coverage behavior, or version target parsing.
 - Do not add persistent caches, file watchers, or daemon-level state.
 - Do not combine this with page visual changes, fixture regeneration, or CLI documentation rewrites.

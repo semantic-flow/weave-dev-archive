@@ -14,7 +14,7 @@ created: 1779046740000
 
 ## Context
 
-The sflo branch-published dogfood run for [[wa.task.2026.2026-05-16_1707-create-sflo-branch-mesh]] exposed generated `_history001` trees under extracted-term Knop support artifacts such as `config/hasResolvedConfigCachePolicy/_knop/_meta` and `_inventory`. The current defaults set global history tracking to `currentOnly`, payload/config to `versioned`, and Knop inventory to `currentOnly`; Knop metadata inherits `currentOnly`.
+The sflo branch-published dogfood run for [[wa.completed.2026.2026-05-16_1707-create-sflo-branch-mesh]] exposed generated `_history001` trees under extracted-term Knop support artifacts such as `config/hasResolvedConfigCachePolicy/_knop/_meta` and `_inventory`. The current defaults set global history tracking to `currentOnly`, payload/config to `versioned`, and Knop inventory to `currentOnly`; Knop metadata inherits `currentOnly`.
 
 ## Implementation Plan
 

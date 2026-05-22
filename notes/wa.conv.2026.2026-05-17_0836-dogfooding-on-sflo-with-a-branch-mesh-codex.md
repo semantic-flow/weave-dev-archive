@@ -1,18 +1,24 @@
 ---
 id: dogfooding-on-sflo-with-vk6fot
-title: 'dogfooding on sflo with a branch mesh'
+title: dogfooding on sflo with a branch mesh
 desc: ''
-created: 1779032201502
 updated: 1779032201502
-participants: [djradon, codex.gpt-5.5]
-conversationEventKinds: [message.assistant, message.user, tool.call, tool.result]
+created: 1779032201502
+participants:
+  - djradon
+  - codex.gpt-5.5
+conversationEventKinds:
+  - message.assistant
+  - message.user
+  - tool.call
+  - tool.result
 ---
 
 # djradon_2026-05-16_2035_53
 
 dogfooding on sflo with a branch mesh
 
-Getting ready to implement [[wa.task.2026.2026-05-16_1707-create-sflo-branch-mesh]] 
+Getting ready to implement [[wa.completed.2026.2026-05-16_1707-create-sflo-branch-mesh]] 
 
 open issues: we now have --add-source-references` / `--reference-role canonical implemented (theoretically).  
 

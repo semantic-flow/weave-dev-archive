@@ -361,3 +361,95 @@ docs(tasks): record core weave RDF helper extraction
 ```
 
 I’m ready for the next implementation slice. My recommendation: slice classification next, centered on `detectPendingWeaveSlice`, `classifyWeaveSlice`, and related pending-slice policy checks.
+
+# User_2026-05-22_1421_23
+
+ok, next slice sounds good. Do you want a separate task?
+
+# gpt-5.5_2026-05-22_1421_43
+
+Yes. I’d keep a separate task.
+
+The RDF/Turtle slice has a clean “done” boundary now, and slice classification has different risk: it touches semantic policy, pending-state detection, and probably more SFLO-specific predicates. I’d make a small task like:
+
+`wa.task.2026.2026-05-22_<time>-core-weave-slice-classification-extraction`
+
+Scope I’d put in it:
+- Move `detectPendingWeaveSlice`, `classifyWeaveSlice`, and closely coupled pending-slice helpers into a focused module, probably `src/core/weave/slice_classification.ts`.
+- Keep `WeaveSlice` in `slices.ts`.
+- Preserve `detectPendingWeaveSlice` export from `weave.ts` for compatibility.
+- Do not move payload layout, overwrite planning, large renderers, or shape assertion families.
+- Watch whether SFLO semantic helpers should move with classification or stay behind until there’s a clearer semantic-helper slice.
+
+I’d create the task first, update the parent, then implement from that task. That keeps the breadcrumb trail nice and boring, which is exactly what this refactor wants.
+
+# User_2026-05-22_1424_56
+
+ok, file created. fill out the task and update the parent
+
+# gpt-5.5_2026-05-22_1425_04
+
+I’ll fill the new slice task as a narrow implementation brief and update the parent’s extraction order/status to point at it. I’ll also check the nearby 1422/1424 notes so we don’t accidentally document the wrong file.
+
+# gpt-5.5_2026-05-22_1425_11
+
+The new 1424 note exists and is just the template. The parent path moved under the visible `weave-dev-archive` location rather than the dependency path I tried first, so I’m locating the current archive layout before patching.
+
+# gpt-5.5_2026-05-22_1425_31
+
+There’s a wrinkle: the parent task is currently deleted in the archive worktree, not renamed to a completed note. Since you asked me to update the parent, I’m going to resurrect that parent from git and apply the current extraction-order updates rather than letting that deletion erase the trail.
+
+# gpt-5.5_2026-05-22_1426_04
+
+I’ve got enough shape now. The classification function is a small but semantically dense island near the top of `weave.ts`, and it leans on a few low-level RDF helpers plus SFLO predicates; the task should explicitly keep payload layout and overwrite logic out of scope.
+
+# gpt-5.5_2026-05-22_1428_37
+
+The archive-wide whitespace check is tripping over an unrelated modified conversation note, not the files I touched. I’m narrowing the check to the two task notes so we don’t mix that separate archive churn into this task.
+
+# gpt-5.5_2026-05-22_1428_50
+
+Filled out the slice task and updated the parent.
+
+Updated:
+- [slice classification task](wa.task.2026.2026-05-22_1424-core-weave-slice-classification-extraction.md)
+- [parent extraction refactor task](wa.task.2026.2026-05-21_0849_careful-extraction-refactor.md)
+
+I made the classification task conservative but explicit about the main implementation wrinkle: `detectPendingWeaveSlice` depends on shared history-query helpers like `isDeclaredArtifactHistory` and `requirePayloadCurrentStatePathFromInventory`, so the task allows a tiny `artifact_history_queries.ts` helper module if that avoids making payload code import from `slice_classification.ts`.
+
+Small note: the parent task was deleted in the archive worktree, so I restored it from git and applied the update because you explicitly asked to update the parent. I left the other archive churn alone.
+
+Checks:
+- Targeted diff check for the parent passed.
+- No trailing whitespace in the two touched task notes.
+- Archive-wide `diff --check` still fails on unrelated trailing whitespace in `wa.conv.2026.2026-05-17_0836-dogfooding-on-sflo-with-a-branch-mesh-codex.md:21`.
+
+Ready to begin implementation.
+
+# User_2026-05-22_1435_23
+
+ok, proceed
+
+# gpt-5.5_2026-05-22_1435_37
+
+I’ll start by taking the promised baseline: current `weave.ts` size/export surface, import graph shape, and the focused check/test path. Then I’ll move the classification island with the smallest helper set that keeps dependencies clean.
+
+# gpt-5.5_2026-05-22_1436_07
+
+The baseline is clean: `weave.ts` is 8,026 lines, public exports are unchanged, graph audit is 20 modules / 53 edges / 0 core-runtime edges / 0 cycles, and `deno task check` plus the core weave tests passed. I’m going to use two small modules: classification itself, plus a tiny shared artifact-history query module so payload code doesn’t have to import classification policy.
+
+# gpt-5.5_2026-05-22_1436_22
+
+I’m making the code move now. The important boundary choice is that `artifact_history_queries.ts` will hold only the history checks shared by classification and existing payload logic; `slice_classification.ts` will own the actual pending-slice decision order.
+
+# gpt-5.5_2026-05-22_1438_03
+
+The first move type-checks. Lint caught one stale constant left behind in `weave.ts`; I removed that and now I’m formatting/linting/checking the moved shape before running the focused tests.
+
+# gpt-5.5_2026-05-22_1438_19
+
+The extracted modules are now formatted, linted, and type-checked. Next I’m running the behavior tests and the post-move import graph audit; this is the part that tells us whether the move stayed boring.
+
+# gpt-5.5_2026-05-22_1439_13
+
+The behavior checks passed: 56 core weave tests and 72 focused integration tests. The move left `weave.ts` at 7,703 lines; I also backed out a transient `deno.lock` entry that came from my one-off graph script rather than the code change. Next is durable note/overview cleanup.
