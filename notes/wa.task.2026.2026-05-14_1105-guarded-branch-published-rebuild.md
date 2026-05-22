@@ -15,7 +15,7 @@ created: 1778766300000
 
 ## Summary
 
-[[wa.task.2026.2026-05-13_1655-support-gh-pages-branch-based-deployments]] proves the clean-source, incremental branch-published path. Rebuild-from-scratch is still useful for disaster recovery, fixture regeneration, and intentional model churn, but it has a different risk profile. It should not ride along as a casual flag on the first local deploy implementation.
+[[wa.completed.2026.2026-05-13_1655-support-gh-pages-branch-based-deployments]] proves the clean-source, incremental branch-published path. Rebuild-from-scratch is still useful for disaster recovery, fixture regeneration, and intentional model churn, but it has a different risk profile. It should not ride along as a casual flag on the first local deploy implementation.
 
 This task is for the later guarded rebuild path. The mode should require an explicit operator decision, validate preserved-file policy before deleting anything, and make the planned deletion/write set inspectable before it mutates a publication worktree.
 

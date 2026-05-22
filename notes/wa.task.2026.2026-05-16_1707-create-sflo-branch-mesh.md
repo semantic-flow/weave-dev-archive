@@ -2,7 +2,7 @@
 id: ilvklxv3r9r6kdf8t5xjug4
 title: 2026 05 16_1707 Create Sflo Branch Mesh
 desc: ''
-updated: 1778999947808
+updated: 1779484591829
 created: 1778976491069
 ---
 
@@ -95,7 +95,7 @@ That is enough for the default ResourcePage renderer to pick up a title and desc
 
 ## Bootstrap Config Evaluation
 
-The useful split from [[wa.task.2026.2026-05-13_1655-support-gh-pages-branch-based-deployments]] still holds: operation-local checkout paths are not durable mesh facts, while source provenance and target bindings are durable publication facts.
+The useful split from [[wa.completed.2026.2026-05-13_1655-support-gh-pages-branch-based-deployments]] still holds: operation-local checkout paths are not durable mesh facts, while source provenance and target bindings are durable publication facts.
 
 For this dogfood pass, bootstrap input can stay outside `sflo:main` when it only says how this run is wired locally:
 
@@ -201,4 +201,4 @@ The config namespace now sits under the `sflo` mesh base, so ordinary mesh-scope
 - [ ] Preview the publication worktree locally and inspect representative pages.
 - [ ] Record any release-blocking gaps in config defaults, history/state naming, source provenance, generated links, or CLI ergonomics.
 - [ ] Run focused tests for any patches, then `deno task check`, `deno task lint`, and `deno task ci`.
-- [ ] Update [[dev.release-runbook]] with the final dogfood commands if they become release preflight steps.
+- [ ] Update [[wd.release-runbook]] with the final dogfood commands if they become release preflight steps.

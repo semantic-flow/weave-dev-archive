@@ -2,7 +2,7 @@
 id: evh0tcow0l532ujdetucpe6
 title: 2026 05 21_1037 Core Weave Request Candidate Model Extraction
 desc: ''
-updated: 1779479509411
+updated: 1779483483682
 created: 1779385025853
 ---
 
@@ -113,24 +113,50 @@ The existing `src/core/weave/weave.ts` should continue to export the same public
 
 Record performance optimization opportunities, bugs, and suspicious behavior found while implementing this task here. Do not fix them in this slice unless they block the behavior-preserving extraction; keep this slice narrow and create/update follow-up tasks when needed.
 
-- None recorded yet.
+- None found during implementation.
+
+## Implementation Results
+
+- Starting `src/core/weave/weave.ts` line count was 8,597; post-slice line count is 8,515.
+- Pre-slice import graph rooted at `src/core/weave/weave.ts`: 13 local `src` modules, 21 local import edges, 12 direct local imports from `weave.ts`, 0 `src/core` -> `src/runtime` edges, and 0 local cycles.
+- Post-slice import graph rooted at `src/core/weave/weave.ts`: 18 local `src` modules, 35 local import edges, 16 direct local imports from `weave.ts`, 0 `src/core` -> `src/runtime` edges, and 0 local cycles.
+- `src/core/weave/weave.ts` now re-exports the moved public type names while planner behavior remains in place.
+- Runtime modules touched by the move now import moved type names from `requests.ts`, `candidates.ts`, `source_models.ts`, or `slices.ts` instead of from the large façade.
+- Verification passed:
+  - `deno task fmt`
+  - `deno task lint`
+  - `deno task check`
+  - `WEAVE_GENERATED_AT=2026-05-03T00:00:00.000Z deno test --preload=tests/support/test_tmp_harness.ts --allow-read --allow-write --allow-run=git,deno --allow-env src/core/weave/weave_test.ts`
+  - `WEAVE_GENERATED_AT=2026-05-03T00:00:00.000Z deno test --preload=tests/support/test_tmp_harness.ts --allow-read --allow-write --allow-run=git,deno --allow-env tests/integration/validate_version_generate_test.ts tests/integration/weave_test.ts`
 
 ## Implementation Plan
 
-- [ ] Re-read [[wd.general-guidance]], [[wd.testing]], and [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] before editing.
+- [x] Re-read [[wd.general-guidance]], [[wd.testing]], and [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] before editing.
 - [x] Groom this note against the current post-1036 code before implementation.
-- [ ] Record current line count and exported type/interface names from `src/core/weave/weave.ts`; latest handoff count is 8,597 lines.
-- [ ] Run a pre-slice import graph/circular-dependency audit rooted at `src/core/weave/weave.ts`.
-- [ ] Move operation request types into `src/core/weave/requests.ts`.
-- [ ] Move `RepositorySourceFloatingLocator` into `src/core/weave/source_models.ts`, and re-export it from `resource_page_models.ts` and `weave.ts`.
-- [ ] Move exported working-artifact and candidate model types into `src/core/weave/candidates.ts`.
-- [ ] Move `PlanWeaveInput` and `WeavePlan` into `src/core/weave/planning_models.ts` unless the import graph audit exposes a real cycle.
-- [ ] Move `WeaveSlice` into `src/core/weave/slices.ts`.
+- [x] Record current line count and exported type/interface names from `src/core/weave/weave.ts`; latest handoff count is 8,597 lines.
+- [x] Run a pre-slice import graph/circular-dependency audit rooted at `src/core/weave/weave.ts`.
+- [x] Move operation request types into `src/core/weave/requests.ts`.
+- [x] Move `RepositorySourceFloatingLocator` into `src/core/weave/source_models.ts`, and re-export it from `resource_page_models.ts` and `weave.ts`.
+- [x] Move exported working-artifact and candidate model types into `src/core/weave/candidates.ts`.
+- [x] Move `PlanWeaveInput` and `WeavePlan` into `src/core/weave/planning_models.ts` unless the import graph audit exposes a real cycle.
+- [x] Move `WeaveSlice` into `src/core/weave/slices.ts`.
 - [x] ResourcePage model types have already moved via [[wa.completed.2026.2026-05-21_1036-runtime-resource-page-generation-decomposition]] into `src/core/weave/resource_page_models.ts`.
-- [ ] Re-export moved public types from `src/core/weave/weave.ts`.
-- [ ] Prefer `import type` for moved types in implementation files, and update touched runtime imports to the focused type modules.
-- [ ] Run `deno task check` after the first move.
-- [ ] Run focused core and integration tests.
-- [ ] Record any discovered bugs or performance opportunities under "Orthogonal Opportunities" instead of widening this implementation slice.
-- [ ] Update [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] if this slice reveals a better extraction order.
-- [ ] Provide a commit message that clearly says this is a behavior-preserving type/model extraction.
+- [x] Re-export moved public types from `src/core/weave/weave.ts`.
+- [x] Prefer `import type` for moved types in implementation files, and update touched runtime imports to the focused type modules.
+- [x] Run `deno task check` after the first move.
+- [x] Run focused core and integration tests.
+- [x] Record any discovered bugs or performance opportunities under "Orthogonal Opportunities" instead of widening this implementation slice.
+- [d] Update [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] if this slice reveals a better extraction order.
+- [x] Provide a commit message that clearly says this is a behavior-preserving type/model extraction.
+
+## Suggested Commit Message
+
+```text
+refactor(core-weave): extract request and candidate model types
+
+- move core weave request contracts into requests.ts while preserving weave.ts type re-exports
+- move reusable source locator, candidate, planning, and slice-name types into focused core weave modules
+- update runtime weave type imports to use the focused model modules directly
+- keep planner functions and generated RDF/Page behavior unchanged
+- verify with fmt, lint, check, core weave tests, integration weave tests, and import-cycle audit
+```

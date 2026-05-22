@@ -35,11 +35,11 @@ The extraction should proceed from low-risk helper clusters outward. The safest 
 
 Do not extract `generatePreparedPages` or `collectGeneratedPageFiles` first. Those functions sit at the top of the page-generation dependency cone and will either drag most helper families with them or create awkward temporary cycles. Create the destination file name early only if it helps land imports, then move leaf clusters first.
 
-This task should coordinate with [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] and [[wa.task.2026.2026-05-21_1037-core-weave-first-extraction-slice]] because core and runtime both use ResourcePage model names. Avoid creating duplicate incompatible type families.
+This task should coordinate with [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] and [[wa.completed.2026.2026-05-21_1037-core-weave-first-extraction-slice]] because core and runtime both use ResourcePage model names. Avoid creating duplicate incompatible type families.
 
 ## Open Issue Resolutions
 
-- ResourcePage model types must move out of `src/core/weave/weave.ts` into a shared core model module before broad runtime page-generation extraction. Hard gate: do not proceed past the model move step until [[wa.task.2026.2026-05-21_1037-core-weave-first-extraction-slice]] has landed the `ResourcePageModel` move, or absorb that move into this task. The current working slice absorbed it by adding `src/core/weave/resource_page_models.ts` and preserving `src/core/weave/weave.ts` re-exports.
+- ResourcePage model types must move out of `src/core/weave/weave.ts` into a shared core model module before broad runtime page-generation extraction. Hard gate: do not proceed past the model move step until [[wa.completed.2026.2026-05-21_1037-core-weave-first-extraction-slice]] has landed the `ResourcePageModel` move, or absorb that move into this task. The current working slice absorbed it by adding `src/core/weave/resource_page_models.ts` and preserving `src/core/weave/weave.ts` re-exports.
 - The helpers that are truly runtime-only today are the workspace readers, raw-source panel file readers, `OperationalLocalPathPolicy` calls, floating repository source resolution, effective-config loading, ResourcePageDefinition artifact loading, best-effort child context loading, and generated HTML writing.
 - The helpers most likely to become shared/core are ResourcePage model types, pure history group parsing/merging/modeling, pure ReferenceCatalog parsing/model conversion, path-to-resource helpers, small RDF query helpers, and maybe byte-limit raw-source panel model construction once an API/service wants to present source excerpts.
 - `writeGeneratedPagesUpsert` should move with `page_generation.ts`, not with general planned-file writing. Its timestamp-only skip behavior is generated-HTML-specific and depends on the current ResourcePage footer shape.
@@ -52,7 +52,7 @@ This task should coordinate with [[wa.task.2026.2026-05-21_0849_careful-extracti
 - Keep page visual redesign, page content-model redesign, and generated HTML changes out of scope.
 - Keep `executeGenerate` and `executeWeave` import/call surfaces stable.
 - Put API/service-shareable models and pure helpers in the shared core layer. Prefer modules under `src/runtime/weave/` only when a helper depends on local filesystem runtime behavior, operational policy, logging/timing, or best-effort local recovery.
-- Move `ResourcePageModel` and related model types first. Do not proceed into significant runtime extraction until [[wa.task.2026.2026-05-21_1037-core-weave-first-extraction-slice]] has landed that move, or this task has explicitly absorbed it.
+- Move `ResourcePageModel` and related model types first. Do not proceed into significant runtime extraction until [[wa.completed.2026.2026-05-21_1037-core-weave-first-extraction-slice]] has landed that move, or this task has explicitly absorbed it.
 - Treat `page_generation.ts` as the final assembly/orchestration module, not the first extraction target.
 - Audit the import graph before cutting each new helper family, then run a circular-dependency check after each slice. `deno task check` is still required, but it is not a substitute for reviewing dependency direction and cycles.
 
@@ -91,7 +91,7 @@ This task should coordinate with [[wa.task.2026.2026-05-21_0849_careful-extracti
 
 - [x] Re-read [[wd.general-guidance]], [[wd.testing]], and the latest `src/runtime/weave/weave.ts` page-generation section before editing.
 - [x] Record the starting line count and list the page-generation helper families currently in `src/runtime/weave/weave.ts`; review baseline was 3,430 lines.
-- [x] Hard gate: coordinate with [[wa.task.2026.2026-05-21_1037-core-weave-first-extraction-slice]] and do not proceed past this item until it has landed the `ResourcePageModel` move, or absorb that move into this task. Current slice absorbed it by adding `src/core/weave/resource_page_models.ts` and keeping `src/core/weave/weave.ts` re-exports stable.
+- [x] Hard gate: coordinate with [[wa.completed.2026.2026-05-21_1037-core-weave-first-extraction-slice]] and do not proceed past this item until it has landed the `ResourcePageModel` move, or absorb that move into this task. Current slice absorbed it by adding `src/core/weave/resource_page_models.ts` and keeping `src/core/weave/weave.ts` re-exports stable.
 - [x] Run the first import-graph audit before the next extraction slice. Current `deno info --json src/runtime/weave/weave.ts` scan sees 40 local `src/` modules, 131 local import edges, 28 direct local imports from `src/runtime/weave/weave.ts`, 0 `src/core/` -> `src/runtime/` edges, and 0 local cycles.
 - [x] Extract pure history group model helpers into a shared core module if dependency direction stays clean; keep runtime inventory-loading wrappers under `src/runtime/weave/`.
 - [x] Audit direct dependencies of `src/runtime/weave/weave.ts` before the page-context slice so dependency direction and cycle risk are visible before cutting. Pre-slice scan had 42 local `src/` modules, 145 local import edges, 30 direct local imports from `src/runtime/weave/weave.ts`, 0 `src/core/` -> `src/runtime/` edges, and 0 local cycles.

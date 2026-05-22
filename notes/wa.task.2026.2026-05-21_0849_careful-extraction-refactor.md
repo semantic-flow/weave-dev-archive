@@ -2,7 +2,7 @@
 id: 4cql6p0o4p6kvdz50s5k7hh
 title: 2026 05 21_0849_careful Extraction Refactor
 desc: ''
-updated: 1779378607538
+updated: 1779484052179
 created: 1779378607538
 ---
 
@@ -25,7 +25,7 @@ This is a code-extraction refactor of the weave planner. It is not a refactor of
 
 Current rough shape:
 
-- `src/core/weave/weave.ts` is about 8,700 lines.
+- `src/core/weave/weave.ts` is about 8,000 lines after [[wa.completed.2026.2026-05-21_1037-core-weave-first-extraction-slice]] moved shared request, source, candidate, planning, and slice-name model types into focused modules and [[wa.task.2026.2026-05-22_1358-core-weave-rdf-and-turtle-helper-extraction]] moved low-level RDF and Turtle helpers.
 - `src/runtime/weave/weave.ts` is about 4,900 lines and has its own cleanup track in [[wa.task.2026.2026-05-21_1035-runtime-weave-module-decomposition]] and [[wa.completed.2026.2026-05-21_1036-runtime-resource-page-generation-decomposition]]. This core planner task should not absorb those runtime refactors.
 - The core file mixes high-level orchestration with low-level RDF/Turtle utilities. That makes small behavior changes feel like broad edits and makes review harder.
 - `core/targeting.ts` now owns portable target request semantics after [[wa.task.2026.2026-04-08_1615-weave-orchestration-refactor]]. Do not pull target normalization, shared target derivation, or requested-target coverage back into `src/core/weave/weave.ts` during this extraction.
@@ -33,8 +33,8 @@ Current rough shape:
 
 Suggested extraction order:
 
-1. First executable slice: [[wa.task.2026.2026-05-21_1037-core-weave-first-extraction-slice]] should move shared type/model definitions while preserving façade re-exports from `src/core/weave/weave.ts`.
-2. Pure helpers next: move RDF query helpers and Turtle block helpers that do not depend on planner state.
+1. Completed first executable slice: [[wa.completed.2026.2026-05-21_1037-core-weave-first-extraction-slice]] moved shared type/model definitions while preserving façade re-exports from `src/core/weave/weave.ts`.
+2. Implemented second executable slice: [[wa.task.2026.2026-05-22_1358-core-weave-rdf-and-turtle-helper-extraction]] moved RDF query helpers and Turtle block helpers that do not depend on planner state.
 3. Slice classification: move `detectPendingWeaveSlice`, `classifyWeaveSlice`, and related policy checks into a slice module.
 4. Payload version layout: move `PayloadVersionLayout`, first/second payload layout resolution, and guarded overwrite-state planning helpers into a payload-version module.
 5. Render helpers last: split large Turtle renderers only when their dependency direction is clear, because they are verbose and fixture-sensitive.
@@ -44,9 +44,9 @@ The healthiest end state is probably a small `src/core/weave/weave.ts` that coor
 ## Open Issues
 
 - [x] Public imports from `src/core/weave/weave.ts` should remain valid during this refactor. New internal modules may be imported directly by internal callers when useful, but `weave.ts` remains the compatibility façade for the current public core weave surface.
-- [x] The first extraction slice should be model/type extraction, tracked separately in [[wa.task.2026.2026-05-21_1037-core-weave-first-extraction-slice]].
+- [x] The first extraction slice should be model/type extraction, tracked separately in [[wa.completed.2026.2026-05-21_1037-core-weave-first-extraction-slice]].
+- [x] The second extraction slice should be pure RDF query and Turtle block helper extraction, tracked separately in [[wa.task.2026.2026-05-22_1358-core-weave-rdf-and-turtle-helper-extraction]].
 - [x] Runtime planner cleanup should not be done in this task. Use [[wa.task.2026.2026-05-21_1035-runtime-weave-module-decomposition]] for runtime orchestration/candidate/version seams and [[wa.completed.2026.2026-05-21_1036-runtime-resource-page-generation-decomposition]] for runtime page-generation seams.
-- Are legacy Alice Bio specific render helpers still needed as code, or can some be replaced by generalized renderers after the move-only phase?
 
 ## Decisions
 
@@ -85,15 +85,13 @@ The healthiest end state is probably a small `src/core/weave/weave.ts` that coor
 
 ## Implementation Plan
 
-- [ ] Re-read [[wd.general-guidance]], [[wd.testing]], and the latest `src/core/weave/weave.ts` before editing.
-- [ ] Record the starting line count and current public exports from `src/core/weave/weave.ts`.
-- [ ] Use [[wa.task.2026.2026-05-21_1037-core-weave-first-extraction-slice]] for the first model/type extraction slice.
-- [ ] Extract RDF query/assertion helpers that are pure and planner-independent.
-- [ ] Extract Turtle block editing/render support helpers that are pure and planner-independent.
+- [x] Record the starting line count and current public exports from `src/core/weave/weave.ts`.
+- [x] Use [[wa.completed.2026.2026-05-21_1037-core-weave-first-extraction-slice]] for the first model/type extraction slice.
+- [x] Use [[wa.task.2026.2026-05-22_1358-core-weave-rdf-and-turtle-helper-extraction]] for the second RDF/Turtle helper extraction slice.
+- [x] Extract RDF query/resolution helpers that are pure and planner-independent.
+- [x] Extract Turtle block editing/render support helpers that are pure and planner-independent.
 - [ ] Extract weave slice detection/classification helpers.
 - [ ] Extract payload version layout and current-state overwrite helpers.
 - [ ] Consider splitting ResourcePage model-builder helpers if the earlier extractions leave clear dependency direction.
-- [ ] Run focused tests after each extraction slice and keep each patch reviewable.
-- [ ] Update [[wd.codebase-overview]] if the final module layout changes materially.
-- [ ] Run `deno task fmt`, `deno task lint`, `deno task check`, and `deno task test`.
-- [ ] Provide commit message(s) that call out move-only slices and any non-move cleanup separately.
+- [ ] if possible, legacy Alice Bio-specific (and other fixture ladder) render helpers should be replaced by generalized renderers after the move-only phase?
+- [x] Update [[wd.codebase-overview]].

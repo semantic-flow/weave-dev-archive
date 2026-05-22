@@ -67,7 +67,7 @@ and `docs/ontology/A/_knop/_sources/sources.ttl` can carry:
   sfc:hasArtifactResolutionMode <https://semantic-flow.github.io/ontology/core/ArtifactResolutionMode/Current> .
 ```
 
-That is the current intended default from [[wa.task.2026.2026-05-04-extraction-improvements]]. The first extracted-Knop weave path currently rejects it because `assertCurrentKnopInventoryShapeForFirstExtractedKnopWeave` still requires:
+That is the current intended default from [[wa.completed.2026.2026-05-04-extraction-improvements]]. The first extracted-Knop weave path currently rejects it because `assertCurrentKnopInventoryShapeForFirstExtractedKnopWeave` still requires:
 
 ```turtle
 sfc:hasRequestedTargetState <...> ;
@@ -97,7 +97,7 @@ Status output should be designed separately from structured logging. The current
 - Should first-payload weave also support recursive target selection under a parent path such as `--target designatorPath=ontology,recursive=true` for multiple pending payloads? This should follow existing target normalization semantics rather than adding special first-payload rules.
 - Does generated page ordering or navigation currently assume only one first-payload candidate? This needs verification in the runtime page seam.
 - Do Accord manifests need a new URPX-inspired fixture, or should the existing Fantasy Rules sidecar ladder be extended to cover two pending first payloads before the first payload weave?
-- Should the extracted-Knop current-source fix live in this task or in [[wa.task.2026.2026-05-04-extraction-improvements]]? Because it blocks the same URPX demo and is a stale weave assertion, this note should track it, while the extraction-improvements note remains the source of the intended extraction-source contract.
+- Should the extracted-Knop current-source fix live in this task or in [[wa.completed.2026.2026-05-04-extraction-improvements]]? Because it blocks the same URPX demo and is a stale weave assertion, this note should track it, while the extraction-improvements note remains the source of the intended extraction-source contract.
 - Should `renderFirstExtractedKnopWovenKnopInventoryTurtle` preserve the exact current pre-weave extraction-source block, or normalize it into a canonical current/pinned rendering? Prefer preserving the semantic contract while allowing canonical ordering in the woven output.
 - Should minimal weave progress be on by default for local CLI runs, or gated behind a verbosity flag? The current recommendation is default-on for sparse phase/status lines, with any detailed per-file tracing left to a future verbosity option or existing logs.
 - Should progress lines go to stdout or stderr? Prefer stderr for progress so stdout can remain more script-friendly for final result output, unless the existing CLI conventions strongly prefer stdout.
@@ -141,7 +141,7 @@ Status output should be designed separately from structured logging. The current
 - Rewriting all of `src/core/weave/weave.ts` into a generic transaction engine in this task.
 - Generalizing unrelated shape-specific weave seams except where they block the URPX sidecar flow.
 - Changing `integrate` semantics; this task starts from the assumption that `integrate` may register a payload artifact without immediately versioning it.
-- Changing extraction-source creation semantics or `extract --all-terms`; those are covered in [[wa.task.2026.2026-05-04-extraction-improvements]] and later split work. This task only fixes weave to honor the already-created current/pinned contracts.
+- Changing extraction-source creation semantics or `extract --all-terms`; those are covered in [[wa.completed.2026.2026-05-04-extraction-improvements]] and later split work. This task only fixes weave to honor the already-created current/pinned contracts.
 - Designing a full verbosity/logging configuration system. This task only needs minimal progress for local weave runs.
 - Renaming carried fixture branches or task notes.
 
