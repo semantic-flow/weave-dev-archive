@@ -1656,3 +1656,109 @@ docs(weave): record knop inventory renderer extraction slice
 ```
 
 One note: the archive repo still has an unrelated modified Kato conversation note; I left it alone. I also did not rename the new task to completed.
+
+# User_2026-05-22_2221_50
+
+what's next
+
+# gpt-5.5_2026-05-22_2221_59
+
+I’ll do a quick scan of the parent task and the remaining `weave.ts` shape, then I’ll give you the next slice I’d actually pick rather than a generic backlog answer.
+
+# gpt-5.5_2026-05-22_2222_13
+
+There are only a few families left in `weave.ts` now: planner dispatch, progression resolution, source-registry patching, and a small cluster of legacy/core HTML page renderers. I’m checking the existing ResourcePage templating task shell too, because that may already be the right landing pad.
+
+# gpt-5.5_2026-05-22_2222_29
+
+Next I’d do a small move-only slice: **core weave HTML/page renderer extraction**.
+
+Move these out of [weave.ts](../../../../../src/core/weave/weave.ts):
+
+- `renderArtifactHistoryIndexPage`
+- `renderAliceIdentifierPageAfterFirstExtractedWeave`
+- `renderExtractedPersonIdentifierPage`
+- `renderGenericExtractedIdentifierPage`
+
+Suggested module: `src/core/weave/legacy_page_renderers.ts` or `src/core/weave/identifier_page_renderers.ts`.
+
+Why this one: it’s low-risk, output-sensitive but well covered by the weave integration tests, and it gets the remaining legacy fixture HTML out of the planner before we touch the bigger `ResourcePage Config And Templating` task. I would **not** start `wa.task.2026.2026-05-22_2253-resourcepage-config-and-templating` yet; that is a design/behavior task, not a boring extraction.
+
+After that, the next candidates are:
+
+- extract progression resolvers into something like `progression_resolvers.ts`
+- extract source-registry / extraction-source block helpers
+- then create the behavior-sensitive task to replace Alice Bio and fixture-ladder renderers with generalized renderers
+
+Also, if you’re satisfied with the last two slices, the mesh and KnopInventory renderer task notes can be moved to completed before starting the next one.
+
+# User_2026-05-22_2224_18
+
+proceed
+
+# gpt-5.5_2026-05-22_2224_31
+
+I’ll take this as the HTML/page renderer extraction slice: fill the new task as needed, move only the legacy HTML helpers out of `weave.ts`, and keep the output byte-stable. I’ll first re-sync with the task shell and current dirty state so I don’t step on the Dendron moves.
+
+# gpt-5.5_2026-05-22_2225_20
+
+The new task is still just a shell, and the archive shows the two prior slice notes have been Dendron-moved to completed. I’ll fold those completed-link updates into the parent/doc cleanup while keeping unrelated Kato conversation changes alone.
+
+# gpt-5.5_2026-05-22_2225_32
+
+Baseline is clean: `deno task check` passes, `weave.ts` is 2,016 lines, and the rooted import graph is still acyclic with no core-to-runtime edge. I’m going to fill the task shell now, including the completed-link cleanup for the two moved notes.
+
+# gpt-5.5_2026-05-22_2226_05
+
+The task is now explicit. Next I’m moving just the four HTML helpers into `legacy_page_renderers.ts`; source-registry RDF escaping stays where it is.
+
+# gpt-5.5_2026-05-22_2227_03
+
+The copied module is staged in the working tree. I’m going to remove the old helper block from `weave.ts` as a mechanical range move, then let `check`/`lint` point out any stale imports.
+
+# gpt-5.5_2026-05-22_2227_24
+
+The move compiles cleanly. `weave.ts` is down to 1,715 lines, with a 311-line legacy renderer module carrying the extracted HTML exactly as copied.
+
+# gpt-5.5_2026-05-22_2227_39
+
+`fmt` didn’t need to rewrite the new module, and the diff is the expected move: imports plus the old helper block leaving `weave.ts`. I’m running the same confidence path as the prior renderer slices now.
+
+# gpt-5.5_2026-05-22_2228_09
+
+The fixture-heavy tests are green: 56 core weave tests and 72 integration tests passed. I’m doing the import/cycle and whitespace audits next, then I’ll update the notes with the actual results.
+
+The fixture-heavy tests are green: 56 core weave tests and 72 integration tests passed. I’m doing the import/cycle and whitespace audits next, then I’ll update the notes with the actual results.
+
+# gpt-5.5_2026-05-22_2228_24
+
+The code checks are clean, including both import graph audits. I’m updating the durable overview and parent task with the new module and the actual post-slice counts.
+
+# gpt-5.5_2026-05-22_2229_28
+
+Implemented the HTML/page renderer extraction.
+
+Moved the legacy core HTML helpers into [legacy_page_renderers.ts](../../../../../src/core/weave/legacy_page_renderers.ts), and trimmed [weave.ts](../../../../../src/core/weave/weave.ts) down to 1,715 lines. I also updated [wd.codebase-overview.md](../../../../../documentation/notes/wd.codebase-overview.md), the parent task, and the new task note with results and next-slice notes.
+
+Verification passed:
+
+- `deno task fmt`
+- `deno task lint`
+- `deno task check`
+- 56 core weave tests
+- 72 integration weave/version/generate tests
+- rooted import graph audit: 0 cycles, 0 core-to-runtime imports
+- whole-`src` cycle audit: 0 cycles
+- `git diff --check` in both repos
+
+Suggested commit messages:
+
+```text
+refactor(core-weave): extract legacy page renderers
+```
+
+```text
+docs(weave): record legacy page renderer extraction
+```
+
+Next clean slice is probably either progression resolver extraction or the smaller source-registry/extraction-source helper extraction.

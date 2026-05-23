@@ -2,7 +2,7 @@
 id: 4cql6p0o4p6kvdz50s5k7hh
 title: 2026 05 21_0849_careful Extraction Refactor
 desc: ''
-updated: 1779511141737
+updated: 1779513765114
 created: 1779378607538
 ---
 
@@ -25,7 +25,7 @@ This is a code-extraction refactor of the weave planner. It is not a refactor of
 
 Current rough shape:
 
-- `src/core/weave/weave.ts` is about 2,016 lines after [[wa.completed.2026.2026-05-21_1037-core-weave-first-extraction-slice]] moved shared request, source, candidate, planning, and slice-name model types into focused modules, [[wa.completed.2026.2026-05-22_1358-core-weave-rdf-and-turtle-helper-extraction]] moved low-level RDF and Turtle helpers, [[wa.completed.2026.2026-05-22_1424-core-weave-slice-classification-extraction]] moved pending slice classification, [[wa.completed.2026.2026-05-22_1441-payload-version-layout-and-overwrite-state-planning]] moved payload layout and overwrite planning, [[wa.completed.2026.2026-05-22_1644-shape-assertions]] moved settled current-shape and source-locator assertions, [[wa.completed.2026.2026-05-22_2225-referencecatalog-current-link-extraction]] moved ReferenceCatalog current-link parsing, [[wa.completed.2026.2026-05-22_2235-resourcepage-model-builder-extraction]] moved ResourcePage model builders, [[wa.completed.2026.2026-05-22_2244-extract-source-locator-render-helpers]] moved source-locator render helpers, [[wa.completed.2026.2026-05-22_2252-payload-render-helpers]] moved payload KnopInventory render helpers, [[wa.completed.2026.2026-05-22_2117-core-weave-knop-support-render-preservation-extraction]] moved Knop support artifact preservation helpers, [[wa.task.2026.2026-05-22_2139-core-weave-mesh-inventory-renderer-extraction]] moved mesh-inventory renderer helpers, and [[wa.task.2026.2026-05-22_2206-core-weave-knop-inventory-renderer-extraction]] moved KnopInventory renderer helpers.
+- `src/core/weave/weave.ts` is about 1,715 lines after [[wa.completed.2026.2026-05-21_1037-core-weave-first-extraction-slice]] moved shared request, source, candidate, planning, and slice-name model types into focused modules, [[wa.completed.2026.2026-05-22_1358-core-weave-rdf-and-turtle-helper-extraction]] moved low-level RDF and Turtle helpers, [[wa.completed.2026.2026-05-22_1424-core-weave-slice-classification-extraction]] moved pending slice classification, [[wa.completed.2026.2026-05-22_1441-payload-version-layout-and-overwrite-state-planning]] moved payload layout and overwrite planning, [[wa.completed.2026.2026-05-22_1644-shape-assertions]] moved settled current-shape and source-locator assertions, [[wa.completed.2026.2026-05-22_2225-referencecatalog-current-link-extraction]] moved ReferenceCatalog current-link parsing, [[wa.completed.2026.2026-05-22_2235-resourcepage-model-builder-extraction]] moved ResourcePage model builders, [[wa.completed.2026.2026-05-22_2244-extract-source-locator-render-helpers]] moved source-locator render helpers, [[wa.completed.2026.2026-05-22_2252-payload-render-helpers]] moved payload KnopInventory render helpers, [[wa.completed.2026.2026-05-22_2117-core-weave-knop-support-render-preservation-extraction]] moved Knop support artifact preservation helpers, [[wa.completed.2026.2026-05-22_2139-core-weave-mesh-inventory-renderer-extraction]] moved mesh-inventory renderer helpers, [[wa.completed.2026.2026-05-22_2206-core-weave-knop-inventory-renderer-extraction]] moved KnopInventory renderer helpers, and [[wa.task.2026.2026-05-22_2222-core-weave-html-page-renderer-extraction]] moved legacy HTML page render helpers.
 - `src/runtime/weave/weave.ts` is about 4,900 lines and has its own cleanup track in [[wa.completed.2026.2026-05-21_1035-runtime-weave-module-decomposition]] and [[wa.completed.2026.2026-05-21_1036-runtime-resource-page-generation-decomposition]]. This core planner task should not absorb those runtime refactors.
 - The core file mixes high-level orchestration with low-level RDF/Turtle utilities. That makes small behavior changes feel like broad edits and makes review harder.
 - `core/targeting.ts` now owns portable target request semantics after [[wa.task.2026.2026-04-08_1615-weave-orchestration-refactor]]. Do not pull target normalization, shared target derivation, or requested-target coverage back into `src/core/weave/weave.ts` during this extraction.
@@ -43,9 +43,10 @@ Suggested extraction order:
 8. Implemented eighth executable slice: [[wa.completed.2026.2026-05-22_2244-extract-source-locator-render-helpers]] moved current working-file and repository floating-locator render helpers into a focused module.
 9. Implemented ninth executable slice: [[wa.completed.2026.2026-05-22_2252-payload-render-helpers]] moved first and second payload KnopInventory render helpers into a focused module and moved shared support-history omission postprocessors.
 10. Implemented tenth executable slice: [[wa.completed.2026.2026-05-22_2117-core-weave-knop-support-render-preservation-extraction]] moved carried KnopSourceRegistry/ReferenceCatalog preservation helpers into a focused module.
-11. Implemented eleventh executable slice: [[wa.task.2026.2026-05-22_2139-core-weave-mesh-inventory-renderer-extraction]] moved mesh-inventory Turtle renderers and small mesh-inventory block helpers into a focused module.
-12. Implemented twelfth executable slice: [[wa.task.2026.2026-05-22_2206-core-weave-knop-inventory-renderer-extraction]] moved first Knop, first ReferenceCatalog, current-only ReferenceCatalog, subsequent page-definition, and first extracted-Knop KnopInventory renderers into a focused module.
-13. Later likely slices: rendered artifact history collection/render helpers, remaining page/HTML helper renderers, and legacy fixture-sensitive renderer replacement after the move-only phase. The remaining render helpers are still verbose and fixture-sensitive.
+11. Implemented eleventh executable slice: [[wa.completed.2026.2026-05-22_2139-core-weave-mesh-inventory-renderer-extraction]] moved mesh-inventory Turtle renderers and small mesh-inventory block helpers into a focused module.
+12. Implemented twelfth executable slice: [[wa.completed.2026.2026-05-22_2206-core-weave-knop-inventory-renderer-extraction]] moved first Knop, first ReferenceCatalog, current-only ReferenceCatalog, subsequent page-definition, and first extracted-Knop KnopInventory renderers into a focused module.
+13. Implemented thirteenth executable slice: [[wa.task.2026.2026-05-22_2222-core-weave-html-page-renderer-extraction]] moved legacy/core HTML page renderers into a focused module.
+14. Later likely slices: progression resolver helpers, source-registry/extraction-source block helpers, and legacy fixture-sensitive renderer replacement after the move-only phase. The remaining helpers are smaller but still mixed into planner orchestration.
 
 The healthiest end state is probably a small `src/core/weave/weave.ts` that coordinates target selection and dispatch, with neighbor modules doing specific work. It can continue to re-export stable public types from the same path until a later API cleanup is warranted.
 
@@ -62,8 +63,9 @@ The healthiest end state is probably a small `src/core/weave/weave.ts` that coor
 - [x] The eighth extraction slice should be source-locator render helper extraction, tracked separately in [[wa.completed.2026.2026-05-22_2244-extract-source-locator-render-helpers]].
 - [x] The ninth extraction slice should be payload render helper extraction, tracked separately in [[wa.completed.2026.2026-05-22_2252-payload-render-helpers]].
 - [x] The tenth extraction slice should be Knop support preservation helper extraction, tracked separately in [[wa.completed.2026.2026-05-22_2117-core-weave-knop-support-render-preservation-extraction]].
-- [x] The eleventh extraction slice should be mesh-inventory renderer extraction, tracked separately in [[wa.task.2026.2026-05-22_2139-core-weave-mesh-inventory-renderer-extraction]].
-- [x] The twelfth extraction slice should be KnopInventory renderer extraction, tracked separately in [[wa.task.2026.2026-05-22_2206-core-weave-knop-inventory-renderer-extraction]].
+- [x] The eleventh extraction slice should be mesh-inventory renderer extraction, tracked separately in [[wa.completed.2026.2026-05-22_2139-core-weave-mesh-inventory-renderer-extraction]].
+- [x] The twelfth extraction slice should be KnopInventory renderer extraction, tracked separately in [[wa.completed.2026.2026-05-22_2206-core-weave-knop-inventory-renderer-extraction]].
+- [x] The thirteenth extraction slice should be legacy HTML page renderer extraction, tracked separately in [[wa.task.2026.2026-05-22_2222-core-weave-html-page-renderer-extraction]].
 - [x] Runtime planner cleanup should not be done in this task. Use [[wa.completed.2026.2026-05-21_1035-runtime-weave-module-decomposition]] for runtime orchestration/candidate/version seams and [[wa.completed.2026.2026-05-21_1036-runtime-resource-page-generation-decomposition]] for runtime page-generation seams.
 
 ## Decisions
@@ -124,9 +126,11 @@ The healthiest end state is probably a small `src/core/weave/weave.ts` that coor
 - [x] Extract first and second payload KnopInventory render helpers plus shared support-history omission postprocessors.
 - [x] Use [[wa.completed.2026.2026-05-22_2117-core-weave-knop-support-render-preservation-extraction]] for the tenth Knop support preservation extraction slice.
 - [x] Extract carried KnopSourceRegistry and ReferenceCatalog preservation helpers.
-- [x] Use [[wa.task.2026.2026-05-22_2139-core-weave-mesh-inventory-renderer-extraction]] for the eleventh mesh-inventory renderer extraction slice.
+- [x] Use [[wa.completed.2026.2026-05-22_2139-core-weave-mesh-inventory-renderer-extraction]] for the eleventh mesh-inventory renderer extraction slice.
 - [x] Extract mesh-inventory Turtle renderers and small local block helpers.
-- [x] Use [[wa.task.2026.2026-05-22_2206-core-weave-knop-inventory-renderer-extraction]] for the twelfth KnopInventory renderer extraction slice.
+- [x] Use [[wa.completed.2026.2026-05-22_2206-core-weave-knop-inventory-renderer-extraction]] for the twelfth KnopInventory renderer extraction slice.
 - [x] Extract KnopInventory Turtle renderers and small local block helpers.
+- [x] Use [[wa.task.2026.2026-05-22_2222-core-weave-html-page-renderer-extraction]] for the thirteenth legacy HTML page renderer extraction slice.
+- [x] Extract legacy/core HTML page renderers.
 - [ ] After the move-only phase exposes stable renderer boundaries, create a follow-up task for replacing legacy Alice Bio-specific and other fixture-ladder render helpers with generalized renderers.
 - [x] Update [[wd.codebase-overview]].
