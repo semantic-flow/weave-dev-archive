@@ -96,6 +96,8 @@ But we should not revive the older brittle parts uncritically:
 
 The renderer/template boundary also matters. Templates should stay relatively dumb. Breadcrumbs, nav slices, and any later search index hooks should be computed in runtime code and passed as structured inputs rather than making templates responsible for information architecture.
 
+Current implementation status: the default generated ResourcePage look is not template-artifact based yet. Runtime rendering has an internal `ResourcePageTheme` seam and a hardwired `defaultResourcePageTheme`, but that theme is implemented as TypeScript rendering functions with inline CSS in `src/runtime/weave/pages.ts`. Custom identifier pages use `_knop/_page/page.ttl` for content composition and optional `_knop/_assets` stylesheets, not a general page-template/chrome selection system. Reusing the existing Semantic Site look and feel should therefore be treated first as default theme/presentation reuse, with first-class template/chrome config remaining an adjacent later seam.
+
 ## First-Pass Alignment
 
 The current recommendation from [[wa.completed.2026.2026-04-08_1735-page-definition-ontology-and-config]] is:
@@ -165,6 +167,7 @@ Minimal shape:
 - If page content originates outside the tree/mesh, it should first be imported into a governed in-tree artifact, and that imported artifact's current `WorkingLocatedFile` should become the page source that generation follows.
 - Extra-mesh origins may be allowed, but only as explicit import inputs with fail-closed behavior.
 - Template/chrome selection is adjacent to page definition but should remain a separate concern from content composition.
+- Preserve or intentionally port the existing Semantic Site look and feel as the default generated ResourcePage presentation before introducing user-selectable page-template artifacts.
 - Runtime code should compute nav/breadcrumb/search structures; templates should render structured inputs rather than own the information architecture logic.
 - `ResourcePageRegion` is the better first-pass core term; reserve `slot` language for template/render configuration if it is needed later.
 - `ResourcePageSource` should remain as a page-specific subclass of a generic `ArtifactResolutionTarget`.
@@ -569,6 +572,7 @@ Current `19-alice-page-artifact-source-woven` manifest shape:
 - [x] Keep generic generation authoritative for `_mesh`, Knop support-artifact, history, state, and manifestation pages unless a later spec explicitly expands `_knop/_page` to those surfaces.
 - [ ] Refactor the current identifier-page planning seam so `core/weave` can choose between a generic identifier-page model and a page-definition-driven model without hard-coding special cases in one large branch.
 - [ ] Keep page-content composition separate from template/chrome policy, so `ResourcePagePresentationConfig` stays adjacent and optional rather than becoming a prerequisite for first-pass page-definition support.
+- [ ] Preserve the current default ResourcePage presentation as a built-in theme/presentation baseline before introducing configurable template artifacts; do not make `_knop/_page` composition the mechanism for merely keeping the Semantic Site look and feel.
 - [x] Preserve root behavior: `_mesh/index.html` remains mesh support, while root `index.html` is the identifier page customized by root `_knop/_page` when present.
 
 ### Phase 5: Artifact Resolution And Import-Oriented Source Support

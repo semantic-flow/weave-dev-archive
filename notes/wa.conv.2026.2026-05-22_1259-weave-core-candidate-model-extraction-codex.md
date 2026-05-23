@@ -728,3 +728,97 @@ Suggested archive commit message:
 ```text
 docs(tasks): record shape assertion extraction slice
 ```
+
+# User_2026-05-22_2024_29
+
+what's next?
+
+# gpt-5.5_2026-05-22_2024_45
+
+Next I’d do a small, clean slice: **ReferenceCatalog current-link extraction**.
+
+Why that one: it’s adjacent to the shape work but lower-risk than moving renderers. `extractCurrentReferenceCatalogLinks` is validation/parsing logic, not Turtle rendering or planner dispatch, and it should move neatly into something like `src/core/weave/reference_catalog_links.ts`.
+
+I’d defer the bigger moves:
+- **Payload render helpers**: valuable, but verbose and fixture-sensitive.
+- **ResourcePage builders**: probably useful soon, but they have broader dependency reach.
+- **Mesh/page progression helpers**: possible, but I’d want one more smaller extraction first.
+
+Suggested next task title:
+
+```text
+refactor(core-weave): extract reference catalog current-link parsing
+```
+
+Expected scope:
+- Move `extractCurrentReferenceCatalogLinks` and its tiny private helpers/constants.
+- Keep planner, rendering, generated RDF/Page output unchanged.
+- Update `weave.ts`, `wd.codebase-overview`, and parent task.
+- Same verification pattern: fmt, lint, check, core weave tests, focused integration tests, import audit.
+
+After that, I’d probably tackle ResourcePage builder extraction.
+
+# User_2026-05-22_2026_16
+
+ok proceed
+
+# gpt-5.5_2026-05-22_2026_33
+
+I’ll treat this as the next slice implementation, starting with the new task shell and current workspace state. I’ll keep it as another move-only extraction unless the task note or code says something sharper.
+
+# gpt-5.5_2026-05-22_2026_48
+
+The new task shell is empty, and the code repo is clean, so this is a good moment for the next extraction. I’m going to fill the task note enough to preserve the intent, then move only the ReferenceCatalog current-link parser out of `weave.ts`.
+
+# gpt-5.5_2026-05-22_2028_09
+
+The task note is now filled with a tight scope: only current ReferenceCatalog link parsing moves, no page builders or renderers. I’m going to make the code edit next, with the role-label helper kept private in the new module.
+
+# gpt-5.5_2026-05-22_2029_14
+
+The parser is now in its own module and `weave.ts` calls it directly. I’m running the formatter/type/lint pass now; if anything got orphaned, Deno will point straight at it.
+
+# gpt-5.5_2026-05-22_2029_36
+
+One import was still needed by the page-definition progression resolver; I put it back. The new module itself is clean, and the graph audit still shows zero runtime edges and zero cycles.
+
+# gpt-5.5_2026-05-22_2029_56
+
+The full type/lint pass and core weave tests are green. I’m running the focused integration tests now, then I’ll update the overview and task notes with the final counts.
+
+# gpt-5.5_2026-05-22_2031_39
+
+Implemented the ReferenceCatalog current-link extraction.
+
+Changed:
+- Added [reference_catalog_links.ts](../../../../../src/core/weave/reference_catalog_links.ts:1)
+- Updated [weave.ts](../../../../../src/core/weave/weave.ts:1) to import the parser and drop the old helper body
+- Updated [wd.codebase-overview.md](../../../../../documentation/notes/wd.codebase-overview.md:34)
+- Filled and updated the new task note, plus the parent extraction task
+
+Verification passed:
+- `deno task fmt`
+- `deno task lint`
+- `deno task check`
+- core weave harness tests: 56 passed
+- focused integration harness tests: 72 passed
+- import audit: 26 modules, 91 edges, 0 core-to-runtime imports, 0 cycles
+- `git diff --check`
+
+`weave.ts` is down from 5,857 to 5,721 lines. No bugs or performance opportunities found.
+
+Suggested code commit:
+```text
+refactor(core-weave): extract reference catalog link parsing
+
+- move current ReferenceCatalog link parsing into reference_catalog_links.ts
+- keep role-label derivation private to the parser module
+- preserve planner dispatch, generated RDF/Page output, and public weave façade exports
+```
+
+Suggested archive commit:
+```text
+docs(tasks): record reference catalog link extraction slice
+```
+
+I left the existing archive conversation change and the shape-task rename alone. Next clean slice is probably ResourcePage model-builder extraction.
