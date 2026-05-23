@@ -605,3 +605,126 @@ docs(tasks): record payload version layout extraction
 ```
 
 This slice is ready to move to completed. Next I’d choose between payload render helpers and shape assertion families; I’d lean shape assertions next, because render helpers are still verbose and fixture-sensitive.
+
+# User_2026-05-22_1644_33
+
+OK, fill out the new task shell.
+
+# gpt-5.5_2026-05-22_1644_46
+
+I’ll fill this as another narrow move-only slice, and I’ll inspect the current assertion helpers before writing so the task names real boundaries instead of hand-waving at “validation stuff.”
+
+# gpt-5.5_2026-05-22_1644_54
+
+The shell is blank, and the ontology reminder is fresh. I’m checking the assertion families and the parent refactor state now so the task can draw the line between generic assertion primitives, current-shape assertion families, and source-locator assertions.
+
+# gpt-5.5_2026-05-22_1645_06
+
+The assertion code is a mixed bag: low-level fact assertions, current source-locator assertions, and full settled-shape validators for payload, reference catalog, extracted Knop, and page definition flows. I’m going to write the task with an explicit “slice can split helpers if source-locator coupling gets ugly” clause.
+
+# gpt-5.5_2026-05-22_1645_28
+
+One archive wrinkle: the payload task has been moved to a misspelled `wa.copmleted...` filename. I’m not renaming it, but I’ll link to the file that actually exists so the Dendron link resolves.
+
+# gpt-5.5_2026-05-22_1646_14
+
+Filled out the new shape assertions task:
+
+[wa.task.2026.2026-05-22_1644-shape-assertions.md](wa.task.2026.2026-05-22_1644-shape-assertions.md)
+
+I scoped it as a behavior-preserving extraction of:
+- low-level fact assertion primitives
+- source-locator assertion helpers
+- current shape assertion families for payload, extracted Knop, reference catalog, and page-definition flows
+
+I also called out the main risk: source-locator assertions may deserve a separate `source_locator_assertions.ts` module so we don’t drag renderer/source-locator helpers into a broad assertion drawer.
+
+No trailing whitespace in the new note. I linked to the existing `wa.copmleted...payload-version...` note as-is, since that’s the file currently present.
+
+# User_2026-05-22_1648_20
+
+ok, implement
+
+# gpt-5.5_2026-05-22_1648_35
+
+I’ll start by taking the implementation baseline again and checking the exact helper dependencies. This slice is mostly about import direction, so I’m going to be a little fussy before cutting.
+
+# gpt-5.5_2026-05-22_1651_45
+
+I’ll pick this up from the shape-assertions slice and first re-check the code around those assertion families. The small trap here is making sure the extraction does not quietly drag renderer or planner state into a helper module.
+
+# User_2026-05-22_1719_58
+
+ok, implement
+
+# gpt-5.5_2026-05-22_1720_13
+
+The baseline type check is green. The graph-audit one-liner tripped over shell quoting, so I’m going to rerun it with safer quoting while I read the exact function ranges I need to move.
+
+# gpt-5.5_2026-05-22_1720_30
+
+Baseline core tests are clean too: 56 passed. The audit is clean on cycles/runtime edges, though I’ll keep the direct-root import count in view because this slice should reduce pressure there, not increase it.
+
+# gpt-5.5_2026-05-22_1721_44
+
+I found one dependency wrinkle: one mesh-inventory assertion calls the shared progression resolver. I’m going to move that resolver with the assertions, and move the progression type shapes into a tiny model module so the renderer/planner side and the assertion side can both talk about the same object without importing each other.
+
+# gpt-5.5_2026-05-22_1726_47
+
+I’ve added the new modules. Next I’m doing the mechanical removal from `weave.ts`: the exported helper modules now own those assertion bodies, and `weave.ts` should only import and call them.
+
+# gpt-5.5_2026-05-22_1727_10
+
+The move is in place now. I’m going to let Deno be the unsentimental reviewer for import/constant leftovers, then I’ll tighten whatever it complains about.
+
+# gpt-5.5_2026-05-22_1727_29
+
+The first compiler pass found two leftover constant uses in `weave.ts`; that was exactly the kind of residue I expected. I’ve restored the local constant because the support-artifact preservation code still needs it.
+
+# gpt-5.5_2026-05-22_1728_14
+
+Lint found the import/constant pruning I hadn’t finished. I’ve removed the dead names, and the core test run stayed green while that was happening.
+
+# gpt-5.5_2026-05-22_1728_33
+
+All three core gates are now green: fmt, lint, and check, plus the core weave tests. I’m going to run the focused integration weave tests and the import-graph audit next, because this slice is mostly about behavior preservation and dependency shape.
+
+# gpt-5.5_2026-05-22_1729_28
+
+The focused integration suite is green too: 72 passed. Import graph is still clean on the important dimensions: no core-to-runtime edges and no cycles.
+
+# gpt-5.5_2026-05-22_1730_50
+
+The implementation and notes are updated. I’m going to run the exact harness-flavored test commands from the task note as a final belt-and-suspenders pass, since those are the commands the note asks future-us to trust.
+
+# gpt-5.5_2026-05-22_1731_39
+
+Implemented the shape-assertions slice here. `weave.ts` is down from 7,135 to 5,857 lines.
+
+Main changes:
+- Added [shape_assertions.ts](../../../../../src/core/weave/shape_assertions.ts:1)
+- Added [source_locator_assertions.ts](../../../../../src/core/weave/source_locator_assertions.ts:1)
+- Added [working_file_paths.ts](../../../../../src/core/weave/working_file_paths.ts:1)
+- Added [progression_models.ts](../../../../../src/core/weave/progression_models.ts:1)
+- Updated [weave.ts](../../../../../src/core/weave/weave.ts:1), [wd.codebase-overview.md](../../../../../documentation/notes/wd.codebase-overview.md:34), the shape task, and the parent extraction task.
+
+Verification passed:
+- `deno task fmt`
+- `deno task lint`
+- `deno task check`
+- core weave harness test: 56 passed
+- focused integration harness tests: 72 passed
+- import audit: 25 modules, 87 edges, 0 core-to-runtime imports, 0 cycles
+- `git diff --check`
+
+No bugs or performance opportunities found, so “Orthogonal Opportunities” now records that explicitly. I did not rename the task to completed.
+
+Suggested repo commit message:
+```text
+refactor(core-weave): extract current shape assertions
+```
+
+Suggested archive commit message:
+```text
+docs(tasks): record shape assertion extraction slice
+```
