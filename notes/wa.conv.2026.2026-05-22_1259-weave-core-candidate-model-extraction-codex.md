@@ -1236,3 +1236,93 @@ No worries, that confusion was reasonable. The task names overlapped in a pretty
 # gpt-5.5_2026-05-22_2117_54
 
 The code repo is clean now, so this will be a fresh, small patch. The archive has your completed-note renames in progress; I’ll treat those as yours and only edit the new Knop support task plus the parent extraction note.
+
+# User_2026-05-22_2118_48
+
+continue
+
+# gpt-5.5_2026-05-22_2119_04
+
+Picking back up cleanly. I had only gathered context before the interruption, so I’ll continue from the same narrow slice: fill the task shell, move the Knop support preservation helpers into a focused module, then run the usual checks.
+
+# gpt-5.5_2026-05-22_2119_15
+
+Baseline is still clean: code repo has no local changes, `weave.ts` is 4,066 lines, and the import graph has no cycles or core-runtime edges. I’m filling the task note now with the exact boundary, then I’ll make the small code move.
+
+# gpt-5.5_2026-05-22_2119_48
+
+Task shell is filled with the narrow boundary. I’m moving just the preservation helper family now; the main renderers stay where they are.
+
+# gpt-5.5_2026-05-22_2121_05
+
+I’ll pick up right where the extraction left off: first I’m wiring the new Knop support renderer module into `weave.ts`, then I’ll run the focused checks and update the task notes with the actual outcome.
+
+# gpt-5.5_2026-05-22_2121_19
+
+The new file is present and the task note already has the planning update. The remaining code work is the actual cutover: remove the duplicated helper block from `weave.ts` and trim whatever imports/constants fall away.
+
+# gpt-5.5_2026-05-22_2121_26
+
+I’m about to edit `weave.ts`: add the import for the extracted renderer, delete the old helper block, and clean up the now-unused RDF/Turtle imports and constants.
+
+# gpt-5.5_2026-05-22_2122_24
+
+`weave.ts` is down to 3,814 lines, with the extracted helper module at 275 lines. Formatting is clean; I’m moving into lint/typecheck now so any missed dependency cleanup shakes out early.
+
+# gpt-5.5_2026-05-22_2122_34
+
+Lint and typecheck passed. Next I’m running the core weave and integration weave suites with the fixed generated timestamp, because this particular helper preserves Turtle shape and fixture-sensitive support artifacts.
+
+# gpt-5.5_2026-05-22_2122_59
+
+The focused suites passed: 56 core tests and 72 integration tests. I’m doing the structural audits now: import graph, core-to-runtime dependency scan, diff whitespace, and a quick final line count.
+
+# gpt-5.5_2026-05-22_2123_07
+
+The import graph picked up exactly one new helper module and no cycles or runtime dependency. Now I’m updating the developer notes and task bookkeeping so the slice trail stays accurate.
+
+# gpt-5.5_2026-05-22_2123_34
+
+One extra audit passed cleanly too: a whole-`src` local import-cycle scan reports zero cycles. I’m folding those exact numbers into the task result now.
+
+# gpt-5.5_2026-05-22_2124_43
+
+One small orthogonal note is worth preserving: the carried-support helper still parses the same current KnopInventory twice when both registry and catalog checks run. It’s existing behavior and not worth widening this slice, but it belongs in the task note.
+
+# gpt-5.5_2026-05-22_2125_05
+
+Done. I extracted the Knop support preservation helper into [knop_support_renderers.ts](../../../../../src/core/weave/knop_support_renderers.ts) and cleaned the duplicate block out of [weave.ts](../../../../../src/core/weave/weave.ts). `weave.ts` is now 3,814 lines, down from 4,066.
+
+I also updated [wd.codebase-overview.md](../../../../../documentation/notes/wd.codebase-overview.md), the parent extraction task, and the slice task with results, graph-audit numbers, and one orthogonal performance note: the preservation path still parses current KnopInventory Turtle twice, which is existing behavior and worth a later cleanup.
+
+Verification passed:
+
+- `deno task fmt`
+- `deno task lint`
+- `deno task check`
+- core weave tests: 56 passed
+- integration weave tests: 72 passed
+- rooted import graph: 0 cycles, 0 core-to-runtime imports
+- whole-`src` import-cycle audit: 0 cycles
+- `git diff --check`
+
+I did not rename the task to completed. Also note the archive repo still has an unrelated modified Kato conversation file that I left untouched.
+
+Suggested commit messages:
+
+```text
+refactor(core-weave): extract Knop support preservation renderer
+
+- move carried KnopSourceRegistry and ReferenceCatalog preservation helpers into knop_support_renderers
+- keep weave.ts as the planner dispatcher and public façade
+- preserve generated Turtle behavior while reducing weave.ts size
+- update core weave module overview
+```
+
+```text
+docs(tasks): record Knop support preservation extraction
+
+- update the core weave extraction parent task with the tenth slice
+- record implementation results, audits, and verification for the Knop support preservation slice
+- capture the remaining duplicate-parse optimization opportunity
+```

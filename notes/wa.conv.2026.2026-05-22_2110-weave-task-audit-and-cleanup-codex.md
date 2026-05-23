@@ -330,3 +330,19 @@ Script filtering/sanitization solves active-content safety. But it does not solv
 So I updated the task note with this decision: direct `workingAccessUrl` page rendering is allowed only as a narrow, explicitly policy-enabled, digest-checked path, and the rendered content is still treated as untrusted. No raw script execution, event-handler attributes, `javascript:`/active URL surfaces, or unsafe embedded HTML. Otherwise, use import/governed in-tree artifacts or settled historical state rendering.
 
 Docs-only change. Suggested archive commit message: `docs(tasks): constrain remote page-source rendering`
+
+# User_2026-05-22_2134_52
+
+OK, I think you can update [wa.task.2026.2026-04-11_1723-operational-config-for-runtime-resolution.md](wa.task.2026.2026-04-11_1723-operational-config-for-runtime-resolution.md) . Integrate has broadened, and I think we will allow it to broaden further, carefully. I think we can resolve those phase 3 items and create a new task for remote integrate. Or maybe we just defer remote integrate, perhaps import is adequate for now. 
+
+One new API surface we should have is, after something has been integrated, being able to convert it to a regular in-mesh (or sidecar or other-local-branch) workinig file. I think [wa.task.2026.2026-05-21_0907-import.md](wa.task.2026.2026-05-21_0907-import.md)  needs refinement: importing is going to be very different for whole-mesh-repos, sidecar repos, and branch-based meshes, right?. 
+
+Also, instead of using the bob page content, which we ended up using already (how did we do that?) we should probably find new content that can legitimately extend the 3 fixture ladders.
+
+# gpt-5.5_2026-05-22_2135_07
+
+I’ll treat this as a docs/task-note cleanup pass: first I’ll read the two task notes and the nearby fixture/roadmap context, then I’ll patch the notes so the remaining work is clearer instead of leaving remote integrate and import boundaries tangled together.
+
+# gpt-5.5_2026-05-22_2135_20
+
+I’ve got the current notes. The import note is still Bob-centered and too “one mesh shape fits all”; the operational-config note also still carries remote-integrate questions as if they belong there. I’m reading the remaining phase/checklist sections now so I can patch the actual stale items instead of adding more prose on top.
