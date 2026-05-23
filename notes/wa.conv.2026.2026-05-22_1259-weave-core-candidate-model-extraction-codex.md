@@ -1982,3 +1982,157 @@ docs(weave): record progression resolver extraction
 Update the progression slice, parent extraction task, and codebase overview with
 the new module layout and completed source-registry links.
 ```
+
+# User_2026-05-22_2307_15
+
+Can you give me just a goal for the generalization task so I can create it now and fill it later?
+
+# gpt-5.5_2026-05-22_2307_21
+
+Goal: Replace legacy Alice Bio-specific and fixture-ladder render helpers with generalized renderer/model paths, preserving generated RDF and ResourcePage output while removing fixture-name assumptions from core weave rendering.
+
+# User_2026-05-22_2309_13
+
+Should we do a weave release now, or wait for some new functionality?
+
+# gpt-5.5_2026-05-22_2309_27
+
+I’d do a small maintenance release now.
+
+Reason: we just made a lot of behavior-preserving decomposition, and the tests are green. A release here gives you a clean checkpoint before the next work starts changing semantics or renderer generalization. That makes future regressions easier to bisect: “did it come from the extraction release, or from the new feature slice?”
+
+I would *not* wait for fixture-helper generalization. That task is likely to be more behavior-sensitive, and it is exactly the kind of thing I’d rather start after a stable refactor release.
+
+I’d frame the release as:
+
+```text
+Maintenance release focused on core weave planner decomposition, with no intended RDF, CLI, or ResourcePage output changes.
+```
+
+Before cutting it, I’d run the broad path: `deno task ci` or at least full `deno task test` in addition to the focused checks we already ran. Then release.
+
+# User_2026-05-22_2314_32
+
+Fill out the release notes please. No need to go into too much depth on the refactoring. But touch on anything else, like the weave defaults in native binaries.
+
+# gpt-5.5_2026-05-22_2314_42
+
+I’ll fill this as a user-facing release note, but I’m going to quickly ground it in the current runbook/history first so I don’t accidentally over-index on the refactor and miss the binary-defaults bit.
+
+# gpt-5.5_2026-05-22_2314_51
+
+The release note shell is still mostly TODOs. I’m checking the actual version/tag history and recent commit/task signals now, then I’ll write this as a compact v0.1.3 note rather than a blow-by-blow refactor log.
+
+# gpt-5.5_2026-05-22_2315_41
+
+I found the v0.1.3 range: it is mostly runtime/core decomposition plus one real packaging fix: native binaries now compile with the `defaults/` directory embedded. I’m going to write the notes around that practical outcome and keep the refactor detail intentionally light.
+
+# gpt-5.5_2026-05-22_2315_55
+
+The note is filled. I’m going to run the release-prep quality gate now so the Validation section can say something concrete instead of staying aspirational.
+
+# gpt-5.5_2026-05-22_2316_47
+
+The CI gate is still running; it’s through fmt/lint/check and well into the full coverage test pass. No failure yet, just the big suite doing its thing.
+
+# gpt-5.5_2026-05-22_2317_55
+
+`deno task ci` passed cleanly: 486 tests, coverage report generated. I’m updating the Validation section to reflect that real gate instead of leaving it as “should run.”
+
+# gpt-5.5_2026-05-22_2318_24
+
+Filled out [release-notes.v0.1.3.md](../../../../../documentation/notes/release-notes.v0.1.3.md:1).
+
+I kept the refactor summary light and called out the practical packaging fix: native binaries now embed `defaults/`, so compiled releases can load Weave’s built-in config defaults without relying on source checkout layout.
+
+Validation: `deno task ci` passed, including fmt check, lint, type check, 486 tests, and LCOV generation.
+
+One note: `deno.json` already has the `0.1.3` version bump in the worktree; I didn’t change it. Suggested commit:
+
+```text
+release: prepare v0.1.3 notes
+
+- fill v0.1.3 release notes
+- document native binary defaults embedding
+- record source quality gate validation
+```
+
+# User_2026-05-22_2334_03
+
+I put coderabbit's review in [wa.review.2026-05-22-refactor-coderabbit.md](wa.review.2026-05-22-refactor-coderabbit.md) 
+
+For each item, add a markdown checkbox. For those that are clearly wrong, mark as cancelled [c]. For other that are directionally right or provide inspiration, refine them as you see fit. Then implement those that are clearly good.
+
+# gpt-5.5_2026-05-22_2334_14
+
+I’ll treat the CodeRabbit note as a triage list first: normalize it into checkbox items, cancel the clearly-wrong ones, and only then touch code for items that are plainly beneficial. I’m going to read the repo guidance and the review note now so the edits stay anchored.
+
+# gpt-5.5_2026-05-22_2334_24
+
+The review has a mix of real concerns, stale assumptions, and suggestions that would change settled RDF semantics. I’m checking each cited code path against current code before marking anything, because a few of these sound plausible but may be aimed at intentionally-preserved legacy fixture output.
+
+# gpt-5.5_2026-05-22_2337_12
+
+I’ve got a clean triage shape now. I’m going to implement the safe, local fixes: reference-link filtering, invalid generated timestamp rejection, historical snapshot path policy checks, the payload named-history/multi-history preservation fix, mesh-inventory progression metadata preservation, and two tiny renderer formatting/empty-predicate fixes.
+
+# gpt-5.5_2026-05-22_2339_18
+
+The implementation pass is in. I expect a few type/lint nits now, especially around the new helper signatures, so I’m running the static checks before deciding whether any focused tests need to be added or adjusted.
+
+# gpt-5.5_2026-05-22_2340_21
+
+I added focused coverage for the two easy-to-miss pure helper cases and tightened an existing named-history test so the payload renderer can’t regress back to ordinalizing named paths. Now I’m running the focused suite to see which RDF-output expectations need deliberate adjustment.
+
+# gpt-5.5_2026-05-22_2340_58
+
+Two of the review suggestions turn out to cause deliberate fixture-output drift, especially the MeshInventory progression triples in current inventory. Since this pass is meant to fix clear review fallout without silently changing settled fixtures, I’m backing that part out and keeping it as a follow-up/inspiration item in the review note.
+
+# gpt-5.5_2026-05-22_2341_44
+
+The focused checks are green now: 130 tests across core weave, the two helper tests, and integration validate/version/generate plus weave. I’m updating the CodeRabbit note with explicit checkbox triage next, including the items I cancelled or left as follow-up because they were stale, speculative, or fixture-changing.
+
+# gpt-5.5_2026-05-22_2343_22
+
+The review note now has explicit triage checkboxes, including the two cancelled items where the suggestion would weaken validation or relies on a nonexistent model field. I made one small code tweak after the focused run, so I’m doing a final clean pass.
+
+# gpt-5.5_2026-05-22_2345_09
+
+I’m doing a quick post-compaction sanity pass on the edited files and validation state, then I’ll close this out cleanly.
+
+# gpt-5.5_2026-05-22_2345_20
+
+The main repo diff is clean on whitespace now. I’m just pulling a few line anchors so the final notes point at the actual changes instead of waving vaguely at files.
+
+# gpt-5.5_2026-05-22_2345_48
+
+Done. I triaged the CodeRabbit review in [wa.review.2026-05-22-refactor-coderabbit.md](wa.review.2026-05-22-refactor-coderabbit.md:8), converting each item into a checkbox, marking clearly-wrong items as `[c]`, and leaving the directionally-right-but-not-now items unchecked with refined follow-up wording.
+
+Implemented the clearly good fixes:
+- Preserved all KnopInventory artifact history links and routed single named histories through the generalized path in [payload_renderers.ts](../../../../../src/core/weave/payload_renderers.ts:227).
+- Tightened ReferenceCatalog current-link extraction to true `sflo:ReferenceLink` subjects, with a regression test in [reference_catalog_links_test.ts](../../../../../src/core/weave/reference_catalog_links_test.ts:6).
+- Fixed type-only Turtle block rendering in [turtle_blocks.ts](../../../../../src/core/weave/turtle_blocks.ts:104).
+- Resolved historical snapshot reads through the local path policy in [artifact_loaders.ts](../../../../../src/runtime/weave/artifact_loaders.ts:100).
+- Added clear invalid `WEAVE_GENERATED_AT` handling in [page_generation.ts](../../../../../src/runtime/weave/page_generation.ts:178).
+- Cleaned the repository floating-locator renderer template without changing output.
+
+Validation passed: `deno task fmt`, `deno task lint`, `deno task check`, and the focused core/integration test run with `130 passed | 0 failed`. Main repo `git diff --check` is clean. Archive `git diff --check` still reports an unrelated trailing whitespace line in the Kato conversation note, which I left alone.
+
+Suggested commit messages:
+
+```text
+fix(weave): apply valid refactor review fixes
+
+- preserve KnopInventory history links in multi-history payload rendering
+- filter ReferenceCatalog current-link discovery to true ReferenceLink nodes
+- validate historical snapshot paths and generated timestamp input
+- handle type-only Turtle subject rendering
+- add focused regression tests
+```
+
+```text
+docs(weave): triage CodeRabbit refactor review
+
+- convert review findings into checkbox triage
+- mark cancelled stale or speculative findings
+- record implemented fixes and validation
+```
