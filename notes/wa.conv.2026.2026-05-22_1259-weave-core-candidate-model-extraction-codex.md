@@ -1018,3 +1018,153 @@ docs(weave): record source locator renderer extraction slice
 - update the parent core weave extraction task with the eighth completed slice
 - record verification results and follow-on direction
 ```
+
+# User_2026-05-22_2052_50
+
+proceed
+
+# gpt-5.5_2026-05-22_2053_00
+
+I’ll treat this as the next extraction slice and keep building on the uncommitted source-locator renderer work rather than disturbing it. First I’m going to re-anchor on the repo guidance, inspect the new task shell, and map the payload render helper cluster before editing.
+
+# gpt-5.5_2026-05-22_2053_11
+
+The code repo is clean; in the archive I see the new payload task shell plus an unrelated new ResourcePage config task shell and two unrelated modified notes. I’ll only touch the payload task and the parent extraction note unless the code changes need the overview update.
+
+# gpt-5.5_2026-05-22_2053_20
+
+The payload cluster is much larger than the source-locator one, so I’m going to scope it carefully. I’m reading the render functions and their dependencies now, and I’ll choose the smallest useful group rather than pulling a whole wall of Turtle across at once.
+
+# gpt-5.5_2026-05-22_2055_05
+
+The cleanest payload slice is the KnopInventory payload renderers, not the mesh-inventory payload renderers. The mesh-inventory functions share a lot with generic Knop/root/page-definition rendering, so I’m keeping those in `weave.ts` for now and moving the payload-specific KnopInventory path plus its private rendered-history helpers.
+
+# gpt-5.5_2026-05-22_2055_36
+
+The task note is now explicit about scope: payload KnopInventory renderers, not mesh-inventory renderers. I’m making the code move now, including a tiny shared support-history renderer module so the new payload module stays independent of `weave.ts`.
+
+# gpt-5.5_2026-05-22_2103_29
+
+The main move is in place. `weave.ts` is now around 4,079 lines, with payload rendering isolated in a new module; I’m formatting and checking now because large string-renderer moves can hide small import or type nits.
+
+# gpt-5.5_2026-05-22_2104_09
+
+`fmt`, `lint`, and `check` are clean after the move. Next I’m running the focused core weave and integration tests, since the risk here is generated Turtle drift rather than type shape.
+
+# gpt-5.5_2026-05-22_2104_42
+
+The focused tests are green: 56 core weave tests and 72 integration tests. I’m doing the import graph, core/runtime edge check, and diff hygiene pass now, then I’ll update the task notes with the real counts and verification.
+
+# gpt-5.5_2026-05-22_2105_04
+
+The import audit is clean: 30 modules, 109 edges, no core-to-runtime imports, no cycles. One caution: the archive currently has user-side renames/deletes for several prior task notes, so I’m only updating the new payload task, the parent extraction task, and the durable overview while leaving those renames alone.
+
+# gpt-5.5_2026-05-22_2106_44
+
+Implemented the payload renderer slice.
+
+Changed:
+- Added [payload_renderers.ts](../../../../../src/core/weave/payload_renderers.ts) for first/second payload KnopInventory Turtle renderers.
+- Added [support_history_renderers.ts](../../../../../src/core/weave/support_history_renderers.ts) for shared support-history omission postprocessors.
+- Slimmed [weave.ts](../../../../../src/core/weave/weave.ts) from 5,195 to 4,066 lines.
+- Updated [wd.codebase-overview.md](../../../../../documentation/notes/wd.codebase-overview.md), the payload task note, and the parent extraction task.
+
+Verification passed:
+- `deno task fmt`
+- `deno task lint`
+- `deno task check`
+- core weave tests: 56 passed
+- integration weave/version/generate tests: 72 passed
+- import graph audit: 30 modules, 109 edges, 0 core-to-runtime imports, 0 cycles
+- `git diff --check`
+
+No bugs or performance opportunities found; recorded that in Orthogonal Opportunities.
+
+Suggested code-repo commit:
+
+```text
+refactor(core-weave): extract payload render helpers
+
+- move first and second payload KnopInventory Turtle renderers into payload_renderers.ts
+- keep multi-history payload rendering private to the payload renderer module
+- move shared support-history omission postprocessors into support_history_renderers.ts
+- keep mesh-inventory renderers, planner dispatch, and generated RDF/Page output unchanged
+```
+
+Suggested archive commit:
+
+```text
+docs(weave): record payload renderer extraction slice
+
+- fill the payload render helper task with scope, decisions, and verification
+- update the parent core weave extraction task with the ninth completed slice
+- record the next likely extraction direction
+```
+
+I left the existing archive-side renames/deletes for prior completed task notes alone. The current payload note remains a task note; I did not rename it to completed.
+
+# User_2026-05-22_2106_44
+
+what's next?
+
+# gpt-5.5_2026-05-22_2106_57
+
+I’ll quickly check the local state so I don’t recommend the next step against a stale picture.
+
+# gpt-5.5_2026-05-22_2107_18
+
+The payload renderer slice is done and safe to move to completed once you’re ready. I’d commit the code repo first, then archive/docs, because the archive has several user-side renames/deletes in flight.
+
+My recommended next slice: **extract Knop support artifact preservation**.
+
+Why that next: it’s smaller and cleaner than jumping straight into mesh-inventory renderers, and it removes a dependency that several remaining render paths share.
+
+Candidate module:
+`src/core/weave/knop_support_renderers.ts`
+
+Move:
+- `renderKnopInventoryWithPreservedSupportArtifacts`
+- `resolveCurrentKnopSourceRegistry`
+- `resolveCurrentKnopReferenceCatalog`
+- `renderKnopBlockWithCarriedSupportFacts`
+- private `CurrentKnopSourceRegistry`
+- private `CurrentKnopReferenceCatalog`
+
+Keep out of scope:
+- mesh-inventory renderers
+- page-definition renderers
+- ReferenceCatalog renderers
+- payload renderers already moved
+
+After that, the next big slice is probably **mesh inventory renderers**, but I’d do it second. It touches more shared block helpers and fixture-sensitive legacy output, so the smaller preservation extraction will make that one less tangled.
+
+The `wa.task.2026.2026-05-22_2253-resourcepage-config-and-templating` task looks like a feature/design track, not a continuation of the move-only core weave extraction. My vote: finish one more conservative core cleanup slice before switching back to ResourcePage config behavior.
+
+# gpt-5.5_2026-05-22_2107_19
+
+The payload renderer slice is done and safe to move to completed once you’re ready. I’d commit the code repo first, then archive/docs, because the archive has several user-side renames/deletes in flight.
+
+My recommended next slice: **extract Knop support artifact preservation**.
+
+Why that next: it’s smaller and cleaner than jumping straight into mesh-inventory renderers, and it removes a dependency that several remaining render paths share.
+
+Candidate module:
+`src/core/weave/knop_support_renderers.ts`
+
+Move:
+- `renderKnopInventoryWithPreservedSupportArtifacts`
+- `resolveCurrentKnopSourceRegistry`
+- `resolveCurrentKnopReferenceCatalog`
+- `renderKnopBlockWithCarriedSupportFacts`
+- private `CurrentKnopSourceRegistry`
+- private `CurrentKnopReferenceCatalog`
+
+Keep out of scope:
+- mesh-inventory renderers
+- page-definition renderers
+- ReferenceCatalog renderers
+- payload renderers already moved
+
+After that, the next big slice is probably **mesh inventory renderers**, but I’d do it second. It touches more shared block helpers and fixture-sensitive legacy output, so the smaller preservation extraction will make that one less tangled.
+
+The `wa.task.2026.2026-05-22_2253-resourcepage-config-and-templating` task looks like a feature/design track, not a continuation of the move-only core weave extraction. My vote: finish one more conservative core cleanup slice before switching back to ResourcePage config behavior.

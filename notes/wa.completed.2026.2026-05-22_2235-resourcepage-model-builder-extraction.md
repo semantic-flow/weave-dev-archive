@@ -8,7 +8,7 @@ created: 1779507373381
 
 ## Goals
 
-- Execute the next conservative core weave extraction slice from [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] after [[wa.task.2026.2026-05-22_2225-referencecatalog-current-link-extraction]].
+- Execute the next conservative core weave extraction slice from [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] after [[wa.completed.2026.2026-05-22_2225-referencecatalog-current-link-extraction]].
 - Move ResourcePage model-builder helpers out of `src/core/weave/weave.ts` into a focused core weave module.
 - Preserve planner dispatch, generated RDF, generated ResourcePage output, page-model contracts, and public imports through `src/core/weave/weave.ts`.
 - Keep HTML renderers, Turtle renderers, page-generation policy filtering, and runtime page assembly out of this slice.

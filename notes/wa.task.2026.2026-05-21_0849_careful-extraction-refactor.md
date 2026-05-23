@@ -25,7 +25,7 @@ This is a code-extraction refactor of the weave planner. It is not a refactor of
 
 Current rough shape:
 
-- `src/core/weave/weave.ts` is about 5,195 lines after [[wa.completed.2026.2026-05-21_1037-core-weave-first-extraction-slice]] moved shared request, source, candidate, planning, and slice-name model types into focused modules, [[wa.completed.2026.2026-05-22_1358-core-weave-rdf-and-turtle-helper-extraction]] moved low-level RDF and Turtle helpers, [[wa.completed.2026.2026-05-22_1424-core-weave-slice-classification-extraction]] moved pending slice classification, [[wa.copmleted.2026.2026-05-22_1441-payload-version-layout-and-overwrite-state-planning]] moved payload layout and overwrite planning, [[wa.completed.2026.2026-05-22_1644-shape-assertions]] moved settled current-shape and source-locator assertions, [[wa.task.2026.2026-05-22_2225-referencecatalog-current-link-extraction]] moved ReferenceCatalog current-link parsing, [[wa.task.2026.2026-05-22_2235-resourcepage-model-builder-extraction]] moved ResourcePage model builders, and [[wa.task.2026.2026-05-22_2244-extract-source-locator-render-helpers]] moved source-locator render helpers.
+- `src/core/weave/weave.ts` is about 4,066 lines after [[wa.completed.2026.2026-05-21_1037-core-weave-first-extraction-slice]] moved shared request, source, candidate, planning, and slice-name model types into focused modules, [[wa.completed.2026.2026-05-22_1358-core-weave-rdf-and-turtle-helper-extraction]] moved low-level RDF and Turtle helpers, [[wa.completed.2026.2026-05-22_1424-core-weave-slice-classification-extraction]] moved pending slice classification, [[wa.completed.2026.2026-05-22_1441-payload-version-layout-and-overwrite-state-planning]] moved payload layout and overwrite planning, [[wa.completed.2026.2026-05-22_1644-shape-assertions]] moved settled current-shape and source-locator assertions, [[wa.completed.2026.2026-05-22_2225-referencecatalog-current-link-extraction]] moved ReferenceCatalog current-link parsing, [[wa.completed.2026.2026-05-22_2235-resourcepage-model-builder-extraction]] moved ResourcePage model builders, [[wa.completed.2026.2026-05-22_2244-extract-source-locator-render-helpers]] moved source-locator render helpers, and [[wa.task.2026.2026-05-22_2252-payload-render-helpers]] moved payload KnopInventory render helpers.
 - `src/runtime/weave/weave.ts` is about 4,900 lines and has its own cleanup track in [[wa.task.2026.2026-05-21_1035-runtime-weave-module-decomposition]] and [[wa.completed.2026.2026-05-21_1036-runtime-resource-page-generation-decomposition]]. This core planner task should not absorb those runtime refactors.
 - The core file mixes high-level orchestration with low-level RDF/Turtle utilities. That makes small behavior changes feel like broad edits and makes review harder.
 - `core/targeting.ts` now owns portable target request semantics after [[wa.task.2026.2026-04-08_1615-weave-orchestration-refactor]]. Do not pull target normalization, shared target derivation, or requested-target coverage back into `src/core/weave/weave.ts` during this extraction.
@@ -36,12 +36,13 @@ Suggested extraction order:
 1. Completed first executable slice: [[wa.completed.2026.2026-05-21_1037-core-weave-first-extraction-slice]] moved shared type/model definitions while preserving façade re-exports from `src/core/weave/weave.ts`.
 2. Completed second executable slice: [[wa.completed.2026.2026-05-22_1358-core-weave-rdf-and-turtle-helper-extraction]] moved RDF query helpers and Turtle block helpers that do not depend on planner state.
 3. Implemented third executable slice: [[wa.completed.2026.2026-05-22_1424-core-weave-slice-classification-extraction]] moved `detectPendingWeaveSlice`, `classifyWeaveSlice`, and the minimal supporting history/query helpers needed to avoid cycles.
-4. Implemented fourth executable slice: [[wa.copmleted.2026.2026-05-22_1441-payload-version-layout-and-overwrite-state-planning]] moved `PayloadVersionLayout`, first/second payload layout resolution, and guarded overwrite-state planning helpers into focused modules.
+4. Implemented fourth executable slice: [[wa.completed.2026.2026-05-22_1441-payload-version-layout-and-overwrite-state-planning]] moved `PayloadVersionLayout`, first/second payload layout resolution, and guarded overwrite-state planning helpers into focused modules.
 5. Implemented fifth executable slice: [[wa.completed.2026.2026-05-22_1644-shape-assertions]] moved settled current-shape validators, source-locator assertions, shared working-file path normalization, and progression structural types into focused modules.
-6. Implemented sixth executable slice: [[wa.task.2026.2026-05-22_2225-referencecatalog-current-link-extraction]] moved ReferenceCatalog current-link parsing into a focused module.
-7. Implemented seventh executable slice: [[wa.task.2026.2026-05-22_2235-resourcepage-model-builder-extraction]] moved planned ResourcePage model builders into a focused module.
-8. Implemented eighth executable slice: [[wa.task.2026.2026-05-22_2244-extract-source-locator-render-helpers]] moved current working-file and repository floating-locator render helpers into a focused module.
-9. Next likely slice: payload render helpers or rendered-history collection, depending on which dependency direction is cleanest. Render helpers should still move late because they are verbose and fixture-sensitive.
+6. Implemented sixth executable slice: [[wa.completed.2026.2026-05-22_2225-referencecatalog-current-link-extraction]] moved ReferenceCatalog current-link parsing into a focused module.
+7. Implemented seventh executable slice: [[wa.completed.2026.2026-05-22_2235-resourcepage-model-builder-extraction]] moved planned ResourcePage model builders into a focused module.
+8. Implemented eighth executable slice: [[wa.completed.2026.2026-05-22_2244-extract-source-locator-render-helpers]] moved current working-file and repository floating-locator render helpers into a focused module.
+9. Implemented ninth executable slice: [[wa.task.2026.2026-05-22_2252-payload-render-helpers]] moved first and second payload KnopInventory render helpers into a focused module and moved shared support-history omission postprocessors.
+10. Next likely slice: mesh-inventory renderer extraction or source-registry preservation extraction, depending on which dependency direction is cleanest. The remaining render helpers are still verbose and fixture-sensitive.
 
 The healthiest end state is probably a small `src/core/weave/weave.ts` that coordinates target selection and dispatch, with neighbor modules doing specific work. It can continue to re-export stable public types from the same path until a later API cleanup is warranted.
 
@@ -51,11 +52,12 @@ The healthiest end state is probably a small `src/core/weave/weave.ts` that coor
 - [x] The first extraction slice should be model/type extraction, tracked separately in [[wa.completed.2026.2026-05-21_1037-core-weave-first-extraction-slice]].
 - [x] The second extraction slice should be pure RDF query and Turtle block helper extraction, tracked separately in [[wa.completed.2026.2026-05-22_1358-core-weave-rdf-and-turtle-helper-extraction]].
 - [x] The third extraction slice should be pending slice classification extraction, tracked separately in [[wa.completed.2026.2026-05-22_1424-core-weave-slice-classification-extraction]].
-- [x] The fourth extraction slice should be payload version layout and overwrite-state planning extraction, tracked separately in [[wa.copmleted.2026.2026-05-22_1441-payload-version-layout-and-overwrite-state-planning]].
+- [x] The fourth extraction slice should be payload version layout and overwrite-state planning extraction, tracked separately in [[wa.completed.2026.2026-05-22_1441-payload-version-layout-and-overwrite-state-planning]].
 - [x] The fifth extraction slice should be current shape and source-locator assertion extraction, tracked separately in [[wa.completed.2026.2026-05-22_1644-shape-assertions]].
-- [x] The sixth extraction slice should be ReferenceCatalog current-link extraction, tracked separately in [[wa.task.2026.2026-05-22_2225-referencecatalog-current-link-extraction]].
-- [x] The seventh extraction slice should be ResourcePage model-builder extraction, tracked separately in [[wa.task.2026.2026-05-22_2235-resourcepage-model-builder-extraction]].
-- [x] The eighth extraction slice should be source-locator render helper extraction, tracked separately in [[wa.task.2026.2026-05-22_2244-extract-source-locator-render-helpers]].
+- [x] The sixth extraction slice should be ReferenceCatalog current-link extraction, tracked separately in [[wa.completed.2026.2026-05-22_2225-referencecatalog-current-link-extraction]].
+- [x] The seventh extraction slice should be ResourcePage model-builder extraction, tracked separately in [[wa.completed.2026.2026-05-22_2235-resourcepage-model-builder-extraction]].
+- [x] The eighth extraction slice should be source-locator render helper extraction, tracked separately in [[wa.completed.2026.2026-05-22_2244-extract-source-locator-render-helpers]].
+- [x] The ninth extraction slice should be payload render helper extraction, tracked separately in [[wa.task.2026.2026-05-22_2252-payload-render-helpers]].
 - [x] Runtime planner cleanup should not be done in this task. Use [[wa.task.2026.2026-05-21_1035-runtime-weave-module-decomposition]] for runtime orchestration/candidate/version seams and [[wa.completed.2026.2026-05-21_1036-runtime-resource-page-generation-decomposition]] for runtime page-generation seams.
 
 ## Decisions
@@ -102,15 +104,17 @@ The healthiest end state is probably a small `src/core/weave/weave.ts` that coor
 - [x] Extract Turtle block editing/render support helpers that are pure and planner-independent.
 - [x] Use [[wa.completed.2026.2026-05-22_1424-core-weave-slice-classification-extraction]] for the third slice-classification extraction slice.
 - [x] Extract weave slice detection/classification helpers.
-- [x] Use [[wa.copmleted.2026.2026-05-22_1441-payload-version-layout-and-overwrite-state-planning]] for the fourth payload layout and overwrite extraction slice.
+- [x] Use [[wa.completed.2026.2026-05-22_1441-payload-version-layout-and-overwrite-state-planning]] for the fourth payload layout and overwrite extraction slice.
 - [x] Extract payload version layout and current-state overwrite helpers.
 - [x] Use [[wa.completed.2026.2026-05-22_1644-shape-assertions]] for the fifth shape assertion extraction slice.
 - [x] Extract settled shape assertions, source-locator assertions, working-file path normalization, and progression structural types.
-- [x] Use [[wa.task.2026.2026-05-22_2225-referencecatalog-current-link-extraction]] for the sixth ReferenceCatalog current-link extraction slice.
+- [x] Use [[wa.completed.2026.2026-05-22_2225-referencecatalog-current-link-extraction]] for the sixth ReferenceCatalog current-link extraction slice.
 - [x] Extract ReferenceCatalog current-link parsing.
-- [x] Use [[wa.task.2026.2026-05-22_2235-resourcepage-model-builder-extraction]] for the seventh ResourcePage model-builder extraction slice.
+- [x] Use [[wa.completed.2026.2026-05-22_2235-resourcepage-model-builder-extraction]] for the seventh ResourcePage model-builder extraction slice.
 - [x] Extract ResourcePage model-builder helpers.
-- [x] Use [[wa.task.2026.2026-05-22_2244-extract-source-locator-render-helpers]] for the eighth source-locator render helper extraction slice.
+- [x] Use [[wa.completed.2026.2026-05-22_2244-extract-source-locator-render-helpers]] for the eighth source-locator render helper extraction slice.
 - [x] Extract current working-file and repository floating-locator render helpers.
+- [x] Use [[wa.task.2026.2026-05-22_2252-payload-render-helpers]] for the ninth payload render helper extraction slice.
+- [x] Extract first and second payload KnopInventory render helpers plus shared support-history omission postprocessors.
 - [ ] if possible, legacy Alice Bio-specific (and other fixture ladder) render helpers should be replaced by generalized renderers after the move-only phase?
 - [x] Update [[wd.codebase-overview]].

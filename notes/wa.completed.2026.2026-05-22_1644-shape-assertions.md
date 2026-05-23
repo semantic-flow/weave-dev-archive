@@ -8,7 +8,7 @@ created: 1779493459483
 
 ## Goals
 
-- Execute the next small core weave extraction slice from [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] after [[wa.copmleted.2026.2026-05-22_1441-payload-version-layout-and-overwrite-state-planning]].
+- Execute the next small core weave extraction slice from [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] after [[wa.completed.2026.2026-05-22_1441-payload-version-layout-and-overwrite-state-planning]].
 - Move shape assertion helpers out of `src/core/weave/weave.ts` into focused core weave modules without changing validation policy, generated RDF, generated ResourcePage output, runtime behavior, or CLI behavior.
 - Preserve `planWeave`, `planVersion`, extracted payload/layout helpers, renderers, and ResourcePage builders in their current modules.
 - Keep current error messages and fail-closed checks stable.

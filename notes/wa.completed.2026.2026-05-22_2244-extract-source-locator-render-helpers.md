@@ -8,7 +8,7 @@ created: 1779507905211
 
 ## Goals
 
-- Execute the next conservative core weave extraction slice from [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] after [[wa.task.2026.2026-05-22_2235-resourcepage-model-builder-extraction]].
+- Execute the next conservative core weave extraction slice from [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] after [[wa.completed.2026.2026-05-22_2235-resourcepage-model-builder-extraction]].
 - Move current working-file/source-locator render helpers out of `src/core/weave/weave.ts` into a focused core weave module.
 - Preserve generated Turtle text, planner dispatch, generated ResourcePage output, and public imports through `src/core/weave/weave.ts`.
 - Keep source-locator assertions and working-file path normalization in their existing focused modules.
