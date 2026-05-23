@@ -1326,3 +1326,221 @@ docs(tasks): record Knop support preservation extraction
 - record implementation results, audits, and verification for the Knop support preservation slice
 - capture the remaining duplicate-parse optimization opportunity
 ```
+
+# User_2026-05-22_2136_58
+
+what's next?
+
+# gpt-5.5_2026-05-22_2137_08
+
+I’ll do a quick orientation pass against the current parent task and `weave.ts` shape, then I’ll give you the next slice I’d pick rather than guessing from memory.
+
+# gpt-5.5_2026-05-22_2137_21
+
+The parent task now says the next likely extraction is mesh-inventory renderers, and the code agrees: there’s a dense block of mesh-inventory Turtle renderers and shared block helpers sitting together in `weave.ts`. One small bookkeeping catch first: since you moved the Knop preservation note to completed, references should be pointed at the completed note before the next task shell.
+
+# gpt-5.5_2026-05-22_2137_50
+
+Next I’d do **mesh-inventory renderer extraction**, but with one tiny bookkeeping step first.
+
+You moved the Knop preservation note to completed, so these links now need updating from `wa.task...2117` to `wa.completed...2117`:
+
+- `documentation/notes/wd.codebase-overview.md`
+- parent task `wa.task.2026.2026-05-21_0849_careful-extraction-refactor.md`
+
+After that, next slice:
+
+**Core Weave Mesh Inventory Renderer Extraction**
+
+Scope I’d include:
+
+- `renderFirstKnopWovenMeshInventoryTurtle`
+- `renderFirstPayloadWovenMeshInventoryTurtle`
+- `renderFirstPayloadWovenCurrentOnlyMeshInventoryTurtle`
+- `renderFirstExtractedKnopWovenMeshInventoryTurtle`
+- `renderGenericFirstExtractedKnopWovenMeshInventoryTurtle`
+- legacy first Knop/payload mesh inventory renderers
+- mesh inventory block render helpers, probably with shared located-file/resource-page block render helpers moved cleanly rather than duplicated again
+
+I’d keep **KnopInventory renderers** like first Knop, ReferenceCatalog, page-definition, and extracted Knop out of this slice. They’re related, but mixing them into the mesh-inventory move would turn this into a big fuzzy patch. The clean next module is probably `src/core/weave/mesh_inventory_renderers.ts`, with maybe a tiny shared `resource_block_renderers.ts` if the located-file helpers make the dependency direction cleaner.
+
+# User_2026-05-22_2139_46
+
+the links should've updated with the dendron-move, but update if not.
+
+The proceed to fill out @wa.task.2026.2026-05-22_2139-core-weave-mesh-inventory-renderer-extraction
+
+# gpt-5.5_2026-05-22_2139_57
+
+I’ll check the Dendron links first, then I’ll fill the new mesh-inventory renderer task with a narrow move-only scope and clear guardrails.
+
+# gpt-5.5_2026-05-22_2140_06
+
+The Dendron move didn’t update the links in `wd.codebase-overview` or the parent task, so I’ll correct those while I fill the new task. I’m also reading the mesh-inventory block in `weave.ts` so the task scope names the actual functions rather than a vague “renderer blob.”
+
+# User_2026-05-22_2140_27
+
+Are there any opportunities to factor out commonality in the renderers?
+
+# gpt-5.5_2026-05-22_2140_54
+
+Yes. I’d separate them into **safe now** and **tempting but later**.
+
+**Safe in this slice:**
+
+- Factor out a small internal helper for the repeated MeshInventory state advancement:
+  - replace `_mesh/_inventory`
+  - replace the history block
+  - insert next state block
+  - insert next manifestation block
+  - insert next `inventory.ttl` located-file block
+
+- Move the common block renderers with the mesh renderer module:
+  - `renderMeshIdentifierBlock`
+  - `renderMeshRootBlock`
+  - `renderMeshKnopBlockWithResourcePage`
+  - `renderMeshPayloadArtifactBlockWithResourcePage`
+  - `renderMeshInventoryArtifactBlock`
+  - `renderMeshInventoryHistoryBlock`
+  - `renderMeshInventoryStateBlock`
+  - `renderMeshInventoryStateManifestationBlock`
+  - `resolveMeshRootKnopPaths`
+  - `tryToMeshPath`
+
+- Maybe replace `renderMeshInventoryStateFourBlock` and `renderMeshInventoryStateFourManifestationBlock` with calls to the generic state/state-manifestation helpers, if the output is byte-identical.
+
+**Worth recording but probably not doing in this slice:**
+
+- Shared `renderLocatedFileBlock` / `renderResourcePageLocatedFileBlock` appears in `weave.ts`, `mesh_support_pages.ts`, and `knop_support_renderers.ts`. That wants a tiny shared `located_file_renderers.ts` or `resource_block_renderers.ts`, but doing it now would widen the dependency surface.
+- The legacy full-string mesh renderers share a lot of repeated MeshMetadata/MeshInventory history fixture text. I would not factor those yet; the better future move is replacing legacy paths with generalized block renderers, not polishing the legacy strings.
+- `renderFirstKnopWovenMeshInventoryTurtle`, `renderFirstPayloadWovenMeshInventoryTurtle`, and `renderGenericFirstExtractedKnopWovenMeshInventoryTurtle` have a deeper common shape, but a big parameterized renderer could become hard to read. I’d extract one or two small block-edit helpers, not a grand unified renderer.
+
+My recommendation for the task note: allow **small helper extraction inside the new mesh-inventory renderer module**, but explicitly forbid broader shared renderer cleanup unless it is needed to avoid duplication after the move.
+
+# User_2026-05-22_2143_25
+
+Do we still need to create a task for "legacy Alice Bio-specific (and other fixture ladder) render helpers should be replaced by generalized renderers after the move-only phase?
+
+# gpt-5.5_2026-05-22_2143_32
+
+Not yet. I’d leave it as an explicit deferred item in the parent task for now.
+
+Reason: we’re still in the **move-only extraction phase**, and the mesh-inventory slice is likely to give us better information about which legacy renderers are truly obsolete versus merely fixture-sensitive. Creating a separate task now risks locking in a cleanup direction before the code boundaries finish settling.
+
+I’d do this instead:
+
+- In the mesh-inventory task, add an **Open Issue**: “After extraction, reassess whether legacy Alice Bio / fixture-ladder renderers can be replaced by generalized renderers.”
+- In the parent task, keep the existing checkbox, maybe reword it to: “Create a follow-up task for replacing legacy fixture-specific renderers after the move-only extraction phase exposes stable boundaries.”
+- Only create the new task after mesh-inventory extraction and maybe the remaining KnopInventory/page-definition renderer extraction are done.
+
+My pushback: replacing those legacy renderers is not just extraction. It is behavior-sensitive cleanup, probably involving fixture drift risk. I’d give it its own task, but not until the move-only phase has cleared the ground.
+
+# User_2026-05-22_2145_46
+
+OK, fill the inventory task please. And let's not forget all the other stuff.
+
+# gpt-5.5_2026-05-22_2145_54
+
+I’ll fill the task note and do the bookkeeping in the same pass: completed-note links, parent-task next-slice tracking, and the deferred legacy-renderer follow-up so it doesn’t disappear into the walls.
+
+# gpt-5.5_2026-05-22_2146_19
+
+I have the actual function boundary now. The task will call out `renderMeshMetadataWithMeshInventoryProgression` too, because it’s mesh-inventory progression rendering and is only called from planner branches before writing mesh metadata.
+
+# gpt-5.5_2026-05-22_2147_38
+
+The task is filled, and the stale 2117 links are now corrected in durable docs/tasks. I noticed there isn’t a `mesh_support_pages_test.ts`, so I’m tightening that testing note to avoid pointing at a phantom focused test.
+
+# gpt-5.5_2026-05-22_2148_16
+
+Filled the mesh-inventory task shell here: [wa.task.2026.2026-05-22_2139-core-weave-mesh-inventory-renderer-extraction.md](wa.task.2026.2026-05-22_2139-core-weave-mesh-inventory-renderer-extraction.md).
+
+I also handled the “other stuff”:
+
+- Updated the stale 2117 links in [wd.codebase-overview.md](../../../../../documentation/notes/wd.codebase-overview.md) and the parent task to point at `wa.completed...2117`.
+- Updated the parent task with this eleventh slice.
+- Preserved the legacy Alice Bio / fixture-ladder cleanup as a deferred follow-up after the move-only phase.
+- Added an `Orthogonal Opportunities` section to the new task.
+- Captured baseline: `weave.ts` is 3,814 lines; rooted graph audit is 31 modules, 113 edges, 0 runtime imports, 0 cycles.
+
+Checks run: `git diff --check` passed in both the main repo and archive repo. I left unrelated archive note changes alone, including conversation logs.
+
+# User_2026-05-22_2151_29
+
+Our sense of "Open issues" has kinda slipped. It was more a "things we still need to decide", and has become a "things to watch out for". That's okay, especially if you think that is useful to you.
+
+Proceed.
+
+# gpt-5.5_2026-05-22_2151_42
+
+I’ll treat those task “Open Issues” as a hybrid watchlist for now, with actual unresolved decisions called out plainly when they matter. I’m proceeding with the mesh-inventory renderer extraction, starting with the task’s pre-slice check and a fresh read of the import surface.
+
+# gpt-5.5_2026-05-22_2151_59
+
+The pre-slice `deno task check` passed. I’m going to make this as a move-first extraction: copy the mesh inventory renderer family into a new module, then wire `weave.ts` to import those functions and trim dead locals.
+
+# gpt-5.5_2026-05-22_2155_21
+
+The new module is in place. Now I’m cutting the moved function bodies out of `weave.ts`; I’m keeping the tiny located-file block helpers local there for the remaining non-mesh renderers, rather than widening this slice with shared helper cleanup.
+
+# gpt-5.5_2026-05-22_2158_25
+
+Typecheck found two mesh state block helpers still used by the page-definition renderer in `weave.ts`. I’m going to keep local copies there for now rather than making the mesh module export internals into a different renderer family.
+
+# gpt-5.5_2026-05-22_2159_07
+
+`weave.ts` is down to 2,806 lines now, with the moved mesh module at 1,072 lines. The only duplication I kept intentionally is the small state/located-file block rendering still used by page-definition paths in `weave.ts`.
+
+# gpt-5.5_2026-05-22_2159_14
+
+Lint and typecheck are clean. I’m running the focused weave suites now; these are the ones most likely to catch any Turtle byte drift from the renderer move.
+
+# gpt-5.5_2026-05-22_2159_47
+
+The focused suites passed: 56 core tests and 72 integration tests. I’m doing the structural audits now, then I’ll update the task notes with the exact counts and the one intentional non-decision about shared block helpers.
+
+# gpt-5.5_2026-05-22_2201_40
+
+Implemented the mesh-inventory renderer extraction.
+
+The main change is a new [mesh_inventory_renderers.ts](../../../../../src/core/weave/mesh_inventory_renderers.ts) module. `weave.ts` now imports the mesh-inventory renderer family from there, and [weave.ts](../../../../../src/core/weave/weave.ts) dropped from 3,814 to 2,806 lines.
+
+I kept tiny block helpers duplicated in `weave.ts` where page-definition/ReferenceCatalog renderers still need them. I recorded that as a follow-up cleanup opportunity instead of widening this slice. The legacy Alice Bio / fixture-ladder renderer replacement reminder is still preserved in the parent task.
+
+Updated notes:
+
+- [wd.codebase-overview.md](../../../../../documentation/notes/wd.codebase-overview.md)
+- parent extraction task
+- mesh-inventory task with implementation results, audits, verification, and orthogonal opportunities
+
+Verification passed:
+
+- `deno task fmt`
+- `deno task lint`
+- `deno task check`
+- core weave tests: 56 passed
+- integration weave tests: 72 passed
+- rooted import graph: 0 cycles, 0 core-to-runtime imports
+- whole-`src` import-cycle audit: 0 cycles
+- `git diff --check` in main repo and archive repo
+
+Suggested main repo commit:
+
+```text
+refactor(core-weave): extract mesh inventory renderers
+
+- move mesh-inventory Turtle renderers into mesh_inventory_renderers
+- keep weave.ts as the planner dispatcher and public facade
+- preserve fixture-sensitive legacy renderer output
+- defer shared LocatedFile/ResourcePage block helper cleanup
+```
+
+Suggested archive/docs commit:
+
+```text
+docs(tasks): record mesh inventory renderer extraction
+
+- update core weave overview with mesh_inventory_renderers
+- mark the mesh-inventory extraction task implementation results
+- keep legacy fixture-renderer replacement as a deferred follow-up
+```

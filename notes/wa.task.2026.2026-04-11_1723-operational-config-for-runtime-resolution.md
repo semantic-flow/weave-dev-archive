@@ -37,6 +37,8 @@ Current status clarification:
 
 So in this task, "policy gating" for remote locators should be read narrowly: if Weave later starts dereferencing `workingAccessUrl` or `targetAccessUrl`, that behavior must only happen under explicit operational allow rules. Until then, those properties are modeled vocabulary, not active fetch behavior.
 
+Current disposition: keep this task focused on the shared operational policy model and the already-active local-boundary behavior. Active remote acquisition should stay centered on explicit import/localization flows for now, while remote locator dereferencing remains deferred to narrower follow-up tasks. `integrate` may continue broadening carefully for local and repository-floating source association, but it should not become the first remote-fetch surface unless import plus `workingAccessUrl` proves insufficient.
+
 The old `sflo-host` ontology is useful as precedent because it recognized that application/runtime behavior needs its own config surface. But it is not the right model to copy forward directly. Its center of gravity is `HostServiceConfig`, logging channels, contained service toggles, port/host/scheme binding, and service-host mesh registration. That is mostly daemon or long-running-host shape, not the shared runtime-resolution policy that current CLI and daemon both need.
 
 The current best direction is to keep this vocabulary in `semantic-flow-config-ontology.ttl` for now, with `OperationalConfig` as the broader root concept. A narrower `RuntimeResolutionConfig` can still appear later if the vocabulary grows enough that the resolution subset wants its own explicit subtype.
@@ -263,7 +265,7 @@ Machine-local access policy:
 
 ### Relationship to `1545`
 
-This task is now the natural home for the operational-config questions that `[[wd.task.2026.2026-04-08_1545-resource-page-definition-and-sources]]` should not have to carry by itself:
+This task is now the natural home for the operational-config questions that [[wa.task.2026.2026-04-08_1545-resource-page-definition-and-sources]] should not have to carry by itself:
 
 - allowed-directory rules for `targetLocalRelativePath` and `workingLocalRelativePath`
 - remote-use policy for `targetAccessUrl`
@@ -296,6 +298,9 @@ That lets `1545` stay focused on page-definition behavior instead of turning int
 - Allowed-directory rules for `workingLocalRelativePath` and `targetLocalRelativePath` should live in operational config, not in persisted mesh RDF.
 - Remote-use rules for `workingAccessUrl` and `targetAccessUrl` should also live in operational config, not in persisted mesh RDF.
 - The first widening target should be controlled extra-mesh local path resolution through configured allowed directories, not remote fetching.
+- Active remote fetch behavior is deferred from this task. `workingAccessUrl` dereferencing belongs to [[wa.task.2026.2026-05-20_2152-workingAccessUrl]], and direct page-source remote access belongs with page-source policy work such as [[wa.task.2026.2026-04-08_1545-resource-page-definition-and-sources]] if it ever becomes desirable.
+- Remote-origin acquisition should stay centered on explicit import/localization flows for now. A separate remote-integrate task should only be created if import plus localize-from-integrated workflows turn out not to cover real use cases.
+- `integrate` can still broaden carefully for workspace-local, sidecar-local, and repository-floating local source association, but it should not silently become a policy-gated remote fetch command in this task.
 - Repo-traveling operational policy and machine-local operational policy should be modeled as distinct layers, even if they share vocabulary.
 - A repo-traveling access file should not by itself grant arbitrary host access outside the checked-out repo boundary.
 - Machine-local policy is the right place for broader host trust decisions such as extra-repo directories or remote-access allowances.
@@ -309,7 +314,7 @@ That lets `1545` stay focused on page-definition behavior instead of turning int
 - Define a shared config shape that can be consumed by both CLI and daemon execution surfaces.
 - Define a mesh-carried config layer and a machine-local config layer with explicit first-pass combination semantics.
 - Define allowed local-directory policy for `workingLocalRelativePath` and `targetLocalRelativePath` through `LocalPathAccessRule`, `LocalPathBase`, and `pathPrefix`.
-- Define remote-access policy for `workingAccessUrl` and `targetAccessUrl` through `RemoteAccessRule`, locator kind, and scheme/origin constraints.
+- Define remote-access policy vocabulary for `workingAccessUrl` and `targetAccessUrl` through `RemoteAccessRule`, locator kind, and scheme/origin constraints, while leaving active remote fetch behavior to narrower follow-up tasks.
 - Define config-loading and precedence expectations at the runtime boundary.
 - Define how operational config interacts with portable mesh RDF without requiring absolute host paths in core data.
 - Define whether first-pass conventional discovery includes files such as `_mesh/_config/config.ttl` and `~/.sf-local-access.ttl`.
@@ -321,7 +326,7 @@ That lets `1545` stay focused on page-definition behavior instead of turning int
 - Add fail-closed tests for malformed operational config.
 - Add CLI-facing coverage proving the CLI can load and apply the operational config rather than silently bypassing it.
 - Add daemon-facing coverage later if or when daemon runtime loading becomes real enough to exercise the same policy surface.
-- Add focused tests proving disallowed `workingAccessUrl` and `targetAccessUrl` values are rejected before any network access is attempted.
+- When a later task makes `workingAccessUrl` or `targetAccessUrl` actively dereferenceable, add focused tests proving disallowed values are rejected before any network access is attempted.
 
 ## Non-Goals
 
@@ -358,10 +363,10 @@ That lets `1545` stay focused on page-definition behavior instead of turning int
 
 ### Phase 3: Defer Or Gate Remote Policy Carefully
 
-- [ ] Decide whether `workingAccessUrl` should remain model-only for now or become an actively dereferenceable runtime locator.
-- [ ] Decide whether `targetAccessUrl` should remain model-only for now or become an actively dereferenceable runtime locator.
-- [ ] If either remote locator becomes actively dereferenceable, add explicit operational allow rules and fail-closed tests before any network fetch behavior lands.
-- [ ] Decide whether `integrate`, which already needs to support workspace-local and policy-approved extra-mesh local file association, should broaden further into policy-gated remote/external locator handling, or whether remote-origin association should stay centered on `import` while `integrate` remains the local-byte-binding surface.
+- [d] Keep `workingAccessUrl` active dereferencing out of this task. The runtime-fetch question belongs to [[wa.task.2026.2026-05-20_2152-workingAccessUrl]], and that task should consume `RemoteAccessRule` policy before any network fetch behavior lands.
+- [d] Keep `targetAccessUrl` active dereferencing out of this task. Direct remote page-source access belongs with page-source policy work such as [[wa.task.2026.2026-04-08_1545-resource-page-definition-and-sources]] if it ever becomes desirable.
+- [d] Defer remote-locator fail-closed tests until one of those active dereferencing tasks lands; the requirement remains that operational allow rules must be checked before any network access.
+- [x] Decide the integrate/import split: remote-origin association should stay centered on explicit import/localization flows for now, while `integrate` remains the local-byte-binding and local/repository-floating source association surface.
 
 ### Phase 4: Validate And Align Notes
 

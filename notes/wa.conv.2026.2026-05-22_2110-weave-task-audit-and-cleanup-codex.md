@@ -346,3 +346,63 @@ I’ll treat this as a docs/task-note cleanup pass: first I’ll read the two ta
 # gpt-5.5_2026-05-22_2135_20
 
 I’ve got the current notes. The import note is still Bob-centered and too “one mesh shape fits all”; the operational-config note also still carries remote-integrate questions as if they belong there. I’m reading the remaining phase/checklist sections now so I can patch the actual stale items instead of adding more prose on top.
+
+# gpt-5.5_2026-05-22_2136_21
+
+I’ll fold this into the task notes rather than spinning up a remote-integrate note right away. The shape I’m seeing is: keep remote integrate deferred, make import/localize the explicit acquisition surface, and make the import task topology-aware for whole-mesh, sidecar, and branch-based meshes.
+
+# gpt-5.5_2026-05-22_2136_26
+
+I refreshed the repo guidance and the two task notes. The operational-config note already cleanly distinguishes modeled remote policy from active dereferencing, so I’m going to make the remaining remote items explicit deferrals and move the concrete “make it local” surface into the import note.
+
+# gpt-5.5_2026-05-22_2136_31
+
+There are unrelated archive changes already in that repo, so I’ll leave those alone. I’m editing only the two task notes you called out.
+
+# gpt-5.5_2026-05-22_2137_30
+
+The import note needs a slightly bigger reshaping: I’m going to preserve the current command idea, but stop treating Bob as the next fixture, add topology-specific behavior, and capture the “localize an integrated artifact” API as part of the import family.
+
+# gpt-5.5_2026-05-22_2139_30
+
+I also fixed one stale wikilink prefix in the operational-config note while I was there. Since this is documentation-only, I’m going to sanity-check the diff rather than run the Deno test stack.
+
+# gpt-5.5_2026-05-22_2139_51
+
+Updated both notes.
+
+In [wa.task.2026.2026-04-11_1723-operational-config-for-runtime-resolution.md](wa.task.2026.2026-04-11_1723-operational-config-for-runtime-resolution.md:40), I resolved Phase 3 toward: no remote integrate task yet, keep active remote fetching deferred, and center remote-origin acquisition on explicit import/localize workflows. I also marked the remote locator items deferred and the integrate/import split decided at [line 366](wa.task.2026.2026-04-11_1723-operational-config-for-runtime-resolution.md:366).
+
+In [wa.task.2026.2026-05-21_0907-import.md](wa.task.2026.2026-05-21_0907-import.md:11), I refined import as a topology-aware acquisition/localization surface:
+- whole-mesh, sidecar, and branch-based meshes are now explicitly covered
+- added the localize-from-integrated API shape at [line 57](wa.task.2026.2026-05-21_0907-import.md:57)
+- deferred remote-fetching `integrate`
+- kept Bob as historical regression/context only, and added the need for new non-Bob content across the three fixture ladders
+
+On “how did we already use Bob?”: the notes describe it as a carried import/page-source fixture where `workingAccessUrl` was recorded as origin metadata on `bob/page-main`; generation still follows the local governed working file, not a live remote fetch.
+
+Validation: `git diff --check` passed. I didn’t run Deno tests because these were docs/task-note-only edits.
+
+# User_2026-05-22_2141_58
+
+I'm confused, didn't we create a task for "if possible, legacy Alice Bio-specific (and other fixture ladder) render helpers should be replaced by generalized renderers after the move-only phase?"
+
+# gpt-5.5_2026-05-22_2142_08
+
+I’ll trace the exact wording across the task notes and the nearby renderer-extraction tasks. This sounds like it may have been split across a general refactor note plus one or more focused renderer tasks, so I’ll check before answering from memory.
+
+# gpt-5.5_2026-05-22_2142_19
+
+I found the breadcrumb: the broad refactor note points to mesh-inventory renderer extraction as the next likely slice, and there is a note with that exact title, but it looks like it was only stubbed out. I’ll check whether any completed slice absorbed that work before I give you the clean answer.
+
+# gpt-5.5_2026-05-22_2142_31
+
+Yes, sort of. You’re not misremembering, but the task seems to have been created only as a stub.
+
+The likely intended owner is [wa.task.2026.2026-05-22_2139-core-weave-mesh-inventory-renderer-extraction.md](wa.task.2026.2026-05-22_2139-core-weave-mesh-inventory-renderer-extraction.md:1), titled “Core Weave Mesh Inventory Renderer Extraction”, but it currently has empty sections and just a blank checklist item.
+
+The broader refactor note still carries the real dangling work at [wa.task.2026.2026-05-21_0849_careful-extraction-refactor.md:46](wa.task.2026.2026-05-21_0849_careful-extraction-refactor.md:46) and [line 123](wa.task.2026.2026-05-21_0849_careful-extraction-refactor.md:123): mesh-inventory renderer extraction, then remaining rendered-history/render helpers and legacy fixture-sensitive renderers.
+
+Also, [wa.completed.2026.2026-05-22_2252-payload-render-helpers.md](wa.completed.2026.2026-05-22_2252-payload-render-helpers.md:50) explicitly deferred the mesh-inventory renderers because the generic boundary wasn’t clear yet.
+
+So: yes, 2139 is probably the task, but it needs to be filled in. The clean next move is to flesh out 2139 and change the 0849 checklist item to point at it.
