@@ -1855,3 +1855,130 @@ docs(weave): record extraction source helper slice
 ```
 
 Next slice I’d pick: progression resolver extraction, with a careful task shell because it’s more planner-adjacent.
+
+# User_2026-05-22_2246_15
+
+what next?
+
+# gpt-5.5_2026-05-22_2246_30
+
+I’ll quickly check what `weave.ts` still contains and whether the source-registry task links already point at the completed note. Then I’ll give you the next slice I’d actually choose.
+
+# gpt-5.5_2026-05-22_2246_46
+
+I’d do **core weave progression resolver extraction** next.
+
+First tiny housekeeping: since you moved the source-registry task to completed, the parent task and `wd.codebase-overview` still have a few links pointing at `[[wa.task.2026.2026-05-22_2239-source-registry-extraction-source-helper-extraction]]`; those should be updated to the completed note.
+
+Then the next slice:
+
+```text
+core-weave-progression-resolver-extraction
+```
+
+Suggested module:
+
+```text
+src/core/weave/progression_resolvers.ts
+```
+
+Move these from `weave.ts`:
+
+- `resolvePageDefinitionWeaveProgression`
+- `resolveCurrentKnopInventoryProgressionForPageDefinitionWeave`
+- `resolveCurrentMeshInventoryProgressionForFirstKnopWeave`
+- `resolveCurrentMeshInventoryProgressionForFirstPayloadWeave`
+- likely private path helpers used by those resolvers:
+  - `toHistoryPathFromStatePath`
+  - `parseStateOrdinalFromPath`
+  - `toStateSegment`
+  - `toLastPathSegment`
+
+I would keep this move-only and be stricter than usual about tests, because these helpers are planner-adjacent and encode fail-closed progression semantics. No naming redesign, no policy changes.
+
+After that, `weave.ts` will be mostly orchestration plus small selection/validation helpers. Then we can decide whether to stop the extraction pass and make the behavior-sensitive legacy-renderer/generalized-renderer task, or keep shaving remaining planner helpers.
+
+# User_2026-05-22_2248_45
+
+proceed
+
+# gpt-5.5_2026-05-22_2248_54
+
+I’ll proceed with the progression resolver slice. I’m going to re-check the task shell, the Dendron moves, and the current `weave.ts` resolver dependencies before editing, because this one is closer to planner semantics than the last few helper moves.
+
+# gpt-5.5_2026-05-22_2249_23
+
+The main repo is clean at the start. The new task is an empty shell, and the archive has the completed source-registry Dendron move, so I’ll include that link cleanup while filling the progression task.
+
+# gpt-5.5_2026-05-22_2249_31
+
+Baseline is good: check passes, rooted graph remains acyclic, and `weave.ts` is 1,608 lines. One boundary wrinkle: `toHistoryPathFromStatePath` is still used by planner-created history pages, so I’ll either keep that tiny helper in `weave.ts` or duplicate it privately in the resolver module rather than forcing an odd export.
+
+# gpt-5.5_2026-05-22_2250_08
+
+I’ve filled the task with the conservative boundary. Now I’m extracting the four resolver functions plus their private ordinal/segment helpers into `progression_resolvers.ts`; `toHistoryPathFromStatePath` will remain in `weave.ts` for the two page-rendering call sites and be duplicated privately in the new module.
+
+# gpt-5.5_2026-05-22_2251_30
+
+The resolver move compiles. `weave.ts` is now 1,286 lines, and the new resolver module is 404 lines. I’m cleaning stale imports/constants next, then I’ll run the full verification.
+
+# gpt-5.5_2026-05-22_2252_32
+
+I’ll pick up the progression-resolver slice from the partially applied extraction, clean the lint fallout, then finish the note/parent updates and verification. First I’m re-reading the current file state so I don’t accidentally smooth over any Dendron move or user-side archive change.
+
+# gpt-5.5_2026-05-22_2252_38
+
+The code move itself is in place; the current issue is just cleanup after moving those resolvers: `weave.ts` still imports resolver-only helpers and constants it no longer uses. I’m trimming that now, keeping the tiny history/path helpers that are still used by planner-created pages.
+
+# gpt-5.5_2026-05-22_2253_03
+
+That trims the obvious lint failures. Next I’m running formatting and the fast static checks before I update the task notes, so the documentation reflects the actual final shape rather than my intentions.
+
+# gpt-5.5_2026-05-22_2253_25
+
+Static checks are clean. I’m moving into the behavior checks and dependency audits now: the goal is to prove this is still a move-only extraction with no sneaky import cycle or core-to-runtime edge.
+
+# gpt-5.5_2026-05-22_2253_50
+
+Behavior checks passed, including the focused core weave suite and the two integration suites. I’m updating the task records now with the measured line counts and graph numbers, plus the source-registry link correction from the Dendron move.
+
+# gpt-5.5_2026-05-22_2255_11
+
+The notes now reflect the new module and the completed source-registry move. I also caught a stale runtime-decomposition wikilink in the overview and switched it to the completed note, which matches the Dendron move you’d already made.
+
+# gpt-5.5_2026-05-22_2256_09
+
+Implemented the progression-resolver slice.
+
+What changed:
+- Added [progression_resolvers.ts](../../../../../src/core/weave/progression_resolvers.ts:1) with the page-definition, KnopInventory, and MeshInventory progression resolvers.
+- Trimmed [weave.ts](../../../../../src/core/weave/weave.ts:1) down to 1,224 lines.
+- Updated [wd.codebase-overview.md](../../../../../documentation/notes/wd.codebase-overview.md:35), the progression task note, and the parent extraction task.
+- Updated stale Dendron links for the completed source-registry slice and runtime weave decomposition.
+
+Verification passed:
+- `deno task fmt`
+- `deno task lint`
+- `deno task check`
+- `src/core/weave/weave_test.ts`: 56 passed
+- focused integration tests: 72 passed
+- import audits: 0 core-to-runtime edges, 0 cycles
+
+I did not rename the new progression task to completed, per the task’s non-goal. The next best slice is probably `[[wa.task.2026.2026-05-22_2253-resourcepage-config-and-templating]]`; after that, I’d create/fill the legacy fixture-renderer generalization task so those ideas don’t leak out of the system.
+
+Suggested commit messages:
+
+```text
+refactor(core-weave): extract progression resolvers
+
+Move page-definition, KnopInventory, and MeshInventory progression resolution
+out of weave.ts into progression_resolvers.ts while preserving planner behavior
+and public façade imports.
+```
+
+```text
+docs(weave): record progression resolver extraction
+
+Update the progression slice, parent extraction task, and codebase overview with
+the new module layout and completed source-registry links.
+```
