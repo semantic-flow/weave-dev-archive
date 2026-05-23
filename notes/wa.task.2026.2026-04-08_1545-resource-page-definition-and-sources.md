@@ -98,6 +98,10 @@ The renderer/template boundary also matters. Templates should stay relatively du
 
 Current implementation status: the default generated ResourcePage look is not template-artifact based yet. Runtime rendering has an internal `ResourcePageTheme` seam and a hardwired `defaultResourcePageTheme`, but that theme is implemented as TypeScript rendering functions with inline CSS in `src/runtime/weave/pages.ts`. Custom identifier pages use `_knop/_page/page.ttl` for content composition and optional `_knop/_assets` stylesheets, not a general page-template/chrome selection system. Reusing the existing Semantic Site look and feel should therefore be treated first as default theme/presentation reuse, with first-class template/chrome config remaining an adjacent later seam.
 
+The better long-term model is to converge default and customized pages onto the same presentation pipeline. Default pages do not necessarily need a persisted `_knop/_page/page.ttl`; the runtime can synthesize the default page definition/panel set from the resource context and effective config. But both default and customized pages should be explainable in terms of the same primitives: `ResourcePageDefinition` / `hasResourcePageSource` for content inputs, `ResourcePagePresentationConfig` for chrome and presentation, `OuterResourcePageTemplate` / `InnerResourcePageTemplate` for shell and body layout, and `ResourcePageStylesheet` for shared style assets.
+
+That also makes the current generated panels reusable instead of hard-coded page branches. Panels such as children, properties, references, history, raw source, source/provenance, and Semantic Flow metadata should become named structured panel models whose data is still computed by runtime code. Presentation config can then suppress, order, restyle, or replace panel rendering without making templates responsible for RDF discovery, source resolution, or graph navigation.
+
 ## First-Pass Alignment
 
 The current recommendation from [[wa.completed.2026.2026-04-08_1735-page-definition-ontology-and-config]] is:
@@ -168,6 +172,8 @@ Minimal shape:
 - Extra-mesh origins may be allowed, but only as explicit import inputs with fail-closed behavior.
 - Template/chrome selection is adjacent to page definition but should remain a separate concern from content composition.
 - Preserve or intentionally port the existing Semantic Site look and feel as the default generated ResourcePage presentation before introducing user-selectable page-template artifacts.
+- Default and customized ResourcePages should eventually use the same runtime page model and presentation pipeline, with generic pages using synthesized defaults when no explicit `_knop/_page` definition exists.
+- Built-in generated sections such as children, properties, references, histories, raw source, and provenance should become reusable panel models that presentation config can include, suppress, order, or override.
 - Runtime code should compute nav/breadcrumb/search structures; templates should render structured inputs rather than own the information architecture logic.
 - `ResourcePageRegion` is the better first-pass core term; reserve `slot` language for template/render configuration if it is needed later.
 - `ResourcePageSource` should remain as a page-specific subclass of a generic `ArtifactResolutionTarget`.
@@ -573,6 +579,8 @@ Current `19-alice-page-artifact-source-woven` manifest shape:
 - [ ] Refactor the current identifier-page planning seam so `core/weave` can choose between a generic identifier-page model and a page-definition-driven model without hard-coding special cases in one large branch.
 - [ ] Keep page-content composition separate from template/chrome policy, so `ResourcePagePresentationConfig` stays adjacent and optional rather than becoming a prerequisite for first-pass page-definition support.
 - [ ] Preserve the current default ResourcePage presentation as a built-in theme/presentation baseline before introducing configurable template artifacts; do not make `_knop/_page` composition the mechanism for merely keeping the Semantic Site look and feel.
+- [ ] Define how generic default pages map into the same `ResourcePageDefinition` / `ResourcePagePresentationConfig` pipeline as customized pages, including which defaults are synthesized at runtime and which may be persisted as mesh/config artifacts.
+- [ ] Extract the current hard-coded generated sections into reusable panel models before making template overrides powerful enough to reorder, suppress, or replace them.
 - [x] Preserve root behavior: `_mesh/index.html` remains mesh support, while root `index.html` is the identifier page customized by root `_knop/_page` when present.
 
 ### Phase 5: Artifact Resolution And Import-Oriented Source Support

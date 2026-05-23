@@ -822,3 +822,120 @@ docs(tasks): record reference catalog link extraction slice
 ```
 
 I left the existing archive conversation change and the shape-task rename alone. Next clean slice is probably ResourcePage model-builder extraction.
+
+# User_2026-05-22_2036_22
+
+ok proceed
+
+# gpt-5.5_2026-05-22_2036_41
+
+I’ll take this as the next move-only slice. First I’m going to read the new task shell and map the page-model builder cluster so we move model construction without accidentally pulling HTML renderers along for the ride.
+
+# gpt-5.5_2026-05-22_2037_30
+
+The builder cluster is nicely bounded: page-model arrays plus tiny factory helpers, with HTML renderers staying elsewhere. I’m going to record that in the task shell, then create a `resource_page_builders.ts` module and move the model builders into it.
+
+# gpt-5.5_2026-05-22_2041_20
+
+The extraction compiled cleanly: fmt, lint, and check are green. `weave.ts` dropped to 5,234 lines, and the new builder module is 537 lines. I’m running the harness tests and import audit now.
+
+# gpt-5.5_2026-05-22_2043_00
+
+Implemented the ResourcePage model-builder extraction.
+
+Changed:
+- Added [resource_page_builders.ts](../../../../../src/core/weave/resource_page_builders.ts:1)
+- Updated [weave.ts](../../../../../src/core/weave/weave.ts:1) to import page builders and drop the local builder/factory helpers
+- Updated [wd.codebase-overview.md](../../../../../documentation/notes/wd.codebase-overview.md:34)
+- Filled the new task note and updated the parent extraction task
+
+Verification passed:
+- `deno task fmt`
+- `deno task lint`
+- `deno task check`
+- core weave harness tests: 56 passed
+- focused integration harness tests: 72 passed
+- import audit: 27 modules, 97 edges, 0 core-to-runtime imports, 0 cycles
+- `git diff --check`
+
+`weave.ts` is now down from 5,721 to 5,234 lines. No bugs or performance opportunities found.
+
+Suggested code commit:
+```text
+refactor(core-weave): extract resource page model builders
+```
+
+Suggested archive commit:
+```text
+docs(tasks): record resource page builder extraction slice
+```
+
+I left the existing archive conversation-file change untouched.
+
+# User_2026-05-22_2044_19
+
+what's next?
+
+# gpt-5.5_2026-05-22_2044_36
+
+Next I’d do a small dependency-clearing slice before touching the big payload renderers:
+
+**`refactor(core-weave): extract source locator render helpers`**
+
+Scope:
+- Move `renderCurrentWorkingFileLocator`
+- Move `renderCurrentWorkingFileDeclaration`
+- Move `renderRepositorySourceFloatingLocatorBlankNode`
+- Reuse existing `working_file_paths.ts`
+- Keep source-locator assertions separate in `source_locator_assertions.ts`
+- No generated RDF behavior changes
+
+Why this next: payload and support renderers call these helpers, so extracting them first makes the later payload-renderer slice cleaner and reduces the chance of dragging unrelated source-locator logic into a large renderer module.
+
+After that, I’d do:
+
+1. **Payload render helpers**: first/second payload KnopInventory and MeshInventory Turtle renderers.
+2. **Rendered artifact history collection/render helpers**: `collectRenderedArtifactHistories`, `collectRenderedHistoricalState`, and related rendered-history block helpers.
+3. **Remaining legacy/fixture-sensitive renderers**: only after the smaller render dependencies are isolated.
+
+So: small locator-render slice next, then payload renderers.
+
+# gpt-5.5_2026-05-22_2044_37
+
+Next I’d do a small dependency-clearing slice before touching the big payload renderers:
+
+**`refactor(core-weave): extract source locator render helpers`**
+
+Scope:
+- Move `renderCurrentWorkingFileLocator`
+- Move `renderCurrentWorkingFileDeclaration`
+- Move `renderRepositorySourceFloatingLocatorBlankNode`
+- Reuse existing `working_file_paths.ts`
+- Keep source-locator assertions separate in `source_locator_assertions.ts`
+- No generated RDF behavior changes
+
+Why this next: payload and support renderers call these helpers, so extracting them first makes the later payload-renderer slice cleaner and reduces the chance of dragging unrelated source-locator logic into a large renderer module.
+
+After that, I’d do:
+
+1. **Payload render helpers**: first/second payload KnopInventory and MeshInventory Turtle renderers.
+2. **Rendered artifact history collection/render helpers**: `collectRenderedArtifactHistories`, `collectRenderedHistoricalState`, and related rendered-history block helpers.
+3. **Remaining legacy/fixture-sensitive renderers**: only after the smaller render dependencies are isolated.
+
+So: small locator-render slice next, then payload renderers.
+
+# User_2026-05-22_2045_20
+
+ok proceed
+
+# gpt-5.5_2026-05-22_2045_37
+
+I’ll proceed with the small locator-render slice. I’m going to check the current working tree and task shell first, then move only the rendering helpers that serialize current working-file and repository source locator Turtle.
+
+# gpt-5.5_2026-05-22_2045_54
+
+The code repo is clean, and the archive has a few unrelated user-side edits already present. I’ll leave those alone and only update the new locator-render task plus the parent overview/task notes needed for this slice.
+
+# gpt-5.5_2026-05-22_2046_39
+
+I’ll pick this up as the next conservative extraction slice. I’m going to re-anchor on the repo guidance, fill the task note, then make the narrow helper move and run the same verification gauntlet as the prior slices.
