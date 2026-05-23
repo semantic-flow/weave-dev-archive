@@ -1762,3 +1762,96 @@ docs(weave): record legacy page renderer extraction
 ```
 
 Next clean slice is probably either progression resolver extraction or the smaller source-registry/extraction-source helper extraction.
+
+# User_2026-05-22_2237_24
+
+which slice do you want to do next?
+
+# gpt-5.5_2026-05-22_2237_38
+
+I’d do the **source-registry / extraction-source helper extraction** next.
+
+Why this one: it’s smaller and cleaner than progression resolver extraction, and it removes the last little RDF-rendering island from `weave.ts` without touching planner branching.
+
+Proposed task/module:
+
+- Task: `core-weave-extraction-source-helper-extraction`
+- Module: `src/core/weave/extraction_source_renderers.ts` or `extraction_source_blocks.ts`
+
+Move:
+
+- `replaceExtractionSourceBlock`
+- `renderExactExtractionSourceBlock`
+- `toExtractionSourceEvidenceFacts`
+- `escapeTurtleString`
+
+Keep it move-only. No source-registry redesign, no ontology changes, no generalized provenance work yet.
+
+After that, I’d do the progression resolver extraction as the next larger slice. That one is valuable, but it is more planner-adjacent and deserves a slightly more careful task shell.
+
+# User_2026-05-22_2240_08
+
+ok, proceed
+
+# gpt-5.5_2026-05-22_2240_23
+
+I’ll take this as the source-registry / extraction-source helper slice. I’m going to re-anchor in the task shell and current tree, then move only the tiny RDF block helpers out of `weave.ts` without changing planner behavior.
+
+# gpt-5.5_2026-05-22_2240_42
+
+The main repo is clean now, so this slice starts from a good point. The archive has only the user’s Dendron move for the HTML task, the Kato conversation note, and this new task shell.
+
+# gpt-5.5_2026-05-22_2240_53
+
+The task shell is empty, and the parent/overview still point at the HTML task as active. I’m filling this task with the narrow source-registry helper scope and I’ll update those links as part of the slice.
+
+# gpt-5.5_2026-05-22_2241_31
+
+The task now has the guardrails in it. I’m moving exactly `replaceExtractionSourceBlock`, `renderExactExtractionSourceBlock`, and their two private helpers into `extraction_source_blocks.ts`.
+
+# gpt-5.5_2026-05-22_2242_19
+
+The extracted module compiles, and `weave.ts` is down to 1,608 lines. I’m running the same verification path now; this slice is tiny, but it touches fixture-sensitive RDF evidence output, so the weave tests still matter.
+
+# gpt-5.5_2026-05-22_2243_11
+
+Core and integration tests are green, including the extracted-bob source-registry cases. I’m doing the last audits and then I’ll record the final counts and next slice.
+
+# gpt-5.5_2026-05-22_2244_12
+
+Small detour: this image has no `python` binary, so I’m updating the parent note with a direct patch instead. No files changed from that failed command.
+
+# gpt-5.5_2026-05-22_2245_16
+
+Implemented the source-registry / ExtractionSource helper slice.
+
+Moved the helper island into [extraction_source_blocks.ts](../../../../../src/core/weave/extraction_source_blocks.ts):
+
+- `replaceExtractionSourceBlock`
+- `renderExactExtractionSourceBlock`
+- private evidence-fact conversion
+- private Turtle string escaping
+
+`weave.ts` is now down to 1,608 lines. I updated [wd.codebase-overview.md](../../../../../documentation/notes/wd.codebase-overview.md), the parent extraction task, and the new task note with results. I also updated links to the completed HTML renderer task where the Dendron move had happened.
+
+Verification passed:
+
+- `deno task fmt`
+- `deno task lint`
+- `deno task check`
+- 56 core weave tests
+- 72 integration weave/version/generate tests
+- import graph audits: 0 cycles, 0 core-to-runtime imports
+- `git diff --check` in both repos
+
+Suggested commit messages:
+
+```text
+refactor(core-weave): extract extraction source block helpers
+```
+
+```text
+docs(weave): record extraction source helper slice
+```
+
+Next slice I’d pick: progression resolver extraction, with a careful task shell because it’s more planner-adjacent.
