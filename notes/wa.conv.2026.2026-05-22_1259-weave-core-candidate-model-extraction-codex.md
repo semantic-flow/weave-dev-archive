@@ -1168,3 +1168,71 @@ Keep out of scope:
 After that, the next big slice is probably **mesh inventory renderers**, but I’d do it second. It touches more shared block helpers and fixture-sensitive legacy output, so the smaller preservation extraction will make that one less tangled.
 
 The `wa.task.2026.2026-05-22_2253-resourcepage-config-and-templating` task looks like a feature/design track, not a continuation of the move-only core weave extraction. My vote: finish one more conservative core cleanup slice before switching back to ResourcePage config behavior.
+
+# User_2026-05-22_2108_14
+
+What about Rendered artifact history collection/render helpers and Remaining legacy/fixture-sensitive renderers?
+
+# gpt-5.5_2026-05-22_2108_33
+
+Rendered artifact history helpers are already handled, conservatively: I moved them into `payload_renderers.ts` as private helpers because only the multi-history payload renderer uses them right now.
+
+I would not extract them into a standalone module yet. A `rendered_artifact_history.ts` module would make sense once a second caller appears. Until then it would be a premature abstraction with a tempting public-looking name.
+
+For remaining legacy/fixture-sensitive renderers, I’d split them into two buckets:
+
+1. **Generic mesh-inventory render/block helpers**
+   - Good future extraction.
+   - Likely module: `mesh_inventory_renderers.ts` or `mesh_inventory_blocks.ts`.
+   - Move helpers like `renderMeshInventoryArtifactBlock`, `renderMeshInventoryHistoryBlock`, state/manifestation/located-file/resource-page block helpers.
+
+2. **Legacy fixture-shaped full renderers**
+   - Be careful.
+   - Includes things like `renderLegacyFirstPayloadWovenMeshInventoryTurtle`, which still has fixture-shaped assumptions such as hard-coded Alice paths.
+   - I’d either leave these visible in `weave.ts` for now or move them later into an explicitly named `legacy_mesh_inventory_renderers.ts`, not into a general renderer module.
+
+So my ordering would be:
+
+1. `knop_support_renderers.ts` next.
+2. Generic `mesh_inventory_blocks.ts`.
+3. Then decide whether to isolate `legacy_mesh_inventory_renderers.ts` or replace the legacy renderers with generalized block-based paths.
+
+That keeps the weird stuff labeled as weird, which is usually the kindest thing we can do for future-us.
+
+# User_2026-05-22_2114_11
+
+But @wa.task.2026.2026-05-21_1035-runtime-weave-module-decomposition can be marked complete? It was kind of a misnomer, because this included core cleanup too. But do you think we should continue with extraction? Maybe a new "weave core" extraction task? It's still 4000+ lines.
+
+# gpt-5.5_2026-05-22_2114_21
+
+I’ll read the runtime decomposition task itself before I give a confident call. The name sounds like it may not match what actually happened, so I want to separate “can this task close?” from “is extraction finished?”
+
+# gpt-5.5_2026-05-22_2114_39
+
+Yes, I’d mark `wa.task.2026.2026-05-21_1035-runtime-weave-module-decomposition` complete.
+
+I’d push back on calling it “included core cleanup,” though. The runtime task’s actual checklist is runtime-specific, and `src/runtime/weave/weave.ts` is now only ~547 lines. The core cleanup happened under the separate careful extraction track. Better to close the runtime task cleanly rather than blur its scope in retrospect.
+
+For core: yes, continue extraction. `src/core/weave/weave.ts` is still ~4,066 lines, but I would not create a generic “weave core extraction” task from scratch unless you want a fresh parent. We already have that in `wa.task.2026.2026-05-21_0849_careful-extraction-refactor`.
+
+My recommendation:
+
+1. Mark runtime decomposition complete.
+2. Move `wa.task.2026.2026-05-22_2252-payload-render-helpers` to completed after commit.
+3. Keep the existing core parent open for now.
+4. Create one more narrow child task: **core weave Knop support render preservation extraction**.
+5. After that, reassess whether the remaining 3k-ish lines deserve a new parent like `core-weave-renderer-decomposition-followup`.
+
+I would avoid a broad new parent right this second. The next concrete slice is obvious, and broad parent churn costs more than it buys until the current parent stops being useful.
+
+# User_2026-05-22_2117_32
+
+I was confused. Thanks. Ok proceed
+
+# gpt-5.5_2026-05-22_2117_49
+
+No worries, that confusion was reasonable. The task names overlapped in a pretty unhelpful way. I’ll proceed with the narrow Knop support render-preservation extraction, keeping the payload renderer work intact and avoiding the archive-side renames that are already in flight.
+
+# gpt-5.5_2026-05-22_2117_54
+
+The code repo is clean now, so this will be a fresh, small patch. The archive has your completed-note renames in progress; I’ll treat those as yours and only edit the new Knop support task plus the parent extraction note.

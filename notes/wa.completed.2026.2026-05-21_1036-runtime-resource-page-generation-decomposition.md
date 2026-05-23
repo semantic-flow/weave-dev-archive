@@ -15,7 +15,7 @@ created: 1779384990627
 
 ## Summary
 
-The runtime weave module contains a large ResourcePage generation subsystem: generated page collection, runtime ResourcePage policy checks, designator context loading, child identifier discovery, RDF type/title extraction, raw source panels, reference link models, history group collection, custom page definitions, and final page writes. This is separable from the runtime orchestration/candidate/version execution split tracked in [[wa.task.2026.2026-05-21_1035-runtime-weave-module-decomposition]].
+The runtime weave module contains a large ResourcePage generation subsystem: generated page collection, runtime ResourcePage policy checks, designator context loading, child identifier discovery, RDF type/title extraction, raw source panels, reference link models, history group collection, custom page definitions, and final page writes. This is separable from the runtime orchestration/candidate/version execution split tracked in [[wa.completed.2026.2026-05-21_1035-runtime-weave-module-decomposition]].
 
 This task should decompose the runtime ResourcePage generation code into cohesive modules while preserving output. It should make later page-model redesign work easier, but it should not do that redesign. Name churn is acceptable for internal module names because there are no external users yet; use the clearest boundaries rather than preserving awkward transitional names.
 
@@ -82,7 +82,7 @@ This task should coordinate with [[wa.completed.2026.2026-05-22_1422-core-weave-
 ## Non-Goals
 
 - Do not redesign generated page visuals, CSS, HTML structure, page content models, or raw source panel semantics.
-- Do not split candidate loading, version execution, or prepared weave orchestration; use [[wa.task.2026.2026-05-21_1035-runtime-weave-module-decomposition]].
+- Do not split candidate loading, version execution, or prepared weave orchestration; use [[wa.completed.2026.2026-05-21_1035-runtime-weave-module-decomposition]].
 - Do not split the core weave planner; use [[wa.completed.2026.2026-05-22_1422-core-weave-rdf-and-turtle-helper-extraction]].
 - Do not introduce a new rendering engine or template system.
 - Do not regenerate fixture ladders unless an existing test reveals drift that must be resolved.

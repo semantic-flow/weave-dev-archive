@@ -106,7 +106,7 @@ The existing `src/core/weave/weave.ts` should continue to export the same public
 - Do not move implementation-local interfaces merely to reduce line count; move them with their owning behavior later.
 - Do not change public operation request shapes, target semantics, or generated outputs.
 - Do not change the current ResourcePageDefinition support-history behavior in this type/model extraction. The mismatch between current-only support-artifact defaults and the legacy versioned `_knop/_page` progression is tracked as follow-up audit/documentation work in [[wd.todo]].
-- Do not split runtime weave files here; use [[wa.task.2026.2026-05-21_1035-runtime-weave-module-decomposition]] and [[wa.completed.2026.2026-05-21_1036-runtime-resource-page-generation-decomposition]].
+- Do not split runtime weave files here; use [[wa.completed.2026.2026-05-21_1035-runtime-weave-module-decomposition]] and [[wa.completed.2026.2026-05-21_1036-runtime-resource-page-generation-decomposition]].
 - Do not rename this task to completed as part of the implementation unless explicitly requested.
 
 ## Orthogonal Opportunities

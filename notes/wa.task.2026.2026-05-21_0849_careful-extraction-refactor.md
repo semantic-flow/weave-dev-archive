@@ -2,7 +2,7 @@
 id: 4cql6p0o4p6kvdz50s5k7hh
 title: 2026 05 21_0849_careful Extraction Refactor
 desc: ''
-updated: 1779484052179
+updated: 1779509831866
 created: 1779378607538
 ---
 
@@ -26,7 +26,7 @@ This is a code-extraction refactor of the weave planner. It is not a refactor of
 Current rough shape:
 
 - `src/core/weave/weave.ts` is about 4,066 lines after [[wa.completed.2026.2026-05-21_1037-core-weave-first-extraction-slice]] moved shared request, source, candidate, planning, and slice-name model types into focused modules, [[wa.completed.2026.2026-05-22_1358-core-weave-rdf-and-turtle-helper-extraction]] moved low-level RDF and Turtle helpers, [[wa.completed.2026.2026-05-22_1424-core-weave-slice-classification-extraction]] moved pending slice classification, [[wa.completed.2026.2026-05-22_1441-payload-version-layout-and-overwrite-state-planning]] moved payload layout and overwrite planning, [[wa.completed.2026.2026-05-22_1644-shape-assertions]] moved settled current-shape and source-locator assertions, [[wa.completed.2026.2026-05-22_2225-referencecatalog-current-link-extraction]] moved ReferenceCatalog current-link parsing, [[wa.completed.2026.2026-05-22_2235-resourcepage-model-builder-extraction]] moved ResourcePage model builders, [[wa.completed.2026.2026-05-22_2244-extract-source-locator-render-helpers]] moved source-locator render helpers, and [[wa.task.2026.2026-05-22_2252-payload-render-helpers]] moved payload KnopInventory render helpers.
-- `src/runtime/weave/weave.ts` is about 4,900 lines and has its own cleanup track in [[wa.task.2026.2026-05-21_1035-runtime-weave-module-decomposition]] and [[wa.completed.2026.2026-05-21_1036-runtime-resource-page-generation-decomposition]]. This core planner task should not absorb those runtime refactors.
+- `src/runtime/weave/weave.ts` is about 4,900 lines and has its own cleanup track in [[wa.completed.2026.2026-05-21_1035-runtime-weave-module-decomposition]] and [[wa.completed.2026.2026-05-21_1036-runtime-resource-page-generation-decomposition]]. This core planner task should not absorb those runtime refactors.
 - The core file mixes high-level orchestration with low-level RDF/Turtle utilities. That makes small behavior changes feel like broad edits and makes review harder.
 - `core/targeting.ts` now owns portable target request semantics after [[wa.task.2026.2026-04-08_1615-weave-orchestration-refactor]]. Do not pull target normalization, shared target derivation, or requested-target coverage back into `src/core/weave/weave.ts` during this extraction.
 - Several helper families already have natural names and call boundaries: slice detection, payload state layout, rendered artifact history collection, ResourcePage model builders, Turtle block editing, RDF fact assertions/queries, and current-working-file source locator rendering.
@@ -58,7 +58,7 @@ The healthiest end state is probably a small `src/core/weave/weave.ts` that coor
 - [x] The seventh extraction slice should be ResourcePage model-builder extraction, tracked separately in [[wa.completed.2026.2026-05-22_2235-resourcepage-model-builder-extraction]].
 - [x] The eighth extraction slice should be source-locator render helper extraction, tracked separately in [[wa.completed.2026.2026-05-22_2244-extract-source-locator-render-helpers]].
 - [x] The ninth extraction slice should be payload render helper extraction, tracked separately in [[wa.task.2026.2026-05-22_2252-payload-render-helpers]].
-- [x] Runtime planner cleanup should not be done in this task. Use [[wa.task.2026.2026-05-21_1035-runtime-weave-module-decomposition]] for runtime orchestration/candidate/version seams and [[wa.completed.2026.2026-05-21_1036-runtime-resource-page-generation-decomposition]] for runtime page-generation seams.
+- [x] Runtime planner cleanup should not be done in this task. Use [[wa.completed.2026.2026-05-21_1035-runtime-weave-module-decomposition]] for runtime orchestration/candidate/version seams and [[wa.completed.2026.2026-05-21_1036-runtime-resource-page-generation-decomposition]] for runtime page-generation seams.
 
 ## Decisions
 
@@ -116,5 +116,6 @@ The healthiest end state is probably a small `src/core/weave/weave.ts` that coor
 - [x] Extract current working-file and repository floating-locator render helpers.
 - [x] Use [[wa.task.2026.2026-05-22_2252-payload-render-helpers]] for the ninth payload render helper extraction slice.
 - [x] Extract first and second payload KnopInventory render helpers plus shared support-history omission postprocessors.
+- [ ] core-weave-knop-support-render-preservation-extraction
 - [ ] if possible, legacy Alice Bio-specific (and other fixture ladder) render helpers should be replaced by generalized renderers after the move-only phase?
 - [x] Update [[wd.codebase-overview]].
