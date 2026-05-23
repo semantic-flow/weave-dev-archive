@@ -2136,3 +2136,294 @@ docs(weave): triage CodeRabbit refactor review
 - mark cancelled stale or speculative findings
 - record implemented fixes and validation
 ```
+
+# User_2026-05-23_0020_01
+
+I didn't even notice, but did we (and should we have) refactored tests at the same time?
+
+# gpt-5.5_2026-05-23_0020_16
+
+I’m going to check the current diff and the test file shape before answering, because the real answer is probably “we added coverage, but did not do a structural test refactor,” and I want to ground that in the repo rather than memory haze.
+
+# gpt-5.5_2026-05-23_0020_32
+
+We mostly did **not** refactor tests structurally. We added/adjusted focused coverage where it protected a specific review fix, like `reference_catalog_links_test.ts` and `turtle_blocks_test.ts`, and kept the broader fixture/integration tests as the behavioral guardrail.
+
+I think that was the right call. During the core extraction slices, the tests were doing valuable oracle work: “does the generated RDF/page output stay byte-for-byte settled?” Refactoring those tests at the same time as moving production code would have made regressions harder to interpret.
+
+That said, yes, there is a good next-step test refactor, just not bundled into the move-only code work. I’d do it as a separate slice:
+
+- Keep `fixture_ladder_test.ts` as high-level acceptance coverage.
+- Extract repeated fixture-ladder assertions and scenario helpers.
+- Add smaller unit tests around the extracted renderer/helper modules.
+- Avoid changing expected fixture output in the same patch unless the task is explicitly semantic.
+- Use the fixture ladder as the “outer shell,” but make the inner helper tests cheaper and more local.
+
+So: **we did the right amount then; we should refactor tests now/soon as a separate cleanup slice.**
+
+# User_2026-05-23_0035_14
+
+Would you guess the next weave release would be a minor or a patch bump
+
+# gpt-5.5_2026-05-23_0035_25
+
+I’d guess **patch bump**: `v0.1.4`.
+
+Reason: most of what we’ve done is internal extraction/refactor, bug fixes, safety hardening, and packaging/runtime-default polish. Even “weave defaults in native binaries” feels like making the released artifact behave correctly, not introducing a new product surface.
+
+I’d make it **minor** only if the release includes a clearly user-facing new capability, like a new CLI command/flag, new supported workflow, changed generated artifact contract, or notable Semantic Flow behavior expansion.
+
+So my default vote: **patch now, minor later when the config/templating or generalized fixture/helper work turns into user-visible capability.**
+
+# User_2026-05-23_0037_00
+
+the work we've done is already released, 0.1.3. The work to do is at least [wa.task.2026.2026-05-22_2253-resourcepage-config-and-templating.md](wa.task.2026.2026-05-22_2253-resourcepage-config-and-templating.md) , probably [wa.task.2026.2026-05-21_0907-import.md](wa.task.2026.2026-05-21_0907-import.md) and [wa.task.2026.2026-05-22_2308-fixture-helper-generalization.md](wa.task.2026.2026-05-22_2308-fixture-helper-generalization.md)
+
+# gpt-5.5_2026-05-23_0037_14
+
+Good correction. I’m going to read those three task notes so I’m judging the *next* release shape, not smuggling the already-released 0.1.3 work back into the decision.
+
+# gpt-5.5_2026-05-23_0037_26
+
+Given that scope, I’d call the next release a **minor bump: `0.2.0`**.
+
+The deciding item is `weave import`. That is clearly new user-facing CLI functionality, with new planner/runtime behavior, docs, permissions/testing considerations, and observable workflow support. That is not patch-shaped.
+
+`resourcepage-config-and-templating` is borderline by itself: if it only preserves output while reorganizing internals, it could be patch. But if it exposes reusable ResourcePage presentation config, templates, panel ordering, stylesheet selection, or custom/default shared behavior, that also leans minor.
+
+`fixture-helper-generalization` should not drive versioning. That one is cleanup/test/renderer debt reduction unless it intentionally changes fixture behavior.
+
+So my versioning rule would be:
+
+- **Only internal generalization/refactor/fixes:** `0.1.4`
+- **ResourcePage presentation config becomes observable:** probably `0.2.0`
+- **`weave import` ships:** definitely `0.2.0`
+
+My recommendation: treat the next cycle as the **0.2.0 import + ResourcePage groundwork release**, with fixture generalization riding along as cleanup.
+
+# User_2026-05-23_0041_09
+
+Just as a placeholder can you fill the further refactoring (tests, other big files) you'd like to see or that we've talked about into [wa.task.2026.2026-05-23_0040-further-refactoring.md](wa.task.2026.2026-05-23_0040-further-refactoring.md)
+
+# gpt-5.5_2026-05-23_0041_18
+
+I’ll turn that shell into a durable placeholder note, with the test refactor ideas separated from the remaining large-file cleanup so it stays useful instead of becoming a vague bucket.
+
+# gpt-5.5_2026-05-23_0041_26
+
+I found the note is still just the template, and the archive only has the ongoing conversation note plus this new task touched. I’m going to keep this as a planning placeholder: no code changes, just a structured backlog of refactors we’ve named.
+
+# gpt-5.5_2026-05-23_0041_33
+
+I’m going to write this as a “refactoring map,” not a commitment to do all of it before 0.2.0. The key distinction I’m preserving is: output-preserving refactors first, behavior-changing generalization only in named slices.
+
+# gpt-5.5_2026-05-23_0042_38
+
+Filled out [wa.task.2026.2026-05-23_0040-further-refactoring.md](wa.task.2026.2026-05-23_0040-further-refactoring.md:1).
+
+I framed it as a conservative refactoring map: test splitting, fixture-ladder helper extraction, remaining big production files, and the boundary between output-preserving cleanup versus behavior-changing work. I also linked the related tasks with Dendron wikilinks: ResourcePage config, import, and fixture helper generalization.
+
+No tests run since this was archive-note-only.
+
+# User_2026-05-23_0729_11
+
+Should we do any refactoring first, or just dive in to config-and-templating. I'm thinking then import and then fixture generalization.
+
+# gpt-5.5_2026-05-23_0729_30
+
+I’d **not do broad refactoring first**. I’d dive into `config-and-templating`, but make its first slice deliberately refactor-shaped and output-preserving.
+
+Recommended order:
+
+1. **ResourcePage config-and-templating**
+   Start with the smallest internal slice: extract page/panel models from `src/runtime/weave/pages.ts` while keeping generated HTML stable. This gives the templating work real seams without doing abstract cleanup first.
+
+2. **`weave import`**
+   Once ResourcePage/page-source boundaries are clearer, import has a better place to land. It will likely add fixture paths and docs, and it should benefit from the cleaner page model.
+
+3. **Fixture helper generalization**
+   Do this after import, because import will create more non-Alice fixture pressure. Generalizing before then risks polishing around the current fixture ladder rather than the next shape.
+
+I’d only do one tiny preparatory refactor before config-and-templating if it feels immediately useful: extract test helpers around runtime page assertions or current generated page comparison. But I would not split `fixture_ladder_test.ts`, `scripts/fixture-ladder.ts`, or `weave_test.ts` first. Those are real cleanup targets, but they’re not prerequisites.
+
+So my vote: **config-and-templating now, with its first implementation slice as output-preserving page model/panel extraction.**
+
+# User_2026-05-23_0732_10
+
+OK. Regarding templating, I don't think the code uses any Inner/OuterResourcePageTemplate yet, so we might need to square it with the ResourcePageRegion. And it's not clear to me whether, for Knop-level presentation (and I guess mesh-level too), lives in _config or _page.
+
+# gpt-5.5_2026-05-23_0732_20
+
+I’m going to ground this in the current ontology/code names before answering, because this is exactly the kind of thing where the vocabulary can nudge us into a false split.
+
+# gpt-5.5_2026-05-23_0732_35
+
+What I’m seeing matches your intuition: the ontology has presentation config/template terms, but the current runtime mostly knows ResourcePageDefinition/Region/Source plus hard-coded page rendering. I’m going to look at those exact definitions and the current page-definition loader before drawing the boundary.
+
+# gpt-5.5_2026-05-23_0732_56
+
+I think your instinct is right: we need to square three concepts, not collapse them.
+
+`ResourcePageRegion` belongs to `_knop/_page`. It is **content composition**: “this identifier page has a `main` region sourced from this artifact/file, and maybe a `sidebar` region sourced from that one.” The core ontology even says not to use it for template-slot/browser-chrome wiring. So `_page` should answer: **what content is authored for this page?**
+
+`ResourcePagePresentationConfig` belongs primarily in `_config`, especially for mesh-level or Knop-level defaults. It should answer: **how should pages be presented?** Template choice, stylesheet choice, default chrome, panel inclusion/order, default layout policy. A specific `_page` can attach adjacent presentation config when it wants a local override, but Knop-wide and mesh-wide presentation should not require every identifier to have a `_knop/_page/page.ttl`.
+
+So I’d draw it like this:
+
+- `_mesh/_config`: mesh-wide presentation defaults.
+- `<designator>/_knop/_config` if/when we support it: Knop-local presentation defaults and inheritance override.
+- `<designator>/_knop/_page`: specific authored page definition: regions and source bindings for that identifier page.
+- `<designator>/_knop/_assets`: concrete local assets, like custom CSS, referenced by config or page definition as needed.
+
+For Inner/Outer templates, I would not jump straight to “template artifacts” yet. I’d first make internal model seams that correspond to them:
+
+- **Outer template:** document shell, head, nav/chrome, stylesheet links, page frame.
+- **Inner template:** body layout for a page kind, arranging generated panels and authored regions.
+- **Region:** authored content chunk from `ResourcePageDefinition`.
+- **Panel:** generated model chunk: children, references, histories, raw source, provenance, metadata.
+
+That lets the current hard-coded renderer become “the built-in Semantic Site outer/inner template” without needing external template loading on day one.
+
+One ontology wrinkle: `sfcfg:hasResourcePagePresentationConfig` currently has domain `sflo:ResourcePageDefinition`, which fits adjacent `_page` config, but mesh/Knop defaults probably need to come through generic config layering rather than that property directly. So I’d avoid overcommitting the first slice to RDF shape. First slice can define the effective internal presentation model, then we can decide whether the ontology needs a broader attachment property or just clearer config-layer usage.
+
+My recommendation for the task: first implement **default effective presentation config + panel/region model assembly**, output-preserving. Then add `_page` local override support. Then add mesh/Knop `_config` inheritance once the internal model feels honest.
+
+# User_2026-05-23_0738_13
+
+For application defaults, does the task capture the use of the /defaults folder. 
+
+The thing about panels, they're defined in code so I'm not sure we have a general system for defining them. Maybe we don't need a general system for panel definition (although I think it would be nice), but we do need an RDF way of selecting them at least.
+
+I strongly suspect we'll need new vocabulary, can you give me your analysis there.
+
+# gpt-5.5_2026-05-23_0738_27
+
+I’m going to inspect the current `/defaults` contents and config loader shape, because the answer turns on whether “application defaults” are already an RDF/config layer or just embedded runtime behavior wearing a nice hat.
+
+# gpt-5.5_2026-05-23_0739_47
+
+Yes, I think we need to sharpen the task. It currently says “built-in default ResourcePage presentation” and “effective config,” but it does **not** explicitly capture the `/defaults` folder as the application-default source. That matters because Weave already has `defaults/application.ttl` and `defaults/config-resolution.ttl`, and the default ResourcePage presentation should probably enter through that same defaults path, not as another invisible hard-coded branch.
+
+My read:
+
+- `/defaults/application.ttl` should eventually name the default ResourcePage presentation config.
+- Code can still provide built-in template/panel renderers.
+- RDF should select the stable built-in presentation pieces.
+- Mesh/Knop/page config can override those selections later through normal config layering.
+
+**Panel Vocabulary**
+I agree we probably do **not** need a general RDF system for defining arbitrary panels yet. That would imply plugin-like renderers, template inputs, maybe remote code or declarative panel queries. Too much.
+
+But we do need RDF for selecting code-defined panels. So the vocabulary should distinguish:
+
+- **Panel kind:** stable identifier for a code-backed generated panel.
+- **Panel selection:** config entry saying include/order/place this panel.
+- **Panel renderer:** still implementation-owned TypeScript for now.
+
+I’d expect new config-ontology vocabulary along these lines:
+
+```ttl
+sfcfg:ResourcePagePanel
+sfcfg:ResourcePagePanelSelection
+sfcfg:hasResourcePagePanelSelection
+sfcfg:hasResourcePagePanel
+sfcfg:panelOrder
+sfcfg:panelRegionKey
+sfcfg:hasPanelInclusionPolicy
+
+sfcfg:panelInclusionPolicy_auto
+sfcfg:panelInclusionPolicy_include
+sfcfg:panelInclusionPolicy_suppress
+```
+
+And built-in panel individuals like:
+
+```ttl
+sfcfg:resourcePagePanel_children
+sfcfg:resourcePagePanel_properties
+sfcfg:resourcePagePanel_references
+sfcfg:resourcePagePanel_histories
+sfcfg:resourcePagePanel_rawSource
+sfcfg:resourcePagePanel_provenance
+sfcfg:resourcePagePanel_semanticFlowMetadata
+```
+
+Maybe also `sourceSummary`, `artifactLinks`, `blankNodes`, or `extractionSource`, depending how we inventory current page sections.
+
+**Presentation Config Attachment**
+One important wrinkle: existing `sfcfg:hasResourcePagePresentationConfig` has domain `sflo:ResourcePageDefinition`. That works for `_knop/_page` local presentation overrides, but it is the wrong property for application, mesh, or Knop defaults. Using it from `<application>` or `_mesh` would imply those subjects are `ResourcePageDefinition`s under RDFS semantics. So we likely need either:
+
+```ttl
+sfcfg:hasDefaultResourcePagePresentationConfig
+```
+
+with domain `sfcfg:Config` and range `sfcfg:ResourcePagePresentationConfig`, or a broadened/renamed attachment model.
+
+I’d lean new property. Keep existing `hasResourcePagePresentationConfig` for adjacent page-definition overrides, and add default-oriented config attachment for application/mesh/Knop scopes.
+
+**Defaults Shape**
+Something like this feels right:
+
+```ttl
+<application>
+  sfcfg:hasDefaultResourcePagePresentationConfig
+    <resource-page-presentation/semantic-site-default> .
+
+<resource-page-presentation/semantic-site-default>
+  a sfcfg:ResourcePagePresentationConfig ;
+  sfcfg:hasOuterResourcePageTemplate
+    <resource-page-template/semantic-site/outer> ;
+  sfcfg:hasInnerResourcePageTemplate
+    <resource-page-template/semantic-site/inner> ;
+  sfcfg:hasResourcePageStylesheet
+    <resource-page-stylesheet/semantic-site> ;
+  sfcfg:hasResourcePagePanelSelection [
+    a sfcfg:ResourcePagePanelSelection ;
+    sfcfg:hasResourcePagePanel sfcfg:resourcePagePanel_children ;
+    sfcfg:panelOrder "10"^^xsd:nonNegativeInteger ;
+    sfcfg:hasPanelInclusionPolicy sfcfg:panelInclusionPolicy_auto
+  ] .
+```
+
+The template/style IRIs can map to built-in code at first. We do not need external template loading in the first slice.
+
+**Where It Lives**
+My recommendation:
+
+- Application defaults: `/defaults/application.ttl`.
+- Mesh-wide portable defaults: `_mesh/_config/config.ttl`.
+- Knop-local/inheritable defaults: a Knop config artifact, probably `_knop/_config` when supported.
+- Specific authored page composition: `_knop/_page/page.ttl`.
+- Specific page-definition presentation override: `_knop/_page/page.ttl` may point to adjacent `ResourcePagePresentationConfig`.
+
+So yes: new vocabulary is likely needed, but it should be small and selection-oriented. The panel implementation can stay in code while RDF gains enough language to say “these are the panels, in this order, under this presentation profile.”
+
+# User_2026-05-23_0750_11
+
+Part of panel selection should be targeting... only DigitalArtifacts get the Current working file panel. 
+
+Is panel the right term?
+
+For markdown sources, maybe we need a markdown panel type. And similarly for HTML. Or maybe just an HTML panel that can convert markdown source into HTML.
+
+Yes, new  hasDefaultResourcePagePresentationConfig property sounds good.
+
+Your shape feels good, but I tend to shy away from blank nodes. If we can give everything too small to deserve a full knop a hash-identifier, it fosters re-uses and can/will preserve dereferencability.
+
+Please update the task note with everything from our last two conversation turns, maybe framed as a suggestion rather than a specification.
+
+# gpt-5.5_2026-05-23_0750_25
+
+I’ll fold this into the task as design guidance to evaluate, not as a locked ontology spec. The important move is to preserve the distinction: RDF selects and targets code-backed panels; it does not have to define arbitrary renderers yet.
+
+# gpt-5.5_2026-05-23_0751_15
+
+I’ve added the defaults/vocabulary thread into the task as provisional design guidance. I’ll do a quick readback now to catch any awkward wording or accidental spec-hardening.
+
+# gpt-5.5_2026-05-23_0751_22
+
+Updated [wa.task.2026.2026-05-22_2253-resourcepage-config-and-templating.md](wa.task.2026.2026-05-22_2253-resourcepage-config-and-templating.md:1).
+
+I added the `/defaults/application.ttl` angle, the likely need for `sfcfg:hasDefaultResourcePagePresentationConfig`, panel selection with targeting, the “is panel the right term?” question, Markdown/HTML panel concerns, and the preference for hash-identified selection nodes over blank nodes. I framed the RDF shape as “possible default shape to evaluate,” not a locked spec.
+
+No tests run; note-only update.
