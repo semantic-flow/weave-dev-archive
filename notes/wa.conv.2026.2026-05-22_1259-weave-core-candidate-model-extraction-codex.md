@@ -939,3 +939,82 @@ The code repo is clean, and the archive has a few unrelated user-side edits alre
 # gpt-5.5_2026-05-22_2046_39
 
 I’ll pick this up as the next conservative extraction slice. I’m going to re-anchor on the repo guidance, fill the task note, then make the narrow helper move and run the same verification gauntlet as the prior slices.
+
+# gpt-5.5_2026-05-22_2046_57
+
+The guidance is consistent with the previous pattern: this should stay behavior-preserving and mostly about dependency shape. I’m checking the task shell, parent note, and current helper placement now so the docs and code move together.
+
+# gpt-5.5_2026-05-22_2047_12
+
+A small note from the first pass: the working tree is clean in both the code repo and the archive, so this slice can stay nicely reviewable. The parent note is a little stale in places, so I’ll fold this eighth slice into that same extraction trail as I go.
+
+# gpt-5.5_2026-05-22_2047_23
+
+The helper boundary is clean: the render functions only need the source-locator model and the existing working-file path predicate. That means we can move them without dragging planner state or runtime concerns into the new module.
+
+# gpt-5.5_2026-05-22_2047_37
+
+Before editing code, I’m filling the task note with the same guardrails as the last two slices: exact RDF preservation, no assertion changes, no runtime import edge, and a place to park any side discoveries.
+
+# gpt-5.5_2026-05-22_2048_07
+
+Code edit time: I’m creating `source_locator_renderers.ts`, wiring `weave.ts` to import those renderers, and removing the old local copies. This is intentionally just a relocation, with the string templates kept intact.
+
+# gpt-5.5_2026-05-22_2048_31
+
+The source move is in place. Next I’m formatting and then I’ll run the type/lint/test checks; after that I’ll update the overview and task results with the actual counts.
+
+# gpt-5.5_2026-05-22_2048_48
+
+`fmt`, `lint`, and `check` are clean. `weave.ts` dropped from 5,234 to 5,195 lines, and the new renderer module is 44 lines; now I’m running the focused core and integration tests that exercise the generated RDF paths.
+
+# gpt-5.5_2026-05-22_2049_21
+
+Both focused test sets passed: 56 core weave tests and 72 integration tests. I’m doing the dependency-shape audit and diff hygiene pass now, then I’ll write the implementation results into the notes.
+
+# gpt-5.5_2026-05-22_2050_00
+
+The audit is still clean: no core-to-runtime imports and no cycles from the `weave.ts` root. I also checked for explicit runtime imports under `src/core`; none were found.
+
+# gpt-5.5_2026-05-22_2051_31
+
+Implemented the source-locator renderer extraction.
+
+Changed:
+- Added [source_locator_renderers.ts](../../../../../src/core/weave/source_locator_renderers.ts)
+- Updated [weave.ts](../../../../../src/core/weave/weave.ts) to import those helpers and remove the local copies
+- Updated [wd.codebase-overview.md](../../../../../documentation/notes/wd.codebase-overview.md)
+- Filled the new task note and updated the parent extraction task in the archive
+
+Verification passed:
+- `deno task fmt`
+- `deno task lint`
+- `deno task check`
+- core weave tests: 56 passed
+- integration weave/version/generate tests: 72 passed
+- import graph audit: 28 modules, 99 edges, 0 core-to-runtime imports, 0 cycles
+- `git diff --check`
+
+`weave.ts` is now down from 5,234 to 5,195 lines. No bugs or performance opportunities found; recorded that under Orthogonal Opportunities.
+
+I left unrelated archive changes alone: `wa.conv.2026.2026-05-22_1259...` and `wa.task.2026.2026-04-08_1545...` are modified in the archive but weren’t touched by this slice.
+
+Suggested code-repo commit:
+
+```text
+refactor(core-weave): extract source locator render helpers
+
+- move current working-file and repository floating-locator render helpers into source_locator_renderers.ts
+- keep source locator assertions, path normalization, planner dispatch, and generated RDF/Page output unchanged
+- update the codebase overview for the new module boundary
+```
+
+Suggested archive commit:
+
+```text
+docs(weave): record source locator renderer extraction slice
+
+- fill the source-locator renderer extraction task note
+- update the parent core weave extraction task with the eighth completed slice
+- record verification results and follow-on direction
+```

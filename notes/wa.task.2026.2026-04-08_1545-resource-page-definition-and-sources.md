@@ -2,7 +2,7 @@
 id: s7q2k3n4v5b6m8c1x9z4p6r
 title: 2026 04 08_1545 Resource Page Definition And Sources
 desc: ''
-updated: 1777828029498
+updated: 1779508293161
 created: 1775715234849
 ---
 
@@ -594,7 +594,7 @@ Current `19-alice-page-artifact-source-woven` manifest shape:
 - [ ] Implement `Pinned` versus `Current` as separate source-mode behavior rather than collapsing them into fallback or “prefer” booleans.
 - [ ] Implement first-pass fallback policy behavior for `ExactOnly` and `AcceptLatestInRequestedHistory`, with explicit rejection of cross-history, cross-artifact, or unrelated-working-file fallback.
 - [ ] Add import-oriented source handling for outside-the-tree or extra-mesh content only after it crosses an explicit in-tree governed-artifact boundary.
-- [ ] Fail closed on direct live outside-source usage instead of letting `weave` fetch or follow arbitrary current external content.
+- [ ] Fail closed on direct live outside-source usage instead of letting `weave` fetch or follow arbitrary current external content; best to import outside content and pin a state by default, with plenty of warnings for floating/current targets. 
 - [x] Broaden local path handling so `targetLocalRelativePath` and `workingLocalRelativePath` may use `../` only within host/runtime-configured allowed directories rather than the current mesh-root-only boundary. See [[wa.task.2026.2026-04-11_1723-operational-config-for-runtime-resolution]].
 
 ### Phase 6: Tests, Follow-On Fixtures, And Documentation
