@@ -2,7 +2,7 @@
 id: puqc8gfadcjlhr5ljo2yjxs
 title: 2026 05 22_2139 Core Weave Mesh Inventory Renderer Extraction
 desc: ''
-updated: 1779511157732
+updated: 1779512774164
 created: 1779511157732
 ---
 

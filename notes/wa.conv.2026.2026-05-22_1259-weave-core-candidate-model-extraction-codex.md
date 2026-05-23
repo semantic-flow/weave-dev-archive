@@ -1544,3 +1544,115 @@ docs(tasks): record mesh inventory renderer extraction
 - mark the mesh-inventory extraction task implementation results
 - keep legacy fixture-renderer replacement as a deferred follow-up
 ```
+
+# User_2026-05-22_2204_47
+
+ok, what's next?
+
+# gpt-5.5_2026-05-22_2205_01
+
+Next I’d do a smaller renderer slice, not another huge one:
+
+**Core Weave KnopInventory Renderer Extraction**
+
+Why this next: after mesh inventory moved, `weave.ts` still has several bulky Turtle renderers for KnopInventory/support artifacts. They’re now a clearer group, and moving them should pull another large chunk out without touching planner semantics.
+
+Candidate module: `src/core/weave/knop_inventory_renderers.ts`
+
+Likely scope:
+
+- `renderFirstKnopWovenKnopInventoryTurtle`
+- `renderFirstReferenceCatalogWovenKnopInventoryTurtle`
+- `renderCurrentOnlyReferenceCatalogWovenKnopInventoryTurtle`
+- `renderSubsequentPageDefinitionWovenKnopInventoryTurtle`
+- `renderFirstExtractedKnopWovenKnopInventoryTurtle`
+- tight helpers used only by those renderers, like page-definition state block renderers and extraction-source block rendering if dependency direction is clean
+
+I would **not** do legacy renderer replacement yet. Still move-only. Also probably do **artifact history index page / identifier HTML renderers** after this, because those are HTML-ish page render helpers rather than RDF inventory renderers.
+
+One bookkeeping option: create a new task note for the KnopInventory renderer extraction, then update the parent with it as the twelfth slice.
+
+# User_2026-05-22_2207_10
+
+proceed
+
+# gpt-5.5_2026-05-22_2207_23
+
+I’ll proceed with the KnopInventory renderer slice. First I’m checking the task shell and current `weave.ts` shape, then I’ll fill any missing task details and do the move with the same behavior-preserving posture as the last slices.
+
+# gpt-5.5_2026-05-22_2207_40
+
+I’m going to fill the KnopInventory task note first so the guardrails are written down, then I’ll move the renderer family. I’ll keep the existing mesh-inventory extraction changes intact and work on top of them.
+
+# gpt-5.5_2026-05-22_2207_46
+
+The task shell is empty and the renderer boundary is clear: first Knop, ReferenceCatalog, page-definition, and extracted Knop inventory Turtle renderers. I’m filling the task with that scope and a note that “Open Issues” here is a watchlist plus any actual choices still undecided.
+
+# gpt-5.5_2026-05-22_2208_16
+
+The task is filled. I’m running the pre-slice check now, then I’ll move the renderer family into `knop_inventory_renderers.ts` and trim `weave.ts`.
+
+# gpt-5.5_2026-05-22_2209_17
+
+I’ll pick this back up at the KnopInventory renderer slice. First I’m going to re-anchor in the current files and then make the move as a narrow extraction, keeping the exact output behavior as the thing we’re protecting.
+
+# gpt-5.5_2026-05-22_2209_21
+
+The task shell is filled and matches the slice. I’m checking the exact helper boundaries now, especially the little path/block helpers, so the extraction doesn’t quietly widen into unrelated cleanup.
+
+# gpt-5.5_2026-05-22_2209_49
+
+I’ve found one boundary adjustment: `renderExactExtractionSourceBlock` is still called directly by the planner when patching a source registry, so I’m going to leave that in `weave.ts` for this slice rather than export an oddly scoped helper. The KnopInventory renderers themselves can still move cleanly.
+
+# gpt-5.5_2026-05-22_2212_14
+
+The new module is in place. I’m going to do the big removal from `weave.ts` as a mechanical range delete, then clean up imports by the compiler/linter’s signal.
+
+# gpt-5.5_2026-05-22_2212_57
+
+The compiler is happy after the move. `weave.ts` is down to 2,019 lines, and the extracted KnopInventory module is 824 lines; the little LocatedFile block helpers are duplicated locally for now, which matches the “move-only, defer common renderer cleanup” intent.
+
+# gpt-5.5_2026-05-22_2213_21
+
+`fmt`, `lint`, and `check` are green. I’m moving into the behavior checks now, including the fixture-heavy weave tests and the import graph audits.
+
+# gpt-5.5_2026-05-22_2213_49
+
+The code-side audits are clean: no cycles, no core-to-runtime imports, and no whitespace errors in the main repo. The archive repo has one Markdown trailing blank-line issue in the previous mesh task note, so I’m going to tidy that rather than leave verification red.
+
+# gpt-5.5_2026-05-22_2214_19
+
+The behavior checks have passed: 56 core weave tests and 72 integration tests are green. I’m updating the task notes now with the actual boundary decisions and verification numbers, including the choice to leave `renderExactExtractionSourceBlock` with the planner for this slice.
+
+# gpt-5.5_2026-05-22_2216_33
+
+Implemented the KnopInventory renderer extraction here.
+
+Moved the bulky KnopInventory Turtle renderers into [knop_inventory_renderers.ts](../../../../../src/core/weave/knop_inventory_renderers.ts), updated [weave.ts](../../../../../src/core/weave/weave.ts) to import them, and updated the parent/current task notes plus [wd.codebase-overview.md](../../../../../documentation/notes/wd.codebase-overview.md).
+
+Key boundary call: I left `renderExactExtractionSourceBlock` in `weave.ts` because it is still planner-side source-registry patching, not really KnopInventory rendering. I recorded that decision in the task so the idea is not lost.
+
+Verification passed:
+
+- `deno task fmt`
+- `deno task lint`
+- `deno task check`
+- core weave tests: 56 passed
+- integration weave/version/generate tests: 72 passed
+- rooted import graph audit: 0 cycles, 0 core-to-runtime imports
+- whole `src` cycle audit: 0 cycles
+- `git diff --check` in both repos
+
+Current shape: `src/core/weave/weave.ts` is now 2,016 lines, and the new renderer module is 824 lines.
+
+Suggested commit messages:
+
+```text
+refactor(core-weave): extract knop inventory renderers
+```
+
+```text
+docs(weave): record knop inventory renderer extraction slice
+```
+
+One note: the archive repo still has an unrelated modified Kato conversation note; I left it alone. I also did not rename the new task to completed.
