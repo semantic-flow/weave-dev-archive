@@ -48,6 +48,18 @@ But Bob content has already been used in the carried import/page-source line, so
 - sidecar repo fixture: add content that comes from or lands beside the source repo while the mesh lives in the sidecar/docs layout
 - branch-based mesh fixture: add content that can be imported or localized across a local source branch and publication branch boundary without requiring live remote fetch during page generation
 
+A stronger next whole-mesh candidate is Carol Burnett content from a commit-pinned public-notes URL:
+
+```sh
+weave import \
+  "https://raw.githubusercontent.com/djradon/public-notes/f46d85187ed7781917b73dd7779b756e2d2b7494/user.carol-burnett.md" \
+  carol/page-main \
+  --working-file carol/page-main.md \
+  --expected-digest sha256:5634ffc14165c55ab43c2af38b9d6395e22c8385f54d4a94a7d22d83c99afee7
+```
+
+The file is useful because it is not just a tiny placeholder. It has YAML frontmatter, headings, Markdown emphasis, lists, remote image references, and an explicit Bob relationship. That makes it a better import/content fixture for later custom ResourcePage work than another minimal Alice note. The import fixture may intentionally depend on GitHub rather than running a local HTTP server, because that proves the real acquisition path. Keep the URL commit-pinned and require the expected digest so the dependency is on GitHub availability, not mutable source content.
+
 That topology split is now part of the task, not just test plumbing:
 
 - In a whole-mesh repo, the regular working file can be a normal mesh-relative file under the active mesh root.
@@ -79,14 +91,14 @@ The current carried Bob fixture uses older namespace vocabulary in some historic
 
 - Should `--working-file` be required for the first slice, or should Weave infer a default from the designator path and source extension? Recommendation: require it first; add inference later after examples settle.
 - Should `--working-file` always be mesh-root-relative, or should the CLI expose named destination modes for sidecar and branch-based layouts? Recommendation: keep the first CLI path explicit and relative to the active mesh root, but name the topology in validation and tests so this does not accidentally become whole-mesh-only behavior.
-- Should the first slice support HTTP(S) fetch immediately, or should it support local/file sources plus optional origin metadata first? Recommendation: support HTTP(S) if bounded fetch and test permissions are straightforward; otherwise land local/file import first and keep the command shape ready for HTTP(S).
+- Should the first slice support HTTP(S) fetch immediately, or should it support local/file sources plus optional origin metadata first? Decision leaning: support HTTP(S) in the first slice, with the Carol GitHub raw URL as the real fixture path and local/file import tests as fast lower-level coverage.
 - What should the update flag be called when the designator or working file already exists: `--overwrite`, `--replace-working`, or `--update`?
 - What should the localize-from-integrated command spelling be: a `weave import --from-integrated` mode, a `weave import-localize` subcommand, or a separate verb? Recommendation: keep it under import unless the planner shape becomes meaningfully different.
 - Should an import into an existing payload artifact update only the working file, or also refresh source-origin metadata? Recommendation: update both when the command is explicitly replacing working bytes.
 - Should imported Markdown-bearing artifacts continue using the current `PayloadArtifact`, `DigitalArtifact`, and `RdfDocument` carried shape until content-kind modeling improves? Recommendation: yes for this task; do not mix import with a type-model cleanup.
 - Should `--expected-digest sha256:...` be part of the first CLI surface for HTTP(S) URLs? Recommendation: yes if HTTP(S) import ships in the first slice, because mutable branch URLs are otherwise intentionally latest-ish.
 - Which source-origin metadata belongs in the Knop source registry versus directly on the payload artifact? The Bob fixture records the remote source URL on the governed artifact; if the current ontology has a more precise source registry shape, use it deliberately and update the note.
-- Which new source content should extend each of the three fixture ladders? Recommendation: pick one legitimate small content addition per topology rather than reusing Bob page content.
+- Which new source content should extend the sidecar and branch-based fixture ladders? The first whole-mesh candidate is the commit-pinned Carol Burnett Markdown note from public-notes.
 
 ## Decisions
 
@@ -105,6 +117,9 @@ weave import <source> <designatorPath> --working-file <meshRelativePath> [--mesh
 - Remote integrate is deferred for now. Explicit import and localize-from-integrated workflows are the preferred remote-origin acquisition path until a real use case proves that `integrate` itself needs to fetch or bind remote URLs.
 - Import must be topology-aware. Whole-mesh, sidecar, and branch-based meshes can share the same core operation, but tests and validation should prove the chosen working-file destination is correct for each layout.
 - Bob page content should not be used as the next new import fixture; use new content that legitimately extends the existing whole-mesh, sidecar, and branch-based fixture ladders.
+- Use the commit-pinned Carol Burnett Markdown note as the first whole-mesh import/content candidate, with expected digest `sha256:5634ffc14165c55ab43c2af38b9d6395e22c8385f54d4a94a7d22d83c99afee7`.
+- Allow the import fixture/e2e path to depend on live GitHub through a commit-pinned raw URL and expected digest. This avoids a local HTTP server and exercises the real external acquisition path.
+- Keep lower-level import tests local or dependency-injected where practical so semantic failures remain distinguishable from GitHub/network availability failures.
 - First-slice overwrite behavior should be explicit. A command that would replace an existing working file should fail unless an update/overwrite flag is supplied.
 - First-slice implementation should preserve existing path safety rules: imported working files must be mesh-relative files, must not escape the mesh root, and must not land under reserved support segments unless a later command intentionally handles support artifacts.
 
@@ -129,7 +144,8 @@ weave import <source> <designatorPath> --working-file <meshRelativePath> [--mesh
 - Core-plan tests for localize-from-integrated: previous current source preserved as origin metadata, active working locator repointed to the new file, and no historical state minted automatically.
 - Runtime tests for local filesystem source import and `file:` URL import.
 - Runtime/e2e tests for the three topology ladders: whole-mesh repo, sidecar repo, and branch-based mesh.
-- If HTTP(S) lands in the first slice, add a local HTTP-server integration test for successful import, timeout/404 diagnostics, max-size rejection, digest mismatch, and no live remote fetch during later page generation.
+- If HTTP(S) lands in the first slice, add a GitHub-backed e2e/import fixture using the commit-pinned Carol URL, plus focused lower-level tests for timeout/404 diagnostics, max-size rejection, digest mismatch, and no live remote fetch during later page generation.
+- Add a Carol import/content test path that uses the commit-pinned raw GitHub URL with the expected digest. Network/GitHub failures should be reported clearly as external acquisition failures.
 - Keep Bob import/page-source coverage as historical regression coverage if it remains useful, but add new non-Bob fixture content for the next import e2e path.
 - Add regression coverage that import does not persist absolute local source paths in public RDF by default.
 - Run focused tests for import, integrate, payload update, page-definition weave/generate, then `deno task lint`, `deno task check`, and `deno task test`.
@@ -150,13 +166,13 @@ weave import <source> <designatorPath> --working-file <meshRelativePath> [--mesh
 
 - [ ] Re-read [[wd.general-guidance]], [[wd.testing]], [[wu.repository-options]], [[wa.task.2026.2026-04-13_1245-bob-import-boundary-for-page-source]], and this note before editing.
 - [ ] Decide the exact update flag name, the localize-from-integrated command spelling, and whether HTTP(S) fetch is in the first implementation slice.
-- [ ] Choose new non-Bob fixture content that legitimately extends the whole-mesh, sidecar, and branch-based fixture ladders.
+- [ ] Choose new non-Bob fixture content that legitimately extends the sidecar and branch-based fixture ladders; use the Carol Burnett note as the first whole-mesh import/content candidate.
 - [ ] Add `src/core/import/` planner types and validation for source description, designator path, topology-aware working file path, origin metadata, create/update mode, and localize-from-integrated mode.
 - [ ] Reuse existing path/designator helpers and existing integrate/payload-update rendering where possible instead of copying large Turtle renderers.
-- [ ] Add `src/runtime/import/` source acquisition for local paths, `file:` URLs, and existing integrated current sources; add HTTP(S) bounded fetch if included in the first slice.
+- [ ] Add `src/runtime/import/` source acquisition for local paths, `file:` URLs, existing integrated current sources, and bounded HTTP(S) fetch.
 - [ ] Implement atomic write behavior for the imported working file and generated support files, matching the existing runtime patterns for create/update commands.
 - [ ] Add CLI wiring in `src/cli/run.ts` for `weave import`.
-- [ ] Update Deno dev/test permissions or documentation if HTTP(S) import requires `--allow-net`.
+- [ ] Update Deno dev/test permissions and documentation for bounded GitHub-backed HTTP(S) import, likely `--allow-net=raw.githubusercontent.com`.
 - [ ] Add focused unit, runtime, integration, and e2e tests, including one path each for whole-mesh, sidecar, and branch-based meshes.
 - [ ] Add [[wu.cli-reference.import]] and update [[wu.cli-reference]], [[wu.environment-variables]], [[wu.repository-options]], and release notes.
 - [ ] Keep the carried Bob `20-bob-page-imported-source` / `21-bob-page-imported-source-woven` expectations as context/regression only; do not use Bob content as the primary new fixture path.
