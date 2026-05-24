@@ -2,13 +2,13 @@
 id: jvk7l35jg67zbrl9m1dlrxk
 title: 2026 05 22_2225 Referencecatalog Current Link Extraction
 desc: ''
-updated: 1779506751753
+updated: 1779635111120
 created: 1779506751753
 ---
 
 ## Goals
 
-- Execute the next conservative core weave extraction slice from [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] after [[wa.completed.2026.2026-05-22_1644-shape-assertions]].
+- Execute the next conservative core weave extraction slice from [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]] after [[wa.completed.2026.2026-05-22_1644-shape-assertions]].
 - Move ReferenceCatalog current-link parsing out of `src/core/weave/weave.ts` into a focused core weave module.
 - Preserve planner dispatch, generated RDF, generated ResourcePage output, ReferenceCatalog validation behavior, and public imports through `src/core/weave/weave.ts`.
 - Keep this as a move-only slice unless an existing test exposes a blocker.
@@ -99,7 +99,7 @@ Implemented behavior-preserving extraction:
 - Updated `src/core/weave/weave.ts` to import the parser and removed now-local ReferenceLink constants and the old private helper body.
 - Kept ReferenceCatalog renderers, ResourcePage builders, planner dispatch, generated RDF, and generated ResourcePage output unchanged.
 - Reduced `src/core/weave/weave.ts` from 5,857 lines to 5,721 lines.
-- Updated [[wd.codebase-overview]] and [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] with the new module layout.
+- Updated [[wd.codebase-overview]] and [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]] with the new module layout.
 
 Verification:
 
@@ -135,12 +135,12 @@ Verification:
 
 ## Implementation Plan
 
-- [x] Re-read [[wd.general-guidance]], [[wd.testing]], [[ont.summary.core]], and [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] before editing.
+- [x] Re-read [[wd.general-guidance]], [[wd.testing]], [[ont.summary.core]], and [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]] before editing.
 - [x] Record current line count and import graph/cycle audit for `src/core/weave/weave.ts`; latest handoff count is 5,857 lines.
 - [x] Move `extractCurrentReferenceCatalogLinks` into `src/core/weave/reference_catalog_links.ts`.
 - [x] Keep any helper role-label parsing private to the new module unless another current caller needs it.
 - [x] Update `src/core/weave/weave.ts` imports and remove dead constants/helpers.
 - [x] Run `deno task fmt`, `deno task lint`, `deno task check`, post-slice graph audit, and focused core/integration tests.
 - [x] Record any discovered bugs or performance opportunities under "Orthogonal Opportunities".
-- [x] Update [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] and [[wd.codebase-overview]] with the resulting module layout.
+- [x] Update [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]] and [[wd.codebase-overview]] with the resulting module layout.
 - [x] Provide a commit message that clearly says this is a behavior-preserving ReferenceCatalog current-link extraction.

@@ -2,7 +2,7 @@
 id: k7m2q9z6v1x4f8r0s3p5t2n
 title: 2026 05 22_2253 ResourcePage Config And Templating
 desc: ''
-updated: 1779509580000
+updated: 1779635111115
 created: 1779509580000
 ---
 
@@ -40,7 +40,7 @@ Useful conceptual layers:
 
 The default experience should be modeled as built-in config and templates, not as special branches that cannot be reused. A mesh or Knop can later override pieces deliberately, but the default should remain the easiest path and the fallback for incomplete config.
 
-The current major refactor matters here. [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] and related runtime page-generation extraction work are making the code easier to change. This task should wait until the relevant model-builder and page-renderer seams are stable enough to keep the behavioral diff small.
+The current major refactor matters here. [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]] and related runtime page-generation extraction work are making the code easier to change. This task should wait until the relevant model-builder and page-renderer seams are stable enough to keep the behavioral diff small.
 
 ### Synthesized Default ResourcePage Documents
 

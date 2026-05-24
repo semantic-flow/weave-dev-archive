@@ -2,13 +2,13 @@
 id: yg6v6jgfp191rku67wue5zl
 title: 2026 05 22_1441 Payload Version Layout and Overwrite State Planning
 desc: ''
-updated: 1779486147457
+updated: 1779635111108
 created: 1779486147457
 ---
 
 ## Goals
 
-- Execute the next small slice of [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] after [[wa.completed.2026.2026-05-22_1424-core-weave-slice-classification-extraction]].
+- Execute the next small slice of [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]] after [[wa.completed.2026.2026-05-22_1424-core-weave-slice-classification-extraction]].
 - Move payload version layout resolution and guarded overwrite-state planning out of `src/core/weave/weave.ts` into focused core weave modules.
 - Preserve planner behavior, generated RDF bytes, generated ResourcePage output, runtime behavior, CLI behavior, and current error messages.
 - Keep `planWeave` and `planVersion` in `weave.ts` while letting them call extracted payload-version helpers.
@@ -143,7 +143,7 @@ Record performance optimization opportunities, bugs, and suspicious behavior fou
 
 ## Implementation Plan
 
-- [x] Re-read [[wd.general-guidance]], [[wd.testing]], [[ont.summary.core]], and [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] before editing.
+- [x] Re-read [[wd.general-guidance]], [[wd.testing]], [[ont.summary.core]], and [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]] before editing.
 - [x] Record current line count and exported function/type names from `src/core/weave/weave.ts`; latest handoff count is 7,703 lines.
 - [x] Run a pre-slice import graph/circular-dependency audit rooted at `src/core/weave/weave.ts`.
 - [x] Identify the exact helper set to move first, especially whether overwrite planning should live with or beside payload layout.
@@ -154,7 +154,7 @@ Record performance optimization opportunities, bugs, and suspicious behavior fou
 - [x] Run `deno task check` after the first payload module move.
 - [x] Run `deno task fmt`, `deno task lint`, `deno task check`, post-slice graph audit, and focused core/integration tests.
 - [x] Record any discovered bugs or performance opportunities under "Orthogonal Opportunities" instead of widening this implementation slice.
-- [x] Update [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] and [[wd.codebase-overview]] with the resulting module layout.
+- [x] Update [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]] and [[wd.codebase-overview]] with the resulting module layout.
 - [x] Provide a commit message that clearly says this is a behavior-preserving payload version layout and overwrite planning extraction.
 
 ## Suggested Commit Message

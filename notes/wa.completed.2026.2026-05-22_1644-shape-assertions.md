@@ -2,13 +2,13 @@
 id: t7zz2hl53q9c1wiv9h51gek
 title: 2026 05 22_1644 Shape Assertions
 desc: ''
-updated: 1779493459483
+updated: 1779635111112
 created: 1779493459483
 ---
 
 ## Goals
 
-- Execute the next small core weave extraction slice from [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] after [[wa.completed.2026.2026-05-22_1441-payload-version-layout-and-overwrite-state-planning]].
+- Execute the next small core weave extraction slice from [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]] after [[wa.completed.2026.2026-05-22_1441-payload-version-layout-and-overwrite-state-planning]].
 - Move shape assertion helpers out of `src/core/weave/weave.ts` into focused core weave modules without changing validation policy, generated RDF, generated ResourcePage output, runtime behavior, or CLI behavior.
 - Preserve `planWeave`, `planVersion`, extracted payload/layout helpers, renderers, and ResourcePage builders in their current modules.
 - Keep current error messages and fail-closed checks stable.
@@ -186,7 +186,7 @@ Record performance optimization opportunities, bugs, and suspicious behavior fou
 
 ## Implementation Plan
 
-- [x] Re-read [[wd.general-guidance]], [[wd.testing]], [[ont.summary.core]], and [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] before editing.
+- [x] Re-read [[wd.general-guidance]], [[wd.testing]], [[ont.summary.core]], and [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]] before editing.
 - [x] Record current line count and exported function/type names from `src/core/weave/weave.ts`; latest handoff count is about 7,135 lines.
 - [x] Run a pre-slice import graph/circular-dependency audit rooted at `src/core/weave/weave.ts`.
 - [x] Identify whether source-locator assertions should move with current shape assertions or into a separate module.
@@ -197,5 +197,5 @@ Record performance optimization opportunities, bugs, and suspicious behavior fou
 - [x] Run `deno task check` after the first assertion module move.
 - [x] Run `deno task fmt`, `deno task lint`, `deno task check`, post-slice graph audit, and focused core/integration tests.
 - [x] Record any discovered bugs or performance opportunities under "Orthogonal Opportunities" instead of widening this implementation slice.
-- [x] Update [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] and [[wd.codebase-overview]] with the resulting module layout.
+- [x] Update [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]] and [[wd.codebase-overview]] with the resulting module layout.
 - [x] Provide a commit message that clearly says this is a behavior-preserving shape assertion extraction.

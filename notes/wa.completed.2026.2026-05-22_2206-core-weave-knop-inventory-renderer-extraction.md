@@ -2,13 +2,13 @@
 id: jxyftamaoe6tst1lzb2p4vp
 title: 2026 05 22_2206 Core Weave Knop Inventory Renderer Extraction
 desc: ''
-updated: 1779512786487
+updated: 1779635111126
 created: 1779512786488
 ---
 
 ## Goals
 
-- Execute the next conservative core weave extraction slice from [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] after [[wa.task.2026.2026-05-22_2139-core-weave-mesh-inventory-renderer-extraction]].
+- Execute the next conservative core weave extraction slice from [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]] after [[wa.task.2026.2026-05-22_2139-core-weave-mesh-inventory-renderer-extraction]].
 - Move remaining KnopInventory Turtle renderers out of `src/core/weave/weave.ts` into a focused core weave module.
 - Preserve generated Turtle text, support-history policy behavior, planner dispatch, legacy fixture output, and public imports through `src/core/weave/weave.ts`.
 - Keep mesh-inventory renderers, payload renderers, ResourcePage model builders, HTML page renderers, and runtime renderers out of this slice.
@@ -117,12 +117,12 @@ Record performance optimization opportunities, bugs, and suspicious behavior fou
 
 ## Implementation Plan
 
-- [x] Re-read [[wd.general-guidance]], [[wd.testing]], [[ont.summary.core]], and [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] before editing.
+- [x] Re-read [[wd.general-guidance]], [[wd.testing]], [[ont.summary.core]], and [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]] before editing.
 - [x] Record current line count and import graph/cycle audit for `src/core/weave/weave.ts`; latest pre-slice count is 2,806 lines.
 - [x] Run pre-slice `deno task check`.
 - [x] Move KnopInventory renderers and tight local helpers into `src/core/weave/knop_inventory_renderers.ts`.
 - [x] Update `src/core/weave/weave.ts` imports and remove dead local helper definitions/constants.
 - [x] Run `deno task fmt`, `deno task lint`, `deno task check`, post-slice graph audit, core/integration weave tests, and import-cycle/runtime-edge audits.
 - [x] Record any discovered bugs or performance opportunities under "Orthogonal Opportunities".
-- [x] Update [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] and [[wd.codebase-overview]] with the resulting module layout.
+- [x] Update [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]] and [[wd.codebase-overview]] with the resulting module layout.
 - [x] Provide a commit message that clearly says this is a behavior-preserving KnopInventory renderer extraction.

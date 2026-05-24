@@ -3,7 +3,7 @@ id: weave-task-audit-and-cle-tqcz54
 title: 'weave task audit and cleanup'
 desc: ''
 created: 1779509457167
-updated: 1779509457167
+updated: 1779635111118
 participants: [codex.gpt-5.5]
 conversationEventKinds: [message.assistant, message.user, tool.call, tool.result]
 ---
@@ -212,7 +212,7 @@ So: `workingAccessUrl` can eventually support page-definition artifact-backed so
 
 # User_2026-05-22_2032_48
 
-let's working on refining [[wa.task.2026.2026-04-08_1545-resource-page-definition-and-sources]] . Keep in mind, a major refactor is partially completed and continuing, see [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] .
+let's working on refining [[wa.task.2026.2026-04-08_1545-resource-page-definition-and-sources]] . Keep in mind, a major refactor is partially completed and continuing, see [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]] .
 
 One thing I want to do is be able to keep/re-use the existing Semantic Site's look and feel, even if that's just the default. Is the current default using the page template-based approach?
 

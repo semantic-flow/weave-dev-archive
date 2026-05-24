@@ -1,0 +1,13 @@
+version: 1
+schemas:
+  - id: ont
+    parent: root
+    # Match note names like `ont.task.2026.some-task`, then apply the task
+    # template to the task notes created beneath the year bucket.
+    children:
+      - pattern: "task"
+        children:
+          - pattern: "[0-2][0-9][0-9][0-9]"
+            children:
+              - pattern: "*"
+                template: template.task

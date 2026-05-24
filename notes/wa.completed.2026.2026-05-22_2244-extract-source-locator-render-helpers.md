@@ -2,13 +2,13 @@
 id: ublteg1v9q9o07fwysiqhhn
 title: 2026 05 22_2244 Extract Source Locator Render Helpers
 desc: ''
-updated: 1779507905211
+updated: 1779635111125
 created: 1779507905211
 ---
 
 ## Goals
 
-- Execute the next conservative core weave extraction slice from [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] after [[wa.completed.2026.2026-05-22_2235-resourcepage-model-builder-extraction]].
+- Execute the next conservative core weave extraction slice from [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]] after [[wa.completed.2026.2026-05-22_2235-resourcepage-model-builder-extraction]].
 - Move current working-file/source-locator render helpers out of `src/core/weave/weave.ts` into a focused core weave module.
 - Preserve generated Turtle text, planner dispatch, generated ResourcePage output, and public imports through `src/core/weave/weave.ts`.
 - Keep source-locator assertions and working-file path normalization in their existing focused modules.
@@ -105,7 +105,7 @@ Implemented behavior-preserving extraction:
 - Updated `src/core/weave/weave.ts` to import the renderer helpers and removed the old local helper bodies.
 - Kept `source_locator_assertions.ts`, `working_file_paths.ts`, planner dispatch, generated RDF, and generated ResourcePage output unchanged.
 - Reduced `src/core/weave/weave.ts` from 5,234 lines to 5,195 lines.
-- Updated [[wd.codebase-overview]] and [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] with the new module layout.
+- Updated [[wd.codebase-overview]] and [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]] with the new module layout.
 
 Verification:
 
@@ -141,12 +141,12 @@ Verification:
 
 ## Implementation Plan
 
-- [x] Re-read [[wd.general-guidance]], [[wd.testing]], [[ont.summary.core]], and [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] before editing.
+- [x] Re-read [[wd.general-guidance]], [[wd.testing]], [[ont.summary.core]], and [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]] before editing.
 - [x] Record current line count and import graph/cycle audit for `src/core/weave/weave.ts`; latest pre-slice count is 5,234 lines.
 - [x] Confirm `working_file_paths.ts` is already in the `weave.ts` import graph before this extraction.
 - [x] Move source-locator render helpers into `src/core/weave/source_locator_renderers.ts`.
 - [x] Update `src/core/weave/weave.ts` imports and remove dead local helper definitions.
 - [x] Run `deno task fmt`, `deno task lint`, `deno task check`, post-slice graph audit, and focused core/integration tests.
 - [x] Record any discovered bugs or performance opportunities under "Orthogonal Opportunities".
-- [x] Update [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] and [[wd.codebase-overview]] with the resulting module layout.
+- [x] Update [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]] and [[wd.codebase-overview]] with the resulting module layout.
 - [x] Provide a commit message that clearly says this is a behavior-preserving source-locator renderer extraction.

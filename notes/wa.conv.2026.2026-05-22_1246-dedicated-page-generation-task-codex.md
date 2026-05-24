@@ -522,7 +522,7 @@ Yep, you’re right: [src/core/weave/weave.ts](../../../../../src/core/weave/wea
 
 And yes, we do already have a task for that, not a fresh gap:
 
-- [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] is the broad core planner decomposition task. Its goal is explicitly to reduce `src/core/weave/weave.ts` by extracting cohesive helper modules while preserving behavior.
+- [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]] is the broad core planner decomposition task. Its goal is explicitly to reduce `src/core/weave/weave.ts` by extracting cohesive helper modules while preserving behavior.
 - [[wa.task.2026.2026-05-21_1037-core-weave-first-extraction-slice]] is the first narrow slice under that task, focused on moving shared type/model definitions.
 - [[wa.task.2026.2026-05-13_1142-refactor]] is an older narrow refactor note that already moved `mesh_support_pages.ts`, `errors.ts`, and `version_plan.ts`.
 
@@ -594,13 +594,13 @@ Before switching, I’d carry this short handoff:
 
 - 1037 is stale because `ResourcePageModel` and related page model types already moved to `src/core/weave/resource_page_models.ts` during the runtime page-generation decomposition.
 - `src/core/weave/weave.ts` is still the target pressure point: currently about `8597` lines.
-- Broad parent task is [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]].
+- Broad parent task is [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]].
 - New `wd.codebase-overview` says 1037 is partly stale and should be groomed before execution.
 - Good next grooming question: should 1037 remain a “first type/model extraction slice,” pivot to remaining request/candidate/planning models, or be closed/absorbed into a more concrete next slice?
 - I’d start by reading:
   - [[wd.general-guidance]]
   - [[wd.testing]]
-  - [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]]
+  - [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]]
   - [[wa.completed.2026.2026-05-21_1036-runtime-resource-page-generation-decomposition]]
   - `src/core/weave/weave.ts` imports/exports and top-level interfaces
 
@@ -669,7 +669,7 @@ Yep. Handoff is ready.
 Carry this into the new conversation:
 
 - Active next task: [[wa.task.2026.2026-05-21_1037-core-weave-first-extraction-slice]]
-- Parent task: [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]]
+- Parent task: [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]]
 - Goal: behavior-preserving extraction of exported core weave request/candidate/planning models from [src/core/weave/weave.ts](../../../../../src/core/weave/weave.ts), which is still 8,597 lines.
 - Planned files:
   - `src/core/weave/requests.ts`
@@ -1078,7 +1078,7 @@ Yep, you’re right: [src/core/weave/weave.ts](../../../../../src/core/weave/wea
 
 And yes, we do already have a task for that, not a fresh gap:
 
-- [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] is the broad core planner decomposition task. Its goal is explicitly to reduce `src/core/weave/weave.ts` by extracting cohesive helper modules while preserving behavior.
+- [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]] is the broad core planner decomposition task. Its goal is explicitly to reduce `src/core/weave/weave.ts` by extracting cohesive helper modules while preserving behavior.
 - [[wa.task.2026.2026-05-21_1037-core-weave-first-extraction-slice]] is the first narrow slice under that task, focused on moving shared type/model definitions.
 - [[wa.task.2026.2026-05-13_1142-refactor]] is an older narrow refactor note that already moved `mesh_support_pages.ts`, `errors.ts`, and `version_plan.ts`.
 
@@ -1150,13 +1150,13 @@ Before switching, I’d carry this short handoff:
 
 - 1037 is stale because `ResourcePageModel` and related page model types already moved to `src/core/weave/resource_page_models.ts` during the runtime page-generation decomposition.
 - `src/core/weave/weave.ts` is still the target pressure point: currently about `8597` lines.
-- Broad parent task is [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]].
+- Broad parent task is [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]].
 - New `wd.codebase-overview` says 1037 is partly stale and should be groomed before execution.
 - Good next grooming question: should 1037 remain a “first type/model extraction slice,” pivot to remaining request/candidate/planning models, or be closed/absorbed into a more concrete next slice?
 - I’d start by reading:
   - [[wd.general-guidance]]
   - [[wd.testing]]
-  - [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]]
+  - [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]]
   - [[wa.completed.2026.2026-05-21_1036-runtime-resource-page-generation-decomposition]]
   - `src/core/weave/weave.ts` imports/exports and top-level interfaces
 
@@ -1225,7 +1225,7 @@ Yep. Handoff is ready.
 Carry this into the new conversation:
 
 - Active next task: [[wa.task.2026.2026-05-21_1037-core-weave-first-extraction-slice]]
-- Parent task: [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]]
+- Parent task: [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]]
 - Goal: behavior-preserving extraction of exported core weave request/candidate/planning models from [src/core/weave/weave.ts](../../../../../src/core/weave/weave.ts), which is still 8,597 lines.
 - Planned files:
   - `src/core/weave/requests.ts`

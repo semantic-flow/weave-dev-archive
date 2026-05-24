@@ -2,13 +2,13 @@
 id: 22buqe8c44lfbo7r8ptyw58
 title: 2026 05 22_2252 Payload Render Helpers
 desc: ''
-updated: 1779508363273
+updated: 1779635111122
 created: 1779508363273
 ---
 
 ## Goals
 
-- Execute the next conservative core weave extraction slice from [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] after [[wa.task.2026.2026-05-22_2244-extract-source-locator-render-helpers]].
+- Execute the next conservative core weave extraction slice from [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]] after [[wa.task.2026.2026-05-22_2244-extract-source-locator-render-helpers]].
 - Move payload-specific KnopInventory render helpers out of `src/core/weave/weave.ts` into a focused core weave module.
 - Preserve generated Turtle text, planner dispatch, generated ResourcePage output, and public imports through `src/core/weave/weave.ts`.
 - Keep mesh-inventory renderers in `weave.ts` for this slice because they share generic mesh/root/page-definition helper boundaries.
@@ -112,7 +112,7 @@ Implemented behavior-preserving extraction:
 - Updated `src/core/weave/weave.ts` to import the extracted renderers and support-history postprocessors.
 - Kept mesh-inventory payload renderers, page-definition renderers, ReferenceCatalog renderers, source-registry preservation, planner dispatch, generated RDF, and generated ResourcePage output unchanged.
 - Reduced `src/core/weave/weave.ts` from 5,195 lines to 4,066 lines.
-- Updated [[wd.codebase-overview]] and [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] with the new module layout.
+- Updated [[wd.codebase-overview]] and [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]] with the new module layout.
 
 Verification:
 
@@ -149,7 +149,7 @@ Verification:
 
 ## Implementation Plan
 
-- [x] Re-read [[wd.general-guidance]], [[wd.testing]], [[ont.summary.core]], and [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] before editing.
+- [x] Re-read [[wd.general-guidance]], [[wd.testing]], [[ont.summary.core]], and [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]] before editing.
 - [x] Record current line count and import graph/cycle audit for `src/core/weave/weave.ts`; latest pre-slice count is 5,195 lines.
 - [x] Run pre-slice `deno task check`.
 - [x] Move shared support-history omission helpers into `src/core/weave/support_history_renderers.ts`.
@@ -157,5 +157,5 @@ Verification:
 - [x] Update `src/core/weave/weave.ts` imports and remove dead local helper definitions.
 - [x] Run `deno task fmt`, `deno task lint`, `deno task check`, post-slice graph audit, and focused core/integration tests.
 - [x] Record any discovered bugs or performance opportunities under "Orthogonal Opportunities".
-- [x] Update [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] and [[wd.codebase-overview]] with the resulting module layout.
+- [x] Update [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]] and [[wd.codebase-overview]] with the resulting module layout.
 - [x] Provide a commit message that clearly says this is a behavior-preserving payload renderer extraction.

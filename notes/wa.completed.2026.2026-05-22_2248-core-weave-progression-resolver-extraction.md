@@ -2,13 +2,13 @@
 id: cq4vidjhu02zzdf51h0fnbp
 title: 2026 05 22_2248 Core Weave Progression Resolver Extraction
 desc: ''
-updated: 1779515319967
+updated: 1779635111123
 created: 1779515319967
 ---
 
 ## Goals
 
-- Execute the next conservative core weave extraction slice from [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] after [[wa.completed.2026.2026-05-22_2239-source-registry-extraction-source-helper-extraction]].
+- Execute the next conservative core weave extraction slice from [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]] after [[wa.completed.2026.2026-05-22_2239-source-registry-extraction-source-helper-extraction]].
 - Move planner-adjacent progression resolver helpers out of `src/core/weave/weave.ts` into a focused core weave module.
 - Preserve fail-closed settled-state checks, generated RDF/Page behavior, planner dispatch, naming semantics, and public imports through `src/core/weave/weave.ts`.
 - Keep planner branch orchestration, generalized renderer replacement, ResourcePage templating, and progression semantic redesign out of this slice.
@@ -111,12 +111,12 @@ Record performance optimization opportunities, bugs, and suspicious behavior fou
 
 ## Implementation Plan
 
-- [x] Re-read [[wd.general-guidance]], [[wd.testing]], [[ont.summary.core]], and [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] before editing.
+- [x] Re-read [[wd.general-guidance]], [[wd.testing]], [[ont.summary.core]], and [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]] before editing.
 - [x] Record current line count and import graph/cycle audit for `src/core/weave/weave.ts`; latest pre-slice count is 1,608 lines.
 - [x] Run pre-slice `deno task check`.
 - [x] Move progression resolver helpers into `src/core/weave/progression_resolvers.ts`.
 - [x] Update `src/core/weave/weave.ts` imports and remove dead local helper definitions/imports/constants.
 - [x] Run `deno task fmt`, `deno task lint`, `deno task check`, post-slice graph audit, core/integration weave tests, and import-cycle/runtime-edge audits.
 - [x] Record any discovered bugs or performance opportunities under "Orthogonal Opportunities".
-- [x] Update [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] and [[wd.codebase-overview]] with the resulting module layout.
+- [x] Update [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]] and [[wd.codebase-overview]] with the resulting module layout.
 - [x] Provide a commit message that clearly says this is a behavior-preserving progression resolver extraction.

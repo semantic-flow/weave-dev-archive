@@ -116,16 +116,16 @@ Watch during implementation:
 
 ## Implementation Plan
 
-- [ ] Re-read [[wd.general-guidance]], [[wd.testing.fixture-ladder-regeneration]], this note, [[wa.task.2026.2026-05-21_0907-import]], and [[wa.task.2026.2026-05-23_2230-custom-resourcepage-shared-shell-fixture]] before editing.
-- [ ] Inspect `scripts/fixture-ladder.ts` for repeated Alice Bio-specific helper shapes that are actually generic transition or asset patterns.
-- [ ] Capture current focused fixture-ladder test behavior with `deno test tests/scripts/fixture_ladder_test.ts`.
-- [ ] Extract the smallest useful helper set for fixture asset copy declarations and file-operation transitions.
-- [ ] Extract or rename shared command/branch-publication helpers only where doing so reduces real duplication or clarifies topology boundaries.
-- [ ] Add pure Accord scenario-index rendering helpers from generalized fixture scenario definitions.
-- [ ] Render scenario-index `manifestPath` values as manifest filenames relative to the containing `conformance/` directory.
-- [ ] Generate scenario index JSON-LD files for the existing Alice Bio, Sidecar Fantasy Rules, and Branch Fantasy Rules scenarios if the output validates cleanly.
-- [ ] Add tests that read and validate the generated scenario indexes through Accord's scenario-index helpers.
-- [ ] Keep scenario-specific constants and labels scenario-local.
-- [ ] Run focused fixture-ladder tests after each extraction batch.
-- [ ] Run formatting, lint, check, and broad tests according to touched code.
-- [ ] Provide a commit message emphasizing behavior preservation and no fixture regeneration.
+- [x] Re-read [[wd.general-guidance]], [[wd.testing.fixture-ladder-regeneration]], this note, [[wa.task.2026.2026-05-21_0907-import]], and [[wa.task.2026.2026-05-23_2230-custom-resourcepage-shared-shell-fixture]] before editing.
+- [x] Inspect `scripts/fixture-ladder.ts` for repeated Alice Bio-specific helper shapes that are actually generic transition or asset patterns.
+- [x] Capture current focused fixture-ladder test behavior with `deno test tests/scripts/fixture_ladder_test.ts`.
+- [x] Extract the smallest useful helper set for fixture asset copy declarations and file-operation transitions.
+- [x] Extract or rename shared command/branch-publication helpers only where doing so reduces real duplication or clarifies topology boundaries.
+- [x] Add pure Accord scenario-index rendering helpers from generalized fixture scenario definitions.
+- [x] Render scenario-index `manifestPath` values as manifest filenames relative to the containing `conformance/` directory.
+- [x] Generate scenario index JSON-LD files for the existing Alice Bio, Sidecar Fantasy Rules, and Branch Fantasy Rules scenarios if the output validates cleanly.
+- [x] Add tests that read and validate the generated scenario indexes through Accord's scenario-index helpers.
+- [x] Keep scenario-specific constants and labels scenario-local.
+- [x] Run focused fixture-ladder tests after each extraction batch.
+- [x] Run formatting, lint, check, and broad tests according to touched code.
+- [x] Provide a commit message emphasizing behavior preservation and no fixture regeneration.

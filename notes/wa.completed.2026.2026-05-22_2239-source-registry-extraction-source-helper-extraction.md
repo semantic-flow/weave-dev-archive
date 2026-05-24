@@ -2,13 +2,13 @@
 id: 3vv8pywpvezdr6l40sniuin
 title: 2026 05 22_2239 Source Registry Extraction Source Helper Extraction
 desc: ''
-updated: 1779514781521
+updated: 1779635111111
 created: 1779514781521
 ---
 
 ## Goals
 
-- Execute the next conservative core weave extraction slice from [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] after [[wa.completed.2026.2026-05-22_2222-core-weave-html-page-renderer-extraction]].
+- Execute the next conservative core weave extraction slice from [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]] after [[wa.completed.2026.2026-05-22_2222-core-weave-html-page-renderer-extraction]].
 - Move source-registry / ExtractionSource block helpers out of `src/core/weave/weave.ts` into a focused core weave module.
 - Preserve generated RDF text, exact ExtractionSource evidence facts, planner dispatch, source-registry replacement behavior, and public imports through `src/core/weave/weave.ts`.
 - Keep progression resolver extraction, source-registry redesign, generalized provenance work, runtime source loading, and ResourcePage templating out of this slice.
@@ -115,12 +115,12 @@ Record performance optimization opportunities, bugs, and suspicious behavior fou
 
 ## Implementation Plan
 
-- [x] Re-read [[wd.general-guidance]], [[wd.testing]], [[ont.summary.core]], and [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] before editing.
+- [x] Re-read [[wd.general-guidance]], [[wd.testing]], [[ont.summary.core]], and [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]] before editing.
 - [x] Record current line count and import graph/cycle audit for `src/core/weave/weave.ts`; latest pre-slice count is 1,715 lines.
 - [x] Run pre-slice `deno task check`.
 - [x] Move source-registry / ExtractionSource block helpers into `src/core/weave/extraction_source_blocks.ts`.
 - [x] Update `src/core/weave/weave.ts` imports and remove dead local helper definitions/imports.
 - [x] Run `deno task fmt`, `deno task lint`, `deno task check`, post-slice graph audit, core/integration weave tests, and import-cycle/runtime-edge audits.
 - [x] Record any discovered bugs or performance opportunities under "Orthogonal Opportunities".
-- [x] Update [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] and [[wd.codebase-overview]] with the resulting module layout.
+- [x] Update [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]] and [[wd.codebase-overview]] with the resulting module layout.
 - [x] Provide a commit message that clearly says this is a behavior-preserving source-registry ExtractionSource helper extraction.

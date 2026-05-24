@@ -2,13 +2,13 @@
 id: tn9dqed12wnkywhong8nls9
 title: 2026 05 22_1424 Core Weave Slice Classification Extraction
 desc: ''
-updated: 1779485117696
+updated: 1779635111128
 created: 1779485071599
 ---
 
 ## Goals
 
-- Execute the next small slice of [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] after [[wa.completed.2026.2026-05-22_1358-core-weave-rdf-and-turtle-helper-extraction]].
+- Execute the next small slice of [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]] after [[wa.completed.2026.2026-05-22_1358-core-weave-rdf-and-turtle-helper-extraction]].
 - Move pending weave slice detection and candidate slice classification out of `src/core/weave/weave.ts` into focused core weave modules.
 - Preserve `src/core/weave/weave.ts` public compatibility, especially the existing `detectPendingWeaveSlice` export.
 - Preserve planner behavior, generated RDF bytes, generated ResourcePage output, runtime candidate loading behavior, CLI behavior, and current error messages.
@@ -125,7 +125,7 @@ Record performance optimization opportunities, bugs, and suspicious behavior fou
 
 ## Implementation Plan
 
-- [x] Re-read [[wd.general-guidance]], [[wd.testing]], [[ont.summary.core]], and [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] before editing.
+- [x] Re-read [[wd.general-guidance]], [[wd.testing]], [[ont.summary.core]], and [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]] before editing.
 - [x] Record current line count and exported function/type names from `src/core/weave/weave.ts`; latest handoff count is 8,026 lines.
 - [x] Run a pre-slice import graph/circular-dependency audit rooted at `src/core/weave/weave.ts`.
 - [x] Identify the exact helper set to move first, especially whether a tiny shared history-query module is warranted.
@@ -136,7 +136,7 @@ Record performance optimization opportunities, bugs, and suspicious behavior fou
 - [x] Run `deno task check` after the first classification module move.
 - [x] Run `deno task fmt`, `deno task lint`, `deno task check`, post-slice graph audit, and focused core/integration tests.
 - [x] Record any discovered bugs or performance opportunities under "Orthogonal Opportunities" instead of widening this implementation slice.
-- [x] Update [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] and [[wd.codebase-overview]] with the resulting module layout.
+- [x] Update [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]] and [[wd.codebase-overview]] with the resulting module layout.
 - [x] Provide a commit message that clearly says this is a behavior-preserving slice-classification extraction.
 
 ## Suggested Commit Message

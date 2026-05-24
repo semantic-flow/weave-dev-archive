@@ -2,13 +2,13 @@
 id: puqc8gfadcjlhr5ljo2yjxs
 title: 2026 05 22_2139 Core Weave Mesh Inventory Renderer Extraction
 desc: ''
-updated: 1779512774164
+updated: 1779635111114
 created: 1779511157732
 ---
 
 ## Goals
 
-- Execute the next conservative core weave extraction slice from [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] after [[wa.completed.2026.2026-05-22_2117-core-weave-knop-support-render-preservation-extraction]].
+- Execute the next conservative core weave extraction slice from [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]] after [[wa.completed.2026.2026-05-22_2117-core-weave-knop-support-render-preservation-extraction]].
 - Move mesh-inventory Turtle renderers and their tight local block helpers out of `src/core/weave/weave.ts` into a focused core weave module.
 - Preserve generated Turtle text, current support-history policy behavior, planner dispatch, legacy fixture fallback behavior, and public imports through `src/core/weave/weave.ts`.
 - Allow small helper extraction inside the new mesh-inventory renderer module when it reduces real duplication without changing output.
@@ -150,15 +150,15 @@ Verification passed:
 
 ## Implementation Plan
 
-- [x] Re-read [[wd.general-guidance]], [[wd.testing]], [[ont.summary.core]], and [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] before filling the task.
+- [x] Re-read [[wd.general-guidance]], [[wd.testing]], [[ont.summary.core]], and [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]] before filling the task.
 - [x] Record current line count and import graph/cycle audit for `src/core/weave/weave.ts`; latest pre-slice count is 3,814 lines.
 - [x] Update durable stale links for the completed Knop support preservation slice.
-- [x] Update [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] with this eleventh extraction slice and the deferred legacy-renderer cleanup reminder.
+- [x] Update [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]] with this eleventh extraction slice and the deferred legacy-renderer cleanup reminder.
 - [x] Run pre-slice `deno task check`.
 - [x] Move mesh-inventory renderers and tight local helpers into `src/core/weave/mesh_inventory_renderers.ts`.
 - [x] Avoid broad commonality factoring beyond the move-only extraction; keep duplicated shared block helpers as a recorded follow-up.
 - [x] Update `src/core/weave/weave.ts` imports and remove dead local helper definitions/constants.
 - [x] Run `deno task fmt`, `deno task lint`, `deno task check`, post-slice graph audit, core/integration weave tests, and import-cycle/runtime-edge audits.
 - [x] Record any discovered bugs or performance opportunities under "Orthogonal Opportunities".
-- [x] Update [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] and [[wd.codebase-overview]] with the resulting module layout.
+- [x] Update [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]] and [[wd.codebase-overview]] with the resulting module layout.
 - [x] Provide a commit message that clearly says this is a behavior-preserving mesh-inventory renderer extraction.

@@ -8,7 +8,7 @@ created: 1779513775127
 
 ## Goals
 
-- Execute the next conservative core weave extraction slice from [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] after [[wa.completed.2026.2026-05-22_2206-core-weave-knop-inventory-renderer-extraction]].
+- Execute the next conservative core weave extraction slice from [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]] after [[wa.completed.2026.2026-05-22_2206-core-weave-knop-inventory-renderer-extraction]].
 - Move the remaining legacy/core HTML page render helpers out of `src/core/weave/weave.ts` into a focused core weave module.
 - Preserve generated HTML text, planner dispatch, fixture-sensitive page output, and public imports through `src/core/weave/weave.ts`.
 - Keep runtime ResourcePage rendering, ResourcePage presentation/config/templating design, RDF/Turtle renderers, and generalized fixture-renderer replacement out of this slice.
@@ -112,13 +112,13 @@ Record performance optimization opportunities, bugs, and suspicious behavior fou
 
 ## Implementation Plan
 
-- [x] Re-read [[wd.general-guidance]], [[wd.testing]], [[ont.summary.core]], and [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] before editing.
+- [x] Re-read [[wd.general-guidance]], [[wd.testing]], [[ont.summary.core]], and [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]] before editing.
 - [x] Record current line count and import graph/cycle audit for `src/core/weave/weave.ts`; latest pre-slice count is 2,016 lines.
 - [x] Run pre-slice `deno task check`.
 - [x] Move legacy/core HTML page renderers into `src/core/weave/legacy_page_renderers.ts`.
 - [x] Update `src/core/weave/weave.ts` imports and remove dead local helper definitions/imports.
 - [x] Run `deno task fmt`, `deno task lint`, `deno task check`, post-slice graph audit, core/integration weave tests, and import-cycle/runtime-edge audits.
 - [x] Record any discovered bugs or performance opportunities under "Orthogonal Opportunities".
-- [x] Update [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] and [[wd.codebase-overview]] with the resulting module layout.
+- [x] Update [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]] and [[wd.codebase-overview]] with the resulting module layout.
 - [x] Provide a commit message that clearly says this is a behavior-preserving legacy HTML page renderer extraction.
 
