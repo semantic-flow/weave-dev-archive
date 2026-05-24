@@ -11,9 +11,10 @@ created: 1779647404677
 - Clarify that `sflo:ReferenceLink` is for curated links to RDF reference data, not for arbitrary page content, Markdown prose, images, HTML snippets, or source/acquisition provenance.
 - Replace the confusing `referenceTarget` / `referenceTargetState` terms with a model where `ReferenceLink` points to a `ReferenceSource`, and `ReferenceSource` reuses the shared `ArtifactResolutionTarget` vocabulary.
 - Keep the useful general resolution machinery (`hasTargetArtifact`, `hasRequestedTargetState`, `hasTargetRepositorySource`, `targetAccessUrl`, digest/mode/fallback policy) without making `ReferenceLink` itself an operational resolution target.
-- Preserve the conceptual split between `ReferenceCatalog`, `KnopSourceRegistry`, `ExtractionSource`, `ResourcePageSource`, and import/source-provenance bindings.
+- Preserve the conceptual split between `ReferenceCatalog`, `KnopSourceRegistry`, `ExtractionSource`, `ResourcePageSource`, `ImportSource`, `IntegrationSource`, and other source/provenance bindings.
 - Avoid future ontology churn by making the RDF-only reference direction explicit before adding more fixture rungs, import examples, or reference-driven page rendering.
 - Rename the local/API request terminology away from "target" where it names the reference source, while leaving `target*` vocabulary intact inside `ArtifactResolutionTarget` where it means "target of byte resolution."
+- Coordinate shared `ArtifactResolutionTarget` subclass and observation vocabulary through [[ont.task.2026.2026-05-24_1256-artifact-resolution-observations]] rather than making ReferenceLink carry the whole resolution-model cleanup.
 
 ## Summary
 
@@ -46,9 +47,12 @@ When a reference should pin the source to a settled state, the source relator sh
 - `ExtractionSource` is the extraction/grounding application concern and already subclasses `ArtifactResolutionTarget`.
 - `ResourcePageSource` is the page-composition application concern and already subclasses `ArtifactResolutionTarget`.
 - `ReferenceSource` should be the reference-data application concern and should also subclass `ArtifactResolutionTarget`.
-- Import/source-provenance bindings can continue to use `ArtifactResolutionTarget` directly or later gain a narrower subclass if materialization provenance needs one.
+- `ImportSource` should be the explicit acquisition/materialization concern and should also subclass `ArtifactResolutionTarget`.
+- `IntegrationSource` should be the existing-source registration concern for `weave integrate` and should also subclass `ArtifactResolutionTarget`.
 
 `ReferenceLink` should remain the semantic relator. It should not itself become an `ArtifactResolutionTarget`.
+
+The broader source-family and observation cleanup is tracked in [[ont.task.2026.2026-05-24_1256-artifact-resolution-observations]]. This task depends on that direction for `ReferenceSource`, but it should stay focused on ReferenceLink semantics, ReferenceCatalog serialization, API/CLI terminology, and fixture rewrites.
 
 ## Discussion
 
@@ -69,7 +73,8 @@ The direction for this task is intentionally narrower than the most general poss
 Non-RDF content should use the right application concern:
 
 - Markdown page prose: `ResourcePageDefinition` / `ResourcePageSource`, or a governed imported payload artifact used by page composition.
-- Import/acquisition provenance: `KnopSourceRegistry` with an `ArtifactResolutionTarget` source binding.
+- Import/acquisition provenance: `KnopSourceRegistry` with an `ImportSource` source binding.
+- Existing-source integration provenance: `KnopSourceRegistry` with an `IntegrationSource` source binding.
 - Extraction grounding: `ExtractionSource`.
 - RDF source references that describe or support a subject: `ReferenceLink` plus `ReferenceSource`.
 
@@ -99,9 +104,10 @@ Keep `ReferenceRole` and the current role instances for this task. Do not add `r
 
 - `ExtractionSource`: source RDF used to ground an extracted resource.
 - `ResourcePageSource`: bytes used for a page region.
-- plain `ArtifactResolutionTarget` source bindings in `KnopSourceRegistry`: source/acquisition/materialization provenance.
+- `ImportSource`: source bytes explicitly acquired and copied into a governed local working surface.
+- `IntegrationSource`: existing source bytes registered where they already live.
 
-`ReferenceSource` should join that family. It should reuse:
+`ReferenceSource` should join that family. `ImportSource` and `IntegrationSource` should join it as source-registry concerns. All of them should reuse:
 
 - `hasTargetArtifact`
 - `hasTargetLocatedFile`
@@ -114,9 +120,11 @@ Keep `ReferenceRole` and the current role instances for this task. Do not add `r
 - `hasTargetRepositorySource`
 - `hasRepositorySourceFloatingLocator`
 - `expectsContentDigest`
-- `observedAt`
+- `hasResolutionObservation`, when reference-source verification is intentionally recorded
 
 The first implementation does not need to support every resolver shape at runtime. It should at least cover the existing fixture shape: in-mesh `hasTargetArtifact`, optionally pinned with `hasRequestedTargetState`.
+
+Observation details such as observed digest, observed state, timestamp, and observer belong to `ArtifactResolutionObservation` in [[ont.task.2026.2026-05-24_1256-artifact-resolution-observations]], not directly on `ReferenceLink` or `ReferenceSource`.
 
 ### Relationship to `RepositorySourceLocator`
 
@@ -144,7 +152,7 @@ This remains resolution metadata. It does not authorize ambient network access. 
 
 That does not broaden `ReferenceCatalog` into arbitrary descriptive RDF. A `ReferenceCatalog` may contain `ReferenceLink` nodes and the immediate `ReferenceSource` / locator helper nodes needed to describe those links. Broader facts about the referent still belong in payload artifacts or datasets.
 
-`KnopSourceRegistry` remains the home for source/acquisition/provenance bindings such as import materialization and extraction provenance. It should not become the default home for curated reference sources, or the reference model will be split across `_references` and `_sources` for no gain.
+`KnopSourceRegistry` remains the home for source/acquisition/provenance bindings such as import materialization, integration source binding, and extraction provenance. It should not become the default home for curated reference sources, or the reference model will be split across `_references` and `_sources` for no gain.
 
 ### Fixture precedent
 
@@ -159,11 +167,8 @@ This task should align vocabulary with that practice rather than expanding the c
 
 ## Open Issues
 
-- Should the first implementation require exactly one `hasReferenceSource` per `ReferenceLink`, or allow multiple sources immediately? Recommendation: exactly one for the first slice; model multiple sources as multiple links until a concrete use case needs one link with several equivalent sources.
-- Should direct `targetAccessUrl` reference sources be runtime-supported in the first implementation, or only modeled and SHACL-valid? Recommendation: model it through `ReferenceSource` / `ArtifactResolutionTarget`, but only runtime-support in-mesh governed RDF artifacts first.
 - What exact fragment convention should Weave use for source relators? Recommendation: use a stable companion fragment derived from the link fragment, such as `#reference001-source`, so a source remains visibly attached to its link.
-- Should `referenceUriLiteral` be removed outright, or left until the `ReferenceSource` replacement lands across fixtures? Recommendation: remove it in the coordinated ontology pass unless a concrete current fixture still needs it.
-- Should import/source materialization gain a narrower `ImportSource` or `MaterializationSource` subclass of `ArtifactResolutionTarget`? Recommendation: not in this ReferenceLink task; leave import to the import task unless implementation pressure proves the plain source binding is too vague.
+- What ResourcePage selection policy should decide which reference RDF facts are incorporated into a generated page? Recommendation: leave this for a later page-selection task; this task should only make the source relation unambiguous.
 
 ## Decisions
 
@@ -171,9 +176,15 @@ This task should align vocabulary with that practice rather than expanding the c
 - Do not add `RdfReferenceLink`. Narrow the existing `ReferenceLink` concept instead.
 - Add `ReferenceSource` as an `ArtifactResolutionTarget` subclass.
 - Add `hasReferenceSource` from `ReferenceLink` to `ReferenceSource`.
+- Require exactly one `hasReferenceSource` per `ReferenceLink` in the first slice; model multiple supporting sources as multiple links until a concrete use case needs one link with several equivalent source relators.
 - Replace `referenceTarget` with `hasReferenceSource` plus the generic target properties on `ReferenceSource`.
 - Replace `referenceTargetState` with `hasRequestedTargetState` on `ReferenceSource`.
+- Remove `referenceUriLiteral` in the coordinated ontology pass. Fixtures and manifests should be updated and complete from-scratch fixture regeneration should run afterward.
 - Keep `target*` vocabulary inside `ArtifactResolutionTarget`; do not use `target` directly on `ReferenceLink`.
+- Runtime support for ReferenceSource resolution should start with in-local-mesh governed RDF artifacts. Direct `targetAccessUrl`, repository locator, and floating locator reference sources can remain modeled but unsupported by runtime page/reference processing until explicit operational policy and tests exist.
+- Add `ImportSource` as the source-registry application concern for explicit acquisition/materialization.
+- Add `IntegrationSource` as the source-registry application concern for `integrate` registering existing source bytes where they already live.
+- Use [[ont.task.2026.2026-05-24_1256-artifact-resolution-observations]] as the owning task for the generic `ArtifactResolutionTarget` source-family cleanup and `ArtifactResolutionObservation` vocabulary.
 - Keep `ReferenceRole` and the current role vocabulary. Do not rename it to `ReferenceAuthorityRole` and do not add `referenceRole_pageSource`.
 - Do not add `ReferenceFormat` in this task.
 - Serialize `ReferenceSource` records in the `ReferenceCatalog` beside their owning `ReferenceLink`.
@@ -181,10 +192,21 @@ This task should align vocabulary with that practice rather than expanding the c
 - Bob Markdown page content should not use `ReferenceLink`.
 - Pre-v1 compatibility shims are not required. Prefer a clean coordinated rename across ontology, framework fixtures, mesh fixtures, Weave code, CLI, and docs.
 
+## Implementation Progress
+
+- SFLO and Weave have moved the live RDF shape to `ReferenceLink` -> `hasReferenceSource` -> `ReferenceSource`.
+- Weave rendering/parsing and ResourcePage reference panels now understand the new source relator shape.
+- Tests for old fixture branches use a temporary fixture-reader normalization layer so old checked-in fixture RDF can still serve as comparison material until the full fixture regeneration pass.
+- Still open in this task:
+  - rename public/core/runtime request fields and CLI flag from `referenceTargetDesignatorPath` / `--reference-target-designator-path` to source terminology
+  - update Semantic Flow Framework behavior spec, API example/schema language, and conformance manifests
+  - regenerate mesh fixture branches so the fixture repositories themselves no longer carry retired `referenceTarget` / `referenceTargetState` predicates
+
 ## Contract Changes
 
 - SFLO core ontology:
   - Add `ReferenceSource` as `rdfs:subClassOf ArtifactResolutionTarget`.
+  - Coordinate `ImportSource`, `IntegrationSource`, and shared observation vocabulary through [[ont.task.2026.2026-05-24_1256-artifact-resolution-observations]] if they land in the same ontology pass.
   - Add `hasReferenceSource` with domain `ReferenceLink` and range `ReferenceSource`.
   - Remove or supersede `referenceTarget`, `referenceTargetState`, and `referenceUriLiteral`.
   - Update comments for `ReferenceLink`, `ReferenceCatalog`, and `ReferenceRole` to reflect RDF-only reference-data semantics.
@@ -235,12 +257,14 @@ This task should align vocabulary with that practice rather than expanding the c
 - Do not implement remote `targetAccessUrl` fetching for references unless a separate runtime-resolution task explicitly enables it under operational config.
 - Do not change Bob's Markdown bio into a ReferenceLink case.
 - Do not redesign import provenance or `KnopSourceRegistry` as part of this task, beyond keeping the boundaries clear.
+- Do not make this task the owner of generic resolution-observation vocabulary; that belongs to [[ont.task.2026.2026-05-24_1256-artifact-resolution-observations]].
+- Do not implement ResourcePage fact-selection policy for reference RDF in this task.
 - Do not rename this task note to a completed note unless explicitly requested.
 
 ## Implementation Plan
 
 - [ ] Re-read [[wd.general-guidance]], [[ont.reference-links]], [[ont.summary.core]], [[ont.decision-log]], the `knop.addReference` behavior spec, and this note before editing.
-- [ ] Update SFLO ontology with `ReferenceSource` and `hasReferenceSource`, and remove/supersede direct `ReferenceLink` target properties.
+- [ ] Update SFLO ontology with `ReferenceSource` and `hasReferenceSource`, remove/supersede direct `ReferenceLink` target properties, and coordinate shared source subclasses/observations with [[ont.task.2026.2026-05-24_1256-artifact-resolution-observations]].
 - [ ] Update SFLO SHACL for the new `ReferenceLink` / `ReferenceSource` shape.
 - [ ] Update SFLO notes and decision log.
 - [ ] Update Semantic Flow Framework specs, API examples, and conformance manifests.

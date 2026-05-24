@@ -14,6 +14,8 @@ created: 1779379649208
 - Make import behavior explicit across whole-mesh repos, sidecar repos, and branch-based meshes, because the right destination for the regular working file differs by topology.
 - Preserve the semantic boundary between `import`, `integrate`, `payload update`, `workingAccessUrl`, and page-source resolution.
 - Keep source acquisition explicit and fail-closed: import may actively read/fetch the requested source, but normal `weave` / `generate` should not start following remote sources just because import metadata exists.
+- Record import provenance through a named `sflo:ImportSource` source-registry binding rather than an unnamed `ArtifactResolutionTarget`, while keeping the shared resolution vocabulary for URL, repository, digest, and observation evidence.
+- Depend on [[ont.task.2026.2026-05-24_1256-artifact-resolution-observations]] for the shared `ArtifactResolutionObservation` model instead of widening extraction-specific observed-source vocabulary inside this task.
 
 ## Summary
 
@@ -27,6 +29,8 @@ There is one core import operation:
 - copy those bytes into the chosen `--working-file`
 - create or update the Knop/payload artifact at the requested designator path so that local file is the active working locator
 - record the observed origin and byte fingerprint so the import is more than a shell download followed by `weave integrate`
+
+The source-registry record for that acquisition should be an `sflo:ImportSource`, a source-registry application concern that subclasses `sflo:ArtifactResolutionTarget`. That keeps import aligned with the shared resolution vocabulary without making every source binding a vague bare `ArtifactResolutionTarget`.
 
 This is also different from [[wa.task.2026.2026-05-20_2152-workingAccessUrl]]. `workingAccessUrl` is a current-byte locator that later runtime operations might follow when remote access policy permits it. `import` is an explicit acquisition command: the operator says "take these bytes now and put them here." After import succeeds, ordinary versioning and page generation should follow the governed local working file.
 
@@ -100,6 +104,31 @@ This can be easy if the first implementation avoids pretending to solve every im
 
 The non-CLI API case makes this boundary more important, not less. A caller using a library, daemon, web UI, or automation API should not have to manually reproduce "fetch bytes, choose a safe mesh-relative destination, write the file, compute a digest, register/update the artifact, and record provenance" as separate host-side steps. The import planner/runtime should expose that as one coherent operation, with CLI wiring as one caller of the same API.
 
+### ImportSource and IntegrationSource
+
+Import and integrate both use the same source-registry / artifact-resolution family, but they are different application concerns.
+
+`ImportSource` should describe source bytes actively acquired by `weave import` and copied into a governed local working surface. It should live in the target Knop's `_knop/_sources/sources.ttl` registry and be linked from that registry with `sflo:hasSourceBinding`.
+
+`IntegrationSource` should describe source bytes registered by `weave integrate` where those bytes already live. It is the sibling concern for sidecar and branch-published source binding: integrate leaves bytes in place and records source policy; import copies bytes and records acquisition evidence.
+
+Both should subclass `sflo:ArtifactResolutionTarget` so they can reuse:
+
+- `sflo:targetAccessUrl` for URL acquisition/source coordinates when appropriate
+- `sflo:targetLocalRelativePath` for portable, policy-approved local source coordinates when appropriate
+- `sflo:hasTargetRepositorySource` / `sflo:hasRepositorySourceFloatingLocator` for repository-backed source coordinates
+- `sflo:expectsContentDigest` for requested/expected byte identity
+- `sflo:hasResolutionObservation` for intentionally recorded acquisition evidence
+- `sflo:hasArtifactResolutionMode` and requested target state/history terms when a source is resolved through the normal artifact-resolution path
+
+The cross-cutting observation vocabulary is owned by [[ont.task.2026.2026-05-24_1256-artifact-resolution-observations]]. Import should record concrete acquisition evidence as an `sflo:ArtifactResolutionObservation` linked from the `sflo:ImportSource`, including the observed content digest, observation time, and observer where available. The important command contract is that every successful import records the concrete digest it observed while acquiring bytes.
+
+For the first import slice, implement `ImportSource` for import provenance. `IntegrationSource` should be added to the ontology in the same general cleanup if practical, but the import command should not be blocked on refactoring all existing integrate source-binding output unless that code is already being touched. A separate integrate/source-binding pass can migrate existing `hasSourceBinding` records to `IntegrationSource`.
+
+For HTTP(S) import, `targetAccessUrl` on `ImportSource` records the outside acquisition source. It is not the imported payload's active current-byte locator and it does not authorize later remote fetch by `weave`, `generate`, or page rendering.
+
+For local path import, avoid persisting host-absolute source paths in public RDF by default. If the source path is portable and policy-approved, `targetLocalRelativePath` may be used on `ImportSource`; otherwise record durable evidence such as observed digest and observation time without publishing an absolute local path.
+
 Repeated `weave import --replace-working` is not the same operation as `weave payload update`. `payload update` is a current-working-surface convenience for an already registered local payload artifact whose source/acquisition story is otherwise unchanged. It replaces the existing governed working bytes and stops there: no HTTP(S) fetch, no import-origin provenance refresh, no expected-digest assertion, no source-registry acquisition event, and no active-locator change. Repeated import with `--replace-working` means "acquire these outside-origin bytes again, overwrite the governed working file, and refresh the import provenance/digest evidence for this artifact." It still does not mint a historical state; `weave version` or the composed `weave` flow owns that.
 
 There is a real design edge: because HTTP(S) import is in the first slice, Deno dev/test permissions need to allow network access for the import tests and `deno task dev:root` may need a permission adjustment or documentation. Native/package users will experience this as a normal command, but source-tree development uses Deno permissions.
@@ -125,7 +154,10 @@ The current carried Bob fixture uses older namespace vocabulary in some historic
 - When `--replace-working` imports into an existing payload artifact, update both the local working file and source-origin/digest metadata.
 - `payload update` remains a narrow current-byte replacement command for an existing local payload artifact. Use repeated `import --replace-working` instead when the replacement should reacquire outside-origin bytes and refresh import provenance or digest evidence.
 - Optional `--expected-digest sha256:...` is part of the first CLI surface. Import should always compute an observed digest; when the expected digest is supplied, mismatch is a hard failure.
-- Store import-origin metadata in the Knop source registry, not as the active current locator on the payload artifact. The payload artifact should carry the governed local `sflo:hasWorkingLocatedFile`; the source registry should carry origin URL/repository details, observed digest, expected digest when supplied, and observation time.
+- Store import-origin metadata in the Knop source registry, not as the active current locator on the payload artifact. The payload artifact should carry the governed local `sflo:hasWorkingLocatedFile`; the source registry should carry origin URL/repository details and expected digest when supplied, with observed digest and observation time recorded on an `sflo:ArtifactResolutionObservation` linked from the `sflo:ImportSource`.
+- Model that import-origin metadata as an `sflo:ImportSource`, linked from the Knop source registry with `sflo:hasSourceBinding`. `ImportSource` should be an `sflo:ArtifactResolutionTarget` subclass, not a replacement for the shared target/resolution vocabulary.
+- Add `sflo:IntegrationSource` as the sibling `ArtifactResolutionTarget` subclass for `weave integrate` source bindings: integrate registers existing source bytes where they live; import acquires/copies bytes into a governed local working file.
+- Do not use a bare `sflo:ArtifactResolutionTarget` for new import provenance except as a temporary implementation step during the ontology migration. The durable contract should identify import provenance as `sflo:ImportSource`.
 - Do not assert `sflo:RdfDocument` for imported Markdown, images, or other non-RDF bytes. The first import slice can avoid the false type without a full content-kind cleanup by asserting `sflo:RdfDocument` only when the source is actually RDF, based on explicit content kind, content type, or conservative extension detection.
 - `weave import` should not run `weave`, `weave version`, or `weave generate` automatically.
 - The first CLI shape should be:
@@ -160,8 +192,10 @@ weave import <source> <designatorPath> --working-file <meshRelativePath> [--mesh
 - Repeated import should be covered separately from `payload update`: both replace current working bytes, but only import refreshes acquisition provenance, observed digest, optional expected digest evidence, and source registry metadata.
 - Import should compute and report an observed digest for every acquired source; when `--expected-digest` is supplied, the command should fail if the observed digest differs.
 - HTTP(S) import should use bounded fetch behavior: scheme restriction, timeout, maximum byte size, redirect decision, digest calculation, and clear diagnostics.
-- Import provenance should be rendered through the Knop source registry as an `sflo:ArtifactResolutionTarget` binding for the imported artifact. For URL sources, use `sflo:targetAccessUrl` on that binding for the source URL. Record the copied file as the payload artifact's active working locator: `sflo:hasWorkingLocatedFile` for mesh-local destinations, or the approved working-local locator shape for outside-mesh local destinations.
-- `sflo:targetAccessUrl` in an import source-registry binding is provenance/acquisition evidence for the import operation. It does not make ResourcePageDefinition `targetAccessUrl` rendering supported, and it does not authorize later remote fetching by `weave` or `generate`.
+- Add or require SFLO vocabulary for `sflo:ImportSource` as an `sflo:ArtifactResolutionTarget` subclass. Coordinate this with [[ont.task.2026.2026-05-24_1256-artifact-resolution-observations]], which also covers `sflo:IntegrationSource` and the shared observation vocabulary.
+- Add or require SFLO observation vocabulary so import can record observed digest evidence through an `sflo:ArtifactResolutionObservation` linked from `sflo:ImportSource`; the first implementation should not have to misuse an extraction-only digest property.
+- Import provenance should be rendered through the Knop source registry as an `sflo:ImportSource` binding for the imported artifact. For URL sources, use `sflo:targetAccessUrl` on that binding for the source URL. Record the copied file as the payload artifact's active working locator: `sflo:hasWorkingLocatedFile` for mesh-local destinations, or the approved working-local locator shape for outside-mesh local destinations.
+- `sflo:targetAccessUrl` in an `sflo:ImportSource` source-registry binding is provenance/acquisition evidence for the import operation. It does not make ResourcePageDefinition `targetAccessUrl` rendering supported, and it does not authorize later remote fetching by `weave` or `generate`.
 - First-slice content typing should avoid false RDF claims. Support artifacts such as inventories and source registries remain `sflo:RdfDocument`; imported payloads and their working files should only be typed as `sflo:RdfDocument` when the imported bytes are RDF.
 - Add user documentation for `weave import` and link it from [[wu.cli-reference]], [[wu.repository-options]], and the relevant release notes when the command ships.
 - Tighten existing docs language that mentions "integration/import" so it does not imply the command exists before this task lands.
@@ -169,12 +203,14 @@ weave import <source> <designatorPath> --working-file <meshRelativePath> [--mesh
 ## Testing
 
 - Unit-test import request normalization: designator path, `--working-file`, root designator handling, reserved path rejection, empty source rejection, and overwrite/update flag behavior.
-- Core-plan tests for the new-artifact path: created working file, Knop support files, payload artifact block, mesh inventory update, source registry origin metadata, and RDF-vs-non-RDF content typing.
+- Core-plan tests for the new-artifact path: created working file, Knop support files, payload artifact block, mesh inventory update, `sflo:ImportSource` source-registry origin metadata, and RDF-vs-non-RDF content typing.
 - Runtime tests for local filesystem source import and `file:` URL import.
 - Runtime/e2e tests for the three topology ladders: whole-mesh repo, sidecar repo, and branch-based mesh. The CLI path can cover mesh-root-relative `--working-file`; core/API tests should cover approved sidecar-adjacent and branch source-worktree destinations.
 - Add focused lower-level and runtime/e2e tests for timeout/404 diagnostics, max-size rejection, digest mismatch, provenance recording, and no live remote fetch during later page generation without requiring a full fixture-ladder regen.
 - Defer the GitHub-backed `b.*` fixture ladder until after import lands: Bob floating-source import/weave for `b.20/b.21`, then Carol six-step replacement coverage.
 - Add or tighten provenance assertions so an import fixture that claims HTTP(S) acquisition verifies the recorded origin URL or repository/source metadata, not only the local copied file.
+- Add regression coverage that import provenance is typed `sflo:ImportSource` and linked from the Knop source registry with `sflo:hasSourceBinding`.
+- Add regression coverage that import observed digest evidence validates on an `sflo:ArtifactResolutionObservation` linked from `sflo:ImportSource`.
 - Add regression coverage that imported Markdown is not typed as `sflo:RdfDocument`.
 - Keep Bob `a.20/a.21` as historical comparison coverage; use Bob `b.20/b.21` for honest remote-origin import in the deferred fixture-regeneration pass.
 - Add regression coverage that import does not persist absolute local source paths in public RDF by default.
@@ -184,6 +220,7 @@ weave import <source> <designatorPath> --working-file <meshRelativePath> [--mesh
 
 - Do not implement ambient remote following for `sflo:workingAccessUrl`; that belongs to [[wa.task.2026.2026-05-20_2152-workingAccessUrl]].
 - Do not implement remote-fetching `integrate` as part of this task; import is the explicit acquisition path for now.
+- Do not refactor all existing `integrate` source-binding output to `sflo:IntegrationSource` in this task unless the shared ontology/source-binding code is already being updated. The durable direction is tracked in [[wa.task.2026.2026-05-24_1301-integrate-source-binding-update]]; the import command should not be held hostage by a full integrate migration.
 - Do not implement copying from an already registered artifact/current-source binding in the first slice.
 - Do not implement direct page rendering from `targetAccessUrl`.
 - Do not make `weave import` a deploy command, git command, publication-profile command, or branch-publishing wrapper.
@@ -199,6 +236,7 @@ weave import <source> <designatorPath> --working-file <meshRelativePath> [--mesh
 - [ ] Re-read [[wd.general-guidance]], [[wd.testing]], [[wu.repository-options]], [[wa.completed.2026.2026-04-13_1245-bob-import-boundary-for-page-source]], and this note before editing.
 - [x] Decide the exact update flag name and whether HTTP(S) fetch is in the first implementation slice: use `--replace-working` and include explicit bounded HTTP(S) fetch.
 - [d] After this import implementation lands, regenerate a `b.*` fixture lane and make Bob `b.20/b.21` the whole-mesh remote-origin import fixture with floating-source observed-digest provenance, then compare it against `a.20/a.21`.
+- [x] Add or coordinate SFLO vocabulary for `ImportSource` as an `ArtifactResolutionTarget` subclass, plus import acquisition observations per [[ont.task.2026.2026-05-24_1256-artifact-resolution-observations]].
 - [ ] Add `src/core/import/` planner types and validation for source description, designator path, topology-aware destination locator, source registry origin metadata, content-kind/RDF typing, and create/update mode.
 - [ ] Reuse existing path/designator helpers and existing integrate/payload-update rendering where possible instead of copying large Turtle renderers.
 - [ ] Add `src/runtime/import/` source acquisition for local paths, `file:` URLs, bounded HTTP(S) fetch, observed digest calculation, optional expected digest verification, and `--replace-working` behavior.
