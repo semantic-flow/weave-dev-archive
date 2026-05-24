@@ -3,7 +3,7 @@ id: picking-up-the-pieces-q1yekp
 title: 'picking up the pieces'
 desc: ''
 created: 1773868212939
-updated: 1773868212939
+updated: 1779642011757
 participants: [djradon, codex.gpt-5.4]
 conversationEventKinds: [message.assistant, message.user, tool.call, tool.result]
 ---
@@ -1260,7 +1260,8 @@ How do we attach a Knop to a designator semantically without something explicit.
   rdfs:domain <Nomen> ;
   rdfs:range rdfs:Resource ;
   rdfs:label "designates" ;
-  rdfs:comment "Optional asserted designatum for the Nomen's designator token. If absent, the Nomen may be anchored only via ReferenceLinks (or used purely for token management)." .
+  rdfs:comment "Optional asserted designatum for the Nomen's designator token. If absent, the Nomen may be anchored only via 
+  s (or used purely for token management)." .
 
 Already, I'm feeling like we need a separate "designator handle". It's a very special thing that means "designator + meshBase AS AN identifier". Putting that extra meaning on a Knop is too much.
 
