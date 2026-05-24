@@ -42,6 +42,12 @@ The default experience should be modeled as built-in config and templates, not a
 
 The current major refactor matters here. [[wa.task.2026.2026-05-21_0849_careful-extraction-refactor]] and related runtime page-generation extraction work are making the code easier to change. This task should wait until the relevant model-builder and page-renderer seams are stable enough to keep the behavioral diff small.
 
+### Synthesized Default ResourcePage Documents
+
+Default generated pages should be described as synthesized ResourcePage documents, not synthesized `ResourcePageDefinition` artifacts. A `ResourcePageDefinition` remains the authored `_knop/_page/page.ttl` source of truth for custom identifier pages. The synthesized default document is the resolved runtime input to rendering: it combines runtime-discovered resource facts, selected built-in panels, effective presentation config, and page chrome data into a `ResourcePageDocumentModel`.
+
+Diagnostics should use language such as "resolved ResourcePage document" or "synthesized default ResourcePage document." They should not imply that a physical `_knop/_page/page.ttl` exists, nor should they call the synthesized runtime object a `ResourcePageDefinition`.
+
 Implementation should proceed in deliberately separate slices:
 
 - First slice: extract internal `ResourcePagePanelModel` and ResourcePage document-model assembly from the current default renderer, with no ontology change and no generated HTML drift. This should convert the existing children, properties, blank nodes, references, history, raw source, Semantic Flow metadata, ReferenceCatalog links, and Knop artifact lists into panel-shaped inputs while leaving current shell/header/footer behavior intact.
@@ -100,6 +106,7 @@ The exact property names should be refined with the ontology open, but this show
 - What exact merge controls are needed for additive panel selections versus nearest-wins template/style selection? Initial likely rule: outer/inner templates are nearest-wins; stylesheets and panels are ordered/additive until replace/remove vocabulary exists.
 - What exact replace/remove vocabulary should panel and stylesheet selection use once additive inherited defaults become insufficient?
 - What exact low-impact panel presentation modes should be supported later, such as footer icons, menus, or popovers?
+- Should custom-page opt-in reuse only `ResourcePagePresentationConfig` panel selections, or should it also allow `ResourcePageDefinition` to name a reusable panel set? Initial leaning: keep opt-in presentation-config based so `ResourcePageDefinition` remains authored regions and source bindings only.
 
 ## Decisions
 
@@ -125,6 +132,11 @@ The exact property names should be refined with the ontology open, but this show
 - Future panel selection should leave room for low-impact panel presentation modes such as footer icons, menus, or popovers, but the first shared-pipeline slice should render ordinary full panels only.
 - Diagnostics should describe computed inputs as a `ResourcePageDocumentModel`, resolved ResourcePage document, or synthesized default ResourcePage document, not as a `ResourcePageDefinition`.
 - External templates should receive a resolved ResourcePage document model and return page HTML or named HTML fragments. Templates must not read RDF, local files, remote URLs, mesh inventory, or config sources directly; they must render structured panel inputs and chrome metadata supplied by runtime. The first external-template mechanism should prefer declarative slot/layout selection over arbitrary executable template code.
+- Slice 2 should define a deterministic first-pass merge rule before `defaults/application.ttl` names the default presentation profile: outer and inner templates are nearest-wins; stylesheet lists are additive with duplicate stylesheet IRIs keeping the nearer occurrence; panel selections are additive by selection IRI, with a nearer selection replacing a farther selection with the same IRI; if two different selections name the same panel for the same effective target/mode, the nearer selection wins unless a later explicit duplicate policy allows both; `panelOrder` ties break by config precedence and then selection IRI for deterministic output.
+- Unknown selected panel identities should produce diagnostics during config/shape validation, and generation must not silently drop them. SHACL validation should catch invalid configured panels first; if an unknown panel identity reaches runtime, runtime should fail closed with a clear diagnostic.
+- Custom identifier page opt-in to generated panels should be expressed through `ResourcePagePresentationConfig` panel selections or reusable panel-set references, not a boolean flag on `ResourcePageDefinition`. Authored `ResourcePageRegion` content should behave like authored-content panels during composition.
+- The built-in Semantic Site stylesheet should appear as a real defaults asset in the slice that parses and honors the default presentation profile. Use a defaults IRI such as `<default-stylesheet>` for the stylesheet artifact, describe that artifact in `defaults/default-stylesheet.ttl`, and point its working located file at `defaults/stylesheet.css`; the CSS file itself is not a Turtle config file.
+- Custom identifier pages opt into the shared Semantic Site shell by putting `sfcfg:hasResourcePagePresentationConfig` on the authored `ResourcePageDefinition`. In the first implementation, only the known built-in Semantic Site profile is supported; unsupported presentation config IRIs fail closed. Page definitions without this property keep the legacy custom-page rendering path.
 
 ## Contract Changes
 
@@ -135,6 +147,7 @@ The exact property names should be refined with the ontology open, but this show
 - Likely ontology additions include `sfcfg:hasDefaultResourcePagePresentationConfig`, code-backed ResourcePage panel identities, panel selection/order/inclusion terms, direct RDF-class/artifact-role target terms, and data-availability target terms.
 - Weave's default application config should begin naming a built-in ResourcePage presentation profile in `defaults/application.ttl` only once runtime parses and honors that profile.
 - Generated HTML should remain stable until an implementation slice explicitly records expected presentation diffs.
+- Introducing default presentation/profile RDF should happen together with validation/runtime support for those identities, including known-panel validation and deterministic merge behavior.
 
 ## Testing
 
@@ -161,25 +174,30 @@ The exact property names should be refined with the ontology open, but this show
 - Do not allow arbitrary authored HTML execution or raw injection without an explicit safety model.
 - Do not add ignored presentation-profile triples to `defaults/application.ttl` before runtime parses and honors them.
 - Do not auto-append default generated panels to custom identifier pages without explicit composition policy.
+- Do not add pagination, virtual scrolling, display limits, or large-mesh children-panel ergonomics in the first internal panel extraction. Preserve current output; panel display-limit policy belongs in a later presentation-policy slice.
 
 ## Implementation Plan
 
-- [ ] Inventory current default generated-page sections in `src/runtime/weave/pages.ts` and map them to first-slice panel model names: children, properties, blank nodes, references, histories, raw source, Semantic Flow metadata, ReferenceCatalog links, and Knop artifact lists.
-- [ ] Classify shell/header/chrome fields that should not become panels in the first slice: title, canonical IRI, breadcrumbs, RDF classes, summary, favicon, built-in CSS, stylesheet links, generated footer, and canonical slash-normalization script.
-- [ ] Define first core `ResourcePageDocumentModel` and `ResourcePagePanelModel` shapes that can represent the current default page inputs without exposing template execution, HTML adapter rows, CSS classes, or ontology parser details.
-- [ ] Keep runtime-owned assembly for `ResourcePageDocumentModel`, including filesystem reads, effective config resolution, mesh-state loading, and local/remote access policy checks.
-- [ ] Refactor renderer internals so default pages consume panel models without changing generated output.
-- [ ] Retire `ResourcePageRenderInput` if the new document model can feed panel rendering directly; otherwise keep it as a private renderer adapter only.
-- [ ] Add focused renderer/model tests for default document-model assembly, panel ordering, and zero-drift output.
-- [ ] Audit current config ontology terms for `ResourcePagePresentationConfig`, `OuterResourcePageTemplate`, `InnerResourcePageTemplate`, and `ResourcePageStylesheet`, and list missing panel-selection terms after the internal model exists.
-- [ ] Draft minimal ontology additions: `sfcfg:hasDefaultResourcePagePresentationConfig`, `sfcfg:ResourcePagePanel`, `sfcfg:ResourcePagePanelSelection`, panel selection/order/inclusion properties, direct RDF class/artifact-role target properties, and panel data-availability terms.
-- [ ] Add config parser support for the application-default ResourcePage presentation profile and only then update `defaults/application.ttl` to name the built-in Semantic Site profile.
-- [ ] Define first built-in panel targeting rules, including a rule that current working source panels apply only when the page represents a `DigitalArtifact` with current working source data.
-- [ ] Add tests proving selected panels are target-gated, such as current working source panels appearing for DigitalArtifact pages but not unrelated identifier-only pages.
-- [ ] Define authored-content panel behavior for safe Markdown and explicitly defer raw authored HTML rendering until a trust/sanitizer policy exists.
-- [ ] Define how custom identifier pages can explicitly use the same outer shell and stylesheet baseline as default pages.
-- [ ] Define how custom identifier pages can explicitly opt into default panels such as children, references, and histories without changing existing custom pages by default; when no explicit order is provided, authored regions should come before full generated panels.
+- [x] Inventory current default generated-page sections in `src/runtime/weave/pages.ts` and map them to first-slice panel model names: children, properties, blank nodes, references, histories, raw source, Semantic Flow metadata, ReferenceCatalog links, and Knop artifact lists.
+- [x] Classify shell/header/chrome fields that should not become panels in the first slice: title, canonical IRI, breadcrumbs, RDF classes, summary, favicon, built-in CSS, stylesheet links, generated footer, and canonical slash-normalization script.
+- [x] Define first core `ResourcePageDocumentModel` and `ResourcePagePanelModel` shapes that can represent the current default page inputs without exposing template execution, HTML adapter rows, CSS classes, or ontology parser details.
+- [x] Keep runtime-owned assembly for `ResourcePageDocumentModel`, including filesystem reads, effective config resolution, mesh-state loading, and local/remote access policy checks.
+- [x] Refactor renderer internals so default pages consume panel models without changing generated output.
+- [x] Retire `ResourcePageRenderInput` if the new document model can feed panel rendering directly; otherwise keep it as a private renderer adapter only.
+- [x] Add focused renderer/model tests for default document-model assembly, panel ordering, and zero-drift output.
+- [x] Audit current config ontology terms for `ResourcePagePresentationConfig`, `OuterResourcePageTemplate`, `InnerResourcePageTemplate`, and `ResourcePageStylesheet`, and list missing panel-selection terms after the internal model exists.
+- [x] Draft minimal ontology additions: `sfcfg:hasDefaultResourcePagePresentationConfig`, `sfcfg:ResourcePagePanel`, `sfcfg:ResourcePagePanelSelection`, panel selection/order/inclusion properties, direct RDF class/artifact-role target properties, and panel data-availability terms.
+- [x] Define deterministic first-pass merge behavior for templates, stylesheets, panel selections, duplicate panels, and `panelOrder` ties before defaults begin selecting built-in panels.
+- [x] Define validation/runtime behavior for unknown panel identities: SHACL/config diagnostics first, runtime fail-closed if an unknown selected panel reaches generation.
+- [x] Add config parser support for the application-default ResourcePage presentation profile and only then update `defaults/application.ttl` to name the built-in Semantic Site profile.
+- [x] Add the built-in Semantic Site stylesheet as a real defaults asset such as `defaults/stylesheet.css` in the same slice that parses and honors the default presentation profile.
+- [x] Define first built-in panel targeting rules for page kind and data availability.
+- [x] Add tests proving selected panels are target-gated by page kind.
+- [ ] Add richer RDF class/artifact-role target enforcement, including a rule that current working source panels apply only when the page represents a `DigitalArtifact` with current working source data.
+- [x] Define authored-content panel behavior for safe Markdown and explicitly defer raw authored HTML rendering until a trust/sanitizer policy exists.
+- [x] Define how custom identifier pages can explicitly use the same outer shell and stylesheet baseline as default pages.
+- [ ] Define custom identifier page opt-in through `ResourcePagePresentationConfig` panel selections or reusable panel-set references, without changing existing custom pages by default; when no explicit order is provided, authored regions should come before full generated panels.
 - [ ] Sketch future low-impact panel presentation modes such as footer icons, menus, or popovers without implementing them in the first shared-pipeline slice.
 - [ ] Define the minimal external-template contract: templates receive resolved document and panel inputs, return page HTML or named fragments, and cannot read RDF/files/network/config directly.
-- [ ] Add or update tests for default/custom shared presentation behavior once custom pages enter the shared shell.
+- [x] Add or update tests for default/custom shared presentation behavior once custom pages enter the shared shell.
 - [ ] Only after the model is stable, decide whether to persist built-in templates/stylesheets as RDF-described artifacts or keep them as embedded defaults with RDF identities.
