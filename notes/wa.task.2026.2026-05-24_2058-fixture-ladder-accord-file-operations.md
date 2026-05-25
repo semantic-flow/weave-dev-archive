@@ -87,7 +87,7 @@ For source-seed rungs, use the same `FileOperation` shape to copy source files f
 - [x] Verify `SourceProvenance.sourcePath` resolves under the configured asset root, or a declared source ref/path when that shape is used.
 - [x] Verify `SourceProvenance.contentDigest` when present.
 - [x] Add `--branch-prefix` to fixture ladder planning and execution.
-- [ ] Add a source-seed path for carrying committed `.assets/**` into the next generated ladder when the scenario asks for harness assets in the fixture repo.
+- [x] Add a source-seed path for carrying committed `.assets/**` into the next generated ladder when the scenario asks for harness assets in the fixture repo.
 - [x] Reduce or remove hard-coded file-operation source declarations from `scripts/fixture-ladder.ts`.
 - [ ] Update [[wa.task.2026.2026-05-23_2230-custom-resourcepage-shared-shell-fixture]] once Alice `14` through `19` can be regenerated from manifest-declared file operations.
 
@@ -96,3 +96,4 @@ For source-seed rungs, use the same `FileOperation` shape to copy source files f
 - 2026-05-24: Weave fixture ladder hydration now uses `hasReplayProfile.hasFileOperation` when a file-operation transition manifest declares it. The TypeScript scenario source lists remain as fallback data for unmigrated manifests.
 - 2026-05-24: Alice Bio file-operation manifests now declare `.assets` source paths for `01`, `14`, `18`, `20`, and `24`. Local fixture assets intentionally omit `contentDigest` so authored asset changes do not require manifest churn; digest verification remains available when a manifest needs pinned bytes.
 - 2026-05-24: `fixture:ladder` accepts `--branch-prefix` for planning, materialization, and execution, while scenario-index write/check remains pinned to the canonical checked-in topology.
+- 2026-05-24: `fixture:ladder --seed-source-ref main --branch-prefix b.` prepares the first `b.00-blank-slate` rung by filtering the source ref down to `.assets`, `.gitignore`, and `README.md`. Generated support files such as `.nojekyll` stay out of `00` so later rungs can create them in order. If a durable `assets` branch becomes useful later, use it as the seed source ref without changing the ladder flow.

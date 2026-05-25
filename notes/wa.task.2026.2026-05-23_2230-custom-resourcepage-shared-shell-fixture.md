@@ -164,7 +164,7 @@ Recommended sequence:
 - [x] Delete original non-`a.*` numbered fixture branches from the fixture mesh remotes before the next from-scratch regeneration.
 - [x] Land enough `weave import` behavior to materialize Carol Markdown into a governed local working file.
 - [x] During the next from-scratch Alice Bio regeneration, rename Alice's RDF payload source and designator from `alice-bio.ttl` / `alice/bio` to `alice-data.ttl` / `alice/data`.
-- [ ] Copy the committed `mesh-alice-bio` `.assets` tree from `main` into the next `b.00` source rung before generating `b.*` branches, or replace the manual step with [[wa.task.2026.2026-05-24_2058-fixture-ladder-accord-file-operations]] first.
+- [x] Replace the manual `mesh-alice-bio` `.assets` copy into the next `b.00` source rung with the source-seed path from [[wa.task.2026.2026-05-24_2058-fixture-ladder-accord-file-operations]].
 - [ ] During the next from-scratch Alice Bio regeneration, adjust Alice `14` through `19` so the main authored content panel is backed by governed `alice/page-main` from the start of the custom page story.
 - [x] During the next from-scratch Alice Bio regeneration, rewrite `alice/page-main` content to identify Alice's IRI and link to the Semantic Flow framework.
 - [x] During the next from-scratch Alice Bio regeneration, make the shared sidebar a governed reusable content artifact and revise its content.
