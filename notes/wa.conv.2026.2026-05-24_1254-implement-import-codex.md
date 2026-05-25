@@ -866,3 +866,189 @@ Commit messages for the repos touched:
 `weave-dev-archive`: Record artifact resolution observation migration progress
 
 Verification from the implementation pass passed: SFLO guardrail tests, Weave lint, Weave test suite, targeted retests, and `git diff --check`.
+
+# User_2026-05-24_1642_12
+
+I assume the specs/manifests are the fixture meshes. Maybe we'll defer that until import lands?
+
+# gpt-5.5_2026-05-24_1642_23
+
+I think that’s the right read: “specs/manifests” mostly means the Semantic Flow Framework conformance/API fixture material that still encodes the old RDF shape. I’m going to mark that as intentionally deferred in the task so it doesn’t look like an accidental leftover.
+
+# gpt-5.5_2026-05-24_1642_32
+
+Yes, that’s how I’d frame it. The specs/manifests are primarily the Semantic Flow Framework fixture/conformance material, including fixture meshes or JSON-LD manifests derived from them.
+
+I updated the task to make the deferral explicit: leave the box unchecked, but note that it should wait until import lands so fixture mesh regeneration can happen in one coherent pass. That feels cleaner than churning framework fixtures now and then immediately touching them again for import provenance.
+
+# User_2026-05-24_1643_09
+
+and integrate source binding should update first too.
+
+# gpt-5.5_2026-05-24_1643_22
+
+Agreed. The fixture/spec pass should probably wait for both source-binding migrations: integrate first, then import. I’ll update the notes so the sequencing is explicit instead of buried in our chat.
+
+# gpt-5.5_2026-05-24_1643_37
+
+There are two places where the old ordering leaks through: the ontology follow-through list says “until import lands,” and the import task says import should not be blocked by integrate migration. Given your correction, I’m going to make the intended sequence: ontology vocabulary landed, integrate source binding migrates next, import follows, framework fixtures/specs regenerate after both.
+
+# gpt-5.5_2026-05-24_1645_11
+
+Agreed, and I updated the notes to say that explicitly.
+
+The intended sequence now reads as:
+
+1. Ontology vocabulary lands.
+2. `weave integrate` source binding migrates to `sflo:IntegrationSource`.
+3. `weave import` implements `sflo:ImportSource` provenance against that settled source-registry shape.
+4. Semantic Flow Framework specs/manifests and fixture meshes regenerate once for both.
+
+I updated:
+- [ont.task.2026.2026-05-24_1256-artifact-resolution-observations.md](ont.task.2026.2026-05-24_1256-artifact-resolution-observations.md:199)
+- [wa.task.2026.2026-05-21_0907-import.md](wa.task.2026.2026-05-21_0907-import.md:121)
+- [wa.task.2026.2026-05-24_1301-integrate-source-binding-update.md](wa.task.2026.2026-05-24_1301-integrate-source-binding-update.md:16)
+
+I also removed the contradictory “import should not be held hostage by integrate migration” language.
+
+# User_2026-05-24_1647_51
+
+Do you want to tackle those in this conversation or start a new one? Does [wa.task.2026.2026-05-24_1301-integrate-source-binding-update.md](wa.task.2026.2026-05-24_1301-integrate-source-binding-update.md) need any updates? I feel like there a host of other stuff that needs doing around the ArtifactResolutionTarget subclasses.
+
+# gpt-5.5_2026-05-24_1648_10
+
+I’d keep going here if your working memory is still warm, but I would not fold the whole `ArtifactResolutionTarget` cleanup into the integrate task. I’m going to quickly re-read the task and the current ontology class cluster, then I’ll either patch the task or tell you it’s already crisp enough.
+
+# gpt-5.5_2026-05-24_1648_31
+
+The integrate note is good as a narrow implementation task, but it needs a little “scope fence” now that the source-family vocabulary is bigger. I’m adding that so future-us doesn’t turn “make integrate use `IntegrationSource`” into an accidental omnibus cleanup.
+
+# gpt-5.5_2026-05-24_1648_59
+
+I’d tackle the integrate source-binding implementation here if we’re continuing the same design thread. A new conversation would be cleaner for code-review hygiene, but this conversation has the freshest ontology context, so I’m comfortable staying here.
+
+I updated [wa.task.2026.2026-05-24_1301-integrate-source-binding-update.md](wa.task.2026.2026-05-24_1301-integrate-source-binding-update.md:45) with a new `ArtifactResolutionTarget Follow-Through` section. It now explicitly fences the task to `IntegrationSource` and source-registry plumbing, while pointing the other subclass work to the right places:
+
+- `ImportSource`: import task
+- `ReferenceSource`: ReferenceLink clarification task
+- `ResourcePageSource`: future page-source work
+- `ExtractionSource`: already migrated, avoid extra churn unless shared code forces it
+- framework fixtures/specs: after integrate and import both land
+
+I also checked off the ontology dependency item since `IntegrationSource` and observation vocabulary now exist. No tests run, docs-only change.
+
+My recommendation: implement integrate source binding next, then import provenance, then regenerate framework fixture meshes once for both.
+
+# User_2026-05-24_1650_41
+
+If you want to capture that follow up work, please use [wa.task.2026.2026-05-24_1648-ArtifactResolutionTarget-subclass-cleanup.md](wa.task.2026.2026-05-24_1648-ArtifactResolutionTarget-subclass-cleanup.md)
+
+# gpt-5.5_2026-05-24_1650_52
+
+Good call. I’ll put the broader subclass cleanup there and keep the integrate task narrow, so the next implementation task doesn’t quietly absorb every unresolved source-family concern.
+
+# gpt-5.5_2026-05-24_1651_13
+
+I’m going to make that new note the umbrella/coordination task, and trim the integrate note back to a pointer plus its own implementation boundary. That keeps the map readable: integrate is the next concrete step; subclass cleanup is the cross-cutting ledger.
+
+# gpt-5.5_2026-05-24_1652_03
+
+The new umbrella note is now filled out. I’m also tightening the integrate note so it references that umbrella task instead of carrying the full follow-up inventory itself.
+
+# gpt-5.5_2026-05-24_1652_48
+
+One small wrinkle surfaced while verifying: the ontology observation note appears to have been renamed from `ont.task...` to `ont.completed...` on disk by something outside these edits. I’m not going to undo that, but I’m checking the actual note names before I touch any more links.
+
+# gpt-5.5_2026-05-24_1653_19
+
+Done. I filled out [wa.task.2026.2026-05-24_1648-ArtifactResolutionTarget-subclass-cleanup.md](wa.task.2026.2026-05-24_1648-ArtifactResolutionTarget-subclass-cleanup.md:8) as the cross-cutting follow-up ledger.
+
+I also trimmed the integrate task so it points to this new umbrella note instead of carrying the broader subclass inventory itself, and linked the completed ontology-observation note back to the new cleanup task.
+
+One small filesystem note: the ontology note now exists as `ont.completed.2026.2026-05-24_1256-artifact-resolution-observations.md`, not `ont.task...`, so I used the actual completed wikilink in the new task. I didn’t rename anything. No tests run, notes-only change.
+
+# User_2026-05-24_1653_58
+
+OK, let's proceed. Looks like no open issues in the [wa.task.2026.2026-05-24_1301-integrate-source-binding-update.md](wa.task.2026.2026-05-24_1301-integrate-source-binding-update.md)
+
+# gpt-5.5_2026-05-24_1654_13
+
+Great, I’ll treat this as the next concrete implementation pass: make `weave integrate` emit/read `IntegrationSource`, keep import out of scope, and leave framework fixture regeneration deferred. I’m going to re-read the local guidance and then audit the integrate/source-registry code before editing.
+
+# gpt-5.5_2026-05-24_1654_24
+
+Guidance and the task line up: narrow integrate migration, no import or fixture-regeneration detour. I’ve also confirmed the dev-archive rename is already present in the worktree, so I’ll work with the completed-note links rather than trying to undo that. Next I’m locating the integrate planner/rendering and source-registry parser paths.
+
+# gpt-5.5_2026-05-24_1654_30
+
+The code scan points to `src/core/integrate/integrate.ts` as the main renderer, plus runtime integration tests and inventory parsing. I’m reading those specific spots now so the patch stays local.
+
+# gpt-5.5_2026-05-24_1656_08
+
+The migration has two pieces: rendered source bindings need to be typed `sflo:IntegrationSource`, and repository-backed integrate, which already computes a digest, should attach that digest as an explicit `ArtifactResolutionObservation`. I’m also adding a small parser surface for integration bindings so source-registry readers do not have to inspect raw RDF class names.
+
+# gpt-5.5_2026-05-24_1700_59
+
+The code changes are in place: integrate now renders `IntegrationSource`, repository-backed integrate attaches a digest observation, and inventory parsing has a new integration-source reader. I’m formatting the touched files before running the focused tests so any TypeScript/parser noise is easier to see.
+
+# gpt-5.5_2026-05-24_1701_04
+
+Formatting touched one test and the inventory parser. I’m running focused integrate/source-registry tests now, including the CLI coverage that checks the rendered `sources.ttl` shape.
+
+# gpt-5.5_2026-05-24_1701_27
+
+Focused tests are green: 51 passed. I’m going to run `deno task lint` and `deno task check` next because the change adds exported parser types and a new source-observation path.
+
+# gpt-5.5_2026-05-24_1701_39
+
+`deno task lint` and `deno task check` are clean. Since this touches rendered RDF shape used across tests, I’m going to run the full Weave test task too; better to catch any fixture-helper assumptions now.
+
+# gpt-5.5_2026-05-24_1702_48
+
+Full `deno task test` is green too: 507 passed. I’m doing a final diff/whitespace pass and then I’ll update the task checklist/progress notes.
+
+# gpt-5.5_2026-05-24_1702_57
+
+The final whitespace check is clean. I’m marking the integrate task itself to reflect what landed, while leaving the framework fixture/spec box deferred as planned.
+
+# gpt-5.5_2026-05-24_1703_44
+
+I also updated the dependent notes: the umbrella subclass cleanup now shows integrate as landed, and the import task’s “confirm integrate landed” gate is checked. I’m doing one last status/diff check so the final summary is accurate.
+
+# gpt-5.5_2026-05-24_1704_31
+
+One extra cleanup: I noticed the new optional `observedAt` renderer should use an explicit `xsd:dateTime` datatype if it is ever supplied, so I fixed that before closing out. I’m rerunning the quick checks affected by that formatter touch.
+
+# gpt-5.5_2026-05-24_1705_06
+
+Implemented the integrate source-binding migration.
+
+What changed:
+- `weave integrate` now renders source bindings as `sflo:IntegrationSource` in [src/core/integrate/integrate.ts](../../../../../src/core/integrate/integrate.ts).
+- Repository-backed integrate now records the computed digest as an `sflo:ArtifactResolutionObservation` linked from the `IntegrationSource`.
+- Working-only and floating repository bindings stay observation-free unless digest/evidence is intentionally recorded.
+- Added `listIntegrationSourceInventoryStates` in [inventory.ts](../../../../../src/runtime/mesh/inventory.ts) for parsing integration source bindings and linked observations.
+- Updated integrate tests, CLI e2e assertions, and docs.
+- Updated the task notes: integrate is checked off, import’s integrate prerequisite is checked, and the subclass cleanup note reflects that integrate has landed.
+
+Verification:
+- `deno task lint`
+- `deno task check`
+- `deno task test` passed: `507 passed | 0 failed`
+- `git diff --check` clean
+- After a final small `observedAt` datatype fix: reran `deno task lint`, `deno check` on integrate files, and core integrate tests.
+
+Commit messages:
+
+`weave`: Use IntegrationSource for integrate source bindings
+
+- Render integrate source-registry bindings as `sflo:IntegrationSource`
+- Record repository-backed observed digests via `ArtifactResolutionObservation`
+- Add parser support for integration source bindings and observations
+- Update integrate docs and focused/e2e tests
+
+`weave-dev-archive`: Record integrate source-binding migration progress
+
+- Mark integrate source binding task items complete
+- Mark integrate prerequisite complete in the import task
+- Update subclass cleanup and ontology follow-through notes

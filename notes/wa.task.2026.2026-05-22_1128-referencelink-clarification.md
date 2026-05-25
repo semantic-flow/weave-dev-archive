@@ -14,7 +14,7 @@ created: 1779647404677
 - Preserve the conceptual split between `ReferenceCatalog`, `KnopSourceRegistry`, `ExtractionSource`, `ResourcePageSource`, `ImportSource`, `IntegrationSource`, and other source/provenance bindings.
 - Avoid future ontology churn by making the RDF-only reference direction explicit before adding more fixture rungs, import examples, or reference-driven page rendering.
 - Rename the local/API request terminology away from "target" where it names the reference source, while leaving `target*` vocabulary intact inside `ArtifactResolutionTarget` where it means "target of byte resolution."
-- Coordinate shared `ArtifactResolutionTarget` subclass and observation vocabulary through [[ont.task.2026.2026-05-24_1256-artifact-resolution-observations]] rather than making ReferenceLink carry the whole resolution-model cleanup.
+- Coordinate shared `ArtifactResolutionTarget` subclass and observation vocabulary through [[ont.completed.2026.2026-05-24_1256-artifact-resolution-observations]] rather than making ReferenceLink carry the whole resolution-model cleanup.
 
 ## Summary
 
@@ -52,7 +52,7 @@ When a reference should pin the source to a settled state, the source relator sh
 
 `ReferenceLink` should remain the semantic relator. It should not itself become an `ArtifactResolutionTarget`.
 
-The broader source-family and observation cleanup is tracked in [[ont.task.2026.2026-05-24_1256-artifact-resolution-observations]]. This task depends on that direction for `ReferenceSource`, but it should stay focused on ReferenceLink semantics, ReferenceCatalog serialization, API/CLI terminology, and fixture rewrites.
+The broader source-family and observation cleanup is tracked in [[ont.completed.2026.2026-05-24_1256-artifact-resolution-observations]]. This task depends on that direction for `ReferenceSource`, but it should stay focused on ReferenceLink semantics, ReferenceCatalog serialization, API/CLI terminology, and fixture rewrites.
 
 ## Discussion
 
@@ -124,7 +124,7 @@ Keep `ReferenceRole` and the current role instances for this task. Do not add `r
 
 The first implementation does not need to support every resolver shape at runtime. It should at least cover the existing fixture shape: in-mesh `hasTargetArtifact`, optionally pinned with `hasRequestedTargetState`.
 
-Observation details such as observed digest, observed state, timestamp, and observer belong to `ArtifactResolutionObservation` in [[ont.task.2026.2026-05-24_1256-artifact-resolution-observations]], not directly on `ReferenceLink` or `ReferenceSource`.
+Observation details such as observed digest, observed state, timestamp, and observer belong to `ArtifactResolutionObservation` in [[ont.completed.2026.2026-05-24_1256-artifact-resolution-observations]], not directly on `ReferenceLink` or `ReferenceSource`.
 
 ### Relationship to `RepositorySourceLocator`
 
@@ -184,7 +184,7 @@ This task should align vocabulary with that practice rather than expanding the c
 - Runtime support for ReferenceSource resolution should start with in-local-mesh governed RDF artifacts. Direct `targetAccessUrl`, repository locator, and floating locator reference sources can remain modeled but unsupported by runtime page/reference processing until explicit operational policy and tests exist.
 - Add `ImportSource` as the source-registry application concern for explicit acquisition/materialization.
 - Add `IntegrationSource` as the source-registry application concern for `integrate` registering existing source bytes where they already live.
-- Use [[ont.task.2026.2026-05-24_1256-artifact-resolution-observations]] as the owning task for the generic `ArtifactResolutionTarget` source-family cleanup and `ArtifactResolutionObservation` vocabulary.
+- Use [[ont.completed.2026.2026-05-24_1256-artifact-resolution-observations]] as the owning task for the generic `ArtifactResolutionTarget` source-family cleanup and `ArtifactResolutionObservation` vocabulary.
 - Keep `ReferenceRole` and the current role vocabulary. Do not rename it to `ReferenceAuthorityRole` and do not add `referenceRole_pageSource`.
 - Do not add `ReferenceFormat` in this task.
 - Serialize `ReferenceSource` records in the `ReferenceCatalog` beside their owning `ReferenceLink`.
@@ -206,7 +206,7 @@ This task should align vocabulary with that practice rather than expanding the c
 
 - SFLO core ontology:
   - Add `ReferenceSource` as `rdfs:subClassOf ArtifactResolutionTarget`.
-  - Coordinate `ImportSource`, `IntegrationSource`, and shared observation vocabulary through [[ont.task.2026.2026-05-24_1256-artifact-resolution-observations]] if they land in the same ontology pass.
+  - Coordinate `ImportSource`, `IntegrationSource`, and shared observation vocabulary through [[ont.completed.2026.2026-05-24_1256-artifact-resolution-observations]] if they land in the same ontology pass.
   - Add `hasReferenceSource` with domain `ReferenceLink` and range `ReferenceSource`.
   - Remove or supersede `referenceTarget`, `referenceTargetState`, and `referenceUriLiteral`.
   - Update comments for `ReferenceLink`, `ReferenceCatalog`, and `ReferenceRole` to reflect RDF-only reference-data semantics.
@@ -257,14 +257,14 @@ This task should align vocabulary with that practice rather than expanding the c
 - Do not implement remote `targetAccessUrl` fetching for references unless a separate runtime-resolution task explicitly enables it under operational config.
 - Do not change Bob's Markdown bio into a ReferenceLink case.
 - Do not redesign import provenance or `KnopSourceRegistry` as part of this task, beyond keeping the boundaries clear.
-- Do not make this task the owner of generic resolution-observation vocabulary; that belongs to [[ont.task.2026.2026-05-24_1256-artifact-resolution-observations]].
+- Do not make this task the owner of generic resolution-observation vocabulary; that belongs to [[ont.completed.2026.2026-05-24_1256-artifact-resolution-observations]].
 - Do not implement ResourcePage fact-selection policy for reference RDF in this task.
 - Do not rename this task note to a completed note unless explicitly requested.
 
 ## Implementation Plan
 
 - [ ] Re-read [[wd.general-guidance]], [[ont.reference-links]], [[ont.summary.core]], [[ont.decision-log]], the `knop.addReference` behavior spec, and this note before editing.
-- [ ] Update SFLO ontology with `ReferenceSource` and `hasReferenceSource`, remove/supersede direct `ReferenceLink` target properties, and coordinate shared source subclasses/observations with [[ont.task.2026.2026-05-24_1256-artifact-resolution-observations]].
+- [ ] Update SFLO ontology with `ReferenceSource` and `hasReferenceSource`, remove/supersede direct `ReferenceLink` target properties, and coordinate shared source subclasses/observations with [[ont.completed.2026.2026-05-24_1256-artifact-resolution-observations]].
 - [ ] Update SFLO SHACL for the new `ReferenceLink` / `ReferenceSource` shape.
 - [ ] Update SFLO notes and decision log.
 - [ ] Update Semantic Flow Framework specs, API examples, and conformance manifests.
