@@ -1052,3 +1052,405 @@ Commit messages:
 - Mark integrate source binding task items complete
 - Mark integrate prerequisite complete in the import task
 - Update subclass cleanup and ontology follow-through notes
+
+# User_2026-05-24_1707_22
+
+OK, moved that to wa.completed.2026.2026-05-24_1301-integrate-source-binding-update. Next, [wa.task.2026.2026-05-21_0907-import.md](wa.task.2026.2026-05-21_0907-import.md) ? Any learnings to integrate into that task?
+
+# gpt-5.5_2026-05-24_1707_44
+
+Nice, I’ll treat the integrate note rename as intentional and update wikilinks that still point at the old task name. I’ll also fold the concrete implementation learnings into the import task: mostly “reuse the settled source-registry shape” and “mirror the observation behavior instead of inventing another path.”
+
+# gpt-5.5_2026-05-24_1708_06
+
+The import note already has the big idea right, but it still reads in a few places like integrate is a future gate. I’m going to update those bits now and add a short “learnings from integrate” section with concrete implementation guidance for `ImportSource`.
+
+# gpt-5.5_2026-05-24_1709_01
+
+The import note already had a couple of completed-note links, so my first broad patch hit stale context. I’m splitting it into smaller exact edits.
+
+# gpt-5.5_2026-05-24_1711_07
+
+I’m back in the thread and picking up from the note edits. I’ll do a quick diff sanity check on the import task and the follow-up task links, then I’ll tell you exactly what changed.
+
+# gpt-5.5_2026-05-24_1711_16
+
+The note diff looks clean, and `diff --check` passed. The only old integrate-task references left are inside the Kato conversation transcript, so I’m leaving those as historical record rather than rewriting the log.
+
+# gpt-5.5_2026-05-24_1711_24
+
+One more small cleanup jumped out while checking line numbers: the subclass cleanup note still described `IntegrationSource` as “the next implementation step,” which is now stale after your move to completed. I’m going to tighten that wording so the sequencing note matches the new state.
+
+# gpt-5.5_2026-05-24_1711_48
+
+One durable completed ontology note also still had the old “after integrate and import both land” phrasing. Since that note is part of the sequencing trail, I’m updating only that stale sentence and the remaining cleanup checklist wording.
+
+# gpt-5.5_2026-05-24_1712_09
+
+I found two more stale “after integrate lands” style lines hiding outside the first search pattern. Tiny correction pass, then I’m done touching notes.
+
+# gpt-5.5_2026-05-24_1712_48
+
+Yes. I updated the import task with the integrate migration learnings and I think it’s now ready for implementation.
+
+Main updates are in [wa.task.2026.2026-05-21_0907-import.md](wa.task.2026.2026-05-21_0907-import.md:128):
+
+- Added a `Learnings from IntegrationSource Migration` section.
+- Marked integrate source binding as landed and import as the remaining source-family gate.
+- Captured the pattern import should mirror: `sflo:hasSourceBinding`, concrete `sflo:ImportSource`, linked `sflo:ArtifactResolutionObservation`, requested evidence on the source binding, observed evidence on the observation.
+- Added the concrete parser follow-up: import should get something analogous to `listIntegrationSourceInventoryStates`, or share a helper if that shakes out cleanly.
+- Re-emphasized no ambient fetch: import may record `targetAccessUrl`, but `weave`, `generate`, ResourcePage rendering, and `workingAccessUrl` resolution should not fetch it later.
+
+I also cleaned sequencing references in [wa.task.2026.2026-05-24_1648-ArtifactResolutionTarget-subclass-cleanup.md](wa.task.2026.2026-05-24_1648-ArtifactResolutionTarget-subclass-cleanup.md:60) and [ont.completed.2026.2026-05-24_1256-artifact-resolution-observations.md](ont.completed.2026.2026-05-24_1256-artifact-resolution-observations.md) so they point at the completed integrate task and say fixture regen waits on import now.
+
+Verification: `git diff --check` passes. I left old references inside the Kato conversation transcript alone since those are historical log entries.
+
+# User_2026-05-24_1713_30
+
+OK, proceed with import
+
+# gpt-5.5_2026-05-24_1713_42
+
+Great, I’ll move from note-shaping into implementation. I’m going to re-read the import task and the relevant developer/testing notes first, then trace the existing integrate/payload-update paths so import can reuse the patterns we just settled instead of growing a parallel little universe.
+
+# gpt-5.5_2026-05-24_1713_51
+
+The task is pretty explicit now: first slice is copy/fetch to an explicit working file, artifact registration/update, `ImportSource` provenance, observed digest, and a hard boundary against later ambient fetch. I’m going to map the existing `integrate`, payload, inventory, and CLI routing code next, then I’ll put the implementation plan in code terms.
+
+# gpt-5.5_2026-05-24_1714_55
+
+I’ve got the code shape now. The sensible implementation is not a one-liner wrapper around `integrate`, because import needs a copied working file and must avoid false `sflo:RdfDocument` typing for Markdown. I’m going to build a small `core/import` planner that shares the same registry shape and path rules, then a runtime layer that handles acquisition/digest/write semantics and CLI wiring.
+
+# gpt-5.5_2026-05-24_1716_52
+
+I’m going to start with the core planner. This is the piece that decides the RDF shape, so I’m being deliberately conservative: import gets its own `ImportSource`, records observations in `_knop/_sources`, and treats non-RDF payload bytes as `PayloadArtifact`/`DigitalArtifact` without claiming `RdfDocument`.
+
+# gpt-5.5_2026-05-24_1721_03
+
+Next I’m adding the runtime executor. This is where import earns its keep: local path/file URL/HTTP(S) acquisition, digest verification, deterministic observation timestamps for tests, and explicit overwrite behavior for the working file.
+
+# gpt-5.5_2026-05-24_1723_53
+
+The command is wired now at a first pass. I’m going to do a quick type check on the new files before writing tests; that usually catches the boring-but-important stuff early, especially around Deno fetch and optional exact property types.
+
+# gpt-5.5_2026-05-24_1724_41
+
+The shape is ready enough to test. I’m adding narrow tests now: core RDF rendering, inventory parsing for `ImportSource`, runtime local/file/HTTP acquisition, and one black-box CLI local import.
+
+# gpt-5.5_2026-05-24_1727_14
+
+The first test set is in place. I’m going to run the focused checks now; if anything is off, it’ll be in the exact edge cases we care about: source registry shape, type claims, digest checks, and CLI argument routing.
+
+# gpt-5.5_2026-05-24_1728_37
+
+The focused tests are green. I’m updating the user docs now so the command is described as implemented instead of planned, and I’m adding it to the main CLI reference and logging/environment notes.
+
+# gpt-5.5_2026-05-24_1731_10
+
+Docs are updated too, including the release note for the current version since this is no longer a “future acquisition” story. I’m going to run the focused import checks plus neighboring integrate/payload tests next, then I’ll widen out to lint/check/full tests.
+
+# gpt-5.5_2026-05-24_1731_33
+
+Focused and neighboring tests are green: import plus integrate/payload all passed. I’m moving to the repo-wide quality gates now; if those pass, I’ll update the task checklist and give you a clean commit message.
+
+# gpt-5.5_2026-05-24_1733_26
+
+Full `deno task test` passed: 519 tests, no failures. I’m doing a final diff/status pass now and then I’ll update the task checklist to reflect what landed.
+
+# gpt-5.5_2026-05-24_1734_29
+
+I’ve got the implementation landed and the full quality gate is green. I’m just bringing the task note into sync now so the archive reflects what actually shipped, then I’ll hand you the concise summary and commit wording.
+
+# gpt-5.5_2026-05-24_1734_42
+
+The import task note had a big checklist still in its pre-implementation state. I’m marking only the parts that actually landed in this slice and leaving fixture regeneration / Carol ladder deferred, since those are intentionally post-import work.
+
+# gpt-5.5_2026-05-24_1735_54
+
+I also gave `deno task dev:root` network permission so a source-tree run of `weave import https://...` can actually fetch; the tests still keep HTTP deterministic by injecting fetch rather than depending on the network. I’m rerunning the gate now after that small task/config sync.
+
+# gpt-5.5_2026-05-24_1737_04
+
+The full test suite passed again after the final config and task-note update. I’m doing one last diff/status pass now so the handoff names the actual file set cleanly.
+
+# gpt-5.5_2026-05-24_1738_32
+
+I noticed one checklist item was stronger than the test surface I had actually added: topology coverage. Rather than paper over that, I’m adding two small runtime tests now for docs-rooted sidecar and branch-style source/publication layouts, both still using the first-slice mesh-local destination contract.
+
+# gpt-5.5_2026-05-24_1738_53
+
+That brings the topology promise back into line: sidecar/docs-root and source/publication branch-style copies are covered without expanding the destination model beyond mesh-root-relative working files. Re-running formatting and the gate again.
+
+# gpt-5.5_2026-05-24_1741_08
+
+**Done**
+
+Implemented the first runnable `weave import` slice.
+
+What landed:
+- New core planner in [src/core/import/import.ts](../../../../../src/core/import/import.ts:96)
+- New runtime executor in [src/runtime/import/import.ts](../../../../../src/runtime/import/import.ts:70)
+- Top-level CLI command in [src/cli/run.ts](../../../../../src/cli/run.ts:883)
+- `ImportSource` inventory parsing in [src/runtime/mesh/inventory.ts](../../../../../src/runtime/mesh/inventory.ts:576)
+- Import docs/release note updates, plus the import task checklist sync
+
+Behavior covered:
+- local path, `file:`, and bounded HTTP(S) acquisition
+- mesh-root-relative `--working-file`
+- `--expected-digest`
+- `--replace-working`
+- `sflo:ImportSource` provenance with linked `sflo:ArtifactResolutionObservation`
+- no false `sflo:RdfDocument` typing for Markdown/non-RDF imports
+- no persisted host-absolute source paths for outside local sources
+- sidecar/docs-rooted and branch-style source/publication layouts for the current mesh-local destination model
+
+Validation is green:
+- `deno task fmt`
+- `deno task lint`
+- `deno task check`
+- `deno task test` → `521 passed | 0 failed`
+- `git diff --check`
+
+I did not rename the import task to completed. The fixture-ladder regen and Carol replacement ladder are still deferred, as planned.
+
+Suggested weave repo commit message:
+
+```text
+Add explicit weave import acquisition command
+
+- add core/runtime import planning for governed mesh-local working files, ImportSource provenance, observed digest observations, and replace-working refreshes
+- wire top-level CLI command with local/file/http acquisition, bounded fetches, expected-digest checks, and non-RDF payload typing
+- add ImportSource inventory parser support plus core, runtime, integration, and e2e coverage
+- document import semantics in CLI docs and release notes
+```
+
+For `weave-dev-archive`, commit just the task-note changes separately from the Kato/user-generated archive churn.
+
+# User_2026-05-24_1744_09
+
+OK, can't wait to prove all this out in the fixture regen-from-scratch.
+
+What do you think of the unfinished "Define a shared `ArtifactResolutionTarget` runtime resolver that returns the requested target plus observed state/manifestation/located-file/digest evidence." task from [wa.task.2026.2026-05-19_0022-lateststate-improvement.md](wa.task.2026.2026-05-19_0022-lateststate-improvement.md)
+
+# gpt-5.5_2026-05-24_1744_20
+
+I’ll take a fresh look at that task in context and check the current resolver/source-binding code shape before giving you an opinion. This feels like one of those spots where a shared abstraction could either clarify everything or become a small machinery museum, so I want to anchor it in the code that exists now.
+
+# gpt-5.5_2026-05-24_1744_28
+
+The note is more complete than the single unchecked box makes it look: page-source `latestState` already landed, but the shared resolver is still the bigger unification point. I’m checking that implementation path now, especially where it currently returns only enough evidence for page rendering.
+
+# gpt-5.5_2026-05-24_1744_54
+
+I think it’s a good unfinished task, and it got more important after the `ImportSource` / `IntegrationSource` work. But I would not let it block fixture regen-from-scratch unless the regen specifically wants to prove `latestState`.
+
+Right now we have the resolver idea scattered in three places:
+- page-source latest-state resolution lives privately in [page_definition.ts](../../../../../src/runtime/weave/page_definition.ts:752)
+- inventory parsing exposes `ImportSource`, `IntegrationSource`, extraction evidence, and payload latest-state bits in [inventory.ts](../../../../../src/runtime/mesh/inventory.ts:141)
+- extraction/source evidence computes observed state, manifestation, located file, and digest in [artifact_loaders.ts](../../../../../src/runtime/weave/artifact_loaders.ts:290)
+
+So the abstraction is real. The danger is making one giant “resolve anything from anywhere” function. I’d want a tighter shape: parse an `ArtifactResolutionTarget`-style binding into requested coordinates, resolve it under an explicit mode, and return structured evidence. Reading bytes should probably be a separate step or optional capability.
+
+Something like:
+
+```ts
+interface ArtifactResolutionRequest {
+  targetArtifactPath: string;
+  mode?: "working" | "latestState";
+  requestedHistoryPath?: string;
+  requestedStatePath?: string;
+  requestedManifestationPath?: string;
+  requestedLocatedFilePath?: string;
+  expectedContentDigest?: string;
+}
+
+interface ArtifactResolutionResult {
+  requested: ArtifactResolutionRequest;
+  observed: {
+    statePath?: string;
+    manifestationPath?: string;
+    locatedFilePath?: string;
+    localRelativePath?: string;
+    contentDigest?: string;
+    observedAt?: string;
+  };
+}
+```
+
+My opinion: keep this as a follow-up, but rename/reframe it a bit from “latestState improvement” to “shared artifact resolution runtime service.” `latestState` is one consumer, not the whole story anymore. Import should not use it to fetch remote sources; import is active acquisition. But import/integrate/extract/page-source should all be able to share the same vocabulary parsing and evidence model.
+
+For fixture regen: proceed without it unless we add the dedicated `latestState` fixture. The current regen’s more urgent proof is that import/integrate/source registries/observations round-trip cleanly. This resolver is the next cleanup that prevents those concepts from drifting apart.
+
+# User_2026-05-24_1748_09
+
+Take a look at [wa.task.2026.2026-05-17-append-onlyish-inventory.md](wa.task.2026.2026-05-17-append-onlyish-inventory.md) - Should we slip that in, or else... what's next?
+
+# gpt-5.5_2026-05-24_1748_21
+
+I’ll read that task and the nearby inventory/progression code shape before I recommend sequencing. Since the import work is still sitting as a fairly chunky uncommitted change set, I’m also going to factor “does this stack cleanly, or should it wait?” into the answer.
+
+# gpt-5.5_2026-05-24_1748_36
+
+I would not “slip in” append-onlyish inventory right now. It is not a small cleanup. It’s a storage contract migration: writers, readers, tests, fixtures, and the inventory/meta split all move together. If we jam it onto the import work, we risk making the fixture regen prove three things at once: import, source binding migration, and a new persistence model. That sounds like mud.
+
+My vote for next:
+
+1. **Commit the import work cleanly.**
+2. **Run the fixture regen-from-scratch to prove import + IntegrationSource/ImportSource + observations.**
+3. Add the small conformance-ish fixture work that is already waiting and local to regen, especially `latestState` if it slots naturally.
+4. Then tackle `append-onlyish inventory` as its own deliberate storage migration.
+
+The argument for doing append-onlyish before regen is real: it would avoid regenerating fixtures twice. But I think that’s false economy here. The task changes where `currentArtifactHistory`, `latestHistoricalState`, and progression facts live, and current tests still expect those facts in inventories in a lot of places. That’s a different order of blast radius than the import proof.
+
+What I might do now is update the append-onlyish task with a sequencing note: “defer until after import fixture regen; implement as a dedicated migration before the next fixture baseline reset.” Then next concrete work is fixture regen-from-scratch. That gives us a clean signal: if regen fails, it’s about the import/source-binding work, not an inventory storage rewrite hiding underneath.
+
+# User_2026-05-24_1752_21
+
+OK. last side quest: Why is artifact resolution runtime service helpful if we don't allow import of arbitrary URLs?
+
+# gpt-5.5_2026-05-24_1752_35
+
+It’s helpful because “artifact resolution” is mostly not URL fetching.
+
+The service would answer: given this `ArtifactResolutionTarget`-shaped thing, what concrete bytes/state did it resolve to? That includes:
+
+- `working`: read the current governed working file under local path policy.
+- `latestState`: find the latest settled `HistoricalState`, manifestation, and located file.
+- exact state/manifestation/file: resolve the pinned coordinate and optionally compute digest evidence.
+- repository-backed / floating source bindings: resolve through local repo policy, not live remote fetch.
+- import/integrate/extract/page-source evidence: produce one common observed state/file/digest structure.
+
+So even if we disallow arbitrary URL resolution everywhere except explicit `weave import`, the service still removes duplicated logic and keeps semantics sharp.
+
+The key split is:
+
+`weave import` = active acquisition. It may fetch an explicit URL, copy bytes into the mesh, and record the URL as provenance.
+
+artifact resolution service = runtime resolution of governed artifact coordinates. It should not decide “oh, here’s a URL, let’s fetch it.” For an `ImportSource`, `targetAccessUrl` is usually historical/acquisition evidence; the active bytes are the imported local working file or later settled states.
+
+So the service is less “URL loader” and more “truth table for working/latest/exact artifact coordinates.” It would make page sources, extraction sources, source registries, and raw source panels agree about what was requested, what was observed, and where digest evidence comes from.
+
+# User_2026-05-24_1753_55
+
+OK, fill out the task please.
+
+# gpt-5.5_2026-05-24_1754_07
+
+I’ll fill that new task note as the dedicated home for the shared resolver work, keeping it explicitly separate from import URL acquisition and from the already-completed latest-state slice.
+
+# gpt-5.5_2026-05-24_1754_11
+
+The new task is currently just a skeleton. I’m going to make it the coordination note for the resolver abstraction, with boundaries clear enough that future-us doesn’t accidentally turn it into a remote fetch subsystem.
+
+# gpt-5.5_2026-05-24_1755_44
+
+The task note is filled out now. I used it to pin the main boundary: the resolver is a governed-coordinate service, not a URL acquisition service.
+
+# gpt-5.5_2026-05-24_1755_47
+
+Filled out [wa.task.2026.2026-05-24_1748-shared-artifact-resolution-runtime-service.md](wa.task.2026.2026-05-24_1748-shared-artifact-resolution-runtime-service.md).
+
+I made the key boundary explicit: this service resolves governed artifact coordinates and observed evidence; it does not fetch arbitrary URLs. It also captures sequencing: don’t block import fixture regen, then use this as the cleanup step before broadening latest/exact resolution or doing the append-onlyish inventory migration.
+
+No tests run, since this was a task-note-only edit.
+
+# User_2026-05-24_1800_37
+
+Sorry, one more thing to address before regen. The mesh-alice-bio steps 20/21 we acknowledge were not previously about import, and they basically did something we don't recommend... dropping a loose markdown page into the mesh and using that as the content of an identifier's ResourcePage. 
+
+We were leaning to making 20/21 a test of "import" to import bob's bio. 
+
+I think 14-19 on the alice page are also problematic in this way. Sure, we might want to display alice's bio on the /alice page, but it should be as a content panel.
+
+Do we want a task for the from-scratch-regen that includes modified rungs here? I feel like maybe there is a task somewhere already.
+
+# gpt-5.5_2026-05-24_1800_49
+
+I’ll search the task archive for the Alice/Bob page-source fixture threads before deciding whether this should be a new task or fold into an existing regen task. My hunch is there’s already a nearby task, but the “14-19 should become content-panel-shaped” part may not be captured sharply yet.
+
+# gpt-5.5_2026-05-24_1800_59
+
+I found the nearby tasks. The import task already captures “make Bob 20/21 honest import,” and the custom ResourcePage shared-shell task captures Carol-as-rich authored content, but I don’t see the Alice 14-19 correction captured cleanly as a regen decision. I’m checking the actual 14-19 fixture shape once so the recommendation isn’t based on task-note vibes alone.
+
+# gpt-5.5_2026-05-24_1801_16
+
+There is a task close enough: `wa.task.2026.2026-05-23_2230-custom-resourcepage-shared-shell-fixture.md`. It was framed around Carol, but the thing you’re naming is the same product direction: custom ResourcePages should compose governed authored content as panels, not make identifier pages into loose Markdown pages. I’m going to update that task rather than spawn a second overlapping one.
+
+# gpt-5.5_2026-05-24_1801_51
+
+I folded it into the shared-shell/custom ResourcePage fixture task, because that is the cleanest existing home: import owns acquisition; this task now owns the page-composition correction for Alice/Bob. I’m checking the diff once so I can summarize exactly what changed.
+
+# gpt-5.5_2026-05-24_1802_04
+
+Yes, there was a close existing task: [wa.task.2026.2026-05-23_2230-custom-resourcepage-shared-shell-fixture.md](wa.task.2026.2026-05-23_2230-custom-resourcepage-shared-shell-fixture.md).
+
+I updated it rather than creating a new overlapping task. It now explicitly says:
+
+- Alice `14-19` should be corrected during from-scratch regen so `/alice` uses governed `alice/page-main` as an authored content panel source, not loose `alice/alice.md` as the page body.
+- Bob `20/21` should become real import-backed `bob/page-main` rungs, with `ImportSource` provenance and observed digest evidence.
+- The import task owns acquisition/provenance; this shared-shell/custom ResourcePage task owns page-composition semantics.
+- The old loose Markdown page-source rungs are historical, not recommended modeling.
+
+No tests run, just task-note bookkeeping.
+
+# User_2026-05-24_1809_47
+
+We've landed fixture-helper generalization, we can mark that complete. Let's also do delete of all the original (non-a.*) branches before anything else.
+
+Any other updates to that task? New conversation?
+
+# gpt-5.5_2026-05-24_1809_57
+
+I’ll treat “original non-a.* branches” as the old numbered fixture branch refs in the fixture mesh repos, preserving `main`, `gh-pages`, and the regenerated `a.*` branches. I’ll update the task note too, then report exactly what was deleted.
+
+# gpt-5.5_2026-05-24_1810_20
+
+The old non-`a.*` refs are present remotely in `mesh-alice-bio` and `mesh-sidecar-fantasy-rules`; `mesh-branch-fantasy-rules` already only has `a.*`, `main`, and `gh-pages`. I’m deleting the old remote numbered branches in the two affected repos, then I’ll prune and verify.
+
+# gpt-5.5_2026-05-24_1810_36
+
+Remote deletion succeeded for Alice Bio and Sidecar Fantasy Rules. I’m pruning/verifying the branch lists now and marking the fixture-helper generalization item complete in the task note, plus recording the branch cleanup so it’s not tribal memory.
+
+# gpt-5.5_2026-05-24_1811_05
+
+Done.
+
+Deleted the original non-`a.*` remote fixture branches from:
+- `mesh-alice-bio`: old `00-...` through `25-...`
+- `mesh-sidecar-fantasy-rules`: old `00-...` through `15-...`
+
+Verified after prune:
+- Alice remote now has only `a.*` + `main`
+- Sidecar remote now has only `a.*` + `main`
+- Branch-published remote already had only `a.*` + `main`/`gh-pages`
+
+Updated [wa.task.2026.2026-05-23_2230-custom-resourcepage-shared-shell-fixture.md](wa.task.2026.2026-05-23_2230-custom-resourcepage-shared-shell-fixture.md):
+- marked fixture-helper generalization complete
+- marked branch cleanup complete
+- marked enough `weave import` behavior landed
+- recorded the remote branch cleanup as a decision
+
+No tests run; this was branch cleanup plus task-note bookkeeping.
+
+For regen itself, I’d start a new conversation. We’re at a good boundary now: import implementation is done, cleanup branches are gone, and the regen task shape is clearer.
+
+# User_2026-05-24_1813_04
+
+weave-dev-archive commit mesg
+
+# gpt-5.5_2026-05-24_1813_10
+
+I’ll check the archive repo status so the commit message matches the note changes actually sitting there, not just the last task edit.
+
+# gpt-5.5_2026-05-24_1813_20
+
+```text
+docs(tasks): record import and fixture regen preparation
+
+- mark import implementation work complete and capture ImportSource/IntegrationSource follow-up learnings
+- move completed latest-state and integrate source-binding task notes into completed status
+- add shared artifact-resolution runtime service task for future resolver consolidation
+- expand custom ResourcePage fixture task with Alice/Bob governed-content corrections for from-scratch regen
+- record fixture-helper generalization and old non-a fixture branch cleanup
+- update related ontology/artifact-resolution and inventory follow-up task notes
+```

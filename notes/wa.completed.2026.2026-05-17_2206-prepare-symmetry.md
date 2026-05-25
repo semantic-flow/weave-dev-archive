@@ -95,7 +95,7 @@ No open issues remain in this task. The remaining work is tracked elsewhere:
 
 - remove-prepare implementation and deferred work: [[wa.completed.2026.2026-05-18_0627-remove-prepare]]
 - manifest-driven integrate: [[wa.task.2026.2026-05-18_1846-integrate-manifest]]
-- latest-state page-source/runtime improvement: [[wa.task.2026.2026-05-19_0022-lateststate-improvement]]
+- latest-state page-source/runtime improvement: [[wa.completed.2026.2026-05-19_0022-lateststate-improvement]]
 
 ## Decisions
 

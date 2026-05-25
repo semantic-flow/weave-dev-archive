@@ -97,7 +97,7 @@ For CI/CD, rerunning publication should be safe because the command either sees 
 
 ## Contract Changes
 
-- `weave version` must not rewrite an inventory file when it has no new settled facts to append.
+- `weave version` must not rewrite an inventory file when it has no new settled facts to append. This does not block an explicit versioning request from appending a new named HistoricalState even when source bytes are unchanged, such as when `weave set next-state` or `--payload-state-segment` supplies the next state name; in that case the new state membership is itself the new settled fact.
 - `weave` must not rewrite an inventory file merely because the renderer can produce a prettier or more complete canonical block.
 - `weave generate` must not remove existing inventory ResourcePage facts as a side effect of page generation policy; it should append new page facts only when the policy says the page surface is materialized or promised.
 - Composed branch-published release operations must be idempotent for unchanged source bytes, source metadata, target designator, target `releases/<version>` state, and config.

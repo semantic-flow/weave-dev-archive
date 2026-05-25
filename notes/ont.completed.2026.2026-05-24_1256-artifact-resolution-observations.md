@@ -187,7 +187,7 @@ Normal `weave`, `generate`, and page rendering should not append observation rec
 - Add `ReferenceSource`, `ImportSource`, and `IntegrationSource` as `ArtifactResolutionTarget` subclasses; keep existing `ExtractionSource` and `ResourcePageSource` aligned with the same pattern.
 - Track ReferenceLink-specific behavior in [[wa.task.2026.2026-05-22_1128-referencelink-clarification]].
 - Track import command behavior in [[wa.task.2026.2026-05-21_0907-import]].
-- Track integrate source-binding migration in [[wa.task.2026.2026-05-24_1301-integrate-source-binding-update]]; `IntegrationSource` should be added here, but rewriting all integrate output belongs there unless the same implementation pass naturally touches it.
+- Track integrate source-binding migration in [[wa.completed.2026.2026-05-24_1301-integrate-source-binding-update]]; `IntegrationSource` should be added here, but rewriting all integrate output belongs there unless the same implementation pass naturally touches it.
 - Track cross-cutting subclass follow-through in [[wa.task.2026.2026-05-24_1648-ArtifactResolutionTarget-subclass-cleanup]].
 
 ## Implementation Progress
@@ -201,9 +201,9 @@ Normal `weave`, `generate`, and page rendering should not append observation rec
 - Remaining follow-through:
   - use [[wa.task.2026.2026-05-24_1648-ArtifactResolutionTarget-subclass-cleanup]] as the cross-cutting ledger for source-family cleanup
   - rename public/core/runtime `knop add-reference` request terminology from reference target to reference source
-  - migrate integrate output to `IntegrationSource` (done in [[wa.task.2026.2026-05-24_1301-integrate-source-binding-update]])
+  - migrate integrate output to `IntegrationSource` (done in [[wa.completed.2026.2026-05-24_1301-integrate-source-binding-update]])
   - implement import provenance as `ImportSource` plus `ArtifactResolutionObservation`
-  - update Semantic Flow Framework API/spec/conformance manifests to stop asserting retired ReferenceLink and observed-source predicates; defer this until both integrate source binding and import provenance land so fixture mesh regeneration can happen in one pass
+  - update Semantic Flow Framework API/spec/conformance manifests to stop asserting retired ReferenceLink and observed-source predicates; defer this until import provenance lands so fixture mesh regeneration can happen in one pass after both source-family migrations are available
   - regenerate fixture branches from scratch after manifests are updated
 
 ## Contract Changes
@@ -256,9 +256,9 @@ Normal `weave`, `generate`, and page rendering should not append observation rec
 - [x] Update SFLO core ontology with `ArtifactResolutionObservation`, `hasResolutionObservation`, generic observed target/content properties, and the missing source subclasses.
 - [x] Update SFLO SHACL for observations and source subclass constraints.
 - [x] Update SFLO notes and decision log.
-- [d] Update Semantic Flow Framework specs/manifests for extraction observation shape. Deferred until integrate source binding and import provenance both land, so fixture meshes can be regenerated in one pass.
+- [d] Update Semantic Flow Framework specs/manifests for extraction observation shape. Deferred until import provenance lands, so fixture meshes can be regenerated in one pass after both source-family migrations are available.
 - [x] Update Weave extraction rendering/parsing and focused tests.
 - [x] Update ReferenceLink and import task notes if implementation details change during the ontology pass.
-- [x] Coordinate with [[wa.task.2026.2026-05-24_1301-integrate-source-binding-update]] if the implementation pass does not update integrate output to `IntegrationSource`.
+- [x] Coordinate with [[wa.completed.2026.2026-05-24_1301-integrate-source-binding-update]] if the implementation pass does not update integrate output to `IntegrationSource`.
 - [x] Run relevant ontology validation and Weave focused tests.
 - [x] Provide commit messages per touched repo.

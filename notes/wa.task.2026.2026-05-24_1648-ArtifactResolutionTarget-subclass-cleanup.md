@@ -43,7 +43,7 @@ This task should track cross-cutting cleanup, naming consistency, parser/API sha
 
 Concrete implementation homes:
 
-- `IntegrationSource`: [[wa.task.2026.2026-05-24_1301-integrate-source-binding-update]]
+- `IntegrationSource`: [[wa.completed.2026.2026-05-24_1301-integrate-source-binding-update]]
 - `ImportSource`: [[wa.task.2026.2026-05-21_0907-import]]
 - `ReferenceSource`: [[wa.task.2026.2026-05-22_1128-referencelink-clarification]]
 - observations and core vocabulary: [[ont.completed.2026.2026-05-24_1256-artifact-resolution-observations]]
@@ -57,7 +57,7 @@ This task should answer the shared questions those concrete tasks should not eac
 - `ExtractionSource`: RDF bytes used to ground or extract a Knop-managed resource. Already moved to nested observations in Weave, but internal parser field names still expose `observedSource*`.
 - `ReferenceSource`: RDF data used by a `ReferenceLink`. Live RDF shape now uses `ReferenceLink` -> `hasReferenceSource` -> `ReferenceSource`, but user-facing/core request names still need to move away from "reference target" where they mean source.
 - `ResourcePageSource`: bytes used for a resource-page region. This is the likely home for non-RDF page prose when the bytes are already governed or resolved locally; it is not a substitute for import provenance.
-- `IntegrationSource`: existing source bytes registered where they already live by `weave integrate`. This is the next implementation step.
+- `IntegrationSource`: existing source bytes registered where they already live by `weave integrate`. This has landed and should be the pattern import follows.
 - `ImportSource`: outside/current source bytes actively acquired and copied into a governed working surface by `weave import`. This should follow the integrate migration so both share source-registry plumbing.
 
 ### Source registry shape
@@ -85,7 +85,7 @@ Examples:
 
 ### Fixture sequencing
 
-The fixture/conformance update should wait until both integrate source binding and import provenance land. Otherwise the framework fixture meshes will churn through several incompatible intermediate shapes.
+The fixture/conformance update should wait until import provenance lands. Integrate source binding has landed, so import is now the remaining source-family gate before framework fixture meshes should churn.
 
 Until then, Weave may keep narrow fixture normalization for old checked-in fixture branches, but that bridge should be removed in the fixture-regeneration pass.
 
@@ -100,8 +100,8 @@ Until then, Weave may keep narrow fixture normalization for old checked-in fixtu
 ## Decisions
 
 - Use concrete subclasses for known Weave source roles rather than emitting bare `ArtifactResolutionTarget` records.
-- Land `IntegrationSource` migration before `ImportSource` provenance.
-- Defer Semantic Flow Framework fixture mesh regeneration until integrate source binding and import provenance both land.
+- Land `IntegrationSource` migration before `ImportSource` provenance; this ordering has been satisfied.
+- Defer Semantic Flow Framework fixture mesh regeneration until import provenance lands.
 - Keep `target*` property names inside `ArtifactResolutionTarget`; clean up confusing "target" names at the operation/API boundary.
 - Keep temporary fixture normalization narrow and explicitly removable.
 
@@ -109,15 +109,15 @@ Until then, Weave may keep narrow fixture normalization for old checked-in fixtu
 
 - Weave:
   - Audit source-registry rendering/parsing for generic `ArtifactResolutionTarget` assumptions.
-  - Move `weave integrate` output to `sflo:IntegrationSource`.
-  - Implement `weave import` provenance as `sflo:ImportSource` after integrate lands.
+  - Keep completed `weave integrate` output aligned with `sflo:IntegrationSource`.
+  - Implement `weave import` provenance as `sflo:ImportSource` using the completed integrate source-registry pattern.
   - Rename public/core/runtime ReferenceLink request terminology from reference target to reference source where the RDF source is meant.
   - Decide whether to rename internal observed-evidence parser fields or keep compatibility wrappers.
 - SFLO:
   - Consider SHACL guidance for `KnopSourceRegistry` `hasSourceBinding` values after concrete Weave output has moved to subclasses.
   - Consider whether `hasExtractionSource` remains separate from `hasSourceBinding`.
 - Semantic Flow Framework:
-  - Regenerate fixture meshes and conformance manifests after integrate and import both land.
+  - Regenerate fixture meshes and conformance manifests after import lands.
   - Remove stale `referenceTarget`, `referenceTargetState`, `referenceUriLiteral`, and direct observed-source predicates from active fixture expectations.
 - Documentation:
   - Update user/developer docs so `integrate`, `import`, `ReferenceLink`, and page-source wording uses source terminology consistently.
@@ -132,24 +132,24 @@ Until then, Weave may keep narrow fixture normalization for old checked-in fixtu
 
 ## Non-Goals
 
-- Do not implement `weave integrate`; use [[wa.task.2026.2026-05-24_1301-integrate-source-binding-update]].
+- Do not implement `weave integrate`; that landed in [[wa.completed.2026.2026-05-24_1301-integrate-source-binding-update]].
 - Do not implement `weave import`; use [[wa.task.2026.2026-05-21_0907-import]].
 - Do not redesign the full content-kind/media-type model for Markdown, HTML, images, or arbitrary binary payloads.
 - Do not make `ReferenceLink` support non-RDF reference data in this cleanup.
 - Do not make ordinary page rendering, source reads, or reference resolution append observations.
-- Do not regenerate Semantic Flow Framework fixtures until integrate source binding and import provenance both land.
+- Do not regenerate Semantic Flow Framework fixtures until import provenance lands.
 - Do not rename this task note to a completed note unless explicitly requested.
 
 ## Implementation Plan
 
-- [ ] Re-read [[wd.general-guidance]], [[ont.completed.2026.2026-05-24_1256-artifact-resolution-observations]], [[wa.task.2026.2026-05-24_1301-integrate-source-binding-update]], [[wa.task.2026.2026-05-21_0907-import]], and [[wa.task.2026.2026-05-22_1128-referencelink-clarification]] before editing code.
+- [ ] Re-read [[wd.general-guidance]], [[ont.completed.2026.2026-05-24_1256-artifact-resolution-observations]], [[wa.completed.2026.2026-05-24_1301-integrate-source-binding-update]], [[wa.task.2026.2026-05-21_0907-import]], and [[wa.task.2026.2026-05-22_1128-referencelink-clarification]] before editing code.
 - [ ] Inventory Weave source-registry and ReferenceCatalog parser/rendering APIs that still treat known source concerns as generic `ArtifactResolutionTarget` records.
-- [x] Land [[wa.task.2026.2026-05-24_1301-integrate-source-binding-update]].
+- [x] Land [[wa.completed.2026.2026-05-24_1301-integrate-source-binding-update]].
 - [ ] Land import provenance from [[wa.task.2026.2026-05-21_0907-import]] using the settled source-registry shape.
 - [ ] Finish ReferenceLink API/CLI terminology cleanup from [[wa.task.2026.2026-05-22_1128-referencelink-clarification]].
 - [ ] Decide whether to rename internal observed-evidence parser fields or keep compatibility wrappers.
 - [ ] Decide whether SHACL should constrain `KnopSourceRegistry` source bindings to concrete source subclasses.
-- [ ] Regenerate Semantic Flow Framework fixture meshes and manifests after integrate/import land.
+- [ ] Regenerate Semantic Flow Framework fixture meshes and manifests after import lands.
 - [ ] Remove temporary fixture normalization code once canonical fixtures use the new source-family shapes.
 - [ ] Run relevant Weave, SFLO, and framework checks for the touched repos.
 - [ ] Provide commit messages per repo.

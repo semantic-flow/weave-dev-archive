@@ -130,4 +130,4 @@ Appending avoids renumbering the existing `20` through `25` Bob/root-page rungs.
 - [ ] Update focused fixture-ladder tests for plan order, materialized assets, and replay expectations.
 - [ ] Run focused fixture-ladder tests.
 - [ ] Regenerate the Alice Bio ladder during the next broader fixture regeneration pass.
-- [ ] Update [[wa.task.2026.2026-05-19_0022-lateststate-improvement]] when the conformance fixture lands.
+- [ ] Update [[wa.completed.2026.2026-05-19_0022-lateststate-improvement]] when the conformance fixture lands.
