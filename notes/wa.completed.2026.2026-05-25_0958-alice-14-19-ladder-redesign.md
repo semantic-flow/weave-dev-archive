@@ -149,13 +149,21 @@ This task should not add the references panel or all generated panels page-by-pa
 
 ## Implementation Plan
 
-- [ ] Update `scripts/fixture-ladder.ts` so Alice Bio rung `14` imports `alice/bio` and integrates `sidebar`, rung `15` weaves them, rung `16` defines Alice's artifact-backed custom page, rung `17` weaves Alice's page, rung `18` integrates `favicon.ico`, and rung `19` weaves `favicon`.
-- [ ] Add fixture assets for the reordered rungs, including `mesh-content/sidebar.md`, `alice/_knop/_page/page.ttl`, `alice/_knop/_assets/alice.css`, and `favicon.ico`; the Alice bio Markdown should come through `weave import` rather than a manual file drop.
-- [ ] Add or update integrate support for non-RDF payload artifacts so `favicon.ico` is not typed as `sflo:RdfDocument`.
-- [ ] Add or update weave support for non-RDF payload histories and manifestations.
-- [ ] Rewrite Alice Bio conformance manifests `14` through `19` to match the reordered story.
-- [ ] Update Alice Bio conformance README/story text for the new `14` through `19` sequence.
-- [ ] Regenerate local Alice Bio fixture branches `a.14` through at least `a.27` so later rungs build on the corrected chain.
-- [ ] Update Weave fixture-backed tests that read `14` through `19`.
-- [ ] Run focused core/runtime tests for integrate, weave, ResourcePage rendering, and fixture ladder validation.
-- [ ] Update [[wa.task.2026.2026-05-23_2230-custom-resourcepage-shared-shell-fixture]] once this task supersedes its remaining Alice `14` through `19` checkbox.
+- [x] Update `scripts/fixture-ladder.ts` so Alice Bio rung `14` imports `alice/bio` and integrates `sidebar`, rung `15` weaves them, rung `16` defines Alice's artifact-backed custom page, rung `17` weaves Alice's page, rung `18` integrates `favicon.ico`, and rung `19` weaves `favicon`.
+- [x] Add fixture assets for the reordered rungs, including `mesh-content/sidebar.md`, `alice/_knop/_page/page.ttl`, `alice/_knop/_assets/alice.css`, and `favicon.ico`; the Alice bio Markdown should come through `weave import` rather than a manual file drop.
+- [x] Add or update integrate support for non-RDF payload artifacts so `favicon.ico` is not typed as `sflo:RdfDocument`.
+- [x] Add or update weave support for non-RDF payload histories and manifestations.
+- [x] Rewrite Alice Bio conformance manifests `14` through `19` to match the reordered story.
+- [x] Update Alice Bio conformance README/story text for the new `14` through `19` sequence.
+- [x] Regenerate local Alice Bio fixture branches `a.14` through at least `a.27` so later rungs build on the corrected chain.
+- [x] Update Weave fixture-backed tests that read `14` through `19`.
+- [x] Run focused core/runtime tests for integrate, weave, ResourcePage rendering, and fixture ladder validation.
+- [x] Update [[wa.task.2026.2026-05-23_2230-custom-resourcepage-shared-shell-fixture]] once this task supersedes its remaining Alice `14` through `19` checkbox.
+
+## Implementation Notes
+
+- Landed the reordered `14` through `19` story with `alice/bio`, `sidebar`, artifact-backed Alice page definition, and governed `favicon.ico`.
+- Carried the downstream local fixture refs through `a.27-carol-woven` so the ladder remains linear after `20` now starts from `19-favicon-woven`.
+- Added non-RDF payload typing and binary snapshot handling for integrate/weave while keeping RDF Turtle payloads typed as `sflo:RdfDocument`.
+- Updated the conformance story for the new mesh inventory ordinals introduced by favicon and Carol's later nested `carol/data` weave.
+- Validation run: `deno task check`; `deno test --allow-read --allow-env --allow-run=git src/core/integrate/integrate_test.ts`; `deno test --allow-read --allow-env --allow-run=git src/core/weave/weave_test.ts`; `deno test --allow-read --allow-write --allow-run=git,deno --allow-env tests/scripts/fixture_ladder_test.ts`; `deno task fixture:ladder --scenario alice-bio --check-scenario-index`; executed and validated `14-alice-bio-imported` through `27-carol-woven`.
