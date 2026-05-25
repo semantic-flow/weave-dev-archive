@@ -1,18 +1,23 @@
 ---
 id: implement-import-83i0o0
-title: 'implement import'
+title: implement import
 desc: ''
-created: 1779652480365
 updated: 1779652480365
-participants: [codex.gpt-5.5]
-conversationEventKinds: [message.assistant, message.user, tool.call, tool.result]
+created: 1779652480365
+participants:
+  - codex.gpt-5.5
+conversationEventKinds:
+  - message.assistant
+  - message.user
+  - tool.call
+  - tool.result
 ---
 
 # User_2026-05-24_0930_14
 
 implement import
 
-Please review [[wa.task.2026.2026-05-21_0907-import]] and let me know if we're ready to start implementation. One thing I'm not sure we captured is the difference between payload update and repeated import with the overwrite flag, which I can't find.
+Please review [[wa.completed.2026.2026-05-21_0907-import]] and let me know if we're ready to start implementation. One thing I'm not sure we captured is the difference between payload update and repeated import with the overwrite flag, which I can't find.
 
 # gpt-5.5_2026-05-24_0930_26
 
@@ -463,7 +468,7 @@ regarding open issues:
 - yes, exactly one
 - I think runtime support for in-local-mesh rdf artifacts is fine for now. We'll need some kind of specification for which reference data to incorporate into a ResourcePage, but I don't think we have that yet. It can come later.
 - referenceUriLiteral canb be removed immediately, fixture will have their manifests updated and then complete from-scratch will run.
-- Yes, I think ImportSource is good, can you update [[wa.task.2026.2026-05-21_0907-import]] ? Probably integrate should too?
+- Yes, I think ImportSource is good, can you update [[wa.completed.2026.2026-05-21_0907-import]] ? Probably integrate should too?
 
 # gpt-5.5_2026-05-24_1235_45
 

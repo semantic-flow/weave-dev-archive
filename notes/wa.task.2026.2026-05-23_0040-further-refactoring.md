@@ -25,7 +25,7 @@ The main shape: split large tests into topic-oriented files, extract repeated fi
 
 We chose not to refactor tests aggressively during the production extraction because the existing fixture and integration tests were serving as the behavioral oracle. That was the right tradeoff during move-only work: changing the tests and production code at the same time would have made fixture drift harder to interpret.
 
-Now that the first extraction wave is released, test cleanup becomes more attractive. The current tests are valuable but heavy: `src/core/weave/weave_test.ts`, `tests/integration/weave_test.ts`, and `tests/scripts/fixture_ladder_test.ts` each cover multiple behavioral layers. Future work such as [[wa.task.2026.2026-05-22_2253-resourcepage-config-and-templating]], [[wa.task.2026.2026-05-21_0907-import]], and [[wa.task.2026.2026-05-22_2308-fixture-helper-generalization]] will be easier if the tests expose smaller named helpers and more local assertions.
+Now that the first extraction wave is released, test cleanup becomes more attractive. The current tests are valuable but heavy: `src/core/weave/weave_test.ts`, `tests/integration/weave_test.ts`, and `tests/scripts/fixture_ladder_test.ts` each cover multiple behavioral layers. Future work such as [[wa.task.2026.2026-05-22_2253-resourcepage-config-and-templating]], [[wa.completed.2026.2026-05-21_0907-import]], and [[wa.task.2026.2026-05-22_2308-fixture-helper-generalization]] will be easier if the tests expose smaller named helpers and more local assertions.
 
 The production side has similar pressure. `src/runtime/weave/pages.ts` still mixes page model collection, panel construction, HTML escaping/rendering, built-in CSS, and some template-like behavior. `scripts/fixture-ladder.ts` mixes scenario definitions, CLI parsing, plan rendering, materialization/execution, git branch updates, and guardrail evaluation. These are not emergency problems, but they are the places future functionality will repeatedly touch.
 
@@ -66,7 +66,7 @@ The broad preference is conservative: extract cohesive modules when they let a f
 ## Non-Goals
 
 - Do not redesign ResourcePage presentation config here; that belongs to [[wa.task.2026.2026-05-22_2253-resourcepage-config-and-templating]].
-- Do not implement `weave import` here; that belongs to [[wa.task.2026.2026-05-21_0907-import]].
+- Do not implement `weave import` here; that belongs to [[wa.completed.2026.2026-05-21_0907-import]].
 - Do not replace Alice Bio-specific or fixture-ladder production helpers here except as part of [[wa.task.2026.2026-05-22_2308-fixture-helper-generalization]].
 - Do not remove broad integration coverage just because lower-level tests exist.
 - Do not rename completed/task notes as part of this placeholder unless explicitly requested.

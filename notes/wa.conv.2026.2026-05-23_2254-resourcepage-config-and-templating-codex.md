@@ -1,11 +1,16 @@
 ---
 id: resourcepage-config-and-aboi99
-title: 'ResourcePage config and templating'
+title: ResourcePage config and templating
 desc: ''
-created: 1779602075572
 updated: 1779602075572
-participants: [codex.gpt-5.5]
-conversationEventKinds: [message.assistant, message.user, tool.call, tool.result]
+created: 1779602075572
+participants:
+  - codex.gpt-5.5
+conversationEventKinds:
+  - message.assistant
+  - message.user
+  - tool.call
+  - tool.result
 ---
 
 # User_2026-05-23_0758_15
@@ -1078,7 +1083,7 @@ Doesn't have to be a complete task, but let's capture  the design backlog and ot
 
 Then let me know you recommended next steps. Fixture ladders around custom config or identifier pages that keep the rest of the look and feel. We could get creative.
 
-Then eventually [[wa.task.2026.2026-05-22_2308-fixture-helper-generalization]] and [[wa.task.2026.2026-05-21_0907-import]]
+Then eventually [[wa.task.2026.2026-05-22_2308-fixture-helper-generalization]] and [[wa.completed.2026.2026-05-21_0907-import]]
 
 # gpt-5.5_2026-05-23_2201_21
 

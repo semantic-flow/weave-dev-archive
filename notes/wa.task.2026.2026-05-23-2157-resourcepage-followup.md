@@ -11,7 +11,7 @@ created: 1779598665624
 - Capture the ResourcePage design backlog left after [[wa.task.2026.2026-05-22_2253-resourcepage-config-and-templating]] without pretending it is all one implementation slice.
 - Preserve the ideas around reusable panel/config sets, low-impact panels, RDF-described default template/style artifacts, external templates, and richer fixture coverage.
 - Identify useful next steps for fixture ladders that prove custom ResourcePage config and custom identifier pages can keep the Semantic Site look and feel while changing content or panel composition.
-- Keep this follow-up distinct from [[wa.task.2026.2026-05-22_2308-fixture-helper-generalization]] and [[wa.task.2026.2026-05-21_0907-import]], while making the likely sequencing clear.
+- Keep this follow-up distinct from [[wa.task.2026.2026-05-22_2308-fixture-helper-generalization]] and [[wa.completed.2026.2026-05-21_0907-import]], while making the likely sequencing clear.
 
 ## Summary
 
@@ -114,7 +114,7 @@ Recommended fixture ladder shape:
 
 [[wa.task.2026.2026-05-22_2308-fixture-helper-generalization]] should probably come before broad new fixture ladder expansion. The current fixture helpers still carry Alice Bio assumptions, and adding several ResourcePage variants before generalizing them may make the old fixture machinery harder to unwind.
 
-[[wa.task.2026.2026-05-21_0907-import]] is a later, larger workflow task. It becomes especially relevant when custom page Markdown or ResourcePage sources should be acquired into governed local working files instead of being directly integrated from an external checkout or URL. It should not block a first custom ResourcePage fixture, but it may be the right follow-up once we want imported Markdown/page-source examples.
+[[wa.completed.2026.2026-05-21_0907-import]] is a later, larger workflow task. It becomes especially relevant when custom page Markdown or ResourcePage sources should be acquired into governed local working files instead of being directly integrated from an external checkout or URL. It should not block a first custom ResourcePage fixture, but it may be the right follow-up once we want imported Markdown/page-source examples.
 
 [[wa.task.2026.2026-05-19_2349-branch-based-workingfile-fix]] remains relevant for branch-published ResourcePage fixtures. If a fixture reads custom page content or RDF sources from a source checkout while publishing to another branch, the durable source locator must not degrade back into host-local or sibling-worktree paths.
 
@@ -169,4 +169,4 @@ Recommended fixture ladder shape:
 - [ ] Implement tests for whichever small slice is chosen before adding ladder-wide fixture expectations.
 - [ ] If generated HTML changes, regenerate only the affected fixture ladder rungs and document the reason.
 - [ ] Revisit [[wa.task.2026.2026-05-22_2308-fixture-helper-generalization]] before expanding custom ResourcePage fixture coverage.
-- [ ] Revisit [[wa.task.2026.2026-05-21_0907-import]] when examples need explicit acquisition/localization of custom page Markdown or other page-source bytes.
+- [ ] Revisit [[wa.completed.2026.2026-05-21_0907-import]] when examples need explicit acquisition/localization of custom page Markdown or other page-source bytes.

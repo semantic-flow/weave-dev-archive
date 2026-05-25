@@ -564,3 +564,300 @@ Pushes completed. I’m doing one final status sweep across the repos so I can t
 # gpt-5.5_2026-05-24_2205_21
 
 There’s one newly exported Kato conversation note in `weave-dev-archive` that appeared after the push sweep: `wa.conv.2026.2026-05-24_2204-weave-shared-shell-fixture-codex.md`. Since you asked me to take care of all committing/pushing, I’m going to commit and push that archive note too.
+
+# User_2026-05-24_2205_23
+
+Sorry, I meant for the ladder fixtures.
+
+# gpt-5.5_2026-05-24_2205_45
+
+Got it. For the ladder fixtures specifically:
+
+- Working folder: `/home/djradon/hub/semantic-flow/weave`
+- `mesh-alice-bio`: pushed all `b.*` fixture branches, `b.00` through `b.25` are on `origin` now.
+- Verified remote has `26` `b.*` branches.
+- `weave` `next/v0.2.0` is pushed.
+- `semantic-flow-framework` is already clean/up to date.
+- `mesh-alice-bio` is clean.
+
+I did briefly interpret “all” too broadly and committed/pushed the Kato conversation note in `weave-dev-archive`. After your clarification, I won’t touch the archive conversation export further. Current archive status has that conversation note modified again locally, likely Kato continuing to append.
+
+# User_2026-05-24_2206_00
+
+Definitely don't worry about weave-dev-archive... you're generating conversations into there, so it's often dirty.
+
+# gpt-5.5_2026-05-24_2206_07
+
+Understood. I’ll treat `weave-dev-archive` conversation exports as ambient/Kato noise unless you explicitly ask me to commit archive notes.
+
+For this round, the fixture branches are the important bit: `mesh-alice-bio` has `b.00` through `b.25` pushed, and the ladder code on `weave` is pushed too.
+
+# User_2026-05-24_2208_46
+
+OK, merge the latest to main
+
+# gpt-5.5_2026-05-24_2209_03
+
+I’ll treat “latest” here as the latest Alice fixture rung, `b.25-root-page-customized-woven`, and merge that into `mesh-alice-bio/main`. I’ll check ancestry/status first so we can fast-forward if possible and avoid making a weird merge commit.
+
+# gpt-5.5_2026-05-24_2209_31
+
+`main` and `b.25` are not in a fast-forward relationship because `b.00` was intentionally seeded as a new ladder base. I’m going to make a real merge commit on `mesh-alice-bio/main` whose tree is exactly `b.25-root-page-customized-woven`, with parents `main` and `b.25`, then push `main`. That preserves both histories and publishes the latest generated rung as the live branch.
+
+# gpt-5.5_2026-05-24_2209_44
+
+`mesh-alice-bio/main` is pushed to merge commit `d5d145d`, with the live tree matching `b.25`. I’m doing a final sanity check that `main` and `b.25` have the same tree and that the repo is clean.
+
+# gpt-5.5_2026-05-24_2209_55
+
+Merged the latest fixture rung to `mesh-alice-bio/main` and pushed it.
+
+Details:
+- Repo: `/home/djradon/hub/semantic-flow/weave/dependencies/github.com/semantic-flow/mesh-alice-bio`
+- Latest rung: `b.25-root-page-customized-woven`
+- New `main` commit: `d5d145d Publish regenerated Alice Bio fixture ladder`
+- Pushed: `origin/main`
+- Verified `main^{tree}` equals `b.25-root-page-customized-woven^{tree}`.
+
+`mesh-alice-bio` is clean. `weave` is clean. `weave-dev-archive` still has the live Kato conversation export modified, which I’m ignoring per your instruction.
+
+# User_2026-05-24_2221_05
+
+Delightful. Amazing. All our hard work is paying off.  Couple things:
+
+- let's turn on the "semantic flow support artifacts panel." for this mesh and all fixture meshes. (Is there a list of panels in the docs somewhere?) No need to regenerate old rungs. 
+- let's add "foaf:name" to list of things which can be used for the title. 
+- why is "ResourcePageDefinition" being displayed on https://semantic-flow.github.io/mesh-alice-bio and https://semantic-flow.github.io/mesh-alice-bio/alice -- I don't think I asked for that. If anything that would be in the SF panel. Also the link goes to https://semantic-flow.github.io/_knop/_page instead of
+
+# gpt-5.5_2026-05-24_2221_18
+
+That is a very nice milestone. I’ll take these as fixture/page-renderer follow-ups: enable the support-artifacts panel going forward, broaden title extraction to `foaf:name`, and fix or remove that stray `ResourcePageDefinition` display/link so it only belongs in the SF/support context. I’m going to inspect the panel/title code and the generated Alice output before editing.
+
+# gpt-5.5_2026-05-24_2221_31
+
+I found the page list in code: defaults include `children`, `properties`, `blankNodes`, `references`, `currentLinks`, `knopArtifacts`, `factSections`, `rawSource`, `history`, and `semanticFlowMetadata`. The user docs describe panels generally but don’t appear to have a tidy list yet, so I’ll add one while I’m in here. The `ResourcePageDefinition` row is coming from the custom-page metadata table, not a generated panel, and the relative link is indeed fragile for extensionless GitHub Pages URLs.
+
+# gpt-5.5_2026-05-24_2222_31
+
+Using the GitHub publish workflow instincts here, but this is mostly local repo work first: I’m going to inspect the page renderer/config path, make the code change in Weave, then update only current fixture mesh mains rather than replaying old rungs.
+
+# gpt-5.5_2026-05-24_2222_45
+
+I found that `foaf:name` is already wired into title extraction in the current Weave branch, so I’m going to treat that as “verify and add coverage/docs if needed” rather than duplicating it. The one concrete renderer bug is the custom page definition metadata leaking into the hero; I’m tracing the SF/support panel opt-in path now.
+
+# gpt-5.5_2026-05-24_2224_32
+
+The opt-in is two-layered: the renderer has a CLI flag for the Semantic Flow metadata panel, and custom pages also have to explicitly select that generated panel. So I’m going to move `ResourcePageDefinition` into that panel, select the panel on Alice’s custom root/Alice page definitions, then regenerate only current fixture mesh publication branches with the flag.
+
+# gpt-5.5_2026-05-24_2225_09
+
+I’m about to edit the renderer and tests. The intended behavior is: normal hero metadata stays about the resource, `ResourcePageDefinition` moves into Semantic Flow metadata when that panel is selected, and `foaf:name` gets an explicit regression test even though the implementation already had the predicate wired in.
+
+# gpt-5.5_2026-05-24_2226_18
+
+I’m also updating Alice’s current page-definition artifacts, plus the corresponding `.assets` seed copies so the next ladder seed has the same opt-in. I’m leaving the pre-existing Alice page-main asset edit intact; it was already dirty when I got here.
+
+# gpt-5.5_2026-05-24_2227_07
+
+Tiny course correction: because you explicitly said not to regenerate old rungs, I’m not going to change the Alice `.assets` page-definition sources in this pass. Those assets are replay inputs for the existing `b.*` ladder; changing them while leaving old rungs alone would make replay comparisons drift. Current `main` page-definition artifacts still get the panel opt-in.
+
+# gpt-5.5_2026-05-24_2227_47
+
+The renderer tests pass. Next I’m going to weave Alice’s two changed page-definition artifacts so they remain governed, then run `generate --include-semantic-flow-metadata` on the current publication branches for Alice, sidecar, and branch fixtures. That will be mostly generated HTML churn, but it’s the churn that actually turns the panel on in the published pages.
+
+# gpt-5.5_2026-05-24_2228_43
+
+One more design adjustment, because the root page definition can’t be cleanly woven right now without adding a root ReferenceCatalog shape. Rather than forcing a governed artifact change just to expose support metadata, I’m making the CLI metadata opt-in behave like an operational overlay for custom pages too. That keeps authored panel selection strict for content panels, while the SF metadata panel can be switched on uniformly.
+
+# gpt-5.5_2026-05-24_2230_35
+
+The published-page spot checks look right: root and Alice now show `ResourcePageDefinition` inside `Semantic Flow metadata`, with `/mesh-alice-bio/_knop/_page` and `/mesh-alice-bio/alice/_knop/_page` links rather than the broken relative URL. I’m running the repo validation now before I make any commits.
+
+# gpt-5.5_2026-05-24_2230_56
+
+Validation is clean on all three publication surfaces. I’m going to run the full test task now, since the custom-page panel behavior is a renderer semantic change and I’d rather catch any black-box expectation that disagrees.
+
+# gpt-5.5_2026-05-24_2232_06
+
+Full tests exposed two stale expectations that still looked for the old `./_knop/_page` footer/link on custom pages. That’s exactly the behavior we’re removing, so I’m updating those assertions and rerunning the affected tests.
+
+# gpt-5.5_2026-05-24_2232_41
+
+The two stale expectations are fixed and the affected integration suites pass. I’m doing one more full test run so the final state is clean rather than “mostly clean with a known rerun.”
+
+# gpt-5.5_2026-05-24_2233_59
+
+All Weave validation is green now: full test suite, lint, and type check all pass. I’m looking at commit scope next; one pre-existing Alice `.assets/16.../alice-page-main.md` edit is still dirty, and I’m going to keep it out of my generated-page commit unless you explicitly want it bundled.
+
+# gpt-5.5_2026-05-24_2235_01
+
+I’m going to finish this cleanly from the current worktree: verify the pending diffs are only the intended Weave/runtime docs changes plus fixture publication updates, then commit and push each repo separately. I’ll keep the pre-existing Alice `.assets` edit out of the generated-page commit unless it has already been staged somehow.
+
+# gpt-5.5_2026-05-24_2235_18
+
+The scope still looks as expected: Weave has five source/doc/test files pending, Alice has generated pages plus the governed Alice page-definition update, and the two fantasy fixture repos are publication HTML regenerations. The one mixed bit is the pre-existing `.assets/16-alice-page-main-integrated/alice-page-main.md` edit in Alice, so I’m going to explicitly exclude that from staging.
+
+# gpt-5.5_2026-05-24_2235_27
+
+I’m staging the Weave change as a normal code/docs/test commit first, then I’ll stage the fixture repos. That keeps the runtime behavior change separate from the generated publication artifacts, which will make this much easier to review later.
+
+# gpt-5.5_2026-05-24_2235_39
+
+Weave is committed. Now I’m staging Alice with a pathspec exclusion for that authored `.assets` markdown change, and I’ll verify the cached file list before committing.
+
+# gpt-5.5_2026-05-24_2235_56
+
+Alice is committed, with the authored `.assets` markdown still left alone. I’m moving through the two fixture publication repos now; these are generated-page-only commits.
+
+# gpt-5.5_2026-05-24_2236_19
+
+All four intended commits are now local. I’m doing one last status pass, then I’ll push the current branches: Weave `next/v0.2.0`, Alice `main`, sidecar `main`, and branch fixture `gh-pages`.
+
+# gpt-5.5_2026-05-24_2236_36
+
+Pushes are through. I’m checking final working-tree state now so I can call out the one deliberate leftover edit accurately.
+
+# gpt-5.5_2026-05-24_2237_03
+
+Done and pushed.
+
+- Weave runtime/docs/tests: `284d745` on `next/v0.2.0`
+- `mesh-alice-bio`: `e9a42d7` on `main`
+- `mesh-sidecar-fantasy-rules`: `e34c8ac` on `main`
+- `mesh-branch-fantasy-rules`: `73631b8` on `gh-pages`
+
+What changed:
+- Turned on the Semantic Flow support metadata panel for current fixture mesh publications. Old ladder rungs were not regenerated.
+- Moved `ResourcePageDefinition` out of the visible page metadata and into the Semantic Flow metadata panel.
+- Fixed its links to be mesh-rooted, e.g. `/mesh-alice-bio/_knop/_page` and `/mesh-alice-bio/alice/_knop/_page`.
+- Added docs for the built-in panel list at [wu.resource-pages.md](../../../../../documentation/notes/wu.resource-pages.md:37).
+- Confirmed `foaf:name` was already in the title fallback path, then added regression coverage and docs for it.
+
+Validation passed earlier in the run:
+`deno task lint`, `deno task check`, `deno task test`, plus publication validation for Alice, sidecar, and branch fixture meshes.
+
+One deliberate leftover: `mesh-alice-bio/.assets/16-alice-page-main-integrated/alice-page-main.md` is still locally modified and uncommitted, because that was pre-existing authored content rather than generated output.
+
+# User_2026-05-25_0800_37
+
+Why is http://127.0.0.1:4507/mesh-alice-bio/bob/ displaying the uncontained bio? I guess we didn't get around to mirroring the alice manifest, where the bio is a self-contained artifact at /bob/bio that is included in a panel on the /bob page.
+
+# gpt-5.5_2026-05-25_0800_47
+
+I’ll trace the Bob page inputs and generated output so we can separate “renderer behavior” from “fixture manifest shape.” My hunch matches yours: Bob is probably still modeled as a direct Markdown resource/page rather than a `/bob/bio` content artifact that the `/bob` ResourcePage composes.
+
+# gpt-5.5_2026-05-25_0800_55
+
+There are two existing dirty files I’m going to avoid touching for the moment: a Weave docs example note and the Alice authored `.assets` markdown. Now I’m reading the Alice/Bob fixture shape and the generated `/bob` output.
+
+# gpt-5.5_2026-05-25_0801_12
+
+The diagnosis is pretty direct: Bob’s current page definition is still the old shape. It points at a local Markdown file with `sflo:targetLocalRelativePath "bob-page-main.md"` and lacks the semantic-site presentation config, while Alice points at a governed artifact (`alice/page-main`) and opts into the shared shell/panels/sidebar.
+
+# gpt-5.5_2026-05-25_0801_41
+
+I’m going to try the smallest fixture-shaped repair in a temporary copy first: import the existing Bob markdown as `bob/bio`, retarget Bob’s page definition to that artifact, then weave/generate and inspect the output. That way we can see what the current CLI gives us before touching the real publication tree.
+
+# gpt-5.5_2026-05-25_0803_39
+
+There’s one more thing under the surface: Weave can version Bob’s page definition only after I loosen an overly narrow shape assertion. The “subsequent page-definition” path currently assumes every non-root Knop has a ReferenceCatalog, which Alice happens to have and Bob does not. That is a real renderer/weave bug, not just fixture data drift.
+
+# gpt-5.5_2026-05-25_0804_05
+
+I’ve patched the Weave assertion and added a regression test for Bob’s exact shape: later page-definition history, no ReferenceCatalog. Next I’m running that targeted test before applying the fixture update for real.
+
+# gpt-5.5_2026-05-25_0804_11
+
+The targeted regression passes. I’m going to apply the Bob fixture repair on `mesh-alice-bio/main` now: create `bob/bio` as a governed payload, update Bob’s page definition to compose that artifact plus the shared sidebar, then weave/regenerate current pages.
+
+# gpt-5.5_2026-05-25_0804_46
+
+The page now has the shared shell, child link, sidebar, and SF metadata, and `/bob/bio` exists as a governed artifact page. One rough edge is still visible: Bob’s imported Markdown carries YAML frontmatter, and the current authored-region renderer renders that as content. I’m checking whether there’s an existing frontmatter stripping helper before deciding whether to patch the renderer or fixture bytes.
+
+# gpt-5.5_2026-05-25_0805_10
+
+I’m going to patch the Markdown-region renderer to ignore YAML frontmatter for authored panels. That feels like the right layer: `/bob/bio` can still expose the exact governed source bytes, while `/bob` should render the authored content, not the source file’s metadata envelope.
+
+# gpt-5.5_2026-05-25_0806_00
+
+The Bob page now looks like the shape you described: `/bob` is the shared ResourcePage shell with a `bio` child and the imported bio in `region-main`; `/bob/bio` is the governed payload artifact page. I’m running the repo checks and Alice publication validation now.
+
+# gpt-5.5_2026-05-25_0806_04
+
+Lint, type-check, and Alice publication validation are green. I’m running the full test suite once because this touched the weave planner and ResourcePage renderer.
+
+# gpt-5.5_2026-05-25_0807_46
+
+I’m going to commit the implementation and current Alice fixture fix separately, leaving the pre-existing Weave docs edit and Alice `.assets/16...` edit unstaged. The Accord/conformance manifest itself still describes the older Bob direct-Markdown shape; I’ll call that out as the remaining source-of-truth follow-up rather than quietly pretending it’s done.
+
+# gpt-5.5_2026-05-25_0808_00
+
+Weave is committed. Now I’m staging the Alice fixture publication update, with the known `.assets/16...` edit excluded again.
+
+# gpt-5.5_2026-05-25_0808_18
+
+Both commits are local now. I’m doing a final status check, then I’ll push Weave and Alice Bio.
+
+# gpt-5.5_2026-05-25_0808_45
+
+Yep, your read was right.
+
+`/bob` was showing the old uncontained bio because Bob’s page definition still had the pre-Alice-shared-shell shape: `sflo:targetLocalRelativePath "bob-page-main.md"` directly in `bob/_knop/_page/page.ttl`, with no `bob/bio` governed payload and no semantic-site presentation config.
+
+I fixed and pushed:
+
+- Weave `a944310`: allows later page-definition weaves without requiring a ReferenceCatalog, plus strips YAML frontmatter from authored Markdown panels.
+- mesh-alice-bio `a1efdf4`: creates governed `bob/bio`, retargets `/bob` to include `bob/bio` plus the shared sidebar, and regenerates current pages with SF metadata.
+
+Validation passed:
+`deno task lint`, `deno task check`, full `deno task test` (`529 passed`), and `validate publication` for `mesh-alice-bio`.
+
+One important caveat: I fixed current `mesh-alice-bio/main`, but I did not rewrite the semantic-flow-framework conformance manifests yet. So `20-bob-page-imported-source.jsonld` still documents the old direct Markdown page-source shape. That’s the remaining ladder source-of-truth cleanup.
+
+Left untouched:
+- `weave/documentation/notes/wu.cli-reference.examples.sflo.md`
+- `mesh-alice-bio/.assets/16-alice-page-main-integrated/alice-page-main.md`
+
+# User_2026-05-25_0808_45
+
+You confirmed that foaf:name was on the list of titling properties, but did we just need to regenerate http://127.0.0.1:4507/mesh-alice-bio/alice/ ?
+
+# gpt-5.5_2026-05-25_0809_00
+
+I’ll check the generated Alice page and the RDF facts feeding it. The interesting bit is whether the page model for a custom `/alice` page is actually looking at Alice’s RDF title facts, not just whether `foaf:name` is in the generic title fallback list.
+
+# gpt-5.5_2026-05-25_0809_08
+
+The quick check says regeneration alone is not enough: the current `alice/index.html` is already regenerated and still has the shell title `<h1>alice</h1>`, while the authored main region correctly has `<h1>Alice</h1>`. The `foaf:name "Alice"` lives in `alice-data.ttl`, but the custom `/alice` shell title path is not using those facts.
+
+# gpt-5.5_2026-05-25_0809_26
+
+I’m going to make that tiny fix now rather than leave it as a known paper cut: custom pages should prefer the same RDF-derived title (`dcterms:title`, `schema:*`, `foaf:name`) before falling back to the path slug. Then I’ll regenerate just `/alice`.
+
+# gpt-5.5_2026-05-25_0809_49
+
+That was the missing connection: the custom page already parsed Alice’s RDF classes from source panels, but its shell title ignored `rdfFacts.title`. I’ve wired it to use the parsed title and added coverage using `foaf:name`.
+
+# gpt-5.5_2026-05-25_0809_59
+
+The targeted test is green now. I’m regenerating only Alice so the local served page at `/mesh-alice-bio/alice/` picks up the shell title fix.
+
+# gpt-5.5_2026-05-25_0810_13
+
+The regenerated Alice page now has `<title>mesh-alice-bio Alice</title>` and the shell hero `<h1>Alice</h1>`. Checks are green: targeted renderer test, lint, type-check, and Alice publication validation. I’m going to commit/push this as a small follow-up, keeping the unrelated dirty files out of it.
+
+# gpt-5.5_2026-05-25_0810_39
+
+Not quite. Regeneration was necessary, but there was a small Weave bug first: custom shared-shell pages parsed RDF facts for classes, but their shell title still fell back to the path slug (`alice`) instead of `rdfFacts.title`.
+
+Fixed and pushed:
+
+- Weave `5b095e2`: custom ResourcePages now use parsed RDF titles, including `foaf:name`.
+- mesh-alice-bio `c96ca0e`: regenerated `alice/index.html`.
+
+Your local page should now show:
+
+- `<title>mesh-alice-bio Alice</title>`
+- shell hero `<h1>Alice</h1>`
+
+Still left untouched: the unrelated dirty docs note and `.assets/16.../alice-page-main.md`.

@@ -13,7 +13,7 @@ Replace legacy Alice Bio-specific and fixture-ladder render helpers with general
 - Make `scripts/fixture-ladder.ts` easier to extend for new whole-mesh, sidecar, branch-published, import, and custom ResourcePage fixture scenarios.
 - Reduce copy/paste in fixture transition definitions by introducing small reusable data builders for file operations, command actions, branch-publication actions, replay inputs, and fixture asset references.
 - Keep this slice behavior-preserving: no intended generated RDF, generated HTML, manifest, or fixture branch output changes.
-- Prepare for [[wa.task.2026.2026-05-21_0907-import]] and [[wa.task.2026.2026-05-23_2230-custom-resourcepage-shared-shell-fixture]] without adding Carol/import/custom ResourcePage fixture rungs yet.
+- Prepare for [[wa.completed.2026.2026-05-21_0907-import]] and [[wa.task.2026.2026-05-23_2230-custom-resourcepage-shared-shell-fixture]] without adding Carol/import/custom ResourcePage fixture rungs yet.
 - Generate Accord `ScenarioIndex` documents for the existing fixture scenarios as part of the helper generalization, without replacing transition manifests or changing `accord check` behavior.
 
 ## Summary
@@ -116,7 +116,7 @@ Watch during implementation:
 
 ## Implementation Plan
 
-- [x] Re-read [[wd.general-guidance]], [[wd.testing.fixture-ladder-regeneration]], this note, [[wa.task.2026.2026-05-21_0907-import]], and [[wa.task.2026.2026-05-23_2230-custom-resourcepage-shared-shell-fixture]] before editing.
+- [x] Re-read [[wd.general-guidance]], [[wd.testing.fixture-ladder-regeneration]], this note, [[wa.completed.2026.2026-05-21_0907-import]], and [[wa.task.2026.2026-05-23_2230-custom-resourcepage-shared-shell-fixture]] before editing.
 - [x] Inspect `scripts/fixture-ladder.ts` for repeated Alice Bio-specific helper shapes that are actually generic transition or asset patterns.
 - [x] Capture current focused fixture-ladder test behavior with `deno test tests/scripts/fixture_ladder_test.ts`.
 - [x] Extract the smallest useful helper set for fixture asset copy declarations and file-operation transitions.

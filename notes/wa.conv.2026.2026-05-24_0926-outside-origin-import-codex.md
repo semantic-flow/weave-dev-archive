@@ -1,18 +1,23 @@
 ---
 id: outside-origin-import-weuvqb
-title: 'outside-origin import'
+title: outside-origin import
 desc: ''
-created: 1779640008050
 updated: 1779640008050
-participants: [codex.gpt-5.5]
-conversationEventKinds: [message.assistant, message.user, tool.call, tool.result]
+created: 1779640008050
+participants:
+  - codex.gpt-5.5
+conversationEventKinds:
+  - message.assistant
+  - message.user
+  - tool.call
+  - tool.result
 ---
 
 # User_2026-05-24_0713_15
 
 outside-origin import
 
-We're going to work on [[wa.task.2026.2026-05-21_0907-import]] . Somehow we missed filling out a [wu.cli-reference.import.md](../../../../../documentation/notes/wu.cli-reference.import.md) earlier, but we'll do that too.
+We're going to work on [[wa.completed.2026.2026-05-21_0907-import]] . Somehow we missed filling out a [wu.cli-reference.import.md](../../../../../documentation/notes/wu.cli-reference.import.md) earlier, but we'll do that too.
 
 I'm kinda surprised about this "`weave import` should also own the localize-from-integrated workflow: after an artifact has been integrated from an external/local-floating source, the user should be able to copy the current bytes into a regular governed working file and make that file the active working locator." -- it feels like import should both copy the file to a specified location (I guess --working-file could be the flag for that) and integrate is at a specified designator path. So we shouldn't say "after an artifact has been integrated", maybe just "after an artifact has been copied to its working file location, a knop gets created under the specified designator path" or something like that.
 
@@ -282,7 +287,7 @@ Maybe our complete fixture regen can move to a b.* series. We can then compare w
 
 Do you want the raw bob URL? 
 
-And then do we even need the carol import described in [[wa.task.2026.2026-05-21_0907-import]] ? Maybe we make that a test for the ResourcePage panel inclusion, like the References panel. Or we could do the --replace-working stuff there, since there are actually three versions of that page
+And then do we even need the carol import described in [[wa.completed.2026.2026-05-21_0907-import]] ? Maybe we make that a test for the ResourcePage panel inclusion, like the References panel. Or we could do the --replace-working stuff there, since there are actually three versions of that page
 
 # gpt-5.5_2026-05-24_0835_19
 
@@ -352,7 +357,7 @@ Verification: `git diff --check` passes in both the archive repo and the main we
 
 # User_2026-05-24_0913_42
 
-We'll do that regen after [[wa.task.2026.2026-05-21_0907-import]] lands, so settle the fixture-based testing requirement as deferred?
+We'll do that regen after [[wa.completed.2026.2026-05-21_0907-import]] lands, so settle the fixture-based testing requirement as deferred?
 
 # gpt-5.5_2026-05-24_0913_54
 

@@ -127,14 +127,14 @@ This does introduce one deliberate semantic asymmetry: the imported page content
 
 ### Phase 2: Implement The First Import Surface
 
-- [d] Add the first runtime/core import slice needed to materialize imported Markdown into a governed Bob artifact. Deferred to [[wa.task.2026.2026-05-21_0907-import]] so the general command/runtime surface can backfill this carried fixture shape.
-- [d] Keep the first import implementation fail-closed and narrow. Deferred to [[wa.task.2026.2026-05-21_0907-import]].
-- [d] Avoid broadening page generation to live remote sources as part of this slice. Deferred to [[wa.task.2026.2026-05-21_0907-import]] and [[wa.task.2026.2026-05-20_2152-workingAccessUrl]].
-- [d] Make the first real `import` surface capable of producing the already-carried `20-bob-page-imported-source` shape without hand-staged fixture edits. Deferred to [[wa.task.2026.2026-05-21_0907-import]].
+- [d] Add the first runtime/core import slice needed to materialize imported Markdown into a governed Bob artifact. Deferred to [[wa.completed.2026.2026-05-21_0907-import]] so the general command/runtime surface can backfill this carried fixture shape.
+- [d] Keep the first import implementation fail-closed and narrow. Deferred to [[wa.completed.2026.2026-05-21_0907-import]].
+- [d] Avoid broadening page generation to live remote sources as part of this slice. Deferred to [[wa.completed.2026.2026-05-21_0907-import]] and [[wa.task.2026.2026-05-20_2152-workingAccessUrl]].
+- [d] Make the first real `import` surface capable of producing the already-carried `20-bob-page-imported-source` shape without hand-staged fixture edits. Deferred to [[wa.completed.2026.2026-05-21_0907-import]].
 
 ### Phase 3: Carry The Fixture Pair
 
 - [x] Create `20-bob-page-imported-source` in `mesh-alice-bio`.
 - [x] Weave it into `21-bob-page-imported-source-woven`.
 - [x] Publish the pair once the manifests and runtime behavior were close enough for the carried acceptance layer.
-- [d] Backfill the first-class `import` surface so the carried pair is no longer ahead of the command/runtime story. Deferred to [[wa.task.2026.2026-05-21_0907-import]].
+- [d] Backfill the first-class `import` surface so the carried pair is no longer ahead of the command/runtime story. Deferred to [[wa.completed.2026.2026-05-21_0907-import]].

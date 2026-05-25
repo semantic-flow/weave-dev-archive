@@ -11,13 +11,15 @@ created: 1779599172163
 - Add a narrow fixture proving a custom identifier ResourcePage can keep the shared Semantic Site shell and look while rendering authored Markdown content.
 - Use the next from-scratch Alice Bio fixture regeneration to correct the older Alice/Bob page-source rungs so authored Markdown becomes governed content-panel source material rather than loose mesh files that make an identifier page look like the payload itself.
 - Use that regeneration to rename Alice's RDF payload from `alice-bio.ttl` at `alice/bio` to `alice-data.ttl` at `alice/data`, so the RDF data artifact is clearly distinct from authored Markdown biography/page copy.
-- Use imported or import-shaped Carol Burnett Markdown content as the first richer custom page source once [[wa.task.2026.2026-05-21_0907-import]] lands.
+- Use imported or import-shaped Carol Burnett Markdown content as the first richer custom page source once [[wa.completed.2026.2026-05-21_0907-import]] lands.
 - Stack generated panels onto authored content explicitly, so the fixture proves custom content and generated ResourcePage panels compose without auto-appending everything.
 - Keep the first fixture small enough to review before adding sidecar or branch-published custom page variants.
 
 ## Summary
 
 This task follows the ResourcePage config/templating work and likely follows the first `weave import` slice. The desired fixture is not just "add another person." It should prove a workflow: import or otherwise materialize real Markdown content as a governed local artifact, bind a `ResourcePageDefinition` to that content, opt into the shared Semantic Site presentation, then explicitly add one generated panel after the authored region.
+
+Carol-specific fixture/page work has been split out and deferred to [[wa.task.2026.2026-05-25_0849-carol]]. This note can close the Alice/Bob regeneration and shared-shell preparation work without pretending the Carol custom page has landed here.
 
 Carol Burnett content is a strong candidate because the commit-pinned source note includes YAML frontmatter, headings, images, lists, emphasis, and a Bob relationship. That gives the fixture more coverage than a tiny placeholder while still being human-readable.
 
@@ -72,7 +74,7 @@ Alice's main page Markdown should be concise and explicit about identifier seman
 
 The shared sidebar should become a governed content artifact and should be reused anywhere this ladder uses the shared authored shell. Re-examine the sidebar copy during regeneration rather than carrying the current quick-links list forward unchanged. One caveat: this should not quietly imply automatic sidebar injection into every generated ResourcePage unless the shared shell/template behavior is intentionally expanded; for this task, reuse means the custom page definitions that opt into an authored sidebar should point at the same governed sidebar artifact.
 
-Bob `20` and `21` have the same issue plus a naming problem. They are not honest `weave import` examples today: they do not create `bob/page-main`, do not create Bob page-main Knop support, and do not record import provenance. The import task [[wa.task.2026.2026-05-21_0907-import]] already captures the replacement: make Bob `20/21` a real import of Bob Markdown into `bob/page-main`, then use that governed content as Bob's authored ResourcePage panel source.
+Bob `20` and `21` have the same issue plus a naming problem. They are not honest `weave import` examples today: they do not create `bob/page-main`, do not create Bob page-main Knop support, and do not record import provenance. The import task [[wa.completed.2026.2026-05-21_0907-import]] already captures the replacement: make Bob `20/21` a real import of Bob Markdown into `bob/page-main`, then use that governed content as Bob's authored ResourcePage panel source.
 
 This task owns the page-composition side of that correction. The import task owns the acquisition/provenance side.
 
@@ -106,6 +108,7 @@ Recommended sequence:
 - Integrated a governed reusable `sidebar` content artifact and pointed later Alice/root custom page definitions at it. The early authored Markdown rung remains loose for now, matching the review decision that authored Markdown is acceptable at that rung.
 - Regenerated the Alice Bio local fixture branches and conformance expectations through the affected root page rungs.
 - Because the `mesh-alice-bio` asset changes are being committed on `main`, remember to seed the next `b.00` source rung by copying the committed `.assets` tree into that rung before generating the `b.*` ladder. Track the broader automation gap in [[wa.task.2026.2026-05-24_2058-fixture-ladder-accord-file-operations]].
+- Carol-specific page definition, shared-shell, generated-panel, and Bob/Carol relationship follow-ups are deferred to [[wa.task.2026.2026-05-25_0849-carol]].
 
 ## Decisions
 
@@ -165,12 +168,12 @@ Recommended sequence:
 - [x] Land enough `weave import` behavior to materialize Carol Markdown into a governed local working file.
 - [x] During the next from-scratch Alice Bio regeneration, rename Alice's RDF payload source and designator from `alice-bio.ttl` / `alice/bio` to `alice-data.ttl` / `alice/data`.
 - [x] Replace the manual `mesh-alice-bio` `.assets` copy into the next `b.00` source rung with the source-seed path from [[wa.task.2026.2026-05-24_2058-fixture-ladder-accord-file-operations]].
-- [ ] During the next from-scratch Alice Bio regeneration, adjust Alice `14` through `19` so the main authored content panel is backed by governed `alice/page-main` from the start of the custom page story.
+- [ ] During the next from-scratch Alice Bio regeneration, adjust Alice `14` through `19` so the main authored content panel is backed by governed `alice/page-main` from the start of the custom page story. Current carried rungs `14`, `15`, and `17` still exercise direct `targetLocalRelativePath` page sources; only `18` and `19` prove the governed `hasTargetArtifact <alice/page-main>` path. Decide whether to regenerate these rungs or split the direct-path behavior into an explicitly named legacy/loose-source fixture.
 - [x] During the next from-scratch Alice Bio regeneration, rewrite `alice/page-main` content to identify Alice's IRI and link to the Semantic Flow framework.
 - [x] During the next from-scratch Alice Bio regeneration, make the shared sidebar a governed reusable content artifact and revise its content.
-- [ ] During the next from-scratch Alice Bio regeneration, replace Bob `20` and `21` with real import-backed `bob/page-main` rungs and artifact-backed authored content panels.
-- [ ] Add the Carol custom page definition and authored Markdown binding.
-- [ ] Opt the page into the shared Semantic Site presentation config.
-- [ ] Opt the page into the `children` generated panel after authored content.
-- [ ] Add a second rung for the Bob/Carol semantic reference or richer composition proof.
+- [x] During the next from-scratch Alice Bio regeneration, replace Bob `20` and `21` with real import-backed `bob/page-main` rungs and artifact-backed authored content panels.
+- [d] Add the Carol custom page definition and authored Markdown binding. Deferred to [[wa.task.2026.2026-05-25_0849-carol]].
+- [d] Opt the page into the shared Semantic Site presentation config. Deferred to [[wa.task.2026.2026-05-25_0849-carol]].
+- [d] Opt the page into the `children` generated panel after authored content. Deferred to [[wa.task.2026.2026-05-25_0849-carol]].
+- [d] Add a second rung for the Bob/Carol semantic reference or richer composition proof. Deferred to [[wa.task.2026.2026-05-25_0849-carol]].
 - [x] Add focused tests and regenerate only affected fixture expectations.

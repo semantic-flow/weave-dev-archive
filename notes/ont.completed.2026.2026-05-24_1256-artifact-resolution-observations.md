@@ -186,7 +186,7 @@ Normal `weave`, `generate`, and page rendering should not append observation rec
 - Do not make ordinary read/render operations record observations by default.
 - Add `ReferenceSource`, `ImportSource`, and `IntegrationSource` as `ArtifactResolutionTarget` subclasses; keep existing `ExtractionSource` and `ResourcePageSource` aligned with the same pattern.
 - Track ReferenceLink-specific behavior in [[wa.task.2026.2026-05-22_1128-referencelink-clarification]].
-- Track import command behavior in [[wa.task.2026.2026-05-21_0907-import]].
+- Track import command behavior in [[wa.completed.2026.2026-05-21_0907-import]].
 - Track integrate source-binding migration in [[wa.completed.2026.2026-05-24_1301-integrate-source-binding-update]]; `IntegrationSource` should be added here, but rewriting all integrate output belongs there unless the same implementation pass naturally touches it.
 - Track cross-cutting subclass follow-through in [[wa.task.2026.2026-05-24_1648-ArtifactResolutionTarget-subclass-cleanup]].
 

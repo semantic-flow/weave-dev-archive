@@ -12,7 +12,7 @@ created: 1779634865209
 - Treat `a.*` fixture refs as the canonical active scenario branches for the current Accord lanes, while preserving `main` and real publication branches such as `gh-pages`.
 - After `weave import` lands, use a regenerated `b.*` lane as a comparison target for fixture-helper generalization, rather than overwriting or immediately deleting the `a.*` baseline.
 - Remove or clearly quarantine old unprefixed fixture branches after confirming no active scenario index, conformance runner, documentation, or downstream test still resolves them.
-- Align the Semantic Flow Framework notes with the current import boundary from [[wa.task.2026.2026-05-21_0907-import]] without turning this task into the Weave implementation task.
+- Align the Semantic Flow Framework notes with the current import boundary from [[wa.completed.2026.2026-05-21_0907-import]] without turning this task into the Weave implementation task.
 
 ## Summary
 
@@ -42,7 +42,7 @@ The fixture regeneration should wait until real remote-origin import has landed.
 
 Using `b.*` for the post-import full regeneration lets the project keep `a.*` as a known-good comparison lane while proving that the generalized fixture helper can reproduce or intentionally evolve the ladder. After the comparison is accepted, `b.*` can become the new canonical lane and old duplicate refs can be pruned in a controlled follow-up.
 
-The framework notes already describe the conceptual import/integrate boundary in several places, including [[sf.api]], [[sf.api.examples]], [[sf.spec.2026-04-11-identifier-page-customization-and-root-lifecycle]], and [[sf.spec.2026-05-18-publication-source-binding]]. Those notes are broadly pointing in the right direction, but this cleanup should make sure they distinguish portable behavior/spec intent from a shipped Weave CLI command. The Weave implementation details remain in [[wa.task.2026.2026-05-21_0907-import]].
+The framework notes already describe the conceptual import/integrate boundary in several places, including [[sf.api]], [[sf.api.examples]], [[sf.spec.2026-04-11-identifier-page-customization-and-root-lifecycle]], and [[sf.spec.2026-05-18-publication-source-binding]]. Those notes are broadly pointing in the right direction, but this cleanup should make sure they distinguish portable behavior/spec intent from a shipped Weave CLI command. The Weave implementation details remain in [[wa.completed.2026.2026-05-21_0907-import]].
 
 ## Open Issues
 
