@@ -98,6 +98,15 @@ Recommended sequence:
 - Should Alice `14` through `19` be renumbered around the corrected `alice/page-main` sequence, or should a new `b.*` ladder preserve old `a.*` numbers as historical comparison?
 - Confirm whether `alice/data` should replace every current `alice/bio` reference in examples, tests, and docs during the same regeneration, or whether any compatibility note should mention the historical `alice/bio` path.
 
+## Progress Notes
+
+- Removed Alice/Bob fixture-specific first-extracted page rendering from Weave core; the Bob extraction rung now uses the generic extracted identifier page path.
+- Renamed Alice's RDF payload fixture from `alice-bio.ttl` / `alice/bio` to `alice-data.ttl` / `alice/data` across the ladder assets, conformance manifests, tests, and CLI examples.
+- Rewrote Alice's authored main content so it says that `https://semantic-flow.github.io/mesh-alice-bio/alice` is the IRI for Alice, the person, and links to the Semantic Flow framework.
+- Integrated a governed reusable `sidebar` content artifact and pointed later Alice/root custom page definitions at it. The early authored Markdown rung remains loose for now, matching the review decision that authored Markdown is acceptable at that rung.
+- Regenerated the Alice Bio local fixture branches and conformance expectations through the affected root page rungs.
+- Because the `mesh-alice-bio` asset changes are being committed on `main`, remember to seed the next `b.00` source rung by copying the committed `.assets` tree into that rung before generating the `b.*` ladder. Track the broader automation gap in [[wa.task.2026.2026-05-24_2058-fixture-ladder-accord-file-operations]].
+
 ## Decisions
 
 - Use the Carol Burnett Markdown note as the preferred first rich content candidate after import lands.
@@ -154,13 +163,14 @@ Recommended sequence:
 - [x] Decide whether to land behavior-preserving fixture-helper generalization first.
 - [x] Delete original non-`a.*` numbered fixture branches from the fixture mesh remotes before the next from-scratch regeneration.
 - [x] Land enough `weave import` behavior to materialize Carol Markdown into a governed local working file.
-- [ ] During the next from-scratch Alice Bio regeneration, rename Alice's RDF payload source and designator from `alice-bio.ttl` / `alice/bio` to `alice-data.ttl` / `alice/data`.
+- [x] During the next from-scratch Alice Bio regeneration, rename Alice's RDF payload source and designator from `alice-bio.ttl` / `alice/bio` to `alice-data.ttl` / `alice/data`.
+- [ ] Copy the committed `mesh-alice-bio` `.assets` tree from `main` into the next `b.00` source rung before generating `b.*` branches, or replace the manual step with [[wa.task.2026.2026-05-24_2058-fixture-ladder-accord-file-operations]] first.
 - [ ] During the next from-scratch Alice Bio regeneration, adjust Alice `14` through `19` so the main authored content panel is backed by governed `alice/page-main` from the start of the custom page story.
-- [ ] During the next from-scratch Alice Bio regeneration, rewrite `alice/page-main` content to identify Alice's IRI and link to the Semantic Flow framework.
-- [ ] During the next from-scratch Alice Bio regeneration, make the shared sidebar a governed reusable content artifact and revise its content.
+- [x] During the next from-scratch Alice Bio regeneration, rewrite `alice/page-main` content to identify Alice's IRI and link to the Semantic Flow framework.
+- [x] During the next from-scratch Alice Bio regeneration, make the shared sidebar a governed reusable content artifact and revise its content.
 - [ ] During the next from-scratch Alice Bio regeneration, replace Bob `20` and `21` with real import-backed `bob/page-main` rungs and artifact-backed authored content panels.
 - [ ] Add the Carol custom page definition and authored Markdown binding.
 - [ ] Opt the page into the shared Semantic Site presentation config.
 - [ ] Opt the page into the `children` generated panel after authored content.
 - [ ] Add a second rung for the Bob/Carol semantic reference or richer composition proof.
-- [ ] Add focused tests and regenerate only affected fixture expectations.
+- [x] Add focused tests and regenerate only affected fixture expectations.
