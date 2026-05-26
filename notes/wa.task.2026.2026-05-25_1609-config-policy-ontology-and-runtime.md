@@ -14,7 +14,7 @@ created: 1779750606550
 - Build a Weave internal config runtime that compiles RDF config into queryable scoped settings, a policy index, and resolver/meta-policy state.
 - Make existing-mesh Weave commands honor mesh-local config from `_mesh/_config/config.ttl` after application defaults and before command overrides.
 - Keep command overrides explicit, volatile, and stronger than portable mesh config.
-- Add built-in ResourcePage presentation profiles needed for durable mesh-wide layout choices, especially all generated panels and no generated panels.
+- Add built-in ResourcePage presentation policies needed for durable mesh-wide layout choices, especially all generated panels and no generated panels.
 - Avoid a throwaway implementation that first honors mesh config through the old direct-default vocabulary and then immediately replaces it.
 - Keep the implementation fail-closed: malformed, unsupported, unsafe, or ambiguous config must stop the operation before affected behavior is applied.
 
@@ -57,13 +57,13 @@ Under the default resolver profile, policy resolution is per queried target:
 
 Selector specificity is structural. For artifacts, exact artifact is more specific than artifact role, and artifact role is more specific than any governed artifact. Priority must not be required for that ordinary specificity relationship.
 
-### Policy families and scoped settings
+### Policy slots and scoped settings
 
 Use policy bindings for target-selective behavior:
 
 - history tracking
 - ResourcePage generation
-- ResourcePage presentation defaults
+- ResourcePage presentation
 
 Do not force every config concern into the policy-binding model. Keep these as direct scoped settings unless/until they become target-selective:
 
@@ -76,15 +76,15 @@ ResourcePage generation is not just a boolean. It answers what the runtime shoul
 
 ResourcePage presentation is separate from publication profile. A GitHub Pages publication profile may create `.nojekyll`, but it must not imply a ResourcePage layout/profile, all-panels rendering, or Semantic Flow metadata inclusion.
 
-### ResourcePage profiles
+### ResourcePage presentation policies
 
-Add or support at least these built-in presentation profiles:
+Add or support at least these built-in presentation policies:
 
 - `semantic-site-default`: current default Semantic Site behavior.
 - `semantic-site-all-panels`: selects all ordinary data-gated generated panels and removes the Semantic Flow metadata opt-in gate so metadata can render when data exists.
 - `semantic-site-no-panels`: keeps the generated page shell/chrome available, including canonical/title/breadcrumb/template structure as applicable, but suppresses generated data panels.
 
-The CLI flag currently called `--include-semantic-flow-metadata` may remain as an operation convenience, but internally it should compile to a command-override presentation/profile or panel-selection policy. It should not become a durable boolean config concept.
+The CLI flag currently called `--include-semantic-flow-metadata` may remain as an operation convenience, but internally it should compile to a command-override presentation or panel-selection policy. It should not become a durable boolean config concept.
 
 ### Resolver config
 
@@ -95,11 +95,12 @@ The CLI flag currently called `--include-semantic-flow-metadata` may remain as a
 - Decide exact ontology names for the binding model. Current preferred direction is target/selector terminology, not context terminology: `sfcfg:PolicyBinding`, `sfcfg:PolicyDefinition`, `sfcfg:PolicyTarget`, `sfcfg:ArtifactPolicyTarget`, candidate target subclasses such as any-governed-artifact, artifact-role, and exact-artifact targets, plus `sfcfg:hasPolicyBinding`, `sfcfg:bindsPolicy`, `sfcfg:appliesToPolicyTarget`, and `sfcfg:policyPriority`.
 - Decide whether policy slots should be identified only by inspecting supported value predicates, such as `sfcfg:hasHistoryTrackingPolicy` and `sfcfg:hasResourcePageGenerationPolicy`, or whether an explicit slot/property marker is useful for validation and diagnostics.
 - Decide whether old direct history and ResourcePage generation default terms are removed, deprecated, or retained only as non-authoring convenience vocabulary. Before v1.0, prefer migrating Weave defaults and parser behavior to the new model instead of adding long-term compatibility shims.
-- Decide whether `sfcfg:hasDefaultResourcePagePresentationConfig` remains a direct scoped setting for simple defaults or becomes a policy-binding value at config scopes. Page-local `sfcfg:hasResourcePagePresentationConfig` on `sflo:ResourcePageDefinition` should remain direct presentation adjacency.
+- Decide whether page-local `sfcfg:hasResourcePagePresentationPolicy` on `sflo:ResourcePageDefinition` remains direct presentation adjacency, is compiled through the same policy-binding runtime, or supports both shapes with one canonical internal representation.
 - Decide exact built-in IRI names for `semantic-site-all-panels` and `semantic-site-no-panels`.
 - Decide CLI/API names for durable config edits after creation. Candidate shapes include `weave mesh config set-history-tracking-policy` and `weave mesh config set-resource-page-presentation`, but this task can land the runtime before the final UX if necessary.
 - Decide whether Knop-local and Knop-inherited source discovery is implemented in this task or only supported in the compiled config API. The runtime data structure should support those layers even if source discovery is deferred.
 - Decide where audit/explanation output lands in the first implementation: audit log, runtime metadata, structured debug output, or some combination.
+- Decide where Weave host/workspace operational config and local/remote path access rules live now that they are not part of the portable Semantic Flow config ontology. Candidate destinations are internal runtime config only, a Weave-specific ontology, or a later service/runtime ontology if this grows beyond CLI-local behavior.
 
 ## Decisions
 
@@ -113,6 +114,8 @@ The CLI flag currently called `--include-semantic-flow-metadata` may remain as a
 - The broad artifact target is any governed artifact in the current config scope, not an all-artifact-role value.
 - Publication profile and workspace-root relationship remain scoped settings, not policy bindings.
 - Naming defaults may remain direct layered scoped settings unless/until a target-selective naming use case appears.
+- Use `sfcfg:ResourcePagePresentationPolicy`, not `sfcfg:ResourcePagePresentationConfig`, for ResourcePage presentation values. Do not keep a separate `sfcfg:hasDefaultResourcePagePresentationConfig` property; defaultness comes from attachment point, layer, and policy resolution.
+- Do not keep `OperationalConfig`, `WorkspaceOperationalConfig`, `HostLocalOperationalConfig`, or host/workspace access-rule vocabulary in the portable Semantic Flow config ontology.
 - Command overrides remain the highest ordinary layer and must not be persisted unless the user explicitly performs a config-editing operation.
 - Do not implement a short-lived old-vocabulary mesh-config merge just to unblock the SFLO replay unless the user explicitly reprioritizes that over the clean policy model.
 
@@ -124,6 +127,8 @@ The CLI flag currently called `--include-semantic-flow-metadata` may remain as a
 - Add explicit artifact policy target shapes for any governed artifact, artifact-role targets, and exact-artifact targets.
 - Add or clarify ResourcePage policy target vocabulary, including page-kind and selector specificity rules where possible.
 - Do not add controlled `PolicyFamily` terms for history tracking, ResourcePage generation, or ResourcePage presentation. If grouping metadata is useful later, add it as non-normative UI/logging/docs metadata rather than resolution input.
+- Replace `sfcfg:ResourcePagePresentationConfig` with `sfcfg:ResourcePagePresentationPolicy`; replace `sfcfg:hasResourcePagePresentationConfig` with `sfcfg:hasResourcePagePresentationPolicy`; remove `sfcfg:hasDefaultResourcePagePresentationConfig`.
+- Remove portable operational config classes and portable host/workspace local/remote access-rule vocabulary from the Semantic Flow config ontology.
 - Clarify or revise `ConfigLayerRole`/attachment-role vocabulary so referenced config and Knop-inheritable config are not misread as ordinary consumed layers at the declaring scope.
 - Clarify direct history and ResourcePage generation default terms in light of the binding model.
 - Keep publication profile, `workspaceRootRelativeToMeshRoot`, and naming defaults as direct scoped settings unless a later ontology pass intentionally changes them.
@@ -133,18 +138,33 @@ The CLI flag currently called `--include-semantic-flow-metadata` may remain as a
 - Replace the current defaults-only effective config loader with a compiled config loader that can read application defaults, optional mesh-local config, and command overrides.
 - Introduce internal runtime types for `CompiledConfig`, scoped settings, policy bindings, policy targets, policy index resolution, and resolution explanations.
 - Compile application defaults from `defaults/application.ttl` using the new policy-binding model.
+- Update `defaults/application.ttl` to use `sfcfg:ResourcePagePresentationPolicy` and `sfcfg:hasResourcePagePresentationPolicy`, with no default-specific ResourcePage presentation property.
 - Read `_mesh/_config/config.ttl` for existing-mesh commands when present and treat it as mesh-local config.
 - Preserve fail-closed behavior for unsupported terms, duplicate singletons, malformed selectors, unknown policy values, and unresolved conflicts.
 - Preserve command-scoped history overrides by compiling them into command-override policy bindings for any governed artifact or the relevant operation target.
-- Replace boolean-shaped Semantic Flow metadata command internals with a command-override ResourcePage presentation/profile or panel-selection policy.
-- Add supported built-in ResourcePage presentation profiles for default, all-panels, and no-panels behavior.
+- Replace boolean-shaped Semantic Flow metadata command internals with a command-override ResourcePage presentation or panel-selection policy.
+- Add supported built-in ResourcePage presentation policies for default, all-panels, and no-panels behavior.
+- Update effective-config and page-definition parsers to read `sfcfg:hasResourcePagePresentationPolicy`, reject removed ResourcePage presentation config terms, and use ResourcePage presentation policy naming internally where practical.
+- Remove or relocate runtime support for removed `machineLocalOperational`/`workspaceOperational` config-layer roles and portable local/remote path access-rule terms.
 - Update audit/explanation output to include participating config sources, command overrides, and selected high-level policy values by slot.
 
 ### Documentation and tasks
 
 - Update Weave CLI/user docs when durable config options are exposed.
+- Update ResourcePage docs and examples to use ResourcePage presentation policy terminology.
+- Update the config behavior spec to remove transitional `hasDefaultResourcePagePresentationConfig` language.
 - Update [[wa.task.2026.2026-05-24_2304-honor-mesh-config]] or leave a note there that this task supersedes its implementation model.
 - Update the SFLO replay recipe only after mesh-local policy config is honored at runtime.
+
+## Required Follow-Up From Initial Ontology Cleanup
+
+- [ ] Update `defaults/application.ttl`: replace `sfcfg:hasDefaultResourcePagePresentationConfig` with `sfcfg:hasResourcePagePresentationPolicy`, and replace `sfcfg:ResourcePagePresentationConfig` with `sfcfg:ResourcePagePresentationPolicy`.
+- [ ] Update `src/runtime/config/effective_config.ts`: replace removed ResourcePage presentation config/default constants, parse `sfcfg:hasResourcePagePresentationPolicy`, and stop treating ResourcePage presentation as a default-only property.
+- [ ] Update `src/runtime/weave/page_definition.ts`: replace `sfcfg:hasResourcePagePresentationConfig` with `sfcfg:hasResourcePagePresentationPolicy`, and rename parser helpers from config/profile language to policy language where the churn is worthwhile.
+- [ ] Update runtime tests and TTL fixtures in `src/runtime/config/effective_config_test.ts` and `src/runtime/weave/page_definition_test.ts`.
+- [ ] Update docs and specs that mention `ResourcePagePresentationConfig`, `hasResourcePagePresentationConfig`, or `hasDefaultResourcePagePresentationConfig`, especially `documentation/notes/wu.resource-pages.md` and [[sf.spec.2026-05-25-config-behavior]].
+- [ ] Remove or relocate Weave runtime references to removed portable operational config vocabulary, including `configLayerRole_machineLocalOperational`, `configLayerRole_workspaceOperational`, local path access rules, remote access rules, and related tests/defaults.
+- [ ] Decide whether host/workspace access rules are purely internal Weave runtime structures for now or belong in a Weave-specific ontology before reintroducing persisted terms.
 
 ## Testing
 
@@ -158,7 +178,7 @@ The CLI flag currently called `--include-semantic-flow-metadata` may remain as a
 - Unit-test that naming defaults remain layered scoped settings if they are not migrated to policy bindings.
 - Unit-test mesh-local history tracking policy for any governed artifact and role-specific same-layer exceptions.
 - Unit-test mesh-local ResourcePage generation policy values, especially generate versus suppress.
-- Unit-test mesh-local ResourcePage presentation profile selection for default, all-panels, and no-panels.
+- Unit-test mesh-local ResourcePage presentation policy selection for default, all-panels, and no-panels.
 - Unit-test `semantic-site-all-panels` includes the Semantic Flow metadata panel without the old metadata opt-in data requirement.
 - Unit-test `semantic-site-no-panels` preserves page shell/chrome while suppressing generated data panels.
 - Integration-test `weave`, `weave version`, and `weave generate` honoring `_mesh/_config/config.ttl` without repeated command flags.
@@ -184,7 +204,7 @@ The CLI flag currently called `--include-semantic-flow-metadata` may remain as a
 - [ ] Update `semantic-flow-config-ontology.ttl` with the chosen policy-binding and target vocabulary.
 - [ ] Clarify or revise config layer/attachment-role vocabulary around referenced config and Knop-inheritable config.
 - [ ] Update Weave default config TTL to express history tracking, ResourcePage generation, and ResourcePage presentation defaults using the chosen binding model.
-- [ ] Add or revise built-in ResourcePage presentation profiles for `semantic-site-default`, `semantic-site-all-panels`, and `semantic-site-no-panels`.
+- [ ] Add or revise built-in ResourcePage presentation policies for `semantic-site-default`, `semantic-site-all-panels`, and `semantic-site-no-panels`.
 - [ ] Design the Weave internal `CompiledConfig` / `PolicyIndex` runtime types and policy-resolution trace structure.
 - [ ] Implement policy-target parsing and validation, including explicit any-governed-artifact, artifact-role, and exact-artifact targets.
 - [ ] Implement policy resolution by queried target, layer, structural specificity, priority, and fail-closed conflict detection.
@@ -192,7 +212,8 @@ The CLI flag currently called `--include-semantic-flow-metadata` may remain as a
 - [ ] Replace `loadWeaveDefaultEffectiveConfig`/`loadEffectiveConfigForExecution` call sites with a mesh-root-aware loader that can compile defaults, mesh-local config, and command overrides.
 - [ ] Update command override handling so history overrides and metadata/presentation overrides compile into the command-override layer.
 - [ ] Wire generated ResourcePage rendering to selected ResourcePage presentation policy rather than a durable boolean metadata flag.
-- [ ] Add unit tests for ontology parsing, policy-target parsing, policy resolution, scoped settings, and ResourcePage profile behavior.
+- [ ] Apply the required follow-up updates from the initial ontology cleanup, including Weave defaults, parser constants, test fixtures, docs, and removed operational/access-rule vocabulary references.
+- [ ] Add unit tests for ontology parsing, policy-target parsing, policy resolution, scoped settings, and ResourcePage presentation policy behavior.
 - [ ] Add integration tests for mesh-local `_mesh/_config/config.ttl` changing history, ResourcePage generation, and ResourcePage presentation behavior.
 - [ ] Update CLI docs and the SFLO replay recipe when durable mesh-local config can replace repeated command overrides.
 - [ ] Run focused tests/checks during development, then run `deno task lint` for broader Weave structural changes and repo-appropriate checks for ontology/framework changes.

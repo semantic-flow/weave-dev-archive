@@ -994,3 +994,475 @@ I’m going to rename the presentation object/property in the ontology now and r
 # gpt-5.5_2026-05-25_1810_55
 
 The ontology rename is clean in the ontology file itself. I’m doing one targeted pass over Weave code/defaults now so I can give you the exact follow-up fixes without touching them.
+
+# gpt-5.5_2026-05-25_1813_18
+
+Yep. I updated the config ontology for the “no default” direction.
+
+Ontology changes made:
+- Removed `OperationalConfig`, `WorkspaceOperationalConfig`, `HostLocalOperationalConfig`.
+- Removed related operational layer roles and local/remote access-rule vocabulary from SF config ontology.
+- Renamed `ResourcePagePresentationConfig` to `ResourcePagePresentationPolicy`.
+- Replaced `hasResourcePagePresentationConfig` with `hasResourcePagePresentationPolicy`.
+- Removed `hasDefaultResourcePagePresentationConfig`.
+- Updated the presentation template/stylesheet/panel-selection property domains to `ResourcePagePresentationPolicy`.
+
+Code/docs fixes now required, but not made:
+
+- [defaults/application.ttl](../../../../../defaults/application.ttl:32)
+  - Replace `sfcfg:hasDefaultResourcePagePresentationConfig` with `sfcfg:hasResourcePagePresentationPolicy`.
+  - Replace `sfcfg:ResourcePagePresentationConfig` with `sfcfg:ResourcePagePresentationPolicy`.
+
+- [effective_config.ts](../../../../../src/runtime/config/effective_config.ts:27)
+  - Replace the removed default presentation IRI constant.
+  - Stop treating ResourcePage presentation as a default-only slot.
+  - Rename `ResourcePagePresentationProfile`/parser constants if we want the runtime language to match the ontology.
+  - Remove or relocate support for removed operational layer roles: `machineLocalOperational`, `workspaceOperational`.
+
+- [page_definition.ts](../../../../../src/runtime/weave/page_definition.ts:27)
+  - Replace `hasResourcePagePresentationConfig` with `hasResourcePagePresentationPolicy`.
+  - Probably rename parser helpers from “Config” to “Policy”.
+
+- Tests need fixture updates:
+  - [effective_config_test.ts](../../../../../src/runtime/config/effective_config_test.ts:314)
+  - [page_definition_test.ts](../../../../../src/runtime/weave/page_definition_test.ts:123)
+
+- Operational/local path code likely needs a design decision:
+  - Anything reading/writing `LocalPathAccessRule`, `RemoteAccessRule`, or host/workspace operational config terms should either become internal Weave runtime config or move to a Weave-specific ontology. Those terms no longer belong in portable SF config.
+
+- Docs/spec cleanup:
+  - [wu.resource-pages.md](../../../../../documentation/notes/wu.resource-pages.md:33)
+  - The config behavior spec still has a transitional mention of `hasDefaultResourcePagePresentationConfig`; that should be changed to the new policy term.
+
+I did not make those code changes yet. The ontology is now intentionally ahead of the runtime, so tests/parser behavior will likely fail until we update the runtime vocabulary and defaults.
+
+# User_2026-05-25_1908_34
+
+Do you want to update [wa.task.2026.2026-05-25_1609-config-policy-ontology-and-runtime.md](wa.task.2026.2026-05-25_1609-config-policy-ontology-and-runtime.md) with all those fixes required? Or a new task? Or just do them here.
+
+# gpt-5.5_2026-05-25_1908_47
+
+I’d update the existing task. These fixes are exactly the runtime/defaults/docs fallout from the ontology decision, so a new task would mostly create bookkeeping drag.
+
+My preferred shape:
+
+1. Add a **Required Runtime/Defaults Updates** section to `wa.task...config-policy-ontology-and-runtime`.
+2. Keep the operational/local-path relocation as a marked design decision inside that task, because that one may become more than a mechanical rename.
+3. Then do the implementation here in this conversation.
+
+I’d only split out a new task if we decide “Weave operational host/workspace config needs its own ontology/module” is a larger design slice. The ResourcePage presentation rename, app defaults update, parser/test/doc changes all belong in the current task.
+
+# User_2026-05-25_1945_35
+
+OK, update please
+
+# gpt-5.5_2026-05-25_1945_43
+
+I’ll fold the fallout list into the existing task so it stays as one implementation slice, with the operational/local-path piece called out as the part that may need a design split later.
+
+# gpt-5.5_2026-05-25_1945_52
+
+I found the task still had a few older “profile/default config” phrases baked in, so I’m going to update those while adding the concrete runtime/defaults/test fallout list. That should leave the task aligned with the ontology instead of carrying two mental models.
+
+# gpt-5.5_2026-05-25_1946_22
+
+The task is patched now. I’m doing a quick pass for stale terminology so we don’t leave contradictory instructions tucked lower in the note.
+
+# gpt-5.5_2026-05-25_1947_04
+
+Updated the existing task note: [wa.task.2026.2026-05-25_1609-config-policy-ontology-and-runtime.md](wa.task.2026.2026-05-25_1609-config-policy-ontology-and-runtime.md).
+
+I added the required follow-up checklist for the ontology cleanup, including Weave defaults, parser constants, page definition parsing, test fixtures, docs/spec cleanup, and the operational/access-rule relocation decision. I also cleaned up the stale “presentation profile/default config” language where it was no longer conceptually right.
+
+No code changes made. The archive repo also has Kato conversation-note modifications present, separate from the task edit.
+
+# User_2026-05-25_1947_04
+
+From the other conversation's feedback "Do not reuse core sflo:hasTargetArtifact for exact policy targets. Its domain is sflo:ArtifactResolutionTarget, so using it on config targets would infer the wrong type. Prefer a config-side property like sfcfg:targetsArtifact or sfcfg:hasExactArtifactTarget."
+
+I think there's a misunderstanding here, or maybe legacy baggage?
+
+# gpt-5.5_2026-05-25_1947_12
+
+I’ll check the actual core/config ontology wording before I opine, because this is exactly the kind of thing where a domain/range axiom quietly changes the answer.
+
+# gpt-5.5_2026-05-25_1949_27
+
+I think the feedback is basically right, but the confusion is understandable.
+
+`sflo:hasTargetArtifact` is not a generic “this thing targets this artifact” relation right now. In core it has:
+
+```ttl
+sflo:hasTargetArtifact
+  rdfs:domain sflo:ArtifactResolutionTarget ;
+  rdfs:range sflo:DigitalArtifact .
+```
+
+So if we use it on a config policy target like:
+
+```ttl
+_:target sflo:hasTargetArtifact <alice> .
+```
+
+then ordinary RDFS reasoning says:
+
+```ttl
+_:target a sflo:ArtifactResolutionTarget .
+```
+
+That is wrong unless we intentionally want policy target nodes to also be byte/source resolution targets. I don’t think we do. A policy target answers “what governed thing does this policy apply to?” An artifact resolution target answers “what bytes/state/source should this operation resolve?” Those are adjacent, but not the same animal.
+
+So my take:
+
+- Not legacy baggage exactly, but `sflo:hasTargetArtifact` is named broadly while semantically scoped narrowly.
+- We should not reuse it for policy targets unless we redesign core and broaden its domain, which feels like unnecessary blast radius.
+- A config-side property is cleaner.
+
+I’d prefer:
+
+```ttl
+sfcfg:targetsArtifact
+  rdfs:domain sfcfg:ExactArtifactPolicyTarget ;
+  rdfs:range sflo:DigitalArtifact .
+```
+
+over `sfcfg:hasExactArtifactTarget`, because the object is the artifact, not another target node. The class already carries the “exact policy target” meaning.
+
+So: the other conversation is catching a real RDF inference issue, not inventing one. The durable fix is a config-side predicate, probably `sfcfg:targetsArtifact`.
+
+# User_2026-05-25_2003_53
+
+Right, agree, can't use it directly. Do we need a <ConfigSource> class to keep uniformity with our other *Source stuff?
+
+# gpt-5.5_2026-05-25_2003_58
+
+I’m going to sanity-check the existing `*Source` vocabulary shape first, because “uniformity” is only worth paying for if it aligns with the ontology’s current source/target split.
+
+# gpt-5.5_2026-05-25_2006_52
+
+Yes, I think `sfcfg:ConfigSource` is worth adding.
+
+But I’d be precise about what it is: `ConfigSource` should be a source/resolution target for config bytes, not a kind of `Config`.
+
+Something like:
+
+```ttl
+sfcfg:ConfigSource
+  a rdfs:Class ;
+  rdfs:subClassOf sflo:ArtifactResolutionTarget ;
+  rdfs:comment "An artifact-resolution target that identifies config bytes or a ConfigArtifact to be resolved and parsed as authored config." .
+```
+
+Then `hasConfigSource`, `hasMeshConfigSource`, `hasKnopLocalConfigSource`, etc. can range over `sfcfg:ConfigSource` instead of generic `sflo:ArtifactResolutionTarget`.
+
+That gives us the uniformity you’re noticing:
+
+- `sflo:ReferenceSource`
+- `sflo:ExtractionSource`
+- `sflo:ImportSource`
+- `sflo:IntegrationSource`
+- `sflo:ResourcePageSource`
+- `sfcfg:ConfigSource`
+
+And it solves the earlier property issue cleanly: inside a `ConfigSource`, we *can* use `sflo:hasTargetArtifact`, because `ConfigSource` is intentionally an `ArtifactResolutionTarget`.
+
+Example shape:
+
+```ttl
+:mesh sfcfg:hasMeshConfigSource [
+  a sfcfg:ConfigSource ;
+  sflo:hasTargetArtifact :meshConfigArtifact ;
+  sflo:hasArtifactResolutionMode sflo:artifactResolutionMode_working
+] .
+```
+
+I would not add `MeshConfigSource`, `KnopLocalConfigSource`, etc. yet. The attachment property already carries that role. One `ConfigSource` class is enough unless different source classes later need different validation.
+
+So: yes to `ConfigSource`, no to making it another config layer or config content class. It is the locator/resolution wrapper for config, analogous to the other `*Source` resolution-target classes.
+
+# User_2026-05-25_2022_51
+
+Really we should rename ArtifactResolutionTarget to ArtifactResolutionRelator ArtifactResolver or anything else because subclassing something that's a target with Source in the name just invites human and LLM confusion.
+
+# gpt-5.5_2026-05-25_2024_05
+
+Strong agree on the smell, with one caveat: I would not rename it to `ArtifactResolver`.
+
+The thing is not the resolver. A resolver is the agent/component/process that resolves. The node is a specification/relator describing *what to resolve and how to constrain that resolution*. So better names are:
+
+- `ArtifactResolution` if we want short and broad.
+- `ArtifactResolutionRequest` if it is mostly an input to runtime.
+- `ArtifactResolutionBinding` if the relator aspect matters most.
+- `ArtifactResolutionSpec` if we want “not an event/result” to be clear.
+- `ArtifactLocatorBinding` if we want to emphasize it binds an artifact/resource to locator coordinates.
+
+My preference: **`ArtifactResolutionSpec`**.
+
+Then the current subclasses make much more sense:
+
+```ttl
+sflo:ReferenceSource rdfs:subClassOf sflo:ArtifactResolutionSpec .
+sflo:ExtractionSource rdfs:subClassOf sflo:ArtifactResolutionSpec .
+sflo:ImportSource rdfs:subClassOf sflo:ArtifactResolutionSpec .
+sflo:IntegrationSource rdfs:subClassOf sflo:ArtifactResolutionSpec .
+sflo:ResourcePageSource rdfs:subClassOf sflo:ArtifactResolutionSpec .
+sfcfg:ConfigSource rdfs:subClassOf sflo:ArtifactResolutionSpec .
+```
+
+That reads correctly: a source is a kind of resolution spec. It no longer sounds like a “source” is a kind of “target.”
+
+I’d avoid `ArtifactResolutionRelator` only because “relator” is conceptually accurate but a little ontology-jargony for the platform surface. `ArtifactResolutionSpec` is plain and still precise.
+
+There is blast radius, though: this term appears in config ontology comments/ranges and likely in Weave code/tests. Since we’re pre-v1.0, I’d still do it, but I’d put it in the same ontology/runtime task as a named cleanup:
+
+> Rename `sflo:ArtifactResolutionTarget` to `sflo:ArtifactResolutionSpec`; update subclasses, property domains/ranges, comments, SHACL, defaults, and runtime parser names. Do not keep a compatibility alias unless a concrete pre-v1.0 migration need appears.
+
+That rename would remove a recurring conceptual tripwire.
+
+# gpt-5.5_2026-05-25_2024_06
+
+Strong agree on the smell, with one caveat: I would not rename it to `ArtifactResolver`.
+
+The thing is not the resolver. A resolver is the agent/component/process that resolves. The node is a specification/relator describing *what to resolve and how to constrain that resolution*. So better names are:
+
+- `ArtifactResolution` if we want short and broad.
+- `ArtifactResolutionRequest` if it is mostly an input to runtime.
+- `ArtifactResolutionBinding` if the relator aspect matters most.
+- `ArtifactResolutionSpec` if we want “not an event/result” to be clear.
+- `ArtifactLocatorBinding` if we want to emphasize it binds an artifact/resource to locator coordinates.
+
+My preference: **`ArtifactResolutionSpec`**.
+
+Then the current subclasses make much more sense:
+
+```ttl
+sflo:ReferenceSource rdfs:subClassOf sflo:ArtifactResolutionSpec .
+sflo:ExtractionSource rdfs:subClassOf sflo:ArtifactResolutionSpec .
+sflo:ImportSource rdfs:subClassOf sflo:ArtifactResolutionSpec .
+sflo:IntegrationSource rdfs:subClassOf sflo:ArtifactResolutionSpec .
+sflo:ResourcePageSource rdfs:subClassOf sflo:ArtifactResolutionSpec .
+sfcfg:ConfigSource rdfs:subClassOf sflo:ArtifactResolutionSpec .
+```
+
+That reads correctly: a source is a kind of resolution spec. It no longer sounds like a “source” is a kind of “target.”
+
+I’d avoid `ArtifactResolutionRelator` only because “relator” is conceptually accurate but a little ontology-jargony for the platform surface. `ArtifactResolutionSpec` is plain and still precise.
+
+There is blast radius, though: this term appears in config ontology comments/ranges and likely in Weave code/tests. Since we’re pre-v1.0, I’d still do it, but I’d put it in the same ontology/runtime task as a named cleanup:
+
+> Rename `sflo:ArtifactResolutionTarget` to `sflo:ArtifactResolutionSpec`; update subclasses, property domains/ranges, comments, SHACL, defaults, and runtime parser names. Do not keep a compatibility alias unless a concrete pre-v1.0 migration need appears.
+
+That rename would remove a recurring conceptual tripwire.
+
+# User_2026-05-25_2041_36
+
+OK, ArtifactResolutionSpec is much better. Is there a target predicate rename in the cards too?
+
+# gpt-5.5_2026-05-25_2042_28
+
+Yes, I think a predicate rename should be in the cards too, but selectively.
+
+If the class becomes `ArtifactResolutionSpec`, then predicates like these become awkward:
+
+```ttl
+sflo:hasTargetArtifact
+sflo:hasTargetLocatedFile
+sflo:hasTargetDistribution
+sflo:hasTargetArtifactHistory
+sflo:hasRequestedTargetState
+sflo:targetLocalRelativePath
+sflo:hasTargetRepositorySource
+```
+
+The repeated “target” was doing work when the subject was `ArtifactResolutionTarget`; after the class rename, it starts to sound like there are policy targets, source targets, and resolution targets all colliding.
+
+I’d prefer this family:
+
+```ttl
+sflo:resolvesArtifact
+sflo:resolvesLocatedFile
+sflo:resolvesDistribution
+sflo:resolvesArtifactHistory
+sflo:requestsHistoricalState
+sflo:sourceLocalRelativePath
+sflo:hasRepositorySource
+```
+
+Maybe `resolvesHistoricalState` instead of `requestsHistoricalState` if we want the whole family to read uniformly. But I like `requestsHistoricalState` because state/history resolution can still have mode/fallback behavior.
+
+For exact artifact policy targeting, still use config-side naming:
+
+```ttl
+sfcfg:targetsArtifact
+```
+
+So the split becomes clear:
+
+- `sflo:resolvesArtifact`: resolution/source spec says “resolve bytes/state for this artifact.”
+- `sfcfg:targetsArtifact`: policy target says “this policy applies to this artifact.”
+
+That distinction is worth protecting. It avoids the exact confusion that started this thread.
+
+# User_2026-05-25_2126_10
+
+I think I like target better that resolves. Resolution is a runtime concern. But if we're revamping anyhow, maybe just targetArtifact, targetLocatedFile, targetManifestation (instead of targetDistribution
+
+hasArtifactResolutionFallbackPolicy should maybe be hasFallbackArtifactResolutionSpec so that things can be recursive. i.e., all the expressive power of the spec can be used in the fallback, and fallbacks can have fallbacks.
+
+For the observation stuff, I feel like instead of all the mirrored observational Artifact/History/state/LocatedFile/etc properties an ArtifactResolutionObservation you have an  ArtifactResolutionSpec and then the byte-specific info.
+
+# gpt-5.5_2026-05-25_2126_18
+
+I’ll inspect the current resolution-spec and observation block so I can respond against the actual shape rather than just the name we remember.
+
+# gpt-5.5_2026-05-25_2129_23
+
+Yes, I like this direction better than my `resolves*` suggestion.
+
+`target*` is fine if the class is no longer `ArtifactResolutionTarget`. The bad part was “Source subclass of Target,” not the word target itself. So this reads cleanly:
+
+```ttl
+sflo:ArtifactResolutionSpec
+  sflo:targetArtifact ...
+  sflo:targetLocatedFile ...
+  sflo:targetManifestation ...
+  sflo:targetArtifactHistory ...
+  sflo:targetHistoricalState ...
+```
+
+I also agree with `targetManifestation` over `targetDistribution`. Inside SF, the meaningful modeled thing is `ArtifactManifestation`. If we later truly need arbitrary external `dcat:Distribution`, I’d add a deliberately named escape hatch like `targetExternalDistribution`, not make the normal path generic.
+
+Strong yes on recursive fallback specs:
+
+```ttl
+sflo:hasFallbackArtifactResolutionSpec
+  rdfs:domain sflo:ArtifactResolutionSpec ;
+  rdfs:range sflo:ArtifactResolutionSpec .
+```
+
+That is much more expressive than `ArtifactResolutionFallbackPolicy`. The enum can probably shrink or disappear. `exactOnly` becomes “no fallback spec.” “Accept latest in requested history” becomes a fallback spec targeting the same history with latest-state mode. That’s nicer and more inspectable.
+
+And yes, I think your observation simplification is right. Instead of mirrored observed target predicates, an observation can point to the concrete spec that actually resolved:
+
+```ttl
+:sourceSpec
+  a sflo:ImportSource ;
+  sflo:targetArtifact :aliceData ;
+  sflo:hasResolutionObservation :obs1 .
+
+:obs1
+  a sflo:ArtifactResolutionObservation ;
+  sflo:observedArtifactResolutionSpec [
+    a sflo:ArtifactResolutionSpec ;
+    sflo:targetHistoricalState :s0002 ;
+    sflo:targetManifestation :ttl ;
+    sflo:targetLocatedFile :alice-data-v2-ttl
+  ] ;
+  sflo:observedContentDigest "sha256:..." ;
+  sflo:observedAt "..."^^xsd:dateTime .
+```
+
+That removes the mirror-property crop, gives observations the full expressive power of specs, and makes fallback evidence natural: the requested spec links to observations; each observation says which concrete spec actually won.
+
+I’d probably name the link `sflo:observedArtifactResolutionSpec` or `sflo:hasObservedArtifactResolutionSpec`. Slight preference for `observedArtifactResolutionSpec`, matching your shorter predicate style.
+
+# User_2026-05-25_2204_30
+
+OK, I think we're agreed. You can reference [ont.completed.2026.2026-05-24_1256-artifact-resolution-observations.md](ont.completed.2026.2026-05-24_1256-artifact-resolution-observations.md) for some context on what needs to change. Do you want a task note?
+
+# gpt-5.5_2026-05-25_2204_49
+
+Yes. This is big enough for a fresh task note.
+
+I would not mutate `ont.completed...artifact-resolution-observations` beyond maybe referencing it from the new task. That note records a completed intermediate design; this new work intentionally revises that design.
+
+Suggested task:
+
+`ont.task.2026.2026-05-26_artifact-resolution-spec-and-observation-cleanup.md`
+
+Scope I’d put in it:
+
+- Rename `sflo:ArtifactResolutionTarget` to `sflo:ArtifactResolutionSpec`.
+- Rename target predicates to shorter spec-side names:
+  - `hasTargetArtifact` -> `targetArtifact`
+  - `hasTargetLocatedFile` -> `targetLocatedFile`
+  - `hasTargetDistribution` -> `targetManifestation`
+  - `hasRequestedTargetHistory` -> `targetArtifactHistory`
+  - `hasRequestedTargetState` -> `targetHistoricalState`
+  - probably `targetLocalRelativePath` stays or becomes `targetLocalPath`.
+- Replace fallback enum policy with recursive `hasFallbackArtifactResolutionSpec`.
+- Simplify `ArtifactResolutionObservation` so it links to an observed/concrete `ArtifactResolutionSpec` plus byte evidence like digest, timestamp, observer.
+- Add `sfcfg:ConfigSource` as a subclass of `sflo:ArtifactResolutionSpec`.
+- Update SHACL, Weave source-registry rendering/parsing, fixtures, conformance examples, and docs.
+
+I’d keep this separate from the config-policy task. They touch each other through `ConfigSource`, but the core artifact-resolution cleanup has its own ontology blast radius and deserves its own checklist.
+
+# User_2026-05-25_2206_19
+
+OK, fill it.
+
+# gpt-5.5_2026-05-25_2206_27
+
+I’ll fill the new ontology task with the cleanup scope we just converged on, and I’ll use the completed observation note as context rather than editing that historical record.
+
+# gpt-5.5_2026-05-25_2208_16
+
+The completed observation note confirms this is a revision of a completed intermediate shape, not a tiny rename. I’m going to write the new task as a clean contract-change ledger with the old note referenced as background and the recursive fallback/observed-spec model as the new direction.
+
+# gpt-5.5_2026-05-25_2217_45
+
+The task is filled. I’m doing a quick consistency pass now, mostly looking for empty sections or accidental old terminology that would muddy the task.
+
+# gpt-5.5_2026-05-25_2219_01
+
+Filled the task note: [ont.task.2026.2026-05-26_2205-artifact-resolution-spec-and-observation-cleanup.md](ont.task.2026.2026-05-26_2205-artifact-resolution-spec-and-observation-cleanup.md).
+
+It now covers the `ArtifactResolutionSpec` rename, target predicate renames, recursive fallback specs, observed concrete spec shape, `sfcfg:ConfigSource`, SHACL/runtime/framework fallout, tests, non-goals, and an implementation checklist. I left the completed observation note alone and referenced it as the intermediate design this task supersedes.
+
+No code or ontology files changed in this step.
+
+# User_2026-05-25_2235_10
+
+implement here or in a new conersation?
+
+# gpt-5.5_2026-05-25_2235_18
+
+I’d start a new conversation for implementation.
+
+This thread did useful design work, but it now has several overlapping task streams in the air: config policy ontology/runtime, ResourcePage presentation policy cleanup, operational config removal, and now the core artifact-resolution spec cleanup. Implementation will need a clear, fresh execution context so we don’t accidentally drag the wrong task along for the ride.
+
+Suggested opening prompt:
+
+```text
+Please implement [[ont.task.2026.2026-05-26_2205-artifact-resolution-spec-and-observation-cleanup]].
+
+Start by reviewing AGENTS.md, [[wd.general-guidance]], the task note, [[ont.completed.2026.2026-05-24_1256-artifact-resolution-observations]], and the current SFLO core/config ontologies. Then make the ontology/SHACL/runtime/test/doc changes needed for the first coherent slice. Keep the config policy task separate unless a direct dependency such as sfcfg:ConfigSource is required.
+```
+
+I’d do **artifact-resolution cleanup first**, then return to config policy. It changes the substrate that `ConfigSource` wants to sit on, so doing config policy first would be building on a term we already know we want to rename.
+
+# User_2026-05-25_2245_58
+
+sorry, couple more things from the earlier review:
+
+"Remove configLayerRole_reusableConfig from the default precedence profile. It can be a provenance/source role elsewhere, but keeping it ordered as a layer fights the new spec’s “reuse is not a layer” rule." I agree but maybe we took care of this?
+
+"Treat config-scope ResourcePage presentation defaults as policy bindings. Keep page-local sfcfg:hasResourcePagePresentationConfig on sflo:ResourcePageDefinition as direct adjacency." I'm not sure about this one... but I think the page definition shouldn't have config.
+
+"Let semantic-site-no-panels have zero generated panel selections. Current parser rejects empty panel selections, and SHACL currently warns on zero selections; Weave must relax the parser for that profile." Good! relax it. We'll have a page with a title, and maybe a list of classes, plus the breadcrumbs. Maybe we should use these for  intermediary pages for IRIs that extraction exposes indirectly.
+
+"Add a non-opt-in metadata data requirement or equivalent for semantic-site-all-panels. The current runtime only makes the metadata panel available through includeSemanticFlowMetadata, so “all panels” needs a real policy-level path, not a hidden boolean." Not sure about this, but i think we addressed
+
+"Make the first runtime API query by target object, not only by artifact role. If we keep role-only helpers as the core surface, exact-artifact and ResourcePage selectors will be awkward immediately." what?
+
+Questions
+
+"For old direct default terms like hasDefaultHistoryTrackingPolicy, should I remove live Weave authoring/parser support outright, while leaving released ontology history alone? My vote: yes remove."were going to reset history several more times before v1.0.0
+
+For first-slice diagnostics, is structured logger output plus an in-memory resolution trace enough? I’d avoid persisted ResolvedConfig/ConfigResolutionRecord for now. [agree]
+
+"Should exact artifact policy targets be accepted in mesh config in this slice, or should we add the vocabulary and parser but reject them until query call sites can provide full governed-artifact context? My preference: implement them now, using mesh inventory as the governance authority." [ok?]
+
+# gpt-5.5_2026-05-25_2246_09
+
+I’ll check the current ontology/defaults/runtime terms before answering, especially for `configLayerRole_reusableConfig` and the panel-selection behavior. There are a couple of “I think we addressed this” bits where the files should tell us quickly.
