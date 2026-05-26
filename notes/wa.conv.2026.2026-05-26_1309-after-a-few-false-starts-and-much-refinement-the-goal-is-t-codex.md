@@ -767,3 +767,75 @@ docs: complete fixture realignment task note
 # User_2026-05-26_1502_37
 
 Please take care of the mesh-* commits yourself.
+
+# gpt-5.5_2026-05-26_1502_56
+
+Yep, I can handle the fixture repos. I’ll check each `mesh-*` worktree first; if there’s anything uncommitted I’ll commit it, and if the regeneration already produced commits I’ll leave the branch refs as-is and report exactly what’s ready to push.
+
+# gpt-5.5_2026-05-26_1503_21
+
+Done in the sense that there were no dirty `mesh-*` worktrees left to commit. The fixture-ladder runs already created the local commits:
+
+- `mesh-alice-bio`: `main` at `ddb051a` / `a.27-carol-woven`
+- `mesh-sidecar-fantasy-rules`: `main` at `8c6bd12` / `a.17-all-remaining-terms-woven`
+- `mesh-branch-fantasy-rules`: `gh-pages` locally at `091c3b0` / `a.15-extracted-term-references-woven`; `main` remains clean at `origin/main`
+
+I did not push anything. The next step for these repos is pushing the regenerated branch refs, with force/lease for the rewritten `a.*` and generated `gh-pages`/`main` refs where appropriate.
+
+# User_2026-05-26_1526_54
+
+ok, but my mesh-* checkouts (could you call them worktrees?) in weave/dependencies are ahead-and-behind. I think they can just be ffwded with lease?
+
+# gpt-5.5_2026-05-26_1527_12
+
+Yes, but tiny terminology correction: they are dependency repo worktrees, and they are not fast-forwardable. They’re diverged because we regenerated the fixture history, so the safe push is a non-fast-forward update with `--force-with-lease`.
+
+So conceptually: “force-push generated fixture refs with lease” is right.
+
+For example:
+
+```bash
+git -C dependencies/github.com/semantic-flow/mesh-alice-bio push --force-with-lease origin main 'a.*' assets
+git -C dependencies/github.com/semantic-flow/mesh-sidecar-fantasy-rules push --force-with-lease origin main 'a.*'
+git -C dependencies/github.com/semantic-flow/mesh-branch-fantasy-rules push --force-with-lease origin 'a.*' gh-pages
+```
+
+I’d avoid saying “ffwd” here, because Git will reject these as fast-forwards. The lease is the safety rail: it only rewrites the remote if it still matches what your local `origin/*` says it was.
+
+# User_2026-05-26_1617_43
+
+So are we ready for the config policy task:?
+
+# gpt-5.5_2026-05-26_1618_03
+
+I’ll do a quick status sweep so I can answer from the actual workspace state, not just from memory.
+
+# gpt-5.5_2026-05-26_1618_11
+
+The top-level and dependency worktrees look clean now. I’m doing one extra all-refs check for the fixture repos because `git status` only tells us about the currently checked-out branch.
+
+# gpt-5.5_2026-05-26_1618_31
+
+Yes, we’re ready locally.
+
+The important caveat: the `mesh-*` current branches are clean/in sync, but the generated `a.*` fixture refs are still diverged from `origin`. That won’t block local config-policy work, but it can bite CI or another checkout that needs those fixture refs. I’d push the `a.*` refs with `--force-with-lease` before expecting remote validation to be happy.
+
+Otherwise the workspace is in a good state for config policy: Weave is clean, SFF is clean, artifact-resolution fixture cleanup is done, and the config task now builds on `ArtifactResolutionSpec` instead of stale terms.
+
+I’d start the config policy task with the “Required Follow-Up From Initial Ontology Cleanup” section: defaults/application.ttl, effective config parser, ResourcePage presentation policy naming, removal of reusableConfig layer, then mesh-local config compiler/runtime.
+
+# User_2026-05-26_1619_13
+
+push everything to origin please
+
+# gpt-5.5_2026-05-26_1619_33
+
+I’ll push the committed state across the repos we touched, and I’ll verify status first so I don’t miss a dirty worktree or push the wrong ref shape. For the generated fixture refs, I’ll use `--force-with-lease` because those histories were regenerated.
+
+# gpt-5.5_2026-05-26_1619_57
+
+The only dirty worktree is the archive conversation note; Weave, SFF, and the fixture repo checkouts are clean on their checked-out branches. I’m going to commit that archive update, then push archive plus the regenerated fixture refs.
+
+# gpt-5.5_2026-05-26_1620_09
+
+The archive diff is just the continuing conversation capture, so I’m committing that note. Then I’ll push the three generated fixture ref sets with leases.
