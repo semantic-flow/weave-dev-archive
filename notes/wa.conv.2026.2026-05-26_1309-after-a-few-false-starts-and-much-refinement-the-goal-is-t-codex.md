@@ -839,3 +839,15 @@ The only dirty worktree is the archive conversation note; Weave, SFF, and the fi
 # gpt-5.5_2026-05-26_1620_09
 
 The archive diff is just the continuing conversation capture, so I’m committing that note. Then I’ll push the three generated fixture ref sets with leases.
+
+# gpt-5.5_2026-05-26_1620_30
+
+Archive, Alice, and Sidecar pushes succeeded. I’m pushing the branch-published fixture refs now, including `gh-pages` as a no-op/safety push if it is already current.
+
+# gpt-5.5_2026-05-26_1620_51
+
+All requested fixture pushes completed. I’m doing a final fetch/status pass now so the local `origin/*` refs reflect the pushes and we can see whether anything remains ahead or dirty.
+
+# gpt-5.5_2026-05-26_1621_17
+
+The only remaining change is the conversation archive note updating itself with the push work. I’ll commit and push that one more time; the fixture refs are now confirmed no longer diverged.
