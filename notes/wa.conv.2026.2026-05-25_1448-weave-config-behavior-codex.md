@@ -561,3 +561,436 @@ Filled out the new task: [wa.task.2026.2026-05-25_1609-config-policy-ontology-an
 I framed it as the current implementation contract, with the older honor-mesh-config task as background. It now covers ontology vocabulary, scoped settings versus policy bindings, governed artifacts, selector specificity, ResourcePage profiles, runtime `CompiledConfig` / `PolicyIndex`, command overrides, testing, non-goals, and an implementation checklist.
 
 I didn’t run lint/tests since this was a task-note edit only. I also left the other modified/untracked archive notes alone.
+
+# User_2026-05-25_1625_27
+
+OK, ready for implementation? New conversation or this one? Should we do a weave version bump + PR to main first?
+
+# gpt-5.5_2026-05-25_1625_36
+
+I’ll sanity-check the current worktree state before giving a recommendation, because “version bump + PR first” depends a lot on whether the pending changes are coherent or mixed with other fixture work.
+
+# gpt-5.5_2026-05-25_1627_00
+
+Yes, ready conceptually.
+
+I’d start a **new conversation** for implementation. This one has useful design history, but it also has old model residue. The new thread should point at:
+
+- `[[sf.spec.2026-05-25-config-behavior]]`
+- `[[wa.task.2026.2026-05-25_1609-config-policy-ontology-and-runtime]]`
+- maybe the old `[[wa.task.2026.2026-05-24_2304-honor-mesh-config]]` only as background
+
+On version bump + PR: **yes, I’d do that first if the current Weave release branch is otherwise ready**. You’re on `weave` branch `next/v0.2.0`, and the actual Weave worktree looks clean. The config-policy implementation is going to be a real cross-cutting change, so I’d rather not mix it with release-note/fixture/versioning work.
+
+Suggested sequence:
+
+1. Finish/currently validate the v0.2.0 release state.
+2. Bump/version and PR `next/v0.2.0` to `main`.
+3. Start a new branch/conversation for config policy ontology/runtime.
+4. First implementation pass should probably be ontology terms + default config migration + Weave `CompiledConfig` skeleton, before wiring every command path.
+
+One small note: `weave-dev-archive` still has modified conversation notes, but `weave`, `sflo`, and `semantic-flow-framework` currently look clean from `git status`. So the PR-first path seems nicely low-friction.
+
+# User_2026-05-25_1708_52
+
+First comment in the other conversation was "Add an explicit sfcfg:hasPolicyBinding attachment property. The task names PolicyBinding, bindsPolicy, and appliesToPolicyTarget, but the config-to-binding edge should be first-class."
+
+Does that make sense?
+
+# gpt-5.5_2026-05-25_1708_59
+
+Yes, that makes sense. I’d make `sfcfg:hasPolicyBinding` first-class.
+
+Without it, you have policy definitions and targets floating around, but no clear authored edge saying “this config source contributes this binding at this attachment/layer.” You could infer bindings by scanning all `sfcfg:PolicyBinding` nodes in the same document, but that is sloppy RDF hygiene and dangerous once reusable/referenced config enters the picture.
+
+The shape should be explicit:
+
+```ttl
+<> a sfcfg:MeshConfig ;
+  sfcfg:hasPolicyBinding <#history-versioned-for-governed-artifacts> .
+
+<#history-versioned-for-governed-artifacts> a sfcfg:PolicyBinding ;
+  sfcfg:bindsPolicy <#history-versioned-policy> ;
+  sfcfg:appliesToPolicyTarget <#governed-artifacts> .
+```
+
+I’d define it roughly as:
+
+- domain: `sfcfg:Config`
+- range: `sfcfg:PolicyBinding`
+- meaning: the config contributes this policy binding at the config’s effective attachment point
+- validation: a `PolicyBinding` not reachable from an active config via `hasPolicyBinding` should not affect resolution
+
+That last point matters. It lets reusable config documents contain policy definitions, targets, examples, or dormant bindings without everything automatically becoming active.
+
+# User_2026-05-25_1709_33
+
+I thought we were going to use a relator.
+
+# gpt-5.5_2026-05-25_1709_39
+
+I think we are using a relator: `sfcfg:PolicyBinding` is the relator.
+
+The distinction is:
+
+- `sfcfg:PolicyDefinition` says the reusable policy value: “history tracking = versioned.”
+- `sfcfg:PolicyTarget` says what can be matched: “any governed artifact,” “payload artifacts,” etc.
+- `sfcfg:PolicyBinding` is the relator that connects policy + target and carries binding-specific metadata like priority.
+
+But we still need an attachment edge from the config to the relator:
+
+```ttl
+<> sfcfg:hasPolicyBinding <#binding> .
+
+<#binding> a sfcfg:PolicyBinding ;
+  sfcfg:bindsPolicy <#policy> ;
+  sfcfg:appliesToPolicyTarget <#target> .
+```
+
+That does not stop it from being a relator. It activates/declares which relators this config contributes. Otherwise every `PolicyBinding` node in the graph risks becoming active just because it exists.
+
+So: `PolicyBinding` is the relator; `hasPolicyBinding` is the config-to-relator attachment.
+
+# User_2026-05-25_1710_34
+
+would bindsPolicy be the inverse of hasPolicyBinding?
+
+# gpt-5.5_2026-05-25_1710_56
+
+No. `bindsPolicy` should not be the inverse of `hasPolicyBinding`.
+
+They connect different things:
+
+```ttl
+<> sfcfg:hasPolicyBinding <#binding> .
+
+<#binding> sfcfg:bindsPolicy <#policy> ;
+  sfcfg:appliesToPolicyTarget <#target> .
+```
+
+Meanings:
+
+- `hasPolicyBinding`: `Config -> PolicyBinding`
+  - “this config contributes/activates this binding”
+- `bindsPolicy`: `PolicyBinding -> PolicyDefinition`
+  - “this binding uses this policy definition”
+
+The inverse of `hasPolicyBinding` would be something like:
+
+```ttl
+sfcfg:policyBindingInConfig
+```
+
+or maybe `sfcfg:policyBindingForConfig`, though I’m not sure we need to name it.
+
+The inverse of `bindsPolicy` would be something like:
+
+```ttl
+sfcfg:policyBoundBy
+```
+
+Also probably not needed.
+
+A good mental model:
+
+```ttl
+Config --hasPolicyBinding--> Binding --bindsPolicy--> PolicyDefinition
+                                 |
+                                 +--appliesToPolicyTarget--> PolicyTarget
+```
+
+So the binding is the relator in the middle.
+
+# User_2026-05-25_1712_21
+
+next comment was "Use explicit PolicyFamily resources, even if we also add subclasses. That keeps the runtime PolicyIndex generic and makes diagnostics less magical." -- can we do those as enums instead of classes?
+
+# gpt-5.5_2026-05-25_1712_27
+
+Yes. I’d make policy families controlled vocabulary instances, not classes.
+
+Something like:
+
+```ttl
+sfcfg:PolicyFamily a rdfs:Class .
+
+sfcfg:policyFamily_historyTracking
+  a sfcfg:PolicyFamily ;
+  rdfs:label "history tracking" .
+
+sfcfg:policyFamily_resourcePageGeneration
+  a sfcfg:PolicyFamily ;
+  rdfs:label "ResourcePage generation" .
+
+sfcfg:policyFamily_resourcePagePresentation
+  a sfcfg:PolicyFamily ;
+  rdfs:label "ResourcePage presentation" .
+```
+
+Then:
+
+```ttl
+<#history-versioned-policy> a sfcfg:PolicyDefinition ;
+  sfcfg:hasPolicyFamily sfcfg:policyFamily_historyTracking ;
+  sfcfg:hasHistoryTrackingPolicy sfcfg:historyTrackingPolicy_versioned .
+```
+
+That is enum-like RDF: `PolicyFamily` is the category class, and the actual enum values are named individuals.
+
+I agree with the comment’s motivation. Explicit family values make the runtime `PolicyIndex` straightforward:
+
+```ts
+family: "historyTracking" | "resourcePageGeneration" | "resourcePagePresentation"
+```
+
+and diagnostics can say “conflict in policyFamily_historyTracking” without inferring family from class shape. Subclasses can still help validation or documentation, but the family enum should be the runtime key.
+
+# User_2026-05-25_1715_13
+
+what's the point of policyFamily? It's kind of just a marker? What weight does it pull?
+
+# gpt-5.5_2026-05-25_1715_23
+
+`policyFamily` pulls weight mainly in resolution, not in author-facing meaning.
+
+It gives the runtime a clean answer to: **which bindings are competing with each other?**
+
+Example: these two policies might target the same artifact:
+
+```ttl
+<#history-versioned-policy>
+  sfcfg:hasPolicyFamily sfcfg:policyFamily_historyTracking ;
+  sfcfg:hasHistoryTrackingPolicy sfcfg:historyTrackingPolicy_versioned .
+
+<#page-generate-policy>
+  sfcfg:hasPolicyFamily sfcfg:policyFamily_resourcePageGeneration ;
+  sfcfg:hasResourcePageGenerationPolicy sfcfg:resourcePageGenerationPolicy_generate .
+```
+
+They overlap by target, but they do not conflict because they are different families. The policy index can bucket by family first, then resolve only within that bucket.
+
+It also helps with:
+
+- diagnostics: “conflict in history tracking policy” rather than “two opaque policy definitions had incompatible properties”
+- validation: each family has expected value predicates
+- generic runtime code: one `PolicyIndex.resolve(family, target)` path instead of hard-coding every policy class
+- mixed policy definitions: if we ever allow a definition to carry multiple concerns, family tells the resolver which dimension is being queried
+- future extension: new policy families can be added without rewriting the binding model
+
+Could we infer family from the value predicate like `hasHistoryTrackingPolicy`? Yes, for simple cases. But then the runtime has to maintain predicate-to-family magic anyway. Making it explicit moves that magic into RDF where authors and diagnostics can see it.
+
+So: it is a marker, but a useful one. It is the bucket key for conflict resolution.
+
+# User_2026-05-25_1719_11
+
+But just because two policies are of the same family doesn't mean they necessarily conflict. I feel like conflict detection is mostly on the predicate level. SHACL. expected value predicates are per-predicate. Your examples targeting the same artifact doesn't clinch anything for me.
+
+# gpt-5.5_2026-05-25_1719_28
+
+I think your pushback is right. I overstated `policyFamily`.
+
+Same family is not enough to define conflict. Conflict is really on the **resolved policy slot**, which is probably the value predicate or a value-predicate-equivalent dimension.
+
+For example, if a future “ResourcePage presentation” family includes:
+
+- `sfcfg:hasDefaultResourcePagePresentationConfig`
+- `sfcfg:hasResourcePageStylesheet`
+- `sfcfg:hasResourcePagePanelSelection`
+
+those are not automatically mutually conflicting just because they are all presentation-ish. Some may be singleton, some additive, some ordered, some mergeable. SHACL and resolver behavior need to know the predicate/slot, not only the family.
+
+So I’d revise my position:
+
+- `PolicyFamily` is optional grouping/diagnostic metadata.
+- It should not be the core conflict key.
+- The runtime `PolicyIndex` should primarily key on a **policy slot** or **policy value predicate**.
+- Conflict detection should be per slot, with slot-specific cardinality/merge semantics.
+
+A cleaner model might be:
+
+```ttl
+<#history-versioned-policy> a sfcfg:PolicyDefinition ;
+  sfcfg:setsPolicyProperty sfcfg:hasHistoryTrackingPolicy ;
+  sfcfg:hasHistoryTrackingPolicy sfcfg:historyTrackingPolicy_versioned .
+```
+
+or we just infer the slot from the value predicate:
+
+```ttl
+<#history-versioned-policy> a sfcfg:PolicyDefinition ;
+  sfcfg:hasHistoryTrackingPolicy sfcfg:historyTrackingPolicy_versioned .
+```
+
+Then the resolver says: this policy definition sets the `hasHistoryTrackingPolicy` slot. Conflicts are between bindings that set the same slot for overlapping targets after layer/specificity/priority resolution.
+
+If we keep family at all, I’d demote it to something like:
+
+```ttl
+sfcfg:hasPolicyGroup sfcfg:policyGroup_tracking .
+```
+
+Useful for docs/UI/log grouping, not normative conflict behavior.
+
+So yes: the implementation comment’s motivation is good, but `PolicyFamily` may be the wrong abstraction if it becomes more than a label. Predicate/slot is the thing that carries semantic weight.
+
+# User_2026-05-25_1722_57
+
+Give me a prompt justifying the removal of PolicyFamily
+
+# gpt-5.5_2026-05-25_1723_24
+
+Use this:
+
+```text
+Please remove `PolicyFamily` from the proposed config policy-binding model.
+
+Rationale: conflict detection and merge semantics are not correctly determined by broad policy families. Two policy definitions being in the same family does not mean they conflict, and two policies in a broad area like ResourcePage presentation may set different slots with different merge/cardinality rules. The meaningful unit for resolution is the policy slot/value predicate, such as `sfcfg:hasHistoryTrackingPolicy` or `sfcfg:hasResourcePageGenerationPolicy`, not a family label.
+
+The runtime should identify which policy slot a `PolicyDefinition` sets, either by inspecting supported value predicates directly or through an explicit slot/property marker if that proves useful. Conflicts are then detected between applicable bindings that set the same policy slot for overlapping targets after layer precedence, selector specificity, and optional priority resolution.
+
+`PolicyFamily` can be reintroduced later as non-normative grouping metadata for UI/logging/docs if needed, but it should not be part of the normative resolution model now. Removing it keeps the ontology smaller, avoids a misleading abstraction, and aligns validation with SHACL-style per-predicate constraints.
+```
+
+# User_2026-05-25_1737_25
+
+Next in my sights for simnplification: <ResourcePagePresentationConfig> -- I don't think we should have different kinds of configs other than the level-based ones. I also think we should remove <OperationalConfig>/<WorkspaceOperationalConfig>/<HostLocalOperationalConfig>  -- if there's something specific to an eventual Weave service, it can have its own ontology. But that doesn't belong here in the SF side.
+
+Regarding ArtifactRole. 
+
+Only two of these don't have corresponding core ontology classes: artifactRole_resourcePageStylesheet and artifactRole_resourcePageTemplate. Maybe it would expand later. How are we going to tell that things are ResourcePageStylesheets/Templates if they don't have classes?
+
+# gpt-5.5_2026-05-25_1737_44
+
+I agree with the simplification direction.
+
+`ResourcePagePresentationConfig` should probably stop being a kind of `Config`. It is not a level/attachment scope like application, mesh, or Knop. It is a **policy value/profile** selected by config. I’d rename/reframe it as something like:
+
+```ttl
+sfcfg:ResourcePagePresentationProfile
+```
+
+or maybe:
+
+```ttl
+sfcfg:ResourcePagePresentation
+```
+
+Then application/mesh/Knop config can select it through a policy binding or scoped default. The profile itself can still contain panel selections, templates, stylesheets, etc., but it is not “config” in the same sense.
+
+On `OperationalConfig` / `WorkspaceOperationalConfig` / `HostLocalOperationalConfig`: yes, I’d remove them from the Semantic Flow config ontology. They are runtime trust/environment concepts. A future Weave daemon/service ontology can define Weave-specific operational config if needed. The SF-side ontology should describe portable Semantic Flow behavior, not host-local authority.
+
+For `ArtifactRole`: this is the sharper question.
+
+If `artifactRole_resourcePageTemplate` and `artifactRole_resourcePageStylesheet` are real governed artifact roles, then we need a way to classify the actual artifacts. I see three possible paths:
+
+1. **Move/add classes to core**
+   Add `sflo:ResourcePageTemplate` and `sflo:ResourcePageStylesheet` as `sflo:DigitalArtifact` subclasses in core. This is clean if templates/stylesheets are first-class Semantic Flow support artifacts, not merely config implementation details.
+
+2. **Remove those artifact roles for now**
+   If Weave templates/stylesheets are built-in application assets, not mesh-governed artifacts yet, then they should not be artifact roles yet. Keep them as implementation/default resources until the mesh can actually govern custom templates/stylesheets.
+
+3. **Use a generic support-artifact role assignment**
+   Let an artifact carry a role without a matching class. But that feels weaker than the rest of the model and would make ResourcePage templates/stylesheets special in an unhelpful way.
+
+My preference: if custom ResourcePage templates/stylesheets are intended to become mesh-governed artifacts, add core classes for them. If not, remove `artifactRole_resourcePageTemplate` and `artifactRole_resourcePageStylesheet` for now.
+
+I would not keep those roles while removing the only classes that identify them. That leaves the ontology with roles the runtime can name but the mesh cannot clearly assert.
+
+# User_2026-05-25_1752_44
+
+Remove "OperationalConfig / WorkspaceOperationalConfig / HostLocalOperationalConfig" and any related single-purpose properties or prose.
+
+Is there anything analogous to <ResourcePagePresentationConfig>  for History or any of the other concerns? If not, why not? I thought we already had a way to capture sets of configs relevant to a config domain, but it's easy to get confused here. 
+
+Regarding ArtifactRole... anything can be a mesh-governed artifact. And actually we do have a "<ResourcePageTemplate>" class, and subclasses. The key is that these other things (inventories, metadata, local-config, supporting-config, reference catalog, page definitions)  are "supporting artifacts", with their corresponding special dirs under the knop. If the only use case is controlling inventories or resource page generation/profiles for supporting artifacts (that don't have their own config), then we should remove everything that doesn't correspond to a supporting artifact other than perhaps _payload. I'm not clear what artifactRole_runtimeMeta is. What do you think?
+
+# gpt-5.5_2026-05-25_1752_53
+
+I’ll make the ontology simplification for the operational-config classes, then I’ll answer the ResourcePage/profile and artifact-role questions against the actual vocabulary. The runtime-meta role in particular is worth checking before we either keep or cut it.
+
+# gpt-5.5_2026-05-25_1753_40
+
+I’m going to remove the explicit operational config class layer from the SFLO config ontology now, but I’m going to be conservative about broader access-rule vocabulary unless it directly depends on those classes. The access rules may still be useful as portable mesh expectations, even if host-local Weave trust policy moves to a Weave/service ontology.
+
+# gpt-5.5_2026-05-25_1755_19
+
+I’m going to remove the operational access-rule block too, keeping only `workspaceRootRelativeToMeshRoot` as a portable mesh layout setting. That matches your “SF side shouldn’t own Weave/host runtime trust” line better than just deleting three classes and leaving the operational policy machinery behind.
+
+# gpt-5.5_2026-05-25_1758_21
+
+The ontology is clean of the explicit operational terms now. I’m also going to adjust the behavior spec/task wording so we don’t leave “operational config” as if it were still an SF config type.
+
+# gpt-5.5_2026-05-25_1801_05
+
+I removed the SF-side operational config layer from the ontology and cleaned the nearby spec/task prose.
+
+Changed:
+- Deleted `OperationalConfig`, `WorkspaceOperationalConfig`, `HostLocalOperationalConfig`.
+- Removed `configLayerRole_machineLocalOperational` and `configLayerRole_workspaceOperational`.
+- Removed the local/remote access-rule block from SF config ontology.
+- Kept `workspaceRootRelativeToMeshRoot`, but reframed it as portable mesh layout, not access/trust policy.
+- Updated `sf.spec.2026-05-25-config-behavior` and the new task to say host/service/runtime trust belongs outside portable SF config.
+
+On `ResourcePagePresentationConfig`: I think it is now an outlier. There isn’t an analogous `HistoryConfig` bundle. History has value vocabularies like `HistoryTrackingPolicy`; naming has value vocabularies; ResourcePage generation has value vocabularies. Presentation is different only because it bundles templates, stylesheets, and panel selections. I’d reframe it as `ResourcePagePresentationProfile`, not a `Config` subclass. Config selects or binds to a profile; the profile is not itself a config level.
+
+On `ArtifactRole`: I agree with your instinct. Roles should probably be limited to canonical Semantic Flow governed artifact slots: payload plus real support artifacts. `artifactRole_runtimeMeta` is especially suspicious; I don’t see a corresponding core artifact class or canonical support surface, so I’d remove it unless Weave has a concrete governed runtime metadata artifact. For templates/stylesheets, either move those classes into core and define them as first-class support artifacts, or remove the roles for now. I would not keep roles whose only identity lives in presentation config machinery.
+
+# User_2026-05-25_1803_59
+
+Maybe ResourcePagePresentationPolicy is more uniform than ResourcePagePresentationProfile ?
+
+# gpt-5.5_2026-05-25_1804_24
+
+Yes, `ResourcePagePresentationPolicy` is probably more uniform.
+
+It would line up with:
+
+- `HistoryTrackingPolicy`
+- `ResourcePageGenerationPolicy`
+- `ResourcePageRegenerationConfigPolicy`
+- `HistoryNamingPolicy`
+- `StateNamingPolicy`
+- `ManifestationNamingPolicy`
+
+And it avoids making presentation sound like a special bundle/config-kind. The resource can still contain structured details:
+
+```ttl
+<#semantic-site-all-panels> a sfcfg:ResourcePagePresentationPolicy ;
+  sfcfg:hasOuterResourcePageTemplate <...> ;
+  sfcfg:hasInnerResourcePageTemplate <...> ;
+  sfcfg:hasResourcePageStylesheet <...> ;
+  sfcfg:hasResourcePagePanelSelection ... .
+```
+
+Then config can bind/select it like any other policy value:
+
+```ttl
+<#presentation-policy> a sfcfg:PolicyDefinition ;
+  sfcfg:hasResourcePagePresentationPolicy <#semantic-site-all-panels> .
+```
+
+I slightly prefer `Policy` over `Profile` here because it expresses runtime choice: “use this presentation policy when rendering generated ResourcePages.” `Profile` sounds like a named preset, which is true for built-ins but too narrow for authored/custom cases.
+
+I’d rename:
+
+- `ResourcePagePresentationConfig` -> `ResourcePagePresentationPolicy`
+- `hasDefaultResourcePagePresentationConfig` -> probably `hasResourcePagePresentationPolicy` or `hasDefaultResourcePagePresentationPolicy`
+- `hasResourcePagePresentationConfig` on `ResourcePageDefinition` -> maybe `hasResourcePagePresentationPolicy`
+
+The “default” variant may become unnecessary once policy bindings exist, because the target/layer says when it applies. For page-local direct adjacency, `hasResourcePagePresentationPolicy` is enough.
+
+# User_2026-05-25_1807_03
+
+I agree, no default.OK, update the ontology, and let me know what code fixes are required, but don't make them yet.
+
+# gpt-5.5_2026-05-25_1808_08
+
+I’ll update only the ontology vocabulary now: rename the presentation bundle from a config kind to a policy value, remove the “default presentation config” property, and leave code untouched. Then I’ll enumerate the Weave code/docs fallout separately.
+
+# gpt-5.5_2026-05-25_1808_49
+
+I’m going to rename the presentation object/property in the ontology now and remove the default-specific property entirely, since defaulting should come from config attachment/policy resolution rather than the property name.
+
+# gpt-5.5_2026-05-25_1810_55
+
+The ontology rename is clean in the ontology file itself. I’m doing one targeted pass over Weave code/defaults now so I can give you the exact follow-up fixes without touching them.

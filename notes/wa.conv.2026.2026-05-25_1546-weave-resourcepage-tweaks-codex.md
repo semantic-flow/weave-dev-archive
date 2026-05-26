@@ -722,3 +722,285 @@ I’m continuing from the timestamp thread now. I’ve got the shape: remove the
 # gpt-5.5_2026-05-25_1616_27
 
 The live hits are pretty contained: the env var is in the Deno test tasks, the page-generation resolver, the fixture ladder runner, two timestamp tests, and user docs. I also found two conformance manifests that still exact-compare generated HTML, which would keep timestamp volatility alive after the env var is gone.
+
+# gpt-5.5_2026-05-25_1616_44
+
+I’m going to make the edits in two passes: first remove the env hook from runtime/runner/task docs, then adjust the tests/manifests so timestamp behavior is checked by mutation and presence rather than a synthetic fixed clock.
+
+# gpt-5.5_2026-05-25_1617_37
+
+The important behavioral change is in now: tests no longer ask generation to pretend it is a particular day. They generate normally, perturb only the rendered footer timestamp, then confirm the second generation treats that as timestamp-only noise.
+
+# gpt-5.5_2026-05-25_1618_10
+
+One small refactor opportunity already fell out of this: the runtime and tests now each have their own timestamp-footer regex. I put the test-side mutation in a helper so we don’t spread it around further; exporting the runtime normalizer would be a next step if this grows beyond “test fixture perturbation.”
+
+# gpt-5.5_2026-05-25_1618_34
+
+The focused runtime and CLI timestamp cases are green. I’m going to run the fixture-ladder test as well because removing the fixed fixture timestamp and changing HTML compare mode touches that scenario machinery.
+
+# gpt-5.5_2026-05-25_1618_42
+
+Since the task runner itself changed, I’m broadening once to `deno task test` without the timestamp env prefix. That’s the useful confidence check here: it catches hidden exact timestamp assumptions that the focused tests wouldn’t.
+
+# gpt-5.5_2026-05-25_1619_50
+
+The full suite exposed an existing failure cluster outside the timestamp change: six mesh inventory tests expect `payloadIsRdfDocument`, but the resolver is currently omitting it. The focused timestamp/fixture checks passed, and I’m taking a quick look because this looks like a small missing-field regression rather than a broad detour.
+
+# gpt-5.5_2026-05-25_1620_23
+
+That inventory failure was indeed a missing test expectation for the new `payloadIsRdfDocument` field, not timestamp-related. I updated the expectations and the inventory test file is green; now I’m rerunning the full suite once more so the final status is clean instead of “almost, except…”.
+
+# gpt-5.5_2026-05-25_1622_18
+
+Done. I removed the live `WEAVE_GENERATED_AT` path from generation, test tasks, fixture ladder execution, and docs. Generation now just uses `new Date()` unless a programmatic `now` hook is supplied: [page_generation.ts](../../../../../src/runtime/weave/page_generation.ts:179), [deno.json](../../../../../deno.json:16), [fixture-ladder.ts](../../../../../scripts/fixture-ladder.ts:2945).
+
+The timestamp-only tests now generate normally, mutate only the rendered footer, and verify the rerun skips without rewriting: [weave_cli_test.ts](../../../../../tests/e2e/weave_cli_test.ts:574), [validate_version_generate_test.ts](../../../../../tests/integration/validate_version_generate_test.ts:975), with a small helper in [generated_page_timestamp.ts](../../../../../tests/support/generated_page_timestamp.ts:1). I also removed exact text compare from the generated Alice/Favicon ResourcePage conformance expectations in `semantic-flow-framework`.
+
+Full verification is clean:
+
+```sh
+deno task fmt:check
+deno task lint
+deno task check
+deno task test
+```
+
+`deno task test` ended at `534 passed | 0 failed`. I also fixed the full-suite failure it exposed by updating mesh inventory expectations for the existing `payloadIsRdfDocument` field.
+
+Refactor trim notes: the remaining `now?: () => Date` hook is still useful for programmatic/runtime tests and non-generation observation timestamps, but it may be worth narrowing later if generated-page clocks no longer need injection. Also, if timestamp footer normalization gets more callers, we should promote the regex into one shared testable utility instead of keeping a runtime normalizer plus a test mutation helper.
+
+Suggested commit messages:
+
+```text
+weave: remove fixed generated timestamp plumbing
+semantic-flow-framework: stop exact-comparing generated ResourcePage HTML
+```
+
+# User_2026-05-25_1622_19
+
+A lot of files changes in the weave repo. Can I get a detailed commit message?
+
+# gpt-5.5_2026-05-25_1622_27
+
+I’ll pull the current weave-only diff shape first so the message matches what’s actually staged in the working tree, including the earlier ladder/config-adjacent edits and the timestamp cleanup.
+
+# gpt-5.5_2026-05-25_1622_50
+
+Here’s a detailed weave-repo commit message that fits the current diff:
+
+```text
+weave: support binary payload weaving and unpin generated timestamps
+
+Redesign the Alice Bio fixture ladder so the custom Alice page story is backed by governed artifacts earlier in the sequence. Import the Alice bio into `alice/bio`, weave it, then apply the custom Alice ResourcePageDefinition against governed bio/sidebar content. Use the later Alice slots to integrate and weave `favicon.ico`, giving the ladder its first binary DigitalArtifact case.
+
+Add non-RDF payload awareness through integrate and weave planning. Infer RDF-like payloads by extension during integration, omit `sflo:RdfDocument` typing for non-RDF payload artifacts and located files, and carry `payloadIsRdfDocument` through inventory loading and first-payload weave planning. Add `PlannedBinaryFile` support so binary snapshots can be planned, conflict-checked, and written without forcing them through string/RDF file paths.
+
+Teach runtime artifact loading to preserve bytes for non-text payloads while still exposing text for text-like payloads. Ensure resource page generation policy scans only textual inventory outputs, so binary created files do not enter RDF/page-discovery paths.
+
+Remove the `WEAVE_GENERATED_AT` test/fixture escape hatch. Generation now uses the current clock unless a programmatic `now` hook is supplied, and fixture ladder/test tasks no longer inject a fixed generated timestamp. Rewrite timestamp-only tests to mutate the rendered footer and assert timestamp-only skip behavior instead of pinning generation time. Remove the documented `WEAVE_GENERATED_AT` environment variable.
+
+Update tests and developer docs for the new behavior:
+- cover non-RDF integration typing
+- cover binary first-payload weave planning
+- update Alice fixture ladder expectations for rungs 14-19
+- update mesh inventory expectations for `payloadIsRdfDocument`
+- add a generated-page timestamp test helper
+- record the guidance to call out dead-weight/refactor opportunities
+
+Verification:
+- deno task fmt:check
+- deno task lint
+- deno task check
+- deno task test
+```
+
+# User_2026-05-25_1632_15
+
+OK, all the rungs are done? Or we need some regeneration of the rung branches? If done, can you ffwd mesh-alice-bio main to the latest rung?
+
+# gpt-5.5_2026-05-25_1632_26
+
+I’ll verify the ladder topology and the actual mesh-alice-bio branch state before moving `main`. The key question is whether the latest rung branch already exists and contains the regenerated outputs, or whether the fixture branches are now stale relative to the updated ladder/manifests.
+
+# gpt-5.5_2026-05-25_1632_39
+
+The Alice Bio repo is clean and has the new `a.27-carol-woven` branch, but it also still has the old replaced 14-19 branches hanging around. I’m checking ancestry and the fixture-ladder command options now so I don’t fast-forward `main` onto a branch that needs one more regeneration pass.
+
+# gpt-5.5_2026-05-25_1633_12
+
+A straight fast-forward is not available: `main` and `a.27-carol-woven` diverge from `a.00-blank-slate`. `main` has later hand/consolidation commits, while `a.27-carol-woven` is the rung-chain tip. I’m checking whether the rung tip is still valid against the current manifests before I recommend either “leave main alone” or “advance with a deliberate non-ff update.”
+
+# gpt-5.5_2026-05-25_1633_42
+
+The rungs look done. I ran the latest transition dry-run validation:
+
+```sh
+deno task fixture:ladder --scenario alice-bio --execute 27-carol-woven --dry-run
+```
+
+It passed against `27-carol-woven`: `pass=32 fail=0 error=0`. So I don’t think the rung branches need another regeneration pass just because of the timestamp cleanup.
+
+I did **not** move `mesh-alice-bio/main`, because it cannot be fast-forwarded to `a.27-carol-woven`. They diverge:
+
+```text
+main:              821dc06 Replace Alice page-source assets with governed bio and favicon inputs
+a.27-carol-woven:  ccf8ca4 Regenerate fixture branch a.27-carol-woven
+merge-base:        5445e2b Regenerate fixture branch a.00-blank-slate
+```
+
+So a true `git merge --ff-only a.27-carol-woven` would fail. The old 14-19 branches are still present locally, but the current ladder uses the new 14-19 chain and reaches `a.27-carol-woven`.
+
+Recommendation: treat advancing `main` as a deliberate non-ff decision now. Either merge `a.27-carol-woven` into `main`, or reset/force `main` to the rung tip if `main` is meant to exactly mirror latest fixture output.
+
+# User_2026-05-25_1634_31
+
+you can clean up the old branches and advance main.
+
+# gpt-5.5_2026-05-25_1634_41
+
+Got it. I’ll treat this as local fixture-repo cleanup: remove the obsolete local ladder branches, then move `mesh-alice-bio/main` to the current `a.27-carol-woven` rung tip. I won’t delete remote branches unless you ask for that separately.
+
+# gpt-5.5_2026-05-25_1634_51
+
+The mesh repo is clean. I found the obsolete local branches I expected: the replaced `a.14`-`a.19` path plus the older `b.*` ladder lane. Next I’m moving `main` to the current rung tip and deleting those local branches.
+
+# gpt-5.5_2026-05-25_1635_21
+
+Done in `mesh-alice-bio`.
+
+I moved local `main` from `821dc06` to the latest rung tip:
+
+```text
+main -> ccf8ca4 Regenerate fixture branch a.27-carol-woven
+```
+
+I also deleted the obsolete local branches:
+- old replaced `a.14`-`a.19` path
+- all local `b.*` ladder branches
+
+Current local branch set is the clean `a.01` through `a.27` ladder plus `main`, and `main` equals `a.27-carol-woven`.
+
+One important note: I did not touch `origin`. Local `main` now shows:
+
+```text
+main...origin/main [ahead 27, behind 59]
+```
+
+So publishing this main update would require a deliberate non-ff push, likely `git push --force-with-lease origin main`.
+
+# User_2026-05-25_1636_03
+
+hilariously, the a.* branches were the old ones. But I guess they're the new ones now. Go ahead and force main
+
+# gpt-5.5_2026-05-25_1636_12
+
+Yep, tiny naming comedy: the `a.*` lane is the live ladder now. I’ll force-update only `origin/main` with `--force-with-lease`, leaving the remote rung branches alone.
+
+# gpt-5.5_2026-05-25_1636_33
+
+Forced `mesh-alice-bio` `origin/main` to the current ladder tip.
+
+```text
+821dc06...ccf8ca4 main -> main (forced update)
+```
+
+Verified after push:
+
+```text
+main        ccf8ca4
+origin/main ccf8ca4
+a.27        ccf8ca4
+```
+
+Local `main` is clean and tracking `origin/main` again.
+
+# User_2026-05-25_1637_58
+
+Did we import sidebar.md? I don't see a workingfile.
+
+# gpt-5.5_2026-05-25_1638_08
+
+I’ll check the current `mesh-alice-bio` main and the fixture ladder definition for the sidebar path. My hunch is that we only copied/sidebar-integrated it as an existing governed artifact earlier, not imported it with an import-source working file, but let’s verify rather than rely on memory.
+
+# gpt-5.5_2026-05-25_1638_34
+
+You’re right to squint at this. We did **not** import `sidebar.md` via `weave import`.
+
+Current rung 14 does:
+
+1. `weave import ... user.alice-ghostley.md alice/bio --working-file alice-bio.md`
+2. materializes `mesh-content/sidebar.md` from fixture assets
+3. `weave integrate mesh-content/sidebar.md --designator-path sidebar`
+
+So sidebar has a governed artifact and snapshot, but no import source registry. Its working file is `mesh-content/sidebar.md`, recorded here: [inventory.ttl](../../mesh-alice-bio/sidebar/_knop/_inventory/inventory.ttl:16). Alice’s page points to the governed `sidebar` artifact here: [page.ttl](../../mesh-alice-bio/alice/_knop/_page/page.ttl:23).
+
+So: working file exists, but it’s `mesh-content/sidebar.md`; import provenance does not. If we want sidebar to be genuinely imported, rung 14 should use `weave import ... sidebar --working-file mesh-content/sidebar.md` instead of fixture materialization plus `integrate`. That would also let us trim a bit of bespoke fixture-only machinery from this rung.
+
+# User_2026-05-25_1757_33
+
+integrate should've recorded the workingfile location. we're not importing here, we're integrating. There's gotta be a bug. Also, let's change the favicon IRI and sidebar IRI to be under /mesh-content too. (favicon will have workingFile that's not co-located in the hierarchy, but that's fine). Please update the manifests.
+
+# gpt-5.5_2026-05-25_1757_52
+
+I agree with the distinction: sidebar is supposed to be integrated, not imported. I’m going to trace what integrate records today, then update the Alice Bio rung/manifests so sidebar and favicon live at `mesh-content/sidebar` and `mesh-content/favicon` while their working files can remain wherever the rung puts the bytes.
+
+# gpt-5.5_2026-05-25_1758_03
+
+Current integrate is recording `sflo:hasWorkingLocatedFile <mesh-content/sidebar.md>` for sidebar, so the RDF side is not completely missing. The likely bug is more specific: we should be preserving/displaying the working locator consistently, and the designator choice `/sidebar` made the artifact feel detached from the actual mesh-content area. I’m going to update the designator paths to `mesh-content/sidebar` and `mesh-content/favicon`, then validate the manifests against regenerated rungs.
+
+# gpt-5.5_2026-05-25_1758_57
+
+There is a more concrete bug hiding here: `favicon/index.html` is being detected as binary because the ResourcePage renderer is embedding decoded `.ico` bytes in an HTML raw/source panel. That is dead weight and wrong for non-text artifacts. I’m going to fix the locator/path updates first, but I’m also going to keep this binary raw-panel issue in scope because it explains why the working-file presentation looked suspicious.
+
+# gpt-5.5_2026-05-25_1800_37
+
+I’m going to make a small runtime fix before regenerating: raw source panels will inline only valid text. Binary or invalid UTF-8 sources will still get a raw-file link, but no embedded bytes in the page. That should make `favicon/index.html` (soon `mesh-content/favicon/index.html`) a real HTML document again.
+
+# gpt-5.5_2026-05-25_1800_49
+
+Next I’m doing the mechanical manifest and fixture-path rename: `/sidebar` becomes `/mesh-content/sidebar`; `/favicon` becomes `/mesh-content/favicon`; the working file paths stay `mesh-content/sidebar.md` and `favicon.ico`.
+
+# gpt-5.5_2026-05-25_1801_31
+
+I also found the asset root on `mesh-alice-bio/main` still had the retired 14/16/18 asset directories after we moved main to the rung tip. I’m going to clean that up now because otherwise the updated manifests would be right but the fixture ladder would not be reproducible.
+
+# gpt-5.5_2026-05-25_1804_50
+
+I’m going to keep this focused on the manifest/runtime bug: verify the updated designator paths, fix the binary raw-source behavior, and make sure the fixture assets still line up with the ladder script. The one thing I’m watching carefully is that fixture branches carry `.assets`, so regenerating branches is a separate decision from updating the manifests themselves.
+
+# gpt-5.5_2026-05-25_1805_00
+
+The path audit came back clean for the obvious stale `/sidebar` and `/favicon` IRIs, which is good. I did catch one older asset naming mismatch from the branch force-forward: the ladder script still expects `alice-data.ttl` filenames, while the current mesh asset tree has `alice-bio.ttl`; I’m going to realign that so the fixture machinery doesn’t trip over a historical rename.
+
+# gpt-5.5_2026-05-25_1805_08
+
+I’m going to rename the Alice data fixture files back to the names the ladder and tests already model. That keeps this change scoped to the sidebar/favicon manifest redesign instead of accidentally creating a second fixture naming migration.
+
+# gpt-5.5_2026-05-25_1805_52
+
+I also confirmed the generated old `favicon/index.html` is being treated as binary because it inlined the ICO bytes in the raw source panel. That’s the display-side bug I’m fixing in runtime; the inventory itself did have `hasWorkingLocatedFile`, but the page was malformed enough to make that hard to trust.
+
+# gpt-5.5_2026-05-25_1806_17
+
+I’m adding a couple of targeted assertions so this doesn’t silently drift back: the ladder plan should now say “integrate `mesh-content/sidebar.md` as `mesh-content/sidebar`” and “integrate `favicon.ico` as `mesh-content/favicon`.”
+
+# gpt-5.5_2026-05-25_1806_54
+
+The manifests now assert the important working-file triple for integrated artifacts, including the deliberately non-co-located favicon case: artifact `/mesh-content/favicon`, working file `/favicon.ico`. I’m formatting the touched TypeScript and JSON now, then I’ll run the focused checks.
+
+# gpt-5.5_2026-05-25_1807_27
+
+The focused fixture test exposed a pre-existing asset-tree problem from the branch shuffle: the Carol rung assets the ladder expects are absent from the current mesh asset root. I’m going to restore those fixture assets too; otherwise the updated manifests validate, but the ladder can’t do a clean from-working-tree run.
+
+# gpt-5.5_2026-05-25_1808_40
+
+With the missing Carol asset restored, the ladder tests are green again. I’m going to run the full repo test task now; it’s a bit heavier, but this touched runtime rendering plus fixture metadata, so it’s worth letting the whole suite vote.
+
+# gpt-5.5_2026-05-25_1809_47
+
+The full suite found four stale expectations, all in tests that still looked for the old generated Alice default sentence (`is an IRI...`). The rendered output is now the intentional authored/artifact-backed Alice content, so I’m updating those assertions to match the current fixture story rather than treating that as a regression.
+
+# gpt-5.5_2026-05-25_1810_51
+
+Those stale assertions are now aligned with the authored Alice page story, and the targeted failures pass. I’m doing one final full validation pass after the test edits so the close-out isn’t hand-wavy.

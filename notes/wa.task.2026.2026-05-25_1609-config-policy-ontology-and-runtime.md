@@ -51,7 +51,7 @@ Under the default resolver profile, policy resolution is per queried target:
 1. collect bindings whose selectors cover the queried target
 2. prefer higher-precedence layers
 3. within the winning layer, prefer structurally more specific selectors
-4. within the same layer/family/specificity, prefer higher `sfcfg:policyPriority`
+4. within the same layer/policy-slot/specificity, prefer higher `sfcfg:policyPriority`
 5. treat omitted priority as `0`
 6. fail closed on unresolved incompatible ties
 
@@ -88,12 +88,12 @@ The CLI flag currently called `--include-semantic-flow-metadata` may remain as a
 
 ### Resolver config
 
-`sfcfg:ConfigResolutionConfig` is meta-config for the resolver. Portable config may request stricter resolver behavior but must not loosen the active application/operational resolver policy or expand trust. If Weave does not implement portable resolver narrowing in this slice, it should reject or ignore such declarations according to the active resolver and unknown-term policy rather than partially applying them.
+`sfcfg:ConfigResolutionConfig` is meta-config for the resolver. Portable config may request stricter resolver behavior but must not loosen the active application/runtime resolver policy or expand trust. If Weave does not implement portable resolver narrowing in this slice, it should reject or ignore such declarations according to the active resolver and unknown-term policy rather than partially applying them. Weave-specific service or host trust settings should live outside the portable Semantic Flow config ontology.
 
 ## Open Issues
 
-- Decide exact ontology names for the binding model. Current preferred direction is target/selector terminology, not context terminology: `sfcfg:PolicyBinding`, `sfcfg:PolicyDefinition`, `sfcfg:PolicyTarget`, `sfcfg:ArtifactPolicyTarget`, candidate target subclasses such as any-governed-artifact, artifact-role, and exact-artifact targets, plus `sfcfg:bindsPolicy`, `sfcfg:appliesToPolicyTarget`, `sfcfg:hasPolicyFamily`, and `sfcfg:policyPriority`.
-- Decide whether policy-family values should be resources such as `sfcfg:policyFamily_historyTracking`, `sfcfg:policyFamily_resourcePageGeneration`, and `sfcfg:policyFamily_resourcePagePresentation`, or whether family is implicit from the policy-definition class.
+- Decide exact ontology names for the binding model. Current preferred direction is target/selector terminology, not context terminology: `sfcfg:PolicyBinding`, `sfcfg:PolicyDefinition`, `sfcfg:PolicyTarget`, `sfcfg:ArtifactPolicyTarget`, candidate target subclasses such as any-governed-artifact, artifact-role, and exact-artifact targets, plus `sfcfg:hasPolicyBinding`, `sfcfg:bindsPolicy`, `sfcfg:appliesToPolicyTarget`, and `sfcfg:policyPriority`.
+- Decide whether policy slots should be identified only by inspecting supported value predicates, such as `sfcfg:hasHistoryTrackingPolicy` and `sfcfg:hasResourcePageGenerationPolicy`, or whether an explicit slot/property marker is useful for validation and diagnostics.
 - Decide whether old direct history and ResourcePage generation default terms are removed, deprecated, or retained only as non-authoring convenience vocabulary. Before v1.0, prefer migrating Weave defaults and parser behavior to the new model instead of adding long-term compatibility shims.
 - Decide whether `sfcfg:hasDefaultResourcePagePresentationConfig` remains a direct scoped setting for simple defaults or becomes a policy-binding value at config scopes. Page-local `sfcfg:hasResourcePagePresentationConfig` on `sflo:ResourcePageDefinition` should remain direct presentation adjacency.
 - Decide exact built-in IRI names for `semantic-site-all-panels` and `semantic-site-no-panels`.
@@ -108,7 +108,8 @@ The CLI flag currently called `--include-semantic-flow-metadata` may remain as a
 - Do not treat referenced/reusable config as a separate precedence layer. It participates at its attachment point.
 - Knop-inheritable config is an outbound offer to descendants and does not apply to the declaring Knop unless the same config is also attached as Knop-local.
 - Omitted selector fields do not mean "any"; wildcard behavior must be explicit.
-- Structural selector specificity beats broad selectors within the same layer. `sfcfg:policyPriority` is only for same-layer, same-family, same-effective-specificity conflicts.
+- Structural selector specificity beats broad selectors within the same layer. `sfcfg:policyPriority` is only for same-layer, same-policy-slot, same-effective-specificity conflicts.
+- Do not include `PolicyFamily` in the normative policy-binding model. Conflict detection and merge semantics are driven by the policy slot/value predicate set by a `PolicyDefinition`, not by broad grouping labels.
 - The broad artifact target is any governed artifact in the current config scope, not an all-artifact-role value.
 - Publication profile and workspace-root relationship remain scoped settings, not policy bindings.
 - Naming defaults may remain direct layered scoped settings unless/until a target-selective naming use case appears.
@@ -119,10 +120,10 @@ The CLI flag currently called `--include-semantic-flow-metadata` may remain as a
 
 ### Config ontology
 
-- Add policy-binding vocabulary for reusable policy definitions, explicit bindings, explicit targets/selectors, policy family, and optional priority.
+- Add policy-binding vocabulary for attaching bindings to config, reusable policy definitions, explicit bindings, explicit targets/selectors, policy slots/value predicates, and optional priority.
 - Add explicit artifact policy target shapes for any governed artifact, artifact-role targets, and exact-artifact targets.
 - Add or clarify ResourcePage policy target vocabulary, including page-kind and selector specificity rules where possible.
-- Add controlled policy-family terms for history tracking, ResourcePage generation, and ResourcePage presentation defaults if the ontology does not encode those families through subclasses.
+- Do not add controlled `PolicyFamily` terms for history tracking, ResourcePage generation, or ResourcePage presentation. If grouping metadata is useful later, add it as non-normative UI/logging/docs metadata rather than resolution input.
 - Clarify or revise `ConfigLayerRole`/attachment-role vocabulary so referenced config and Knop-inheritable config are not misread as ordinary consumed layers at the declaring scope.
 - Clarify direct history and ResourcePage generation default terms in light of the binding model.
 - Keep publication profile, `workspaceRootRelativeToMeshRoot`, and naming defaults as direct scoped settings unless a later ontology pass intentionally changes them.
@@ -137,7 +138,7 @@ The CLI flag currently called `--include-semantic-flow-metadata` may remain as a
 - Preserve command-scoped history overrides by compiling them into command-override policy bindings for any governed artifact or the relevant operation target.
 - Replace boolean-shaped Semantic Flow metadata command internals with a command-override ResourcePage presentation/profile or panel-selection policy.
 - Add supported built-in ResourcePage presentation profiles for default, all-panels, and no-panels behavior.
-- Update audit/explanation output to include participating config sources, command overrides, and selected high-level policy values by family.
+- Update audit/explanation output to include participating config sources, command overrides, and selected high-level policy values by slot.
 
 ### Documentation and tasks
 
@@ -179,7 +180,7 @@ The CLI flag currently called `--include-semantic-flow-metadata` may remain as a
 
 ## Implementation Plan
 
-- [ ] Finalize ontology term names for policy bindings, policy definitions, policy families, policy targets, target properties, and priority.
+- [ ] Finalize ontology term names for policy bindings, policy definitions, policy slots/value predicates, policy targets, target properties, and priority.
 - [ ] Update `semantic-flow-config-ontology.ttl` with the chosen policy-binding and target vocabulary.
 - [ ] Clarify or revise config layer/attachment-role vocabulary around referenced config and Knop-inheritable config.
 - [ ] Update Weave default config TTL to express history tracking, ResourcePage generation, and ResourcePage presentation defaults using the chosen binding model.
