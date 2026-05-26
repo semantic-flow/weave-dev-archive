@@ -1466,3 +1466,206 @@ For first-slice diagnostics, is structured logger output plus an in-memory resol
 # gpt-5.5_2026-05-25_2246_09
 
 I’ll check the current ontology/defaults/runtime terms before answering, especially for `configLayerRole_reusableConfig` and the panel-selection behavior. There are a couple of “I think we addressed this” bits where the files should tell us quickly.
+
+# gpt-5.5_2026-05-25_2250_36
+
+Short version: I agree with almost all of that, and a couple are only captured conceptually so far, not implemented.
+
+- `configLayerRole_reusableConfig`: not fully handled. It still appears in [defaults/config-resolution.ttl](../../../../../defaults/config-resolution.ttl:47) as an ordered layer, and in the config ontology as a `ConfigLayerRole`. I’d remove it from the default precedence profile. I’m also leaning toward removing it as a `ConfigLayerRole` entirely; if we need provenance later, it should be a source/provenance role, not a layer role.
+
+- Page-local presentation config: I agree with your pushback. A `ResourcePageDefinition` should not have config hanging off it. Config-scope ResourcePage presentation should be a policy binding. If a single page needs custom presentation, express that as a Knop-local/exact-page policy target, not direct `sfcfg:hasResourcePagePresentationConfig` adjacency on the page definition. Page definitions should describe authored page composition/sources, not carry config precedence bypasses.
+
+- `semantic-site-no-panels`: yes, relax it. Current parser still rejects zero panel selections in `parseResourcePagePanelSelections`. A presentation policy with zero generated panel selections is valid and useful. I like your intermediary-page idea: title, breadcrumbs, class/type hints, and no generated data panels is a real page mode.
+
+- `semantic-site-all-panels` metadata: conceptually captured, not implemented. Current runtime still gates metadata through `includeSemanticFlowMetadata` / `semanticFlowMetadataOptIn`. The all-panels policy needs a real policy-level route: either a metadata panel selection without the opt-in requirement, or a new non-opt-in data requirement such as “metadata available.” The old boolean should compile to a command override, not remain the hidden gate.
+
+- “Runtime API query by target object”: that means the core API should not be `policyForArtifactRole(role)`. It should be more like `resolvePolicy({ slot, target })`, where target includes artifact IRI, roles, scope/governance, page kind, etc. Role-only helpers can remain convenience wrappers, but if they are the main surface, exact-artifact and ResourcePage selectors become awkward immediately.
+
+On the questions:
+
+- Yes, remove live Weave authoring/parser support for old direct defaults like `hasDefaultHistoryTrackingPolicy`. Leave historical release artifacts alone, but current ontology/defaults/runtime should move cleanly. Pre-v1 reset gives us permission to avoid compatibility cement.
+
+- Yes, structured logger output plus an in-memory resolution trace is enough for the first slice. No persisted `ResolvedConfig` / `ConfigResolutionRecord` yet.
+
+- Yes, accept exact artifact policy targets in mesh config now, using mesh inventory/support-artifact knowledge as governance authority. Fail closed if the exact target is not governed by the mesh/scope. That keeps the model honest from the start.
+
+# User_2026-05-25_2340_18
+
+I agree on all counts, including configLayerRole_reusableConfig removal. Any updates to the task?
+
+# gpt-5.5_2026-05-25_2340_28
+
+I’ll update the existing config-policy task with these now-decided points, since they sharpen the implementation contract rather than creating a new slice.
+
+# gpt-5.5_2026-05-25_2340_37
+
+I’ve got the current task open. I’m going to promote the agreed review feedback from “open questions” into decisions/checklist items, and tighten the ResourcePage/page-local wording so we don’t accidentally bless direct config on page definitions.
+
+# gpt-5.5_2026-05-25_2342_12
+
+The task is updated with the new decisions. I’m doing one quick scan to catch stale “direct adjacency” or reusable-layer language that would undercut the edits.
+
+# gpt-5.5_2026-05-25_2342_17
+
+Updated the config-policy task: [wa.task.2026.2026-05-25_1609-config-policy-ontology-and-runtime.md](wa.task.2026.2026-05-25_1609-config-policy-ontology-and-runtime.md).
+
+I added the agreed decisions and follow-ups for:
+
+- removing `configLayerRole_reusableConfig` from precedence/layer-role handling
+- removing live old direct default parser/authoring support
+- treating ResourcePage presentation as policy binding, not direct page-definition config
+- allowing `semantic-site-no-panels` with zero panel selections
+- giving `semantic-site-all-panels` a real metadata policy path
+- making runtime policy resolution target-object based
+- implementing exact artifact policy targets now
+- keeping first-slice diagnostics to logger output plus in-memory trace
+
+No code or ontology implementation changes yet.
+
+# User_2026-05-26_0032_08
+
+In the new conversation I was planning to use to start implementation, a bunch of refinements were suggested and some questions raised:
+
+Make the spec drift explicit. The task says the config behavior spec is the source of truth, but the spec still names hasDefaultResourcePagePresentationConfig as transitional policy-slot language, while the task decides to remove it. I’d make “update spec first” a blocking checkbox or add a temporary note that this task supersedes that line. See task line 25 (line 25), task line 119 (line 119), and spec line 80 (line 80).
+
+Split “first runnable slice” from “full model cleanup” more sharply. I’d define first-slice acceptance as: ontology/SHACL terms, new default TTL binding model, compiled config for app defaults + mesh-local + command overrides, target-object policy resolution, exact governed-artifact validation, built-in ResourcePage presentation profiles, and tests. Defer durable CLI config-edit commands, full Knop discovery, arbitrary referenced config retrieval, and mesh-create policy authoring.
+
+Add an open issue for sfcfg:hasResourcePageRegenerationConfigPolicy. It is still parsed as a direct singleton today, but the task does not clearly say whether it remains a scoped setting, becomes a policy binding, or is deferred. That is a small ambiguity with big parser/API consequences.
+
+Clarify ResourcePageDefinition local panel selections. I agree with removing direct sfcfg:hasResourcePagePresentationConfig, but the task should say whether sfcfg:hasGeneratedResourcePagePanelSelection remains as local authored composition over the resolved presentation policy. The spec says page-local selections remain useful; the task should protect that nuance.
+
+Replace or retire panelDataRequirement_semanticFlowMetadataOptIn. If metadata inclusion is policy-selected, the data requirement should describe actual data availability, not an opt-in flag. Current ontology still has the opt-in term, and the runtime still gates metadata through includeSemanticFlowMetadata.
+
+Be explicit that exact-target validation is not pure Turtle parsing. The compiler needs scope/governance context from mesh inventory and support-artifact knowledge. For non-governed exact IRIs, malformed inventories, or unavailable governance facts, fail closed.
+
+Decide the policy-slot mechanism before coding. My recommendation: no explicit slot marker in the first pass; derive slots from supported value predicates, keep a central runtime slot registry, and reject unsupported/no-slot definitions. If one definition carries multiple supported slots, trace and resolve each independently.
+
+Add a per-repo validation matrix. This spans Weave, SFLO ontology/SHACL/tests, and Semantic Flow Framework specs, so the task should name the expected checks per repo and remind the implementer to provide a detailed semantic-commit-style message per repo.
+
+Questions I’d settle now:
+Should exact artifact targets identify only sflo:DigitalArtifact IRIs, or can they target generated sflo:ResourcePage, sflo:ResourcePageDefinition, or the public referent IRI?
+Does ResourcePageGenerationPolicy target the governed artifact that would receive a page, or the page artifact itself?
+For host/workspace access rules, are we choosing “internal Weave runtime only” for this slice? I would, and defer any Weave-specific ontology until there is more pressure.
+
+# gpt-5.5_2026-05-26_0032_25
+
+These refinements are good pressure, not noise. I’ll update the config-policy task so the next implementation conversation starts with fewer loose threads, then I’ll answer the target-scope questions explicitly.
+
+# gpt-5.5_2026-05-26_0032_44
+
+I’m going to encode the settled answers directly in the task: spec alignment as a blocker, first-slice acceptance, regeneration-policy ambiguity, exact-target scope, panel-selection nuance, and a per-repo validation matrix.
+
+# gpt-5.5_2026-05-26_0036_28
+
+The task now has those decisions baked in. I’m doing one scan for contradictions and then I’ll summarize the settled answers.
+
+# gpt-5.5_2026-05-26_0037_09
+
+Updated the config-policy task with those refinements: [wa.task.2026.2026-05-25_1609-config-policy-ontology-and-runtime.md](wa.task.2026.2026-05-25_1609-config-policy-ontology-and-runtime.md).
+
+Key additions:
+- Spec drift is now explicit, with “update spec first or in the first commit” as a blocking checklist item.
+- First runnable slice is defined separately from deferred full-model cleanup.
+- Added the `hasResourcePageRegenerationConfigPolicy` open issue.
+- Preserved `hasGeneratedResourcePagePanelSelection` as page-local authored composition, while rejecting direct page-definition config adjacency.
+- Added replacement/retirement of `panelDataRequirement_semanticFlowMetadataOptIn`.
+- Settled policy slots: derive from supported value predicates using a runtime slot registry.
+- Settled exact targets: exact artifact targets are governed `sflo:DigitalArtifact` IRIs only; `ResourcePageDefinition` qualifies when it is the governed definition artifact, but generated `ResourcePage` files and public referent IRIs need ResourcePage/resource-target selector shapes.
+- Settled ResourcePage generation target: target the governed resource/artifact that would receive a page, not the generated page file.
+- Settled host/workspace access rules: internal Weave runtime only for this slice.
+- Added per-repo validation matrix and semantic-commit reminder.
+
+No ontology/code/spec changes made here, just the task note. The archive repo also has Kato/review-note modifications present from the surrounding workflow.
+
+# User_2026-05-26_0732_25
+
+Regarding "Preserved hasGeneratedResourcePagePanelSelection as page-local authored composition, while rejecting direct page-definition config adjacency." -- so can this appear both in config and in the ResourcePageDefinition at _page? If it can't be part of config, how do you specify panel selection more broadly. I think I need a little more clarity here.
+
+# gpt-5.5_2026-05-26_0732_37
+
+Yes, there are two different “panel selection” surfaces, and that’s the key distinction:
+
+1. **Config-level presentation policy**
+   This is broad/default behavior.
+
+   Example: “for all generated ResourcePages in this mesh, use the all-panels presentation policy.”
+
+   That belongs in config as part of a `sfcfg:ResourcePagePresentationPolicy`, attached through policy bindings:
+
+   ```ttl
+   :allPanelsPolicy
+     a sfcfg:ResourcePagePresentationPolicy ;
+     sfcfg:hasResourcePagePanelSelection :childrenPanel, :historyPanel, :metadataPanel .
+   ```
+
+   This is how you specify panel selection broadly: mesh-wide, Knop-inherited, Knop-local, exact artifact/page target, etc.
+
+2. **Page-definition local authored composition**
+   This is page-local composition for a specific authored `sflo:ResourcePageDefinition` in `_page/page.ttl`.
+
+   Example: “this custom page definition includes these generated panels in addition to its authored regions.”
+
+   That is what `sfcfg:hasGeneratedResourcePagePanelSelection` is for:
+
+   ```ttl
+   :pageDefinition
+     a sflo:ResourcePageDefinition ;
+     sfcfg:hasGeneratedResourcePagePanelSelection :localHistoryPanel .
+   ```
+
+   It is not “config” in the precedence/layering sense. It is content/composition authored by that page definition.
+
+So: **panel selections can appear in both places**, but via different relationships and with different meaning.
+
+- In config: `sfcfg:ResourcePagePresentationPolicy` uses `sfcfg:hasResourcePagePanelSelection`.
+- In page definition: `sflo:ResourcePageDefinition` uses `sfcfg:hasGeneratedResourcePagePanelSelection`.
+
+The thing we’re rejecting is not “panel selection in page definitions.” We’re rejecting this shape:
+
+```ttl
+:pageDefinition sfcfg:hasResourcePagePresentationPolicy :somePolicy .
+```
+
+or the old:
+
+```ttl
+:pageDefinition sfcfg:hasResourcePagePresentationConfig :someConfig .
+```
+
+because that makes the page definition carry config adjacency and bypass the resolver/layer model.
+
+A clean mental model:
+
+- **Presentation policy chooses the default generated panel set.**
+- **ResourcePageDefinition authored composition can add/select local generated panels for that page.**
+- **ResourcePageDefinition should not choose the presentation policy itself.**
+
+That gives us broad config and page-local customization without mixing config precedence into `_page/page.ttl`.
+
+# User_2026-05-26_0750_25
+
+ok, ready to implement?
+
+# gpt-5.5_2026-05-26_0750_33
+
+Yes. I’d implement now, but I’d start with the **artifact-resolution spec cleanup first**, then config policy.
+
+Reason: config policy wants `sfcfg:ConfigSource`, and `ConfigSource` should subclass the renamed `sflo:ArtifactResolutionSpec`, not the old `ArtifactResolutionTarget`. Doing config first means knowingly building on a term we’re about to replace.
+
+Best implementation order:
+
+1. `ont.task.2026.2026-05-26_2205-artifact-resolution-spec-and-observation-cleanup`
+   - Core ontology/SHACL rename to `ArtifactResolutionSpec`
+   - Target predicate cleanup
+   - Recursive fallback spec
+   - Observation points to observed spec
+   - Weave/runtime/test fallout
+
+2. `wa.task.2026.2026-05-25_1609-config-policy-ontology-and-runtime`
+   - Update spec first
+   - Config policy binding vocabulary
+   - `ConfigSource`
+   - New defaults/runtime policy compiler
+   - ResourcePage presentation policies
+
+I’d use a fresh conversation for implementation so the working context is crisp and tool-driven. This thread has done its job: we argued the ontology into shape.

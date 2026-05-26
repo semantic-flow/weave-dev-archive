@@ -109,3 +109,27 @@ Body now describes:
 - binary-safe raw-source panel handling
 
 I left the current uncommitted Weave integration test edits and dependency repo changes untouched. No tests run for the message-only amend.
+
+# User_2026-05-25_2345_59
+
+Could you provide a detailed ocmmit message for the sflo [semantic-flow-config-ontology.ttl](../../sflo/semantic-flow-config-ontology.ttl) changes so far.
+
+# gpt-5.5_2026-05-25_2346_08
+
+I’ll inspect the current sflo ontology diff so the message matches the actual changes rather than the broader config-policy conversation.
+
+# gpt-5.5_2026-05-25_2346_30
+
+Suggested commit message:
+
+```text
+refactor(config): narrow portable config policy vocabulary
+
+- remove operational config classes and machine/workspace operational layer roles from the portable config ontology
+- drop host-local path and remote access rule vocabulary from sfcfg, leaving those trust decisions to implementation- or service-specific runtime config
+- clarify workspaceRootRelativeToMeshRoot as portable mesh layout metadata, not a local access grant
+- rename ResourcePage presentation config vocabulary toward policy semantics with ResourcePagePresentationPolicy and hasResourcePagePresentationPolicy
+- update ResourcePage template, stylesheet, panel-selection, and render-record comments/domains to use presentation policy terminology
+- align resolver prose around runtime gates and implementation/service authority rather than operational config inputs
+- describe config merge behavior in terms of property slots instead of broad policy families
+```
