@@ -102,5 +102,5 @@ The working file is intentionally `carol-bio.md` at the mesh root for this first
 - [x] Update Alice and Carol dataset creator triples to `https://djradon.github.io/ns/dave-richardson`.
 - [x] Fix nested first-payload weaving for parentless paths such as `carol/data`.
 - [x] Fix first-payload weaving for non-RDF imported Markdown payloads such as `carol/bio`.
-- [ ] Replay the rung and commit the resulting `a.26-carol` fixture branch when ready.
-- [ ] Replay the woven rung and commit the resulting `a.27-carol-woven` fixture branch when ready.
+- [x] Replay the rung and commit the resulting `a.26-carol` fixture branch when ready.
+- [x] Replay the woven rung and commit the resulting `a.27-carol-woven` fixture branch when ready.

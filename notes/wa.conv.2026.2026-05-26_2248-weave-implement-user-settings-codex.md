@@ -1712,3 +1712,30 @@ Refreshed [wa.task.2026.2026-05-24_1748-shared-artifact-resolution-runtime-servi
 It now frames the task around `sflo:ArtifactResolutionSpec`, names `sfcfg:ConfigSource` as the immediate first consumer, and narrows the first slice to a config-unblocking runtime resolver rather than a broad migration of page/extraction/source-registry code. I also added the relationship to the config-source discovery task, the no-ambient-fetch boundary, the requested-vs-observed split, a concrete first supported coordinate subset, tests, non-goals, and an updated implementation plan.
 
 Validation: `git diff --check` passed. The only remaining `ArtifactResolutionTarget` mentions are intentional historical notes saying not to use that name going forward.
+
+# User_2026-05-27_1635_02
+
+OK. I want to do an audit of all the wa.task.* notes. Some can be moved to completed. Other need to be evaluated give our current state, updated, and prioritized. [wd.todo.md](../../../../../documentation/notes/wd.todo.md) also has an outdated backlog. The result of the audit should be captured there.
+
+Should I start a new conversation for the audit?
+
+# gpt-5.5_2026-05-27_1635_15
+
+Yes, I’d start a new conversation for that audit.
+
+This thread has a lot of live design context, code changes, CodeRabbit feedback, task-note edits, and repo state tangled together. The audit is a different kind of work: broad, inventory-style, and it benefits from a fresh mental frame where the first act is “read current notes and current repo state,” not “continue the config-source thread.”
+
+A good opening prompt would be:
+
+```md
+Audit all `wa.task.*` notes in `weave-dev-archive/notes` and update `weave/documentation/notes/wd.todo.md` as the consolidated current backlog.
+
+For each task note:
+- decide whether it appears completed, obsolete/superseded, still active, or needs revision
+- do not rename task notes to completed unless I explicitly approve
+- update stale task notes only when the correction is clear
+- capture the resulting prioritized backlog in `wd.todo.md`
+- call out task notes that need human decision before editing
+```
+
+I’d also ask the next Codex pass to begin by reading `AGENTS.md`, `wd.general-guidance`, current `wd.todo.md`, and then list the task-note inventory before editing. That will keep the audit grounded instead of turning into vibes with checkboxes.
