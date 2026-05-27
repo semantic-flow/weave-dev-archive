@@ -52,7 +52,7 @@ The first runnable slice is accepted when these pieces work together:
 - Runtime diagnostics include structured logger output plus an in-memory resolution trace, without persisted `sfcfg:ResolvedConfig` or `sfcfg:ConfigResolutionRecord`.
 - Focused ontology, Weave, and framework tests/docs are updated enough that the slice is coherent and runnable.
 
-Deferred follow-through includes durable config-edit CLI commands, full Knop-local/inherited source discovery, arbitrary referenced config retrieval, mesh-create policy authoring, persisted resolved-config records, and any Weave-specific ontology for host/workspace access rules.
+Deferred follow-through includes durable config-edit CLI commands, full Knop-local/inherited source discovery, arbitrary referenced config retrieval, mesh-create policy authoring, persisted resolved-config records, and any Weave-specific ontology for host-local runtime access rules.
 
 ### Second runnable slice status
 
@@ -143,8 +143,10 @@ The CLI flag currently called `--include-semantic-flow-metadata` may remain as a
 - Publication profile and workspace-root relationship remain scoped settings, not policy bindings.
 - Naming defaults may remain direct layered scoped settings unless/until a target-selective naming use case appears.
 - Use `sfcfg:ResourcePagePresentationPolicy`, not `sfcfg:ResourcePagePresentationConfig`, for ResourcePage presentation values. Do not keep a separate `sfcfg:hasDefaultResourcePagePresentationConfig` property; defaultness comes from attachment point, layer, and policy resolution.
-- Do not keep `OperationalConfig`, `WorkspaceOperationalConfig`, `HostLocalOperationalConfig`, or host/workspace access-rule vocabulary in the portable Semantic Flow config ontology.
-- Treat host/workspace access rules as internal Weave runtime structures only in this slice. Defer any Weave-specific ontology until there is stronger pressure from service/runtime use cases.
+- Do not keep `OperationalConfig`, `WorkspaceOperationalConfig`, `HostLocalOperationalConfig`, or host-local/remote access-rule vocabulary in the portable Semantic Flow config ontology.
+- Treat host-local and remote access rules as internal Weave runtime structures only in this slice. Defer any Weave-specific ontology until there is stronger pressure from service/runtime use cases.
+- Keep constrained mesh/workspace-relative rules in portable config as `sfcfg:MeshWorkspacePathRule`, with `sfcfg:workspacePathPrefix` and `sfcfg:appliesToLocalPathLocatorKind`. This replaces the too-broad `sfcfg:LocalPathAccessRule` / `sfcfg:LocalPathBase` model and leaves host-local grants in Weave settings.
+- Validate `sfcfg:MeshWorkspacePathRule` in two layers: standalone parsing rejects absolute paths and broad traversal, while Weave runtime load validates that each rule resolves inside the active workspace described by `workspaceRootRelativeToMeshRoot` and runtime context.
 - Remove `sfcfg:configLayerRole_reusableConfig` from default precedence and, unless a concrete non-layer validation use appears, from the portable `ConfigLayerRole` vocabulary. Reuse is not a layer.
 - Remove live Weave authoring/parser support for old direct default terms such as `sfcfg:hasDefaultHistoryTrackingPolicy`, `sfcfg:hasHistoryTrackingDefault`, and `sfcfg:hasDefaultResourcePageGenerationPolicy`. Released ontology history can remain historical, but current pre-v1 authoring should use policy bindings.
 - Treat config-scope ResourcePage presentation defaults as policy bindings. A `sflo:ResourcePageDefinition` should not carry direct config adjacency; page-specific presentation should be expressed through a policy binding with an exact page/resource target or an appropriate Knop-local scope.
@@ -169,7 +171,7 @@ The CLI flag currently called `--include-semantic-flow-metadata` may remain as a
 - Use `sfcfg:hasResourcePagePresentationPolicy` as a policy-slot/value predicate on policy definitions, not as direct config adjacency on `sflo:ResourcePageDefinition`.
 - Keep `sfcfg:hasGeneratedResourcePagePanelSelection` as local authored ResourcePage composition over the resolved presentation policy, not as config attachment.
 - Replace or retire `sfcfg:panelDataRequirement_semanticFlowMetadataOptIn`; metadata panel selection should depend on actual available metadata or explicit policy selection semantics.
-- Remove portable operational config classes and portable host/workspace local/remote access-rule vocabulary from the Semantic Flow config ontology.
+- Remove portable operational config classes and portable host-local or remote access-rule vocabulary from the Semantic Flow config ontology. Keep only the narrower portable `sfcfg:MeshWorkspacePathRule` model for constrained workspace-relative mesh path allowances.
 - Remove `sfcfg:configLayerRole_reusableConfig` from layer-precedence vocabulary/defaults. If reusable config provenance needs a term later, model it as config source/provenance metadata rather than a precedence layer.
 - Clarify or revise `ConfigLayerRole`/attachment-role vocabulary so referenced config and Knop-inheritable config are not misread as ordinary consumed layers at the declaring scope.
 - Clarify direct history and ResourcePage generation default terms in light of the binding model.
@@ -196,8 +198,8 @@ The CLI flag currently called `--include-semantic-flow-metadata` may remain as a
 - Relax ResourcePage presentation parsing and SHACL so a presentation policy may declare zero generated panel selections.
 - Implement exact artifact policy target parsing and matching for mesh-governed `sflo:DigitalArtifact` resources in the second slice. Mesh config exact targets fail closed if governance context is unavailable, malformed, or does not prove the target artifact is governed by the active mesh scope.
 - Keep ResourcePage generation policy queries centered on the governed resource/artifact that would receive a page. Do not treat the generated page file as the default target of generation policy.
-- Remove or relocate runtime support for removed `machineLocalOperational`/`workspaceOperational` config-layer roles and portable local/remote path access-rule terms.
-- Keep host/workspace access rules internal to Weave runtime for this slice; do not introduce a Weave-specific persisted ontology yet.
+- Remove or relocate runtime support for removed `machineLocalOperational`/`workspaceOperational` config-layer roles and portable host-local/remote access-rule terms.
+- Keep host-local access rules in Weave user settings for this slice; do not introduce a broader Weave-specific persisted ontology yet.
 - Update structured diagnostics and in-memory resolution traces to include participating config sources, command overrides, selected high-level policy values by slot, and conflict/exclusion reasons.
 
 ### Documentation and tasks
@@ -218,7 +220,8 @@ The CLI flag currently called `--include-semantic-flow-metadata` may remain as a
 - [x] Preserve `sfcfg:hasGeneratedResourcePagePanelSelection` parsing as local authored page composition over the resolved presentation policy.
 - [x] Update runtime tests and TTL fixtures in `src/runtime/config/effective_config_test.ts` and `src/runtime/weave/page_definition_test.ts`.
 - [x] Update docs and specs that mention `ResourcePagePresentationConfig`, `hasResourcePagePresentationConfig`, or `hasDefaultResourcePagePresentationConfig`, especially `documentation/notes/wu.resource-pages.md` and [[sf.spec.2026-05-25-config-behavior]].
-- [ ] Remove or relocate Weave runtime references to removed portable operational config vocabulary, including `configLayerRole_machineLocalOperational`, `configLayerRole_workspaceOperational`, local path access rules, remote access rules, and related tests/defaults.
+- [x] Remove or relocate Weave runtime references to removed portable operational config vocabulary, including `configLayerRole_machineLocalOperational`, `configLayerRole_workspaceOperational`, local path access rules, remote access rules, and related tests/defaults.
+- [x] Replace current mesh-carried `sfcfg:LocalPathAccessRule` with constrained portable mesh path policy: `sfcfg:MeshWorkspacePathRule`, `sfcfg:hasMeshWorkspacePathRule`, `sfcfg:workspacePathPrefix`, and `sfcfg:appliesToLocalPathLocatorKind`. Host-local user grants are out of scope here because [[wa.completed.2026.2026-05-26_2030-user-settings]] moved them to `weave:HostLocalAccessProfile`.
 - [x] Remove `sfcfg:configLayerRole_reusableConfig` from `defaults/config-resolution.ttl`, runtime config-layer role parsing, and ontology layer-role vocabulary unless retained outside layer precedence as provenance/source metadata.
 - [x] Remove live parser acceptance and default authoring for old direct policy-default terms such as `sfcfg:hasDefaultHistoryTrackingPolicy`, `sfcfg:hasHistoryTrackingDefault`, and `sfcfg:hasDefaultResourcePageGenerationPolicy`. The runtime keeps reject-only guardrails for these retired terms.
 - [x] Relax ResourcePage presentation parser/tests so `semantic-site-no-panels` can have zero generated panel selections.
@@ -226,7 +229,7 @@ The CLI flag currently called `--include-semantic-flow-metadata` may remain as a
 - [x] Decide and implement/reject/defer `sfcfg:hasResourcePageRegenerationConfigPolicy` explicitly. First-pass runtime keeps it as a direct scoped singleton setting.
 - [ ] Continue replacing role-only config policy query call sites with target-object queries, keeping role helpers only as wrappers where still useful. The second slice moves generated ResourcePage policy paths to target-object queries; support-history materialization still uses role maps.
 - [x] Implement exact artifact policy targets for mesh-governed artifacts and reject exact targets outside the governing mesh/scope.
-- [ ] Keep host/workspace access rules as internal Weave runtime structures for this slice and remove portable persisted vocabulary references.
+- [x] Keep host-local access rules in Weave user settings for this slice and remove retired portable persisted vocabulary references.
 
 ## Testing
 
@@ -266,8 +269,8 @@ The CLI flag currently called `--include-semantic-flow-metadata` may remain as a
 - Do not make publication profile imply history, ResourcePage generation, or ResourcePage presentation behavior.
 - Do not add an all-artifact-role enum value. Use explicit target/selector shapes for broad matching.
 - Do not treat referenced config as a global layer.
-- Do not let portable config expand host trust, local path access, remote retrieval, or resolver authority.
-- Do not introduce persisted Weave-specific host/workspace access-rule ontology in this slice.
+- Do not let portable config expand host trust, broad local path access, remote retrieval, or resolver authority.
+- Do not introduce persisted Weave-specific host-local access-rule ontology in this slice.
 - Do not implement unpinned remote config retrieval in this slice.
 - Do not persist `sfcfg:ResolvedConfig` or full `sfcfg:ConfigResolutionRecord` output by default.
 - Do not require a compatibility layer for pre-v1.0 direct policy-default vocabulary unless the implementation needs a very short migration bridge.
@@ -294,7 +297,7 @@ The CLI flag currently called `--include-semantic-flow-metadata` may remain as a
 - [x] Replace `loadWeaveDefaultEffectiveConfig`/`loadEffectiveConfigForExecution` call sites with a mesh-root-aware loader that can compile defaults, mesh-local config, and command overrides.
 - [x] Update command override handling so history overrides and metadata/presentation overrides compile into the command-override layer.
 - [x] Wire generated ResourcePage rendering to selected ResourcePage presentation policy rather than a durable boolean metadata flag.
-- [ ] Apply the required follow-up updates from the initial ontology cleanup, including Weave defaults, parser constants, test fixtures, docs, and removed operational/access-rule vocabulary references.
+- [x] Apply the required follow-up updates from the initial ontology cleanup, including Weave defaults, parser constants, test fixtures, docs, and removed operational/access-rule vocabulary references.
 - [x] Add unit tests for ontology parsing, policy-target parsing, policy resolution, scoped settings, and ResourcePage presentation policy behavior.
 - [ ] Add integration tests for mesh-local `_mesh/_config/config.ttl` changing history, ResourcePage generation, and ResourcePage presentation behavior.
 - [ ] Update CLI docs and the SFLO replay recipe when durable mesh-local config can replace repeated command overrides.

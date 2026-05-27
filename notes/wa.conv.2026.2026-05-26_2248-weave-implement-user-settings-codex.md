@@ -12,7 +12,7 @@ conversationEventKinds: [message.assistant, message.user, tool.call, tool.result
 
 weave: implement user settings
 
-Review[[wa.task.2026.2026-05-26_2030-user-settings]] and let me know if you have any suggestions for improvement or questions.
+Review[[wa.completed.2026.2026-05-26_2030-user-settings]] and let me know if you have any suggestions for improvement or questions.
 
 Maybe begin with ontology + settings resolver + tests, then path-grant cutover. Make the ontology metadata look like [semantic-flow-core-ontology.ttl](../../sflo/semantic-flow-core-ontology.ttl)
 
@@ -424,7 +424,7 @@ Both notes now read consistently with the latest direction. I’m doing one quic
 
 Updated both notes.
 
-In [[wa.task.2026.2026-05-26_2030-user-settings]], I added the current implementation status, corrected the bad “remove all `sfcfg:` path grants” direction, and marked the completed first-slice items. It now clearly says: host-local user settings grants use `weave:`, while portable mesh-carried path grants stay in `sfcfg:` for now.
+In [[wa.completed.2026.2026-05-26_2030-user-settings]], I added the current implementation status, corrected the bad “remove all `sfcfg:` path grants” direction, and marked the completed first-slice items. It now clearly says: host-local user settings grants use `weave:`, while portable mesh-carried path grants stay in `sfcfg:` for now.
 
 In [[wa.task.2026.2026-05-26_2237-testing-optimization]], I filled out the plan around fixture materialization, narrow test fixtures, test task buckets, timing instrumentation, explicit CLI env handling, and cautious parallelism later.
 
@@ -507,3 +507,228 @@ Clean up path grant layering
 - Preserve integrate grant reporting through a neutral policyPath while routing detached source grants to the settings access profile.
 - Update focused path-policy tests and integrate docs for the MeshConfig versus user-settings access split.
 ```
+
+# User_2026-05-27_0012_49
+
+what's next?
+
+# gpt-5.5_2026-05-27_0013_08
+
+I’d stop the path-grant cleanup here for now. The important boundary is in place: `MeshConfig` can carry constrained workspace-relative grants, and host-local grants live in user settings.
+
+Next best move:
+
+1. Commit the path-grant cleanup as its own small changeset, separate from the existing test analytics/CI dirt.
+2. Start the testing optimization task with the lowest-risk slice: add `WEAVE_TEST_TIMING=1` timing output to the existing test preload wrapper, then get a baseline before changing fixture materialization.
+3. After timing shows the real hotspots, optimize fixture reads/materialization. My bet is still “too many per-file `git show` calls.”
+
+I would not jump straight back to `deno test --parallel`; that already showed hidden coupling, and fixing blind parallelism before measuring is likely to make the suite more mysterious rather than faster.
+
+# User_2026-05-27_0014_52
+
+can we move user-settings to completed? The only unchecked item is "Decide whether `sfcfg:LocalPathAccessRule` should be formalized in the config ontology during [[wa.task.2026.2026-05-25_1609-config-policy-ontology-and-runtime]] or replaced by a better portable policy term."
+
+# gpt-5.5_2026-05-27_0015_13
+
+Yes, I think it’s ready to close. That remaining item is explicitly config-policy ontology follow-up, so I’ll mark it deferred in the user-settings note, rename the note to `wa.completed...`, and update any wikilinks that point at the task name.
+
+# gpt-5.5_2026-05-27_0015_28
+
+There are a few references to the task note name, including conversation-note wikilinks/markdown links. I’m going to defer the ontology-policy decision inside the note first, then rename and patch those references so the vault doesn’t point at the old task name.
+
+# gpt-5.5_2026-05-27_0016_48
+
+The old task-name references are gone. One thing I noticed: the target config-policy note doesn’t currently mention `LocalPathAccessRule`, so I’m going to add a single checkbox there as the handoff rather than letting the deferred decision live only in the completed note.
+
+# gpt-5.5_2026-05-27_0017_33
+
+Moved it to completed:
+
+[wa.completed.2026.2026-05-26_2030-user-settings.md](wa.completed.2026.2026-05-26_2030-user-settings.md)
+
+I marked the remaining `sfcfg:LocalPathAccessRule` decision as deferred, then added the handoff into [wa.task.2026.2026-05-25_1609-config-policy-ontology-and-runtime.md](wa.task.2026.2026-05-25_1609-config-policy-ontology-and-runtime.md) so it doesn’t get lost.
+
+I also updated the existing conversation-note links from `wa.task...user-settings` to `wa.completed...user-settings`. No tests run, just note maintenance.
+
+# User_2026-05-27_0017_59
+
+OK, so now we can jump back to [wa.task.2026.2026-05-25_1609-config-policy-ontology-and-runtime.md](wa.task.2026.2026-05-25_1609-config-policy-ontology-and-runtime.md) ?
+
+# gpt-5.5_2026-05-27_0018_16
+
+Yes. I’d jump back there now, with one caveat: the first thing should be resolving the `sfcfg:LocalPathAccessRule` contradiction we just surfaced.
+
+The clean next slice is:
+
+1. Decide whether constrained mesh/workspace-relative grants are legitimate portable mesh config.
+2. If yes, formalize or rename them in the config ontology as **mesh path policy**, not host-local operational policy.
+3. Keep host-local grants entirely in `weave:` user settings.
+4. Then continue the remaining config-policy runtime cleanup with that boundary stable.
+
+My bias: keep the capability, but rename/reshape it away from “local access rule” if the ontology pass allows it. Something like a constrained mesh workspace path policy is conceptually different from “this user lets Weave read `/home/alice/source`.” The current behavior is useful; the vocabulary is the part still muddy.
+
+I’d also keep this separate from the testing-optimization thread. Different mental stack, different risk profile.
+
+# User_2026-05-27_0020_38
+
+ok, I agree. what vocabulary do you recommend?
+
+# gpt-5.5_2026-05-27_0020_55
+
+I’ll sanity-check the current config ontology naming style before I recommend terms, so the suggestion fits the vocabulary that already landed instead of inventing a parallel dialect.
+
+# gpt-5.5_2026-05-27_0021_20
+
+I’d rename it away from **access/grant** language. My recommendation:
+
+**Class**
+` sfcfg:MeshWorkspacePathRule`
+
+**Property on `sfcfg:MeshConfig`**
+` sfcfg:hasMeshWorkspacePathRule`
+
+**Rule properties**
+` sfcfg:workspacePathPrefix`
+` sfcfg:appliesToLocalPathLocatorKind`
+
+**Locator kind class/individuals can stay close to current**
+` sfcfg:LocalPathLocatorKind`
+` sfcfg:localPathLocatorKind_workingLocalRelativePath`
+` sfcfg:localPathLocatorKind_targetLocalRelativePath`
+
+Example:
+
+```ttl
+<> a sfcfg:MeshConfig ;
+  sfcfg:workspaceRootRelativeToMeshRoot "../" ;
+  sfcfg:hasMeshWorkspacePathRule [
+    a sfcfg:MeshWorkspacePathRule ;
+    sfcfg:workspacePathPrefix "../ontology/" ;
+    sfcfg:appliesToLocalPathLocatorKind sfcfg:localPathLocatorKind_workingLocalRelativePath
+  ] .
+```
+
+Why this shape:
+
+- **MeshWorkspace** says the rule is bounded by the mesh’s declared workspace boundary, not the host.
+- **PathRule** avoids “grant/access,” which sounds like trust/authorization and belongs to `weave:HostLocalAccessProfile`.
+- Dropping `LocalPathBase` from this portable form is good. `userHome` and `absolutePath` should not be expressible in `MeshConfig`.
+- Keeping locator kinds is useful because `workingLocalRelativePath` and `targetLocalRelativePath` are real semantic differences.
+
+I’d explicitly define the contract as: `workspacePathPrefix` is interpreted relative to `meshRoot`, normalized as a POSIX-style relative path, and must resolve inside `workspaceRoot`. So `../ontology/` is allowed for a docs-rooted sidecar mesh; `../../` and host-absolute paths are not.
+
+I would not call it `SourcePathRule`, because `targetLocalRelativePath` also exists. “Workspace path” is broader and truer.
+
+# User_2026-05-27_0023_06
+
+agreed. proceed
+
+# gpt-5.5_2026-05-27_0023_26
+
+I’ll make this as a tight vocabulary migration: add the new `sfcfg:MeshWorkspacePathRule` terms to the config ontology, update Weave to render/parse only those mesh-carried rules, and leave `weave:` host-local access untouched. I’ll scan first so I don’t accidentally sweep up unrelated `LocalPathAccessRule` references in old archive notes.
+
+# gpt-5.5_2026-05-27_0023_42
+
+The main Weave repo and the SFLO dependency are currently clean, so I won’t be stepping on the test-analytics work here. The only existing dirt is in the dev-archive notes from the task rename/handoff, which I’ll treat as related note state.
+
+# gpt-5.5_2026-05-27_0023_48
+
+I found the old terms are only live in Weave runtime/tests and the config ontology gap, not in defaults. I’m going to use the exact vocabulary we agreed on and keep old archive/history notes alone unless they’re the active task handoff.
+
+# gpt-5.5_2026-05-27_0025_58
+
+I’ll carry the vocabulary change through the small surface first: runtime parser/renderer, focused tests, ontology/docs/task note. If fixture branches turn out to be the thing breaking tests, I’ll call that out explicitly before widening the blast radius.
+
+# gpt-5.5_2026-05-27_0026_10
+
+I’m checking the exact remaining old-term footprint now so the edit stays tight. The important distinction is keeping host-local `weave:LocalPathGrant` intact while replacing only the portable mesh workspace rule vocabulary.
+
+# gpt-5.5_2026-05-27_0026_57
+
+I’ve got the old references separated into three buckets: live runtime/tests, live SFLO/framework docs, and historical archive notes. I’m only touching the first two plus the active task note/decision log, leaving old completed/conversation history alone.
+
+# gpt-5.5_2026-05-27_0027_54
+
+I’m switching the test fixtures and assertions over mechanically now. This is mostly Turtle vocabulary text, so I’m using a narrow rewrite on the affected test files instead of hand-editing each repeated block.
+
+# gpt-5.5_2026-05-27_0028_21
+
+The emitted and parsed Turtle is now on the new terms. I’m also renaming the internal rule shape away from `LocalPathAccessRule` so future searches don’t confuse the Weave runtime struct with the retired portable vocabulary.
+
+# gpt-5.5_2026-05-27_0031_08
+
+One useful tightening showed up while reading the updated parser: parsing alone can reject broad traversal, but only the loaded policy knows the workspace boundary. I’m adding that load-time validation so a mesh rule outside the active workspace fails closed instead of becoming an inert rule.
+
+# gpt-5.5_2026-05-27_0032_23
+
+Ontology and docs are aligned now: config ontology has the new terms, framework config docs describe the split, and the active task note records the decision. I’m moving into validation, starting narrow so we catch type or parser regressions before the slower integration tests.
+
+# gpt-5.5_2026-05-27_0032_52
+
+The Weave type check and formatting pass are clean. The SFLO repo doesn’t have a `check:ontology` task, so I’m using its available `check`/release validation path instead of inventing a task name.
+
+# gpt-5.5_2026-05-27_0033_34
+
+The focused unit/integration layer is green, including the new fail-closed workspace-boundary test. I’m going one ring wider now with the integration/e2e files that assert generated mesh config text and are most likely to expose fixture vocabulary drift.
+
+# gpt-5.5_2026-05-27_0034_04
+
+That wider run surfaced exactly the fixture seam I expected: one sidecar integration test is still reading a mesh config branch with the retired rule vocabulary, so the new parser sees no workspace rule and denies `../ontology/...`. I’ll finish the e2e runs, then decide whether this is a fixture branch update or a test-local TTL edit.
+
+# gpt-5.5_2026-05-27_0035_00
+
+The sidecar fixture repo is the remaining source of old `config.ttl` terms across its branch ladder. Because the tests materialize named branches, I’m updating those branch refs rather than adding parser compatibility for retired pre-v1 vocabulary.
+
+# gpt-5.5_2026-05-27_0035_29
+
+The sidecar fixture ladder branches are now updated and clean, with no remaining retired path-rule terms in `docs/_mesh/_config/config.ttl`. I’m rerunning just the failing fixture-dependent tests first.
+
+# gpt-5.5_2026-05-27_0035_54
+
+A second fixture ladder, `mesh-branch-fantasy-rules`, still has the retired terms on its branch-deploy config branches. Same scoped mechanical update there so future branch-deploy tests do not depend on the old vocabulary either.
+
+# gpt-5.5_2026-05-27_0037_04
+
+Both fixture ladders are now free of the retired terms across local branch refs. I’m rerunning the wider tests that failed, then I’ll run the branch fixture coverage that uses the other ladder.
+
+# gpt-5.5_2026-05-27_0037_56
+
+The fixture-dependent tests are green after the branch updates. I’m doing the repo-level Weave checks now: format, lint, and full type check.
+
+# gpt-5.5_2026-05-27_0038_02
+
+Weave format, lint, and full type check are clean. I already ran SFLO check/lint/release validation; I’m adding SFLO tests too since the ontology changed.
+
+# gpt-5.5_2026-05-27_0040_53
+
+Implemented the path-grant vocabulary cutover.
+
+What changed:
+- Weave now parses/renders mesh-carried rules as `sfcfg:MeshWorkspacePathRule` with `sfcfg:hasMeshWorkspacePathRule`, `sfcfg:workspacePathPrefix`, and `sfcfg:appliesToLocalPathLocatorKind`.
+- Host-local grants remain in Weave user settings via `weave:HostLocalAccessProfile`.
+- Mesh workspace rules now fail closed if they use broad traversal or resolve outside the active workspace.
+- SFLO config ontology now defines the new mesh workspace path rule vocabulary.
+- Framework config docs and the active config-policy task note are updated.
+- Sidecar and branch fixture ladder refs were updated to the new vocabulary so tests do not need an old-vocab compatibility shim.
+
+Validation run:
+- `deno task fmt:check`
+- `deno task lint`
+- `deno task check`
+- `local_path_policy_test.ts`
+- `defaults_guardrails_test.ts`
+- `integrate_test.ts`
+- `weave_test.ts`
+- `mesh_create_cli_test.ts`
+- `integrate_cli_test.ts`
+- `branch_fantasy_rules_fixture_test.ts`
+- SFLO: `deno task check`, `fmt:check`, `lint`, `release:validate`, `test`
+
+One note: the main Weave repo still has pre-existing staged testing-optimization changes; I left those alone. My changes are the unstaged path-policy/runtime/test files.
+
+Suggested commit messages:
+- Weave: `Replace mesh path grants with workspace path rule vocabulary`
+- SFLO: `Define mesh workspace path rule config vocabulary`
+- Framework: `Document mesh workspace path rules`
+- Dev archive: `Record mesh workspace path rule decision`
+- Fixture repos: already committed branch refs as `Update mesh workspace path rule vocabulary`

@@ -123,6 +123,7 @@ This is also friendlier for debugging: the failing command can print the env kno
 - Keep local Codecov Test Analytics upload explicit via a dedicated task; the default `deno task test` and `deno task test:coverage` should not upload anything from a developer machine.
 - Keep all coverage-producing output outside the repository at `/tmp/semantic-flow-coverage`, including CI/local raw coverage, JUnit XML, and LCOV.
 - Recreate `/tmp/semantic-flow-coverage` in coverage-producing tasks so reboot-cleared temp storage does not need manual setup.
+- Normalize Deno's JUnit XML for Codecov Test Analytics before upload because the raw Deno report is accepted for aggregate run time but does not currently populate individual test rows.
 - Use the main Codecov action with `report_type: test_results` in CI instead of introducing the deprecated `codecov/test-results-action`.
 - Do not add raw `deno test --parallel` back as a normal task yet. The first attempt exposed hidden coupling and did not produce a trustworthy faster suite.
 - Optimize fixture materialization before broad scheduling changes.
@@ -162,6 +163,7 @@ This is also friendlier for debugging: the failing command can print the env kno
 - [x] Add focused script tests for the local Codecov Test Analytics parser and token gate.
 - [x] Move coverage-producing output out of the repo workspace to `/tmp/semantic-flow-coverage`.
 - [x] Recreate `/tmp/semantic-flow-coverage` before coverage-producing tasks.
+- [x] Normalize Deno JUnit XML into Codecov's expected shape before test analytics upload.
 - [ ] Add `WEAVE_TEST_TIMING=1` support to the test preload wrapper and print the slowest tests plus fixture helper totals.
 - [ ] Record a serial baseline for `deno task test`, `tests/e2e`, `tests/integration`, and `src` tests.
 - [ ] Cache resolved fixture refs, branch file lists, and branch file contents by fixture repo + resolved commit + path.

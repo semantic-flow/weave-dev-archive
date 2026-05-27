@@ -285,7 +285,7 @@ I’d also keep env/CLI overrides like `WEAVE_LOG_DIR`, but make this the defaul
 
 ok. slug could end up being the hostname for meshes based at that level, so we have to strip anyhow. we'll need a new property (in config?) for the profile?
 
-Is "user settings" the right name for this concept? If so, fill out [wa.task.2026.2026-05-26_2030-user-settings.md](wa.task.2026.2026-05-26_2030-user-settings.md)
+Is "user settings" the right name for this concept? If so, fill out [wa.completed.2026.2026-05-26_2030-user-settings.md](wa.completed.2026.2026-05-26_2030-user-settings.md)
 
 # gpt-5.5_2026-05-26_2031_51
 
@@ -313,7 +313,7 @@ I found there isn’t already an ontology home in the Weave repo, just Weave-own
 
 # gpt-5.5_2026-05-26_2036_35
 
-Agreed. I updated [wa.task.2026.2026-05-26_2030-user-settings.md](wa.task.2026.2026-05-26_2030-user-settings.md) to make that explicit.
+Agreed. I updated [wa.completed.2026.2026-05-26_2030-user-settings.md](wa.completed.2026.2026-05-26_2030-user-settings.md) to make that explicit.
 
 I framed it as Weave’s first ontology artifact:
 
