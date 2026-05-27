@@ -851,3 +851,30 @@ All requested fixture pushes completed. I’m doing a final fetch/status pass no
 # gpt-5.5_2026-05-26_1621_17
 
 The only remaining change is the conversation archive note updating itself with the push work. I’ll commit and push that one more time; the fixture refs are now confirmed no longer diverged.
+
+# gpt-5.5_2026-05-26_1621_33
+
+Pushed everything requested.
+
+- `weave`: `next/v0.2.1` was already up to date.
+- `semantic-flow-framework`: `main` was already up to date.
+- `weave-dev-archive`: pushed two archive commits, ending at `e8be311`.
+- `mesh-alice-bio`: force-with-lease pushed regenerated `a.*` refs.
+- `mesh-sidecar-fantasy-rules`: force-with-lease pushed regenerated `a.*` refs.
+- `mesh-branch-fantasy-rules`: force-with-lease pushed regenerated `a.*` refs; `main`/`gh-pages` were already aligned.
+
+Final check showed the three `mesh-*` repos have no diverged local refs.
+
+# User_2026-05-26_1621_33
+
+new conversation or this one?
+
+# gpt-5.5_2026-05-26_1621_38
+
+New conversation. This one has a lot of fixture-regeneration sediment in it now.
+
+For the next one, I’d start with:
+
+“Please proceed with [[wa.task.2026.2026-05-25_1609-config-policy-ontology-and-runtime]]. Start by reading the task, current config behavior spec, SFLO config ontology, and Weave config/runtime code. Implement the first runnable slice.”
+
+That gives it a clean context window and keeps the config-policy work from being tangled with all the fixture push details.

@@ -47,12 +47,16 @@ The first runnable slice is accepted when these pieces work together:
 - SFLO ontology and SHACL define the policy-binding vocabulary, policy targets, value predicates, ResourcePage presentation policy terms, zero-panel presentation validity, exact artifact target validation, and removed/retired legacy terms.
 - Weave defaults use the new policy-binding model for application-level history, ResourcePage generation, and ResourcePage presentation.
 - Weave compiles application defaults, mesh-local `_mesh/_config/config.ttl`, and command overrides into one runtime config structure.
-- Weave policy resolution is target-object based, including exact governed-artifact validation from mesh inventory and support-artifact knowledge.
+- Weave policy resolution is target-object based for explicit any-governed-artifact and artifact-role selectors. Exact governed-artifact validation from mesh inventory and support-artifact knowledge is deferred to the second slice.
 - Built-in ResourcePage presentation policies exist for `semantic-site-default`, `semantic-site-all-panels`, and `semantic-site-no-panels`.
 - Runtime diagnostics include structured logger output plus an in-memory resolution trace, without persisted `sfcfg:ResolvedConfig` or `sfcfg:ConfigResolutionRecord`.
 - Focused ontology, Weave, and framework tests/docs are updated enough that the slice is coherent and runnable.
 
 Deferred follow-through includes durable config-edit CLI commands, full Knop-local/inherited source discovery, arbitrary referenced config retrieval, mesh-create policy authoring, persisted resolved-config records, and any Weave-specific ontology for host/workspace access rules.
+
+### Second runnable slice status
+
+The second slice adds `sfcfg:ExactArtifactPolicyTarget` and `sfcfg:targetsArtifact`, validates exact targets against active mesh-governed artifact IRIs from the current MeshInventory, rejects unavailable or malformed governance context, and gives exact artifact selectors higher structural specificity than artifact-role and any-governed-artifact selectors. Weave now exposes exact artifact target policy query helpers and uses target-object ResourcePage generation queries in generated-page listing and planned ResourcePage fact filtering. Exact history tracking policy can be resolved through `EffectiveConfig`, but support-history materialization still flows through role policy maps; if exact history policy needs to affect version planning, thread artifact-target history queries through the support-history planners in a later slice.
 
 ### Conceptual model for this task
 
@@ -123,6 +127,7 @@ The CLI flag currently called `--include-semantic-flow-metadata` may remain as a
 - Decide whether `sfcfg:hasResourcePageRegenerationConfigPolicy` remains a scoped singleton setting, becomes a policy binding, or is deferred/rejected in the first compiled-config runtime.
 - Decide CLI/API names for durable config edits after creation. Candidate shapes include `weave mesh config set-history-tracking-policy` and `weave mesh config set-resource-page-presentation`, but this task can land the runtime before the final UX if necessary.
 - Decide whether Knop-local and Knop-inherited source discovery is implemented in this task or only supported in the compiled config API. The runtime data structure should support those layers even if source discovery is deferred.
+- Exact-artifact policy targets are now a second-slice item. The first slice must still reject unsupported exact-target selectors rather than broadening them.
 
 ## Decisions
 
@@ -145,7 +150,7 @@ The CLI flag currently called `--include-semantic-flow-metadata` may remain as a
 - Treat config-scope ResourcePage presentation defaults as policy bindings. A `sflo:ResourcePageDefinition` should not carry direct config adjacency; page-specific presentation should be expressed through a policy binding with an exact page/resource target or an appropriate Knop-local scope.
 - Preserve `sfcfg:hasGeneratedResourcePagePanelSelection` on `sflo:ResourcePageDefinition` as local authored composition over the resolved presentation policy. It is not config adjacency and does not select the presentation policy.
 - Replace or retire `sfcfg:panelDataRequirement_semanticFlowMetadataOptIn`. Metadata inclusion selected by policy must use actual metadata availability or equivalent policy selection semantics, not an opt-in flag.
-- Allow exact artifact policy targets in mesh config in this slice, using mesh inventory and governed support-artifact knowledge as the governance authority. Exact artifact targets identify governed `sflo:DigitalArtifact` IRIs only. `sflo:ResourcePageDefinition` can be targeted when it is the governed definition artifact. Generated `sflo:ResourcePage` files and public referent IRIs need ResourcePage/resource-target selector shapes, not exact artifact targets.
+- Implement exact artifact policy targets in the second slice. Mesh config exact targets use mesh inventory and governed support-artifact knowledge as the governance authority. Exact artifact targets identify governed `sflo:DigitalArtifact` IRIs only. `sflo:ResourcePageDefinition` can be targeted when it is the governed definition artifact. Generated `sflo:ResourcePage` files and public referent IRIs need ResourcePage/resource-target selector shapes, not exact artifact targets.
 - ResourcePage generation policy targets the governed resource/artifact for which a ResourcePage would be generated, not the generated page file itself.
 - Exact-target validation is not pure Turtle parsing. The compiler needs scope/governance context from mesh inventory and support-artifact knowledge; non-governed exact IRIs, malformed inventories, or unavailable governance facts must fail closed.
 - First-slice diagnostics should be structured logger output plus an in-memory resolution trace. Do not persist `sfcfg:ResolvedConfig` or `sfcfg:ConfigResolutionRecord` in this slice.
@@ -189,7 +194,7 @@ The CLI flag currently called `--include-semantic-flow-metadata` may remain as a
 - Remove direct `ResourcePageDefinition` presentation-config parsing; page-specific presentation should come from resolved policy bindings.
 - Preserve direct `ResourcePageDefinition` generated panel selections as local authored composition over resolved policy.
 - Relax ResourcePage presentation parsing and SHACL so a presentation policy may declare zero generated panel selections.
-- Implement exact artifact policy target parsing and matching for mesh-governed `sflo:DigitalArtifact` resources in this slice. This requires mesh inventory/support-artifact governance context and must fail closed when context is unavailable or the target is not governed by the active scope.
+- Implement exact artifact policy target parsing and matching for mesh-governed `sflo:DigitalArtifact` resources in the second slice. Mesh config exact targets fail closed if governance context is unavailable, malformed, or does not prove the target artifact is governed by the active mesh scope.
 - Keep ResourcePage generation policy queries centered on the governed resource/artifact that would receive a page. Do not treat the generated page file as the default target of generation policy.
 - Remove or relocate runtime support for removed `machineLocalOperational`/`workspaceOperational` config-layer roles and portable local/remote path access-rule terms.
 - Keep host/workspace access rules internal to Weave runtime for this slice; do not introduce a Weave-specific persisted ontology yet.
@@ -207,47 +212,47 @@ The CLI flag currently called `--include-semantic-flow-metadata` may remain as a
 
 ## Required Follow-Up From Initial Ontology Cleanup
 
-- [ ] Update `defaults/application.ttl`: replace `sfcfg:hasDefaultResourcePagePresentationConfig` with `sfcfg:hasResourcePagePresentationPolicy`, and replace `sfcfg:ResourcePagePresentationConfig` with `sfcfg:ResourcePagePresentationPolicy`.
-- [ ] Update `src/runtime/config/effective_config.ts`: replace removed ResourcePage presentation config/default constants, parse `sfcfg:hasResourcePagePresentationPolicy`, and stop treating ResourcePage presentation as a default-only property.
-- [ ] Update `src/runtime/weave/page_definition.ts`: remove direct `sfcfg:hasResourcePagePresentationConfig` page-definition parsing and route page-specific presentation through resolved policy bindings instead.
-- [ ] Preserve `sfcfg:hasGeneratedResourcePagePanelSelection` parsing as local authored page composition over the resolved presentation policy.
-- [ ] Update runtime tests and TTL fixtures in `src/runtime/config/effective_config_test.ts` and `src/runtime/weave/page_definition_test.ts`.
-- [ ] Update docs and specs that mention `ResourcePagePresentationConfig`, `hasResourcePagePresentationConfig`, or `hasDefaultResourcePagePresentationConfig`, especially `documentation/notes/wu.resource-pages.md` and [[sf.spec.2026-05-25-config-behavior]].
+- [x] Update `defaults/application.ttl`: replace `sfcfg:hasDefaultResourcePagePresentationConfig` with `sfcfg:hasResourcePagePresentationPolicy`, and replace `sfcfg:ResourcePagePresentationConfig` with `sfcfg:ResourcePagePresentationPolicy`.
+- [x] Update `src/runtime/config/effective_config.ts`: replace removed ResourcePage presentation config/default constants, parse `sfcfg:hasResourcePagePresentationPolicy`, and stop treating ResourcePage presentation as a default-only property.
+- [x] Update `src/runtime/weave/page_definition.ts`: remove direct `sfcfg:hasResourcePagePresentationConfig` page-definition parsing and route page-specific presentation through resolved policy bindings instead.
+- [x] Preserve `sfcfg:hasGeneratedResourcePagePanelSelection` parsing as local authored page composition over the resolved presentation policy.
+- [x] Update runtime tests and TTL fixtures in `src/runtime/config/effective_config_test.ts` and `src/runtime/weave/page_definition_test.ts`.
+- [x] Update docs and specs that mention `ResourcePagePresentationConfig`, `hasResourcePagePresentationConfig`, or `hasDefaultResourcePagePresentationConfig`, especially `documentation/notes/wu.resource-pages.md` and [[sf.spec.2026-05-25-config-behavior]].
 - [ ] Remove or relocate Weave runtime references to removed portable operational config vocabulary, including `configLayerRole_machineLocalOperational`, `configLayerRole_workspaceOperational`, local path access rules, remote access rules, and related tests/defaults.
-- [ ] Remove `sfcfg:configLayerRole_reusableConfig` from `defaults/config-resolution.ttl`, runtime config-layer role parsing, and ontology layer-role vocabulary unless retained outside layer precedence as provenance/source metadata.
-- [ ] Remove live parser support and default authoring for old direct policy-default terms such as `sfcfg:hasDefaultHistoryTrackingPolicy`, `sfcfg:hasHistoryTrackingDefault`, and `sfcfg:hasDefaultResourcePageGenerationPolicy`.
-- [ ] Relax ResourcePage presentation parser/tests so `semantic-site-no-panels` can have zero generated panel selections.
-- [ ] Replace or retire `sfcfg:panelDataRequirement_semanticFlowMetadataOptIn` and add an all-panels metadata path that does not depend on `includeSemanticFlowMetadata` / `semanticFlowMetadataOptIn` as a hidden boolean gate.
-- [ ] Decide and implement/reject/defer `sfcfg:hasResourcePageRegenerationConfigPolicy` explicitly.
-- [ ] Replace role-only config policy query call sites with target-object queries, keeping role helpers only as wrappers where still useful.
-- [ ] Implement exact artifact policy targets for mesh-governed artifacts and reject exact targets outside the governing mesh/scope.
+- [x] Remove `sfcfg:configLayerRole_reusableConfig` from `defaults/config-resolution.ttl`, runtime config-layer role parsing, and ontology layer-role vocabulary unless retained outside layer precedence as provenance/source metadata.
+- [x] Remove live parser acceptance and default authoring for old direct policy-default terms such as `sfcfg:hasDefaultHistoryTrackingPolicy`, `sfcfg:hasHistoryTrackingDefault`, and `sfcfg:hasDefaultResourcePageGenerationPolicy`. The runtime keeps reject-only guardrails for these retired terms.
+- [x] Relax ResourcePage presentation parser/tests so `semantic-site-no-panels` can have zero generated panel selections.
+- [x] Replace or retire `sfcfg:panelDataRequirement_semanticFlowMetadataOptIn` and add an all-panels metadata path that does not depend on `includeSemanticFlowMetadata` / `semanticFlowMetadataOptIn` as a hidden boolean gate.
+- [x] Decide and implement/reject/defer `sfcfg:hasResourcePageRegenerationConfigPolicy` explicitly. First-pass runtime keeps it as a direct scoped singleton setting.
+- [ ] Continue replacing role-only config policy query call sites with target-object queries, keeping role helpers only as wrappers where still useful. The second slice moves generated ResourcePage policy paths to target-object queries; support-history materialization still uses role maps.
+- [x] Implement exact artifact policy targets for mesh-governed artifacts and reject exact targets outside the governing mesh/scope.
 - [ ] Keep host/workspace access rules as internal Weave runtime structures for this slice and remove portable persisted vocabulary references.
 
 ## Testing
 
-- Ontology parse/shape tests for the new policy-binding vocabulary.
-- Unit-test policy resolution layer precedence: command override beats Knop-local, Knop-local beats inherited/mesh, mesh-local beats application defaults for targets covered by the upper layer.
-- Unit-test structural specificity: exact artifact beats artifact role, artifact role beats any governed artifact, with no priority required.
-- Unit-test `sfcfg:policyPriority`: omitted priority is `0`, higher priority wins at same specificity, and equal-priority incompatible values fail closed.
-- Unit-test that missing selector fields do not imply "any" and malformed/incomplete targets are rejected.
-- Unit-test governed-artifact matching for mesh support artifacts, Knop support artifacts, payload artifacts, and merely referenced external artifacts.
-- Unit-test exact artifact policy targets for governed artifacts and fail-closed rejection for non-governed exact targets.
-- Unit-test exact-target validation failure for malformed inventory or unavailable governance context.
-- Unit-test policy definitions with no supported slot failing validation and policy definitions with multiple supported slots resolving/tracing each slot independently.
-- Unit-test scoped settings validation for publication profile and `workspaceRootRelativeToMeshRoot`.
-- Unit-test `sfcfg:hasResourcePageRegenerationConfigPolicy` according to the selected first-pass behavior.
-- Unit-test that naming defaults remain layered scoped settings if they are not migrated to policy bindings.
-- Unit-test mesh-local history tracking policy for any governed artifact and role-specific same-layer exceptions.
-- Unit-test mesh-local ResourcePage generation policy values, especially generate versus suppress.
-- Unit-test mesh-local ResourcePage presentation policy selection for default, all-panels, and no-panels.
-- Unit-test `semantic-site-all-panels` includes the Semantic Flow metadata panel without the old metadata opt-in data requirement.
-- Unit-test `semantic-site-no-panels` preserves page shell/chrome while suppressing generated data panels and allowing zero panel selections.
-- Unit-test page-specific presentation policy through exact target or Knop-local policy binding rather than direct ResourcePageDefinition config.
-- Unit-test direct `sfcfg:hasGeneratedResourcePagePanelSelection` on `sflo:ResourcePageDefinition` remains available as local authored composition over the resolved presentation policy.
-- Integration-test `weave`, `weave version`, and `weave generate` honoring `_mesh/_config/config.ttl` without repeated command flags.
-- Regression-test command-scoped history and ResourcePage presentation overrides beating mesh-local config for one run.
-- Integration-test unsupported mesh-local policy values, duplicate singleton settings, and conflicting policy bindings failing closed.
-- Run focused `deno task test`/`deno task check` for Weave runtime changes; run `deno task lint` after broader structural changes; run repo-appropriate ontology/framework checks if ontology/spec files change.
+- [x] Ontology parse/shape tests for the new policy-binding vocabulary.
+- [ ] Unit-test full layer precedence across Knop-local, Knop-inherited, mesh-local, application default, and command override layers. First-pass tests cover mesh-local over defaults and command override over mesh-local.
+- [x] Unit-test structural specificity: exact artifact beats artifact role, artifact role beats any governed artifact, with no priority required.
+- [x] Unit-test `sfcfg:policyPriority`: omitted priority is `0`, higher priority wins at same specificity, and equal-priority incompatible values fail closed.
+- [x] Unit-test that missing selector fields do not imply "any" and malformed/incomplete targets are rejected.
+- [ ] Unit-test governed-artifact matching for mesh support artifacts, Knop support artifacts, payload artifacts, and merely referenced external artifacts. Second-slice tests cover payload artifacts and non-governed external artifacts.
+- [x] Unit-test exact artifact policy targets for governed artifacts and fail-closed rejection for non-governed exact targets.
+- [x] Unit-test exact-target validation failure for malformed inventory or unavailable governance context.
+- [x] Unit-test policy definitions with no supported slot failing validation and policy definitions with multiple supported slots resolving/tracing each slot independently.
+- [ ] Unit-test scoped settings validation for publication profile and `workspaceRootRelativeToMeshRoot`.
+- [x] Unit-test `sfcfg:hasResourcePageRegenerationConfigPolicy` according to the selected first-pass behavior.
+- [x] Unit-test that naming defaults remain layered scoped settings if they are not migrated to policy bindings.
+- [x] Unit-test mesh-local history tracking policy for any governed artifact and role-specific same-layer exceptions.
+- [x] Unit-test mesh-local ResourcePage generation policy values, especially generate versus suppress.
+- [x] Unit-test mesh-local ResourcePage presentation policy selection for default, all-panels, and no-panels.
+- [x] Unit-test `semantic-site-all-panels` includes the Semantic Flow metadata panel without the old metadata opt-in data requirement.
+- [x] Unit-test `semantic-site-no-panels` preserves page shell/chrome while suppressing generated data panels and allowing zero panel selections.
+- [ ] Unit-test page-specific presentation policy through exact target or Knop-local policy binding rather than direct ResourcePageDefinition config.
+- [x] Unit-test direct `sfcfg:hasGeneratedResourcePagePanelSelection` on `sflo:ResourcePageDefinition` remains available as local authored composition over the resolved presentation policy.
+- [ ] Integration-test `weave`, `weave version`, and `weave generate` honoring `_mesh/_config/config.ttl` without repeated command flags.
+- [x] Regression-test command-scoped history and ResourcePage presentation overrides beating mesh-local config for one run.
+- [x] Integration-test unsupported mesh-local policy values, duplicate singleton settings, and conflicting policy bindings failing closed.
+- [x] Run focused `deno task test`/`deno task check` for Weave runtime changes; run `deno task lint` after broader structural changes; run repo-appropriate ontology/framework checks if ontology/spec files change.
 
 ## Validation Matrix
 
@@ -272,25 +277,25 @@ The CLI flag currently called `--include-semantic-flow-metadata` may remain as a
 
 ## Implementation Plan
 
-- [ ] Update [[sf.spec.2026-05-25-config-behavior]] first, or in the same first implementation commit, to remove `sfcfg:hasDefaultResourcePagePresentationConfig` drift and align page-local generated panel selection semantics.
-- [ ] Finalize ontology term names for policy bindings, policy definitions, policy slots/value predicates, policy targets, target properties, and priority.
-- [ ] Update `semantic-flow-config-ontology.ttl` with the chosen policy-binding and target vocabulary.
+- [x] Update [[sf.spec.2026-05-25-config-behavior]] first, or in the same first implementation commit, to remove `sfcfg:hasDefaultResourcePagePresentationConfig` drift and align page-local generated panel selection semantics.
+- [x] Finalize ontology term names for policy bindings, policy definitions, policy slots/value predicates, policy targets, target properties, and priority.
+- [x] Update `semantic-flow-config-ontology.ttl` with the chosen policy-binding and target vocabulary.
 - [ ] Clarify or revise config layer/attachment-role vocabulary around referenced config and Knop-inheritable config.
-- [ ] Remove `sfcfg:configLayerRole_reusableConfig` from default precedence and layer-role handling.
-- [ ] Decide and encode the first-pass treatment of `sfcfg:hasResourcePageRegenerationConfigPolicy`.
-- [ ] Replace or retire `sfcfg:panelDataRequirement_semanticFlowMetadataOptIn` in favor of actual metadata availability or explicit policy selection semantics.
-- [ ] Update Weave default config TTL to express history tracking, ResourcePage generation, and ResourcePage presentation defaults using the chosen binding model.
-- [ ] Add or revise built-in ResourcePage presentation policies for `semantic-site-default`, `semantic-site-all-panels`, and `semantic-site-no-panels`.
-- [ ] Design the Weave internal `CompiledConfig` / `PolicyIndex` runtime types and policy-resolution trace structure.
-- [ ] Implement the runtime policy-slot registry based on supported value predicates.
-- [ ] Implement policy-target parsing and validation, including explicit any-governed-artifact, artifact-role, and exact-artifact targets.
-- [ ] Implement policy resolution by queried target object, layer, structural specificity, priority, and fail-closed conflict detection.
+- [x] Remove `sfcfg:configLayerRole_reusableConfig` from default precedence and layer-role handling.
+- [x] Decide and encode the first-pass treatment of `sfcfg:hasResourcePageRegenerationConfigPolicy`.
+- [x] Replace or retire `sfcfg:panelDataRequirement_semanticFlowMetadataOptIn` in favor of actual metadata availability or explicit policy selection semantics.
+- [x] Update Weave default config TTL to express history tracking, ResourcePage generation, and ResourcePage presentation defaults using the chosen binding model.
+- [x] Add or revise built-in ResourcePage presentation policies for `semantic-site-default`, `semantic-site-all-panels`, and `semantic-site-no-panels`.
+- [x] Design the Weave internal `CompiledConfig` / `PolicyIndex` runtime types and policy-resolution trace structure.
+- [x] Implement the runtime policy-slot registry based on supported value predicates.
+- [x] Implement policy-target parsing and validation, including explicit any-governed-artifact, artifact-role, and exact-artifact targets.
+- [x] Implement policy resolution by queried target object, layer, structural specificity, priority, and fail-closed conflict detection.
 - [ ] Implement scoped-setting parsing/validation for publication profile, `workspaceRootRelativeToMeshRoot`, naming defaults, and resolver/meta-policy fields that remain in scope.
-- [ ] Replace `loadWeaveDefaultEffectiveConfig`/`loadEffectiveConfigForExecution` call sites with a mesh-root-aware loader that can compile defaults, mesh-local config, and command overrides.
-- [ ] Update command override handling so history overrides and metadata/presentation overrides compile into the command-override layer.
-- [ ] Wire generated ResourcePage rendering to selected ResourcePage presentation policy rather than a durable boolean metadata flag.
+- [x] Replace `loadWeaveDefaultEffectiveConfig`/`loadEffectiveConfigForExecution` call sites with a mesh-root-aware loader that can compile defaults, mesh-local config, and command overrides.
+- [x] Update command override handling so history overrides and metadata/presentation overrides compile into the command-override layer.
+- [x] Wire generated ResourcePage rendering to selected ResourcePage presentation policy rather than a durable boolean metadata flag.
 - [ ] Apply the required follow-up updates from the initial ontology cleanup, including Weave defaults, parser constants, test fixtures, docs, and removed operational/access-rule vocabulary references.
-- [ ] Add unit tests for ontology parsing, policy-target parsing, policy resolution, scoped settings, and ResourcePage presentation policy behavior.
+- [x] Add unit tests for ontology parsing, policy-target parsing, policy resolution, scoped settings, and ResourcePage presentation policy behavior.
 - [ ] Add integration tests for mesh-local `_mesh/_config/config.ttl` changing history, ResourcePage generation, and ResourcePage presentation behavior.
 - [ ] Update CLI docs and the SFLO replay recipe when durable mesh-local config can replace repeated command overrides.
-- [ ] Run focused tests/checks during development, then run `deno task lint` for broader Weave structural changes and repo-appropriate checks for ontology/framework changes.
+- [x] Run focused tests/checks during development, then run `deno task lint` for broader Weave structural changes and repo-appropriate checks for ontology/framework changes.
