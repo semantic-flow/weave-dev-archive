@@ -9,7 +9,7 @@ created: 1779911218761
 ## Goals
 
 - Teach Weave's config resolver to discover `sfcfg:ConfigSource` attachments and resolve them through the `sflo:ArtifactResolutionSpec` model.
-- Preserve attachment-point authority: referenced config participates at the scope and layer of the role-specific property that selected it.
+- Preserve attachment-point authority: referenced config participates at the scope and local/inheritable role determined by the attachment subject and generic property that selected it.
 - Keep the first implementation fail-closed and deliberately narrow: no unpinned remote config retrieval, no host-trust expansion from portable config, no silent fallback to broad local path access.
 - Add enough provenance and in-memory resolution trace detail that config-source participation can be explained without persisting `sfcfg:ResolvedConfig` or `sfcfg:ConfigResolutionRecord` by default.
 - Leave ordinary `_mesh/_config/config.ttl` behavior intact while allowing it, mesh metadata, or later Knop support graphs to attach additional config sources.
@@ -17,7 +17,7 @@ created: 1779911218761
 
 ## Summary
 
-The config-policy runtime now compiles application defaults, conventional mesh-local `_mesh/_config/config.ttl`, and command overrides. The ontology also now has `sfcfg:ConfigSource` as a config-specific `sflo:ArtifactResolutionSpec`, plus role-specific attachment properties such as `sfcfg:hasMeshConfigSource`, `sfcfg:hasKnopLocalConfigSource`, and `sfcfg:hasKnopInheritableConfigSource`.
+The config-policy runtime now compiles application defaults, conventional mesh-local `_mesh/_config/config.ttl`, and command overrides. The ontology also now has `sfcfg:ConfigSource` as a config-specific `sflo:ArtifactResolutionSpec`, plus generic attachment properties: `sfcfg:hasConfigSource` for local config on recognized config-bearing subjects and `sfcfg:hasInheritableConfigSource` for Knop-authored descendant defaults.
 
 The missing slice is discovery and resolution of those source attachments. A mesh or Knop should be able to point at reusable config bytes or a `sfcfg:ConfigArtifact`; Weave should resolve that source under active runtime trust policy, parse it as config, and compile it into the same effective config runtime as inline/conventional config. The layer comes from the attachment property, not from the physical location or reusable identity of the referenced config.
 
@@ -48,19 +48,18 @@ Do not infer authority from where the `ConfigSource` resource is stored. A Knop-
 The first implementation should support mesh-local discovery before full Knop inheritance. Reasonable first slice:
 
 - read the active mesh IRI/base from mesh metadata
-- inspect the conventional mesh config graph for statements about that mesh using `sfcfg:hasMeshConfigSource`
+- inspect the conventional mesh config graph for statements about that mesh using `sfcfg:hasConfigSource`
 - optionally inspect mesh metadata for the same attachment property if that is where the mesh support surface naturally records the link
 - resolve each attached `sfcfg:ConfigSource`
 - compile resolved config into the mesh-local layer after the conventional mesh config that referenced it, preserving deterministic order
 
 The second slice should add:
 
-- `sfcfg:hasMeshInheritableConfigSource` projected into descendant Knop scopes
-- `sfcfg:hasKnopLocalConfigSource`
-- `sfcfg:hasKnopInheritableConfigSource`
+- `sfcfg:hasConfigSource` on `sflo:Knop` subjects as Knop-local config sources
+- `sfcfg:hasInheritableConfigSource` on `sflo:Knop` subjects as Knop-authored defaults projected into descendant Knop scopes
 - ancestor traversal and cycle detection across inherited config-source graphs
 
-The generic `sfcfg:hasConfigSource` property is useful for provenance and shared tooling, but Weave should not treat it as an ordinary authoritative attachment unless the active subject and resolver context unambiguously determine a role. Prefer rejecting or ignoring roleless generic attachments with trace output rather than guessing.
+Generic attachment authority comes from the attachment subject plus property. `sflo:SemanticMesh sfcfg:hasConfigSource ?source` is mesh-local. `sflo:Knop sfcfg:hasConfigSource ?source` is Knop-local. `sflo:Knop sfcfg:hasInheritableConfigSource ?source` is a Knop-authored descendant offer. The runtime should fail closed for these generic attachment properties on unrecognized subjects rather than guessing.
 
 ### Resolution policy
 
@@ -92,18 +91,18 @@ The effective config compiler should continue to fail closed on malformed Turtle
 
 ## Open Issues
 
-- Should conventional `_mesh/_config/config.ttl` be able to attach additional mesh sources by asserting `<meshIri> sfcfg:hasMeshConfigSource <#source>`, or should mesh-source attachment declarations live only in mesh metadata?
-- Should first-slice roleless `sfcfg:hasConfigSource` attachments be hard errors, or ignored with explicit trace output? The current leaning is hard error when the assertion is in an authored config input, because ignoring can hide authoring mistakes.
+- Should conventional `_mesh/_config/config.ttl` be able to attach additional mesh sources by asserting `<meshIri> sfcfg:hasConfigSource <#source>`, or should mesh-source attachment declarations live only in mesh metadata?
+- Should first-slice `sfcfg:hasConfigSource` attachments on unrecognized subjects be hard errors, or ignored with explicit trace output? The current leaning is hard error when the assertion is in an authored config input, because ignoring can hide authoring mistakes.
 - Is deterministic non-semantic processing order enough for config-source inputs, or do we need an explicit ordered-list vocabulary later for cases where several sources intentionally compose? The first slice should not rely on source order for override semantics.
 - How much Knop source discovery belongs in this ticket versus a later inheritance-specific ticket?
 
 ## Decisions
 
 - Build on [[ont.completed.2026.2026-05-26_2205-artifact-resolution-spec-and-observation-cleanup]]; `sfcfg:ConfigSource` is the config-specific `sflo:ArtifactResolutionSpec` subclass for this runtime work.
-- Resolve config source content at the scope and layer of the role-specific attachment property that selected it.
+- Resolve config source content at the scope and local/inheritable role determined by the attachment subject and generic attachment property that selected it.
 - Do not let portable config source declarations expand network, repository, or host-local trust.
 - Do not append `sflo:ArtifactResolutionObservation` records for ordinary config reads by default. Record provenance in the in-memory resolution trace; persist observations or `sfcfg:ConfigResolutionRecord` only when a deliberate diagnostic/export operation asks for it.
-- Treat generic `sfcfg:hasConfigSource` as insufficient for ordinary authority unless a concrete resolver context maps it to a role.
+- Treat generic `sfcfg:hasConfigSource` as authoritative only on recognized config-bearing subjects, currently `sflo:SemanticMesh` and `sflo:Knop`.
 - Support workspace-bounded `sflo:targetLocalRelativePath` in the first slice only when the existing local path policy permits it; a config source must not grant itself the access needed to read itself.
 - Use deterministic source processing only for reproducibility. Source order should not become an override mechanism; same-layer conflicts still fail closed unless the policy model resolves them by layer, specificity, or priority.
 - Runtime/cache code may compute internal source byte digests, parsed graph fingerprints, and dependency-set fingerprints for invalidation and diagnostics. Reserve the RDF predicate `sfcfg:hasConfigSourceFingerprint` for persisted or exported `sfcfg:ConfigResolutionRecord` output until its exact persisted semantics are settled.
@@ -127,9 +126,9 @@ The effective config compiler should continue to fail closed on malformed Turtle
 
 ## Testing
 
-- Mesh-local config source attached with `sfcfg:hasMeshConfigSource` resolves and affects history/resource-page policy exactly as inline mesh-local config would.
-- The same reusable `sfcfg:ConfigArtifact` participates at different layers when attached through different role-specific properties.
-- A roleless `sfcfg:hasConfigSource` attachment is rejected or ignored with trace output according to the selected first-slice behavior.
+- Mesh-local config source attached with `sfcfg:hasConfigSource` on a `sflo:SemanticMesh` resolves and affects history/resource-page policy exactly as inline mesh-local config would.
+- The same reusable `sfcfg:ConfigArtifact` participates at different layers when attached through `hasConfigSource` on a mesh, `hasConfigSource` on a Knop, or `hasInheritableConfigSource` on a Knop.
+- A `sfcfg:hasConfigSource` attachment on an unrecognized subject is rejected or ignored with trace output according to the selected first-slice behavior.
 - Cyclic config-source references fail closed and report the cycle.
 - Digest mismatch on `sflo:expectsContentDigest` fails closed.
 - Unsupported remote `sflo:targetAccessUrl` fails closed under the default resolver policy.
@@ -160,6 +159,6 @@ The effective config compiler should continue to fail closed on malformed Turtle
 - [ ] Add digest verification for `sflo:expectsContentDigest`.
 - [ ] Add trace metadata for accepted/rejected config sources.
 - [ ] Add focused unit tests for source discovery, source resolution, layer participation, cycle rejection, digest mismatch, and unsupported remote/path cases.
-- [ ] Add an integration test showing existing-mesh commands honoring a policy supplied through `sfcfg:hasMeshConfigSource`.
+- [ ] Add an integration test showing existing-mesh commands honoring a policy supplied through `sfcfg:hasConfigSource` on the mesh subject.
 - [ ] Update CLI/user docs only after the authoring pattern is stable enough to recommend.
 - [ ] Run focused Weave tests plus `deno task check` and `deno task lint` if runtime structure changes broadly.

@@ -2,7 +2,7 @@
 id: ck1a1hs1jhm32utu5qy0jgb
 title: 2026-05-27_1347-drop-MeshInheritableConfig
 desc: Simplify config attachment roles by keeping mesh config singular, dropping KnopConfig, and using generic Knop inheritable attachments.
-updated: 1779914883772
+updated: 1779915903086
 created: 1779914883772
 ---
 
@@ -84,8 +84,7 @@ Within a Knop config file, RDF attachment properties can distinguish local Knop 
 
 ## Open Issues
 
-- What internal layer role names should survive after authored properties collapse? Current direction: keep mesh, Knop-local, Knop-inherited, application/default, and command override roles; do not add mesh-authored-inherited as a separate layer.
-- Should generic attachment properties on unrecognized subjects be hard errors or ignored with explicit diagnostics? Current direction: fail closed in authored config inputs.
+- None currently. Current direction is to remove the mesh-authored-inherited layer role, keep mesh-local, Knop-inherited, Knop-local, Knop-inheritable offer, application/default, and command override roles, and fail closed for generic attachment properties on unrecognized subjects.
 
 ## Decisions
 
@@ -94,7 +93,10 @@ Within a Knop config file, RDF attachment properties can distinguish local Knop 
 - Retire the authored concept of a distinct mesh-specific inheritable config property family.
 - Treat inheritable as a Knop attachment role expressed by `sfcfg:hasInheritableConfig` / `sfcfg:hasInheritableConfigSource`.
 - Use a single conventional config file per scope: `_mesh/_config/config.ttl` for meshes and `<knop>/_knop/_config/config.ttl` for Knops.
+- Treat those conventional filesystem locations as discovery bootstrap for the corresponding scope. The RDF attachment subject and property still determine mesh versus Knop scope and local versus inheritable participation inside a config graph.
 - Keep `sfcfg:hasConfig` as the generic local attachment property; do not rename it to `hasLocalConfig`.
+- Do not make `sfcfg:hasInheritableConfig` a subproperty of `sfcfg:hasConfig`, and do not make `sfcfg:hasInheritableConfigSource` a subproperty of `sfcfg:hasConfigSource`; inheritable attachments are sibling role properties, not local attachments under RDFS entailment.
+- Keep derived runtime config links such as `sfcfg:hasEffectiveConfig` separate from authored local `sfcfg:hasConfig`.
 - Remove old role-specific attachment properties from the live pre-v1 ontology rather than retaining deprecated aliases. Unknown retired terms should fail closed under existing unknown-term handling; do not add bespoke guardrail tests unless the repo already has a general retired-term guardrail list.
 - Mesh config is the mesh layer. Mesh-level policy can cover Knops when its selectors and scope say so; do not model that as a separate mesh-authored-inherited layer.
 - Use the attachment subject to determine mesh versus Knop scope. `sflo:SemanticMesh` plus `hasConfig` is mesh config; `sflo:Knop` plus `hasConfig` is Knop-local config; `sflo:Knop` plus `hasInheritableConfig` is Knop-authored descendant defaults.
@@ -105,12 +107,13 @@ Within a Knop config file, RDF attachment properties can distinguish local Knop 
 
 ### SFLO Config Ontology
 
-- Add `sfcfg:hasInheritableConfig` as a subproperty of `sfcfg:hasConfig`, with domain `sflo:Knop` and range `sfcfg:Config`.
-- Add `sfcfg:hasInheritableConfigSource` as a subproperty of `sfcfg:hasConfigSource`, with domain `sflo:Knop` and range `sfcfg:ConfigSource`.
+- Add `sfcfg:hasInheritableConfig` as a sibling of `sfcfg:hasConfig`, with domain `sflo:Knop` and range `sfcfg:Config`.
+- Add `sfcfg:hasInheritableConfigSource` as a sibling of `sfcfg:hasConfigSource`, with domain `sflo:Knop` and range `sfcfg:ConfigSource`.
 - Clarify `sfcfg:hasConfig` and `sfcfg:hasConfigSource` comments so they mean local config for the subject when used on a recognized config-bearing scope.
+- Remove `sfcfg:hasEffectiveConfig` as a subproperty of `sfcfg:hasConfig`; effective config is derived runtime/view state, not authored local config.
 - Remove `sfcfg:KnopConfig`.
 - Remove `sfcfg:hasMeshConfig`, `sfcfg:hasMeshInheritableConfig`, `sfcfg:hasKnopConfig`, `sfcfg:hasKnopLocalConfig`, `sfcfg:hasKnopInheritableConfig`, and their source variants from live authoring vocabulary.
-- Update `sfcfg:ConfigLayerRole` comments/individuals if authored layer-role names still imply the removed property family.
+- Remove `sfcfg:configLayerRole_meshInheritable`; keep mesh-local, Knop-inherited, Knop-local, Knop-inheritable offer, application/default, resolved-runtime, and command override roles.
 
 ### Semantic Flow Framework
 
@@ -121,7 +124,7 @@ Within a Knop config file, RDF attachment properties can distinguish local Knop 
 ### Weave Runtime
 
 - Update config parser constants and validation for the generic attachment properties before implementing config-source discovery.
-- Update any existing config layer role parsing/tracing that expects role-specific authoring properties.
+- Remove any existing config layer role parsing/tracing for `configLayerRole_meshInheritable`.
 - Keep conventional `_mesh/_config/config.ttl` behavior working for current mesh-local config.
 - Add conventional discovery for `<knop>/_knop/_config/config.ttl` when that runtime slice is implemented.
 - Update [[wa.task.2026.2026-05-27_1246-config-source-discovery-and-resolution]] so it no longer asks implementation to discover `hasMeshConfigSource`, `hasKnopLocalConfigSource`, or `hasKnopInheritableConfigSource`.
@@ -142,6 +145,7 @@ Within a Knop config file, RDF attachment properties can distinguish local Knop 
 - Weave config parser tests reject `KnopConfig` if old class terms are treated as unknown/unsupported current authoring vocabulary.
 - Runtime tests show generic attachment properties on unknown subjects fail closed or are ignored with explicit diagnostics according to the selected resolver policy.
 - Config-source discovery tests are updated to use `hasConfigSource` and `hasInheritableConfigSource`.
+- Ontology guardrail tests assert inheritable and effective config attachment properties are not subproperties of local attachment properties.
 
 ## Non-Goals
 
@@ -156,13 +160,13 @@ Within a Knop config file, RDF attachment properties can distinguish local Knop 
 ## Implementation Plan
 
 - [x] Decide the conventional filesystem discovery locations: use `_mesh/_config/config.ttl` for meshes and `<knop>/_knop/_config/config.ttl` for Knops.
-- [ ] Update `semantic-flow-config-ontology.ttl` with `sfcfg:hasInheritableConfig` and `sfcfg:hasInheritableConfigSource`.
-- [ ] Remove `sfcfg:KnopConfig` and role-specific attachment properties in the config ontology, and update comments for `hasConfig` / `hasConfigSource`.
-- [ ] Update SFLO SHACL and tests for the generic attachment model.
-- [ ] Update SFLO release notes and decision log with the attachment-role simplification.
-- [ ] Update [[sf.config]] and [[sf.spec.2026-05-25-config-behavior]].
-- [ ] Update Weave constants/parser/tests for retired role-specific properties if any live code references them.
-- [ ] Update [[wa.task.2026.2026-05-27_1246-config-source-discovery-and-resolution]] to use the simplified attachment vocabulary and selected conventional locations.
-- [ ] Run SFLO repo validation, including ontology/SHACL tests and release validation.
-- [ ] Run focused Weave checks/tests if runtime constants or tests change.
-- [ ] Provide commit messages per touched repo.
+- [x] Update `semantic-flow-config-ontology.ttl` with `sfcfg:hasInheritableConfig` and `sfcfg:hasInheritableConfigSource`.
+- [x] Remove `sfcfg:KnopConfig` and role-specific attachment properties in the config ontology, and update comments for `hasConfig` / `hasConfigSource`.
+- [x] Update SFLO SHACL and tests for the generic attachment model.
+- [x] Update SFLO release notes and decision log with the attachment-role simplification.
+- [x] Update [[sf.config]] and [[sf.spec.2026-05-25-config-behavior]].
+- [x] Update Weave constants/parser/tests for retired role-specific properties if any live code references them.
+- [x] Update [[wa.task.2026.2026-05-27_1246-config-source-discovery-and-resolution]] to use the simplified attachment vocabulary and selected conventional locations.
+- [x] Run SFLO repo validation, including ontology/SHACL tests and release validation.
+- [x] Run focused Weave checks/tests if runtime constants or tests change.
+- [x] Provide commit messages per touched repo.
