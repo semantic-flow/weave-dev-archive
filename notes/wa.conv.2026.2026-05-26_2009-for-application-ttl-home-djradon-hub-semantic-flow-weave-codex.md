@@ -72,3 +72,55 @@ I’ll model this through the existing ontology instead of just renaming strings
 # gpt-5.5_2026-05-26_2015_58
 
 There isn’t an existing diff in the files I’ll touch, which makes this clean to scope. The current `default-stylesheet` node is both config concept and artifact; I agree that’s a little muddy if we want the stylesheet bytes to be a normal `DigitalArtifact` with separate metadata.
+
+# gpt-5.5_2026-05-26_2016_48
+
+I’m going to rename the metadata file rather than keep a compatibility alias: pre-1.0 guidance says avoid shims, and `default-stylesheet` would keep the muddled identity around. The runtime will still use the same built-in presentation identity, but its stylesheet artifact IRI will become `https://semantic-flow.github.io/weave/defaults/stylesheet`.
+
+# gpt-5.5_2026-05-26_2017_09
+
+The edit is in: `application.ttl` now points to `<stylesheet>`, and the old `default-stylesheet.ttl` has become a self-describing `stylesheet-metadata.ttl` that models both the metadata RDF document and the CSS artifact. I’m checking for stale references and then I’ll run the focused tests plus lint.
+
+# gpt-5.5_2026-05-26_2017_21
+
+One more guardrail is worth adding here: otherwise a future edit could quietly drift back to `default-stylesheet` or collapse metadata and CSS identity again while the parser tests still pass. I’m adding a small RDF assertion around the two canonical stylesheet artifact IRIs.
+
+# gpt-5.5_2026-05-26_2017_47
+
+`fmt --check` caught a small wrapping preference in the guardrail test. I’m letting Deno format the touched TypeScript files, then I’ll run the focused tests and the repo lint as requested by the project guidance.
+
+# gpt-5.5_2026-05-26_2018_04
+
+Focused tests are green, and `deno task lint` passed across the repo. I’m doing a final diff/status pass now so I can separate my changes from the pre-existing dirty worktree in the closeout.
+
+# gpt-5.5_2026-05-26_2018_36
+
+Done. I made the stylesheet artifact live at `/defaults/stylesheet` and moved the RDF description into [stylesheet-metadata.ttl](../../../../../defaults/stylesheet-metadata.ttl:5).
+
+Changes:
+- [application.ttl](../../../../../defaults/application.ttl:92) now references `<stylesheet>` instead of `<default-stylesheet>`.
+- Removed `defaults/default-stylesheet.ttl`.
+- Added `defaults/stylesheet-metadata.ttl` with:
+  - `<stylesheet-metadata>` as `sflo:DigitalArtifact, sflo:RdfDocument`
+  - `<stylesheet>` as `sfcfg:ResourcePageStylesheet, sflo:DigitalArtifact`
+  - working located files for both `stylesheet-metadata.ttl` and `stylesheet.css`
+- Updated [effective_config.ts](../../../../../src/runtime/config/effective_config.ts:132) so runtime recognizes the canonical stylesheet IRI as `https://semantic-flow.github.io/weave/defaults/stylesheet`.
+- Added a guardrail test in [defaults_guardrails_test.ts](../../../../../tests/integration/defaults_guardrails_test.ts:83).
+
+I deliberately did not keep a `default-stylesheet` alias; that would preserve the confusing identity split we’re cleaning up.
+
+Verification:
+- `deno test --allow-env=READABLE_STREAM --allow-read tests/integration/defaults_guardrails_test.ts src/runtime/config/effective_config_test.ts` passed: `23 passed`
+- `deno task lint` passed
+
+Suggested commit message:
+
+```text
+refactor(defaults): model built-in stylesheet as canonical DigitalArtifact
+
+- replace the default ResourcePage stylesheet IRI with /defaults/stylesheet
+- move stylesheet RDF into stylesheet-metadata.ttl as a separate metadata artifact
+- model both stylesheet metadata and CSS bytes with working LocatedFiles
+- update effective config stylesheet identity mapping and tests
+- add guardrail coverage for the stylesheet metadata/artifact split
+```

@@ -189,3 +189,290 @@ Updated [wa.task.2026.2026-05-25_1609-config-policy-ontology-and-runtime.md](wa.
 I marked completed follow-up and implementation-plan items with `[x]`, converted the Testing section into checkbox form, and left genuinely unfinished items open, especially operational/access-rule cleanup, full Knop-layer precedence coverage, full governed-artifact matching coverage, and integration tests for durable mesh-local config behavior.
 
 Validation: `git diff --check` passed for `weave-dev-archive`.
+
+# User_2026-05-26_2017_39
+
+what's next?
+
+# gpt-5.5_2026-05-26_2018_06
+
+Next I’d do a **third slice: mesh-local config acceptance coverage**.
+
+Goal: prove `_mesh/_config/config.ttl` works end-to-end, not just in the config compiler.
+
+Concrete targets:
+- Add integration/e2e tests for mesh-local config changing ResourcePage generation and presentation.
+- Add an exact-artifact ResourcePage generation test in a real mesh flow, e.g. suppress only `<alice/data>` while leaving sibling/support pages alone.
+- Add a command-override regression: mesh config says one thing, CLI override wins for the run.
+- Update the task note checkboxes as each lands.
+
+I would **not** jump straight into Knop-local/inherited config yet. That is bigger and source-discovery-shaped, and we’ll get better footing by first locking the mesh-local behavior that already exists.
+
+After that, I’d pick between:
+1. **Operational/access-rule cleanup**: stop using portable `sfcfg:` vocabulary for host-local path grants.
+2. **Support-history exact targets**: thread exact artifact history policies into the planners instead of only resolving them in `EffectiveConfig`.
+
+My vote: mesh-local integration slice next, then operational/access-rule cleanup.
+
+# User_2026-05-26_2020_38
+
+for your exact-artifact real-mesh flow, how about enabling all panels and history for references for alice, bob, or carol?
+
+# gpt-5.5_2026-05-26_2020_54
+
+That’s a good candidate, with one catch: “history for references” crosses into the support-history planner path that is still role-map based. I’m going to sanity-check the fixture reference-catalog paths before I suggest the exact test shape, because the target has to be the governed `ReferenceCatalog` artifact, not the human/person IRI or generated page.
+
+# gpt-5.5_2026-05-26_2021_14
+
+Yes, that’s a better real-mesh flow than my suppress-page example.
+
+I’d target the governed `ReferenceCatalog` artifact, e.g. Alice’s:
+
+`<alice/_knop/_references>`
+
+That is the exact artifact, not `<alice>` and not `alice/_knop/_references/index.html`.
+
+A mesh config policy could bind that exact target to:
+
+- `sfcfg:hasResourcePagePresentationPolicy semantic-site-all-panels`
+- `sfcfg:hasHistoryTrackingPolicy sfcfg:historyTrackingPolicy_versioned`
+- probably leave ResourcePage generation at default `generate`
+
+Tiny catch, and it’s a useful one: all-panels should work with the second-slice wiring, but exact history policy currently resolves in `EffectiveConfig` without yet driving support-history materialization. So this would be an excellent next slice because it forces us to finish that gap instead of testing only the easy path.
+
+I’d use **Alice** first because `alice/_knop/_references` is already present in the fixture and clearly typed as `sflo:ReferenceCatalog, sflo:DigitalArtifact`. Then later we can repeat for Bob/Carol once their reference catalogs are present in the scenario we choose.
+
+# User_2026-05-26_2026_10
+
+I did have some thought about host-local access grants. ~/.sf-local-access.ttl would have to be re-used for all weave work, so probably i~/.weave/{mesh-identifier}/access.ttl -- we could then use that per-mesh folder as the default logging/audit storage too, and maybe other things, like user preferences. 
+
+{mesh-identifier} could be a hash of meshBase, or even just the meshBase (maybe with https:// dropped)
+
+# gpt-5.5_2026-05-26_2026_28
+
+Yes. I like per-mesh local state much more than one shared `~/.sf-local-access.ttl`.
+
+I’d push back on using raw `meshBase` as the directory name, though. It is human-readable, but it leaks more in paths, can get long/weird, and URL normalization edge cases become filesystem edge cases. Better:
+
+`~/.weave/meshes/<slug>-<hash>/`
+
+Where:
+- `slug` is optional/readable, derived from the meshBase last path segment, e.g. `mesh-alice-bio`
+- `hash` is stable, e.g. sha256 of normalized meshBase, truncated enough for uniqueness
+- `profile.ttl` stores the canonical meshBase and display info
+
+Example:
+
+```text
+~/.weave/meshes/mesh-alice-bio-7d9a3f12/
+  profile.ttl
+  access.ttl
+  logs/
+  audit/
+  preferences.ttl
+  cache/
+```
+
+That gives us:
+- per-mesh host-local grants
+- per-mesh default audit/log storage
+- a place for user/runtime preferences without polluting portable mesh config
+- a clean boundary between portable `_mesh/_config/config.ttl` and host-local authority
+
+I’d also keep env/CLI overrides like `WEAVE_LOG_DIR`, but make this the default. And I’d avoid `sfcfg:` for this host-local file; either use an internal Weave-local namespace or a deliberately non-portable profile vocabulary. The important rule stays: portable mesh config can describe layout, but only this host-local profile grants host access.
+
+# User_2026-05-26_2031_35
+
+ok. slug could end up being the hostname for meshes based at that level, so we have to strip anyhow. we'll need a new property (in config?) for the profile?
+
+Is "user settings" the right name for this concept? If so, fill out [wa.task.2026.2026-05-26_2030-user-settings.md](wa.task.2026.2026-05-26_2030-user-settings.md)
+
+# gpt-5.5_2026-05-26_2031_51
+
+I’ll fill the task note with the naming decision baked in: “user settings” works as the broad task label, but I think the durable concept should be “local mesh profile” so it doesn’t sound like only UI preferences.
+
+# gpt-5.5_2026-05-26_2032_34
+
+I’ve got the shape. I’m going to write the note as a design task, not an implementation patch: decide the local profile concept, separate it from portable mesh config, and capture the path/identifier rules plus migration and testing work.
+
+# gpt-5.5_2026-05-26_2034_20
+
+I’ve got the naming answer baked into the task: “user settings” works as the human-facing umbrella, but the implementation concept wants to be narrower and sturdier: a per-mesh local profile. I’m updating the note with that split, the slug/hash rule, and the contract/testing checklist now.
+
+# User_2026-05-26_2034_58
+
+oh, agree, not in config. We need our first weave ontology!
+
+# gpt-5.5_2026-05-26_2035_12
+
+Yes, exactly. That also makes the boundary crisp: SFLO config stays portable, and Weave gets a tiny host-local ontology for the things only Weave knows how to interpret. I’m going to fold that into the task note as an explicit decision and name the first artifact.
+
+# gpt-5.5_2026-05-26_2035_49
+
+I found there isn’t already an ontology home in the Weave repo, just Weave-owned default RDF under `defaults/`. For the task, I’m going to name the first artifact as `ontology/weave.ttl` with namespace `https://semantic-flow.github.io/weave/ontology/`, and use `weave:` terms like `weave:LocalMeshProfile`.
+
+# gpt-5.5_2026-05-26_2036_35
+
+Agreed. I updated [wa.task.2026.2026-05-26_2030-user-settings.md](wa.task.2026.2026-05-26_2030-user-settings.md) to make that explicit.
+
+I framed it as Weave’s first ontology artifact:
+
+- namespace: `https://semantic-flow.github.io/weave/ontology/`
+- prefix: `weave:`
+- first terms: `weave:LocalMeshProfile`, `weave:HostLocalAccessProfile`, `weave:LocalPathGrant`
+- candidate artifact: `ontology/weave.ttl`
+
+And yes, I think that’s cleaner than `welocal:`. These are Weave-owned runtime/local concepts, not SFLO config concepts.
+
+Validation: `git diff --check` passed for the task note.
+
+# User_2026-05-26_2036_35
+
+oops, I just did a commit with the wrong/re-used commit message, could you update the commit message with something appropriate?
+
+# gpt-5.5_2026-05-26_2036_45
+
+I’ll first identify which repo got the new commit and what the current tip message is, then I’ll amend only that commit message. Since the active work was in the archive note, I’ll check both the Weave repo and the nested dev archive before touching anything.
+
+# gpt-5.5_2026-05-26_2036_54
+
+The archive note itself is still uncommitted in `weave-dev-archive`, while the main Weave repo has a clean working tree with the tip message `feat: Implement exact artifact config policy targets`. I’m checking the commit contents so the amended message matches what actually landed.
+
+# gpt-5.5_2026-05-26_2037_06
+
+The main repo tip is one commit ahead of `origin/next/v0.2.1`, and its subject is nearly identical to the parent, so that’s the reused-message smell. I’m going to amend that tip to describe the actual second-slice contents: default policy target wiring, stylesheet metadata rename, and effective config tests.
+
+# gpt-5.5_2026-05-26_2037_37
+
+Updated the main Weave repo’s tip commit message.
+
+New commit:
+
+`14f962e fix: Split default stylesheet metadata from CSS artifact`
+
+Body now explains the stylesheet metadata rename, effective config update, and guardrail coverage. The main repo working tree is clean.
+
+I left `weave-dev-archive` untouched; it still has the uncommitted conversation/task-note changes.
+
+# gpt-5.5_2026-05-26_2037_38
+
+Updated the main Weave repo’s tip commit message.
+
+New commit:
+
+`14f962e fix: Split default stylesheet metadata from CSS artifact`
+
+Body now explains the stylesheet metadata rename, effective config update, and guardrail coverage. The main repo working tree is clean.
+
+I left `weave-dev-archive` untouched; it still has the uncommitted conversation/task-note changes.
+
+# User_2026-05-26_2037_38
+
+"slug is optional/readable" -- making that optional is tricky, we want a deterministic lookup.
+
+# gpt-5.5_2026-05-26_2037_50
+
+Good catch. I agree: “optional” is the wrong shape if the directory name includes it. The right distinction is deterministic-but-non-authoritative: always derive the slug, always include it, but lookup identity is still the canonical meshBase hash.
+
+# gpt-5.5_2026-05-26_2038_07
+
+Updated the task note to make that precise.
+
+The rule now says the slug is deterministic and always included in `<display-slug>-<mesh-base-hash>`, but the hash remains the identity anchor. Lookup should recompute the full identifier from canonical `meshBase`, not scan folders or use the slug alone.
+
+`git diff --check` passed.
+
+# User_2026-05-26_2038_56
+
+these "local profiles" are per user, i.e., a user has settings, and they can include profiles and access rights, grouped per mesh.
+
+# gpt-5.5_2026-05-26_2039_13
+
+Yes, that’s the cleaner model. I’m going to reframe the note so “user settings” is the parent store, and the per-mesh directories are grouped settings/profile/access/log buckets under that user-owned store rather than free-floating “profiles.”
+
+# gpt-5.5_2026-05-26_2039_31
+
+I’m tightening the note around a two-level model: `~/.weave` is the per-user settings store, and `meshes/<identifier>/` is the per-mesh grouping inside it. That lets access rights, logs, and profiles sit together without pretending the per-mesh directory is the whole “user settings” concept.
+
+# gpt-5.5_2026-05-26_2041_04
+
+Agreed, and I updated the task note accordingly.
+
+It now frames the model as:
+
+`UserSettings` → per-user, host-local store under `~/.weave/`  
+`MeshSettingsGroup` → deterministic per-mesh grouping under `~/.weave/meshes/<mesh-identifier>/`  
+`profile.ttl`, `access.ttl`, logs, preferences, caches → contents of that mesh group
+
+I also adjusted the candidate ontology terms to `weave:UserSettings` and `weave:MeshSettingsGroup`, with access rights attached under that structure. Whitespace check came back clean. Note: Git still sees this task note as untracked in `weave-dev-archive`.
+
+# User_2026-05-26_2054_23
+
+open issues:
+
+- MeshSettingsGroup is fine unless you like MeshSettingsBundle better. LocalPathGrant is good too, but we should have a look in sfcfg, we might have to rip the path grant stuff out of there? UserSettings, of course
+- let's make it ontology/weave-ontology.ttl
+- definitely use XDG location. WEAVE_SETTINGS might be better than WEAVE_HOME
+- other than meshBase and displayName (rdfs:label), what observations are you thinking about
+- no automatic migration, we have no users.No need to warn either. Also, rip out all legacy stuff everywhere you can. 
+- What are you thinking about preferences.ttl? We can reserve for later regardless unless there's something we need there now. Also, maybe we should have "trans-mesh preferences" at WEAVE_SETTINGS/global-preferences.ttl
+
+# gpt-5.5_2026-05-26_2054_38
+
+I’ll check the current SFLO config terms around local path access before locking that decision into the note. My hunch is `MeshSettingsGroup` is better than `Bundle` because “bundle” sounds portable/package-like, but I’ll verify the ontology cleanup angle before editing.
+
+# gpt-5.5_2026-05-26_2054_48
+
+The code search confirms the legacy path grant concepts are still `sfcfg:`-shaped in runtime and tests: `HostLocalOperationalConfig`, `LocalPathAccessRule`, `hasLocalPathAccessRule`, `hasLocalPathBase`, and locator-kind IRIs. I’m going to capture the plan as “move host-local grants into Weave ontology and rip the legacy `sfcfg:` grants out,” while leaving portable mesh-contained source locators alone unless the implementation proves they’re entangled.
+
+# gpt-5.5_2026-05-26_2056_11
+
+I’d keep `MeshSettingsGroup` over `MeshSettingsBundle`: “bundle” sounds like something packaged or portable, while this is just the user’s grouping for one mesh. I’m updating the task with XDG/`WEAVE_SETTINGS`, the `weave-ontology.ttl` filename, minimal first-slice observations, and the no-migration/no-warning decision.
+
+# gpt-5.5_2026-05-26_2058_18
+
+Updated the task note with those decisions.
+
+Key choices now captured:
+
+- Keep `MeshSettingsGroup`; skip `MeshSettingsBundle`.
+- Use `LocalPathGrant`.
+- First ontology artifact: `ontology/weave-ontology.ttl`.
+- `WEAVE_SETTINGS` overrides settings root; otherwise use `${XDG_CONFIG_HOME:-~/.config}/weave`.
+- Logs default to `${XDG_STATE_HOME:-~/.local/state}/weave/...`; cache defaults to `${XDG_CACHE_HOME:-~/.cache}/weave/...`.
+- First-slice mesh metadata is only `meshBase`, `meshIdentifier`, and display name as `rdfs:label`.
+- Reserve `$WEAVE_SETTINGS/global-preferences.ttl` and per-mesh `preferences.ttl`, but define no preference terms yet.
+- No automatic migration and no warning for `~/.sf-local-access.ttl`; remove legacy references/behavior.
+- `sfcfg:` local path grants are treated as legacy Weave/runtime vocabulary to remove. The SFLO config ontology TTL itself does not appear to define those terms, but runtime/tests/docs still use them.
+
+Whitespace check produced no errors.
+
+# User_2026-05-26_2101_22
+
+I do like the idea of re-using some/most vocab across global and per-mesh, so maybe we have a set of global files, like global-profile, global-access, global-preferences.ttl
+
+apparently we should use $XDG_CACHE_HOME for the cache location.
+
+Anything else before we begin implementation? New conversation, right?
+
+# gpt-5.5_2026-05-26_2101_43
+
+I’ll fold that into the task note before we split. I like the symmetry, with one caution: `global-access.ttl` is powerful, so I’d reserve it now but make first-slice runtime read per-mesh access only unless we explicitly decide global grants apply to every mesh.
+
+# gpt-5.5_2026-05-26_2101_56
+
+I’m adding a global-file layer now: `global-profile.ttl`, `global-access.ttl`, and `global-preferences.ttl`, with the same profile/access/preferences vocabulary usable at both user and mesh scope. I’m also adding an explicit cache contract line so `XDG_CACHE_HOME` is not just implied by the summary.
+
+# gpt-5.5_2026-05-26_2102_53
+
+Updated the task note with the global-file shape:
+
+- `$WEAVE_SETTINGS/global-profile.ttl`
+- `$WEAVE_SETTINGS/global-access.ttl`
+- `$WEAVE_SETTINGS/global-preferences.ttl`
+- shared `weave:hasProfile`, `weave:hasAccessProfile`, `weave:hasPreferencesProfile` vocabulary for both global and per-mesh scopes
+- explicit `${XDG_CACHE_HOME:-~/.cache}/weave/meshes/<mesh-identifier>/cache/`
+
+One caution I left in the note: reserve `global-access.ttl`, but don’t implicitly apply it in the first slice. Global access can become “every mesh can read this host path,” which is powerful enough that it deserves an explicit later decision.
+
+I think we’re ready. And yes: new conversation is the right move before implementation. This thread has a lot of design sediment in it now. Start with the task note and say “implement first slice,” and I’d begin with ontology + settings resolver + tests, then path-grant cutover.
