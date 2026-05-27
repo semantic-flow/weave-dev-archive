@@ -732,3 +732,241 @@ Suggested commit messages:
 - Framework: `Document mesh workspace path rules`
 - Dev archive: `Record mesh workspace path rule decision`
 - Fixture repos: already committed branch refs as `Update mesh workspace path rule vocabulary`
+
+# User_2026-05-27_0726_13
+
+detailed commit message for sflo
+
+# gpt-5.5_2026-05-27_0726_24
+
+```text
+Define mesh workspace path rule vocabulary
+
+Add portable config ontology terms for constrained mesh-carried workspace path allowances:
+
+- add sfcfg:MeshWorkspacePathRule
+- add sfcfg:hasMeshWorkspacePathRule
+- add sfcfg:workspacePathPrefix
+- add sfcfg:appliesToLocalPathLocatorKind
+- add sfcfg:LocalPathLocatorKind with workingLocalRelativePath and targetLocalRelativePath individuals
+
+This replaces the too-broad LocalPathAccessRule / LocalPathBase shape for portable mesh config. Mesh workspace rules stay relative to the mesh root and are bounded by the active workspace, while host-local trust grants remain outside portable sfcfg vocabulary.
+
+Also update the ontology decision log to mark the old local/operational access-rule model as superseded by the mesh-workspace-rule vs host-local-settings split.
+
+Validation:
+- deno task check
+- deno task fmt:check
+- deno task lint
+- deno task release:validate
+- deno task test
+```
+
+# User_2026-05-27_0728_57
+
+what's next?
+
+# gpt-5.5_2026-05-27_0729_11
+
+Next I’d do a checkpoint, then continue the config-policy task.
+
+First: commit the just-finished vocabulary cutover per repo, because it spans Weave, SFLO, framework docs, dev-archive notes, and fixture branch refs. That’s a good semantic boundary.
+
+Then I’d pick up the remaining config-policy work in this order:
+
+1. **Scoped settings parsing/validation**
+   Finish the task item for publication profile, `workspaceRootRelativeToMeshRoot`, naming defaults, and resolver/meta-policy fields that remain direct scoped settings rather than policy bindings.
+
+2. **Mesh-local config integration tests**
+   Add integration tests proving `_mesh/_config/config.ttl` can affect history, ResourcePage generation, and ResourcePage presentation behavior through the compiled config loader.
+
+3. **Remaining target-object query cleanup**
+   Continue replacing role-only policy query call sites, leaving helpers only as wrappers where useful. I’d do this after the scoped-settings slice, because it’s more refactor-shaped.
+
+My recommendation: commit now, then start with scoped settings. That closes the “first runnable slice” shape more directly than jumping into query cleanup.
+
+# User_2026-05-27_0746_47
+
+mesh-branch-fantasy-rules has an unpublished branch?
+
+# gpt-5.5_2026-05-27_0747_32
+
+I’ll check the fixture repo’s branch tracking and ahead/behind state rather than guessing from the worktree name.
+
+# gpt-5.5_2026-05-27_0748_03
+
+Based on local remote-tracking refs, yes, several branch-ladder commits are ahead. I’ll fetch once to make sure this isn’t stale remote metadata.
+
+# gpt-5.5_2026-05-27_0748_36
+
+After `git fetch origin --prune`: no brand-new local-only branch, but yes, there are unpublished commits on existing branches.
+
+Ahead by 1 commit:
+`a.03-ontology-integrated-woven` through `a.09-gunaar-example-dataset-woven`, `a.11-first-release-woven` through `a.15-extracted-term-references-woven`, plus `gh-pages`.
+
+Not ahead:
+`main`, `a.01-source-only`, `a.02-publication-bootstrapped-woven`, `a.10-first-release-source`.
+
+These are the fixture vocabulary commits I made: `Update mesh workspace path rule vocabulary`. Note that `gh-pages` is checked out in the separate worktree at `/home/djradon/sites/mesh-branch-fantasy-rules`.
+
+# User_2026-05-27_0749_00
+
+can you commit and push everything that should be pushed?
+
+# gpt-5.5_2026-05-27_0749_16
+
+I’ll sort this by repository and commit boundary first, then push the branches that actually have local commits. I’ll keep unrelated work in separate commits so the history does not get muddy.
+
+# gpt-5.5_2026-05-27_0749_43
+
+Some of the work is already committed locally: Weave is ahead by 2, SFLO by 1, and the archive by 1. Framework docs still have one uncommitted change, and the fixture ladder branches have their local vocabulary commits. I’m checking exact commit subjects before pushing.
+
+# User_2026-05-27_0750_12
+
+I mean in the mesh fixtures.
+
+# gpt-5.5_2026-05-27_0750_20
+
+Got it, fixture repos only. I’ll leave Weave/SFLO/framework/archive alone and push just the mesh fixture branch updates that are ahead of origin.
+
+# gpt-5.5_2026-05-27_0750_51
+
+The mesh fixture repos with unpublished fixture commits are `mesh-sidecar-fantasy-rules` and `mesh-branch-fantasy-rules`; `mesh-alice-bio` is clean and tracking origin. I’ll fetch once, then push only the branches that are ahead.
+
+# gpt-5.5_2026-05-27_0751_34
+
+Both fixture push commands completed cleanly. I’m doing one final ahead/behind check on the fixture repos, including the separate `gh-pages` worktree.
+
+# gpt-5.5_2026-05-27_0751_48
+
+Pushed the mesh fixture updates only.
+
+Pushed `mesh-sidecar-fantasy-rules` branches:
+`a.04-ontology-integrated` through `a.17-all-remaining-terms-woven` where applicable.
+
+Pushed `mesh-branch-fantasy-rules` branches:
+`a.03-ontology-integrated-woven` through `a.09-gunaar-example-dataset-woven`, `a.11-first-release-woven` through `a.15-extracted-term-references-woven`, plus `gh-pages`.
+
+Verified after push:
+- `mesh-sidecar-fantasy-rules`: all local branches `0 0` vs origin
+- `mesh-branch-fantasy-rules`: all local branches `0 0` vs origin
+- `/home/djradon/sites/mesh-branch-fantasy-rules` `gh-pages`: clean/tracking origin
+- `mesh-alice-bio`: clean/tracking origin
+
+I did not push Weave/SFLO/framework/archive since you clarified this was fixture-only.
+
+# User_2026-05-27_0753_47
+
+~/h/se/weave/dep/g/semantic-flow/mesh-branch-fantasy-rules    a.15-extract…rences-woven still "unpublished"
+
+# gpt-5.5_2026-05-27_0754_03
+
+That prompt is probably reporting “no upstream configured,” not “commit absent from GitHub.” I pushed the ref, but `git push origin branch` does not necessarily set tracking on the local branch, so I’ll check and wire the upstream where it matches origin.
+
+# gpt-5.5_2026-05-27_0754_17
+
+The branch is definitely pushed (`origin/a.15...` and local are `0 0`), but it has no upstream. I’ll set tracking for the matching fixture branches so the prompt has the relationship it expects.
+
+# gpt-5.5_2026-05-27_0754_26
+
+Yep, that was tracking metadata, not an unpushed commit.
+
+`a.15-extracted-term-references-woven` is now set to track `origin/a.15-extracted-term-references-woven`:
+
+```text
+## a.15-extracted-term-references-woven...origin/a.15-extracted-term-references-woven
+```
+
+I also set upstreams for the matching local fixture branches in both `mesh-branch-fantasy-rules` and `mesh-sidecar-fantasy-rules`. No new commits or pushes were needed.
+
+# User_2026-05-27_0754_26
+
+ok, pick up the remaining config-policy work.
+
+# gpt-5.5_2026-05-27_0754_34
+
+I’ll pick up the next slice we identified: scoped settings parsing/validation first, then add the smallest integration coverage that proves mesh-local config is actually influencing runtime behavior. I’ll re-read the current task/runtime shape so I don’t trample the already-landed policy-binding work.
+
+# gpt-5.5_2026-05-27_0754_55
+
+There’s one unrelated staged testing script change in Weave; I’m not touching it. The config task’s next unchecked implementation item is scoped-setting parsing/validation, and the current runtime already has most of the value tables, so I’m reading that path before editing.
+
+# gpt-5.5_2026-05-27_0758_15
+
+I’ve got the thread again. I’m going to take the remaining config-policy work in the narrowest useful slice: finish the runtime’s scoped-setting parsing/validation first, then add the focused tests that prove mesh-local config can actually steer behavior without command flags.
+
+# gpt-5.5_2026-05-27_0758_33
+
+The task note lines up with the earlier direction: a few direct scoped settings are still intentionally not policy bindings. I’m going to wire those as layered singleton settings now, while rejecting portable resolver config in mesh-local Turtle so we keep the fail-closed behavior.
+
+# gpt-5.5_2026-05-27_0800_15
+
+I’m editing `effective_config.ts` next. The shape I’m adding is deliberately small: a `scopedSettings.mesh` bag, layered resolution for naming/regeneration singleton settings, and a hard rejection for mesh-carried resolver meta-config until we implement trusted narrowing properly.
+
+# gpt-5.5_2026-05-27_0802_49
+
+The core parser change is in. I’ve added unit coverage for publication profile, workspace-root relationship validation, mesh-local naming/regeneration overrides, and resolver-config rejection; now I’m going to run the focused config tests and let the compiler tell us what I missed.
+
+# gpt-5.5_2026-05-27_0803_22
+
+Focused config tests are green after one path-normalization tweak. I’m going to add a small integration slice now: one test for `weave version` consuming mesh-local naming defaults, and one for `weave generate` consuming mesh-local ResourcePage presentation policy.
+
+# gpt-5.5_2026-05-27_0806_20
+
+The three integration checks pass quickly: version picks up mesh-local naming, generate picks up mesh-local presentation, and weave carries the config through both phases with no command override. I’m formatting/checking the touched files next, then I’ll update the task note to mark this slice honestly.
+
+# gpt-5.5_2026-05-27_0810_05
+
+The task note now reflects the slice: scoped settings are parsed and validated, mesh resolver meta-config is fail-closed for now, and the integration coverage hits history, ResourcePage generation, presentation, plus the three command surfaces. I’m moving to repo-level lint/check now so we don’t leave a quiet type or style snag behind.
+
+# gpt-5.5_2026-05-27_0812_26
+
+Implemented the next config-policy slice.
+
+In Weave:
+- Added mesh scoped settings to [effective_config.ts](../../../../../src/runtime/config/effective_config.ts): publication profile, `workspaceRootRelativeToMeshRoot`, layered naming defaults, and layered ResourcePage regeneration config.
+- Added fail-closed rejection for mesh-carried resolver config until trusted resolver narrowing is implemented.
+- Added unit coverage in [effective_config_test.ts](../../../../../src/runtime/config/effective_config_test.ts).
+- Added integration coverage in [validate_version_generate_test.ts](../../../../../tests/integration/validate_version_generate_test.ts) for `weave`, `weave version`, and `weave generate` honoring `_mesh/_config/config.ttl` without command flags.
+
+Updated the config-policy task note to mark this slice done. Remaining task-note unchecked items are mostly broader follow-through: full Knop layer precedence, more governed-artifact matching, page-specific presentation through exact/Knop policy, attachment-role vocabulary cleanup, and docs/SFLO replay recipe.
+
+Validation passed:
+- `deno test --allow-read --allow-env src/runtime/config/effective_config_test.ts`
+- `deno test --allow-all --filter mesh-local tests/integration/validate_version_generate_test.ts`
+- `deno task fmt:check`
+- `deno task lint`
+- `deno task check`
+
+Note: `scripts/upload-codecov-test-results.ts` is still staged and unrelated; I left it alone.
+
+Suggested Weave commit message:
+
+```text
+config: parse scoped mesh settings and cover mesh-local runtime config
+
+Implement direct scoped setting support in EffectiveConfig for mesh
+publication profile and workspace-root relationship, and resolve naming
+defaults plus ResourcePage regeneration config as layered singleton scoped
+settings. Require application config to link its resolver config and reject
+portable mesh resolver declarations until trusted resolver narrowing is
+implemented.
+
+Add focused unit tests for scoped setting parsing, validation, mesh-local
+overrides, unsafe workspace-root values, unsupported publication profiles, and
+mesh resolver-config rejection. Add integration coverage showing mesh-local
+_config/config.ttl changes history/support behavior, ResourcePage generation,
+ResourcePage presentation, and the weave/version/generate command surfaces
+without repeated command flags.
+```
+
+Suggested dev-archive commit message:
+
+```text
+notes: update config-policy task status
+
+Mark scoped-setting parsing/validation and mesh-local runtime integration
+coverage complete, and record the first-slice decision that
+hasResourcePageRegenerationConfigPolicy remains a direct layered scoped
+singleton.
+```
