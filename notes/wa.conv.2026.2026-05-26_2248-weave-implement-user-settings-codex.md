@@ -970,3 +970,643 @@ coverage complete, and record the first-slice decision that
 hasResourcePageRegenerationConfigPolicy remains a direct layered scoped
 singleton.
 ```
+
+# User_2026-05-27_1230_35
+
+ok, what's next?
+
+# gpt-5.5_2026-05-27_1230_53
+
+Next, I’d do this in order:
+
+1. Commit this Weave slice first, excluding the unrelated staged `scripts/upload-codecov-test-results.ts`.
+2. Tackle the config-layer/attachment-role vocabulary cleanup in SFLO/spec:
+   - clarify referenced config is not its own precedence layer
+   - clarify Knop-inheritable is an outbound offer, projected as Knop-inherited at descendant scope
+   - keep authored/source provenance separate from consumed layer precedence
+3. Then update CLI docs + the SFLO replay recipe, now that mesh-local `_mesh/_config/config.ttl` can actually replace repeated command flags.
+4. Defer the full Knop-local/inherited runtime precedence tests until the resolver actually discovers/loads those sources. Testing all layers now would be a little theatrical.
+
+My vote: commit current Weave/dev-archive work, then do the SFLO vocabulary/spec cleanup next.
+
+# User_2026-05-27_1234_01
+
+commited weave. Proceed with vocab cleanup and docs updates.
+
+# gpt-5.5_2026-05-27_1234_23
+
+Great, I’ll take the vocab/docs slice now. I’m going to inspect the current SFLO config ontology terms and the relevant framework/Weave docs first, then make the smallest terminology cleanup that keeps runtime behavior and docs aligned.
+
+# gpt-5.5_2026-05-27_1234_40
+
+I see Weave is now ahead by the new commit, SFLO has the earlier ontology commit, and framework docs have an existing local edit in `sf.config.md`. I’ll treat that as user/local work and build on it carefully rather than rewriting the note wholesale.
+
+# gpt-5.5_2026-05-27_1235_07
+
+The SFLO ontology already has the right broad shape, so I’m not going to add a new class unless the existing terms can’t carry the decision. The cleanup I’m applying is comment-level vocabulary clarification: source/reuse is provenance, attachment determines authority, and inheritable roles are outbound/projection roles rather than stealth local layers.
+
+# gpt-5.5_2026-05-27_1237_02
+
+The ontology comments are updated. I’m adding the same distinction to the framework config note now: attachment role determines authority, config sources are just resolvable inputs, and Knop-inheritable config is an offer unless it is also attached locally.
+
+# gpt-5.5_2026-05-27_1237_51
+
+Now I’m updating the user-facing Weave docs. The main change is that mesh-local config is no longer future-tense: command flags remain useful one-run overrides, but durable mesh behavior now belongs in `_mesh/_config/config.ttl`.
+
+# gpt-5.5_2026-05-27_1240_34
+
+I’ve got the vocab cleanup and user-facing docs mostly in place now. I’m doing the boring but important pass next: task-note bookkeeping, then repo-level validation so we know this lands cleanly rather than just looking nice in the diff.
+
+# gpt-5.5_2026-05-27_1240_49
+
+The task note still has a couple of checkboxes that now correspond to this cleanup. I’m marking only the items this pass actually finished, and I’m leaving the broader target-query and deeper test coverage items open.
+
+# gpt-5.5_2026-05-27_1241_02
+
+The task tracker is up to date for this slice. I’m moving into validation now: ontology parse/release checks where the vocab changed, and lint/check-style commands for the Weave docs side so we don’t leave a subtle repo-wide issue behind.
+
+# gpt-5.5_2026-05-27_1241_26
+
+Whitespace checks are clean in all four touched repos. I’m kicking off the heavier Deno validations now; the ontology repo gets the full CI because Turtle/release metadata changed, while Weave gets lint/type checks because this slice only touched docs there.
+
+# gpt-5.5_2026-05-27_1241_38
+
+Validation passed for the code-bearing repos. I’m doing one last consistency sweep for stale vocabulary names and final status, then I’ll give you the exact state plus commit-message text per repo.
+
+# gpt-5.5_2026-05-27_1241_44
+
+One stale doc turned up outside the SFLO recipe: the URPX replay note still says durable mesh config is future work. Since that sentence is now false, I’m going to bring that recipe into the same durable-config shape rather than leave a known footgun in the docs.
+
+# gpt-5.5_2026-05-27_1243_09
+
+The Weave validation still passes after the URPX doc update. One status wrinkle: there’s a staged `.github/workflows/ci.yml` change in the Weave repo that predates this doc slice; I’m leaving it alone and treating the docs as the only Weave changes from this pass.
+
+# gpt-5.5_2026-05-27_1244_01
+
+Done. I tightened the config vocab/docs pass across the repos:
+
+- SFLO ontology now clarifies that `ConfigSource` / reusable `ConfigArtifact` are provenance inputs, not a reusable-config precedence layer.
+- Framework config/spec docs now spell out attachment-point authority and Knop-inheritable as an outbound offer.
+- Weave CLI docs now describe `_mesh/_config/config.ttl` as durable mesh-local policy, with command flags as one-run overrides.
+- SFLO and URPX replay recipes now write mesh-local policy bindings instead of repeating history/presentation flags.
+- Config-policy task note checkboxes were updated for the completed vocab/docs work.
+
+Validation passed:
+
+- Weave: `git diff --check`, `deno task fmt:check`, `deno task lint`, `deno task check`
+- SFLO: `git diff --check`, `deno task ci`
+- Framework + archive: `git diff --check`
+
+Stale-vocab sweep is clean in Weave docs. The remaining matches are intentional guardrail tests in SFLO and the framework spec explicitly saying there is no `configLayerRole_reusableConfig`.
+
+Commit message suggestions:
+
+```text
+docs(weave): document durable mesh-local config policies
+
+- describe existing-mesh commands loading _mesh/_config/config.ttl above defaults and below command overrides
+- update SFLO and URPX replay recipes to persist history and ResourcePage presentation policy bindings
+- clarify ResourcePage metadata panel selection through presentation policy rather than repeated flags
+```
+
+```text
+ontology(sflo): clarify config source attachment authority
+
+- document ConfigSource and reusable ConfigArtifact as provenance inputs, not precedence layers
+- clarify role-specific config attachments and Knop-inheritable projection semantics
+- add decision-log and release-note entries for reusable config source behavior
+```
+
+```text
+docs(framework): align config layer semantics with attachment roles
+
+- distinguish config artifact identity, config source resolution, and attachment-point authority
+- document that reusable config has no dedicated precedence layer
+- clarify Knop-inheritable config as a descendant offer, not local behavior
+```
+
+# User_2026-05-27_1244_04
+
+Should we make a new ticket for resolver discovery of sources? I'm also looking at ont.task.2026.2026-05-26_2205-artifact-resolution-spec-and-observation-cleanup - that seems pretty essential.
+
+# gpt-5.5_2026-05-27_1244_15
+
+I’m going to peek at the artifact-resolution task and the current config-policy note before answering, because the boundary here matters: source discovery could either be a clean follow-up ticket or get tangled into the artifact-resolution cleanup if we name it too broadly.
+
+# gpt-5.5_2026-05-27_1244_34
+
+Yes, I’d make a separate ticket.
+
+I’d keep `ont.task.2026.2026-05-26_2205-artifact-resolution-spec-and-observation-cleanup` as the vocabulary substrate, then make the new ticket the runtime/config-resolver slice:
+
+`wa.task...-config-source-discovery-and-resolution.md`
+
+The artifact-resolution cleanup is essential because `sfcfg:ConfigSource` is now intentionally an `sflo:ArtifactResolutionSpec`; that gives us the shared shape for repository locators, exact states, fallback specs, expected digests, observations, etc. But resolver discovery is a different concern: “where do I look for config attachments, in what order, with what trust limits, and how do resolved config bytes enter the layer model?”
+
+I’d scope the new ticket roughly like this:
+
+- discover `sfcfg:hasMeshConfigSource`, `sfcfg:hasMeshInheritableConfigSource`, `sfcfg:hasKnopLocalConfigSource`, and `sfcfg:hasKnopInheritableConfigSource`
+- resolve each `sfcfg:ConfigSource` through the artifact-resolution machinery
+- compile resolved config at the attachment point’s layer, with no reusable-config layer
+- fail closed on cycles, unsupported remote fetches, broad local paths, digest mismatch, malformed Turtle, unknown/unsafe config terms
+- add provenance to the in-memory resolution trace: attachment property, resolved source, digest/evidence if available, and layer/scope used
+- first slice: mesh-local config sources only, maybe Knop source discovery deferred unless needed immediately
+
+I’d also update the artifact-resolution task note before starting: from current code it looks like a lot of that ontology/SHACL cleanup has already landed, while the implementation checklist still reads open. Tiny paperwork dragon there, but a useful one: mark what’s actually complete and leave only runtime/framework/fixture follow-through open.
+
+# User_2026-05-27_1246_03
+
+coderabbit feedback:
+
+Outside diff comments:
+In `@src/runtime/operational/local_path_policy.ts`:
+- Around line 546-584: Both collectWorkspaceRootValues and
+collectPublicationProfileValues currently proceed even when
+collectMeshConfigSubjects(quads) yields zero or multiple subjects; add a
+fast-fail check right after creating configSubjects (using
+collectMeshConfigSubjects) to throw an OperationalConfigError when
+configSubjects.size === 0 or configSubjects.size > 1 (include meshConfigPath and
+the relevant IRI constant in the message) so preserved-field reads only occur
+when there is exactly one sfcfg:MeshConfig subject.
+
+# gpt-5.5_2026-05-27_1246_13
+
+I’ll verify this against the current `local_path_policy.ts` before touching it. If it’s still valid, I’ll keep the fix narrowly inside the preserved-field helpers and run the focused operational-policy tests.
+
+# gpt-5.5_2026-05-27_1246_36
+
+The finding is valid, with one behavior implication: a `_mesh/_config/config.ttl` that exists but has no `sfcfg:MeshConfig` will now fail closed instead of being silently ignored. That matches the current config posture better than pretending a malformed mesh config is absent, so I’m updating the old “ignore non-MeshConfig path rules” test to expect rejection.
+
+# gpt-5.5_2026-05-27_1247_14
+
+The code now rejects zero or multiple `sfcfg:MeshConfig` subjects at the shared preserved-field readers. I added coverage for both cases, including updating the old permissive test that no longer matches the fail-closed behavior.
+
+# gpt-5.5_2026-05-27_1247_36
+
+Fixed the still-valid CodeRabbit finding.
+
+I added a shared fast-fail check so both preserved-field readers require exactly one `sfcfg:MeshConfig` subject before reading workspace root or publication profile values: [local_path_policy.ts](../../../../../src/runtime/operational/local_path_policy.ts:548).
+
+I also updated tests to cover both failure cases: no `MeshConfig` subject and multiple `MeshConfig` subjects: [local_path_policy_test.ts](../../../../../src/runtime/operational/local_path_policy_test.ts:57).
+
+Validation passed:
+
+```sh
+deno fmt --check src/runtime/operational/local_path_policy.ts src/runtime/operational/local_path_policy_test.ts
+deno lint src/runtime/operational/local_path_policy.ts src/runtime/operational/local_path_policy_test.ts
+deno check src/runtime/operational/local_path_policy.ts src/runtime/operational/local_path_policy_test.ts
+deno test --preload=tests/support/test_tmp_harness.ts --allow-read --allow-write --allow-run=git,deno --allow-env src/runtime/operational/local_path_policy_test.ts
+```
+
+Note: there are unrelated existing changes in `scripts/upload-codecov-test-results.ts` and `tests/scripts/upload_codecov_test_results_test.ts`; I left those alone.
+
+# User_2026-05-27_1249_29
+
+OK, I created the ticket. Please fill it out and update [ont.task.2026.2026-05-26_2205-artifact-resolution-spec-and-observation-cleanup.md](ont.task.2026.2026-05-26_2205-artifact-resolution-spec-and-observation-cleanup.md) where necessary, I assume we'll proceed with the latter first?
+
+# gpt-5.5_2026-05-27_1249_43
+
+I’ll fill the new config-source ticket as the dependent runtime slice, then bring the artifact-resolution task note back into sync with what’s already landed. And yes, I agree with your ordering: finish or at least explicitly close the remaining artifact-resolution substrate first, then resolver discovery has something stable to stand on.
+
+# gpt-5.5_2026-05-27_1249_57
+
+The new ticket is currently just a skeleton, and the artifact-resolution note’s checklist is stale relative to the repo state: the ontology/SHACL names and `ConfigSource` shape appear to have landed already. I’m doing a targeted old-vocab sweep so the note update is factual rather than optimistic.
+
+# gpt-5.5_2026-05-27_1250_53
+
+The sweep supports the dependency story: old artifact-resolution authoring names are gone from active ontology/runtime/framework/fixture surfaces, with old names only in guardrail tests and historical v0.1.0 release notes. I’m going to mark the artifact task as substrate-complete, while explicitly deferring config-source runtime discovery to the ticket you just created.
+
+# gpt-5.5_2026-05-27_1252_27
+
+Both notes are updated now. I’m doing the lightweight checks: markdown diff sanity, whitespace, and a quick readback of the sections that changed so I can spot any task-note weirdness before handing it back.
+
+# gpt-5.5_2026-05-27_1252_43
+
+Filled out the new config-source discovery ticket and updated the artifact-resolution cleanup note.
+
+Updated:
+- [wa.task.2026.2026-05-27_1246-config-source-discovery-and-resolution.md](wa.task.2026.2026-05-27_1246-config-source-discovery-and-resolution.md)
+- [ont.task.2026.2026-05-26_2205-artifact-resolution-spec-and-observation-cleanup.md](ont.task.2026.2026-05-26_2205-artifact-resolution-spec-and-observation-cleanup.md)
+
+I also updated the artifact task to reflect current reality: the `ArtifactResolutionSpec`/observation cleanup is effectively substrate-complete, with config-source discovery deferred to the new Weave runtime ticket. I left it as a task note, not renamed to completed.
+
+And yes: I’d proceed with the artifact-resolution cleanup note first only insofar as we confirm/close that substrate. Then pick up config-source discovery. The new ticket now says that explicitly.
+
+Validation: `git -C dependencies/github.com/semantic-flow/weave-dev-archive diff --check` passed.
+
+# User_2026-05-27_1257_42
+
+This line is confusing for me "- Preserve the attachment-point authority model: referenced config participates at the scope and layer of the property that selected it, never as a separate reusable-config layer." -- I think mentioning a separate reusable config layer might be counterproductive?
+
+# gpt-5.5_2026-05-27_1257_58
+
+I agree with you. In a Goals section, leading with the anti-model can accidentally teach the wrong concept; better to state the positive rule and leave the historical “not a layer” warning for deeper discussion if needed.
+
+# gpt-5.5_2026-05-27_1258_15
+
+Agreed. I updated the ticket to use the positive rule instead:
+
+> Preserve attachment-point authority: referenced config participates at the scope and layer of the role-specific property that selected it.
+
+I also softened the matching decision bullet to avoid re-centering the “reusable-config layer” phrase.
+
+`git diff --check` passes for the archive repo.
+
+# User_2026-05-27_1305_58
+
+Great conversation. Let's end on a crazy note. 
+
+I'm considering using Oxigraph as an in-memory cache. Seems like that could be very useful for calculating and/or looking up "resolved config" for a given Knop. Thoughts?
+
+# gpt-5.5_2026-05-27_1306_46
+
+Yes. Wildly plausible. I’d frame it as **an RDF index cache**, not “the resolved config engine.”
+
+Oxigraph looks like a good fit for the parts that are graph-shaped: “given this Knop, what config sources attach through its ancestry?”, “which policy bindings target this artifact?”, “what source documents participated?”, “what changed since this cache key?” It supports in-memory `Store::new()`, quad pattern lookup, and SPARQL execution, and the current Rust docs show exactly that shape. It also implements SPARQL 1.1 query/update and RDF formats like Turtle/TriG/N-Quads, though its own docs still say SPARQL query evaluation is not fully optimized yet, so I’d treat performance as something to measure rather than assume. Sources: [Oxigraph docs](https://docs.rs/oxigraph/latest/oxigraph/) and [Store API](https://docs.rs/oxigraph/latest/oxigraph/store/struct.Store.html).
+
+My instinct:
+
+**Use Oxigraph for:**
+- holding parsed config/source/metadata/inventory graphs in memory
+- named graphs per source/layer/scope, e.g. app defaults, mesh config, command overrides, Knop source registries
+- querying ancestry, attachments, policy bindings, exact targets, source provenance
+- debugging/explanation queries
+- dependency discovery for cache invalidation
+
+**Do not put all resolver semantics in SPARQL.**
+Layer ordering, selector specificity, conflict resolution, fail-closed diagnostics, host trust, and command overrides should stay in TypeScript domain code. SPARQL can collect candidates; the resolver should still decide.
+
+The model I’d try:
+
+1. Build an `EffectiveConfigGraphCache` keyed by mesh root plus a fingerprint of config-bearing files/inventories/source registries.
+2. Load relevant RDF into named graphs.
+3. Use SPARQL/query helpers to gather candidate config layers and policy bindings for a Knop.
+4. Compile the final `ResolvedConfigForScope` into plain runtime objects.
+5. Cache that object by `{ scopeIri, commandOverrideFingerprint, graphFingerprint }`.
+6. Invalidate when staged writes touch `_mesh/_config`, `_mesh/_inventory`, `_knop/_sources`, `_knop/_inventory`, page definitions, or command overrides.
+
+The big caution is Deno integration. Oxigraph’s Rust library looks solid for this kind of job; the JS/WASM path is the thing I’d spike before betting the architecture on it. If the JS binding is awkward, I’d still keep the abstraction: `RdfDatasetIndex` with an Oxigraph implementation later. That avoids welding the resolver to a library before we know the runtime ergonomics.
+
+So: not crazy. Actually kind of the right amount of crazy. The sharp version is “Oxigraph as the in-memory RDF query/index layer, compiled config as Weave-owned deterministic runtime state.”
+
+# User_2026-05-27_1314_03
+
+Claude's feedback on the task. Please evaluate and critically and incorporate any clear improvements:
+
+1. The dependency is already complete — reframe accordingly (and fix broken links)
+The note's whole framing assumes the artifact-resolution cleanup is still pending: "complete the artifact-resolution cleanup substrate first, then implement this ticket" (line 24), and the first implementation-plan item is "Finish or explicitly close remaining work in..." (line 150).
+
+But that dependency shipped: the file is ont.completed.2026.2026-05-26_2205-... (completed 05-26, the day before this note was created on 05-27), and its goals confirm sfcfg:ConfigSource was added. So the substrate is in place.
+
+Two concrete fixes:
+
+Broken wikilinks. Lines 103, 122, and 150 link to [[ont.task.2026.2026-05-26_2205-...]] — that slug no longer exists. Only line 16 uses the correct [[ont.completed.2026.2026-05-26_2205-...]]. Update the three .task. references to .completed..
+Reframe the sequencing language. "The right order is to complete the cleanup first" (line 24) and "Proceed after [[...]]" (line 103) should shift to "the substrate is in place; confirm sfcfg:ConfigSource/ArtifactResolutionSpec are stable, then build on them." The first plan checkbox (line 150) becomes a quick verification step, not a blocker.
+2. Reconcile Open Issues with Decisions already made
+Two of the five "Open Issues" are effectively resolved elsewhere in the note, which makes the section read as more unsettled than it is:
+
+Open Issue on roleless sfcfg:hasConfigSource (implied by line 63) is already decided: "Treat generic sfcfg:hasConfigSource as insufficient for ordinary authority..." (line 107). Either drop it from Open Issues or phrase it purely as the first-slice reject-vs-ignore choice.
+Open Issue #3 (ordering, line 97) already carries a "First recommendation." That's a tentative decision, not an open question — consider promoting the recommendation to Decisions and leaving only the genuinely-undecided part open.
+3. Resolve the contradiction about targetLocalRelativePath in the first slice
+Open Issue #1 (line 95) asks whether the first slice supports only in-mesh ConfigArtifact/located-file, or also workspace-bounded targetLocalRelativePath. But the rest of the note already assumes path support is in:
+
+Resolution policy lists targetLocalRelativePath as an initial supported form (line 71).
+Testing asserts "Workspace/local path config sources require the same local path policy..." (line 134).
+So the body answers its own open question. Pick one: either narrow the first slice to governed artifacts only (and move the path test to a later slice), or close Open Issue #1 in favor of "path supported, gated by existing local-path policy."
+
+4. Smaller items
+Add a regression test for the "don't persist by default" decision (lines 106, 143). Testing currently verifies behavior but nothing guards against accidentally writing sfcfg:ResolvedConfig / ArtifactResolutionObservation to disk on an ordinary read. A test asserting "no observation records emitted for a plain config-source read" would protect that non-goal.
+[[sf.spec.2026-05-25-config-behavior]] (lines 123, 152) doesn't resolve to a file in this archive — it presumably lives in the framework/spec repo. Worth confirming the slug is correct so the link isn't dead.
+Empty desc: '' frontmatter (line 4) — minor, but a one-line desc helps the Dendron index.
+
+# gpt-5.5_2026-05-27_1314_27
+
+I’ll treat Claude’s notes as mostly right, but with one important distinction: the `sf.spec...` wikilink is a cross-vault Dendron link, so I don’t want to “fix” it into a path link. I’m going to clean up the stale dependency framing, tighten the open issues, and make the first-slice path stance explicit instead of half-open.
+
+# gpt-5.5_2026-05-27_1314_42
+
+Claude’s feedback is good overall. I’m not going to change the `sf.spec...` wikilink because I verified that note exists in the framework vault and cross-vault wikilinks are the house style here, but I am updating the stale completed-task links, dependency framing, open issues, decisions, and test list.
+
+# gpt-5.5_2026-05-27_1315_21
+
+The note now treats artifact-resolution as completed substrate, makes path support an explicit first-slice decision, and separates the real open questions from decisions. I’m checking for stale `.task` links and the final diff now.
+
+# gpt-5.5_2026-05-27_1315_38
+
+Claude’s feedback was mostly on target. I incorporated the clear improvements into the config-source ticket:
+
+- Reframed artifact-resolution as completed substrate, not a pending blocker.
+- Replaced stale `ont.task...artifact-resolution...` wikilinks with `[[ont.completed.2026.2026-05-26_2205-artifact-resolution-spec-and-observation-cleanup]]`.
+- Turned the first implementation-plan item into a verification step.
+- Closed the `targetLocalRelativePath` ambiguity in favor of first-slice support, gated by existing local path policy.
+- Promoted deterministic source processing to a decision, while keeping explicit ordered composition as a future/open question.
+- Added a test requirement that ordinary config-source reads must not persist `ResolvedConfig`, `ConfigResolutionRecord`, or `ArtifactResolutionObservation`.
+- Added a real `desc` in frontmatter.
+
+I did not change `[[sf.spec.2026-05-25-config-behavior]]`: I verified the note exists in the framework vault, and a cross-vault wikilink is the right style here.
+
+Validation for the edited task file passed:
+
+```sh
+git -C dependencies/github.com/semantic-flow/weave-dev-archive diff --check -- notes/wa.task.2026.2026-05-27_1246-config-source-discovery-and-resolution.md
+```
+
+Repo-wide archive `diff --check` is currently blocked by unrelated trailing whitespace in the Kato conversation log, so I left that alone.
+
+# User_2026-05-27_1319_49
+
+Regarding "- Should `sfcfg:hasConfigSourceFingerprint` be used by the first runtime trace, or reserved for persisted `sfcfg:ConfigResolutionRecord` output?" -- what is the issue?
+
+# gpt-5.5_2026-05-27_1320_10
+
+The issue is mostly naming/semantics, not capability.
+
+There are at least three different “fingerprints” we might want:
+
+1. **Byte fingerprint**: hash of the exact Turtle bytes read from a config source.
+2. **Parsed graph fingerprint**: hash of normalized RDF triples/quads after parsing, independent of whitespace/order.
+3. **Resolution dependency fingerprint**: hash of the whole effective input set: source coordinates, resolved bytes/graphs, mesh inventory state, command overrides, maybe local path policy.
+
+`sfcfg:hasConfigSourceFingerprint` sounds like an RDF predicate for persisted/exported resolver diagnostics. If we use that name too early in the in-memory runtime trace, we may accidentally freeze unclear semantics: fingerprint of what, produced when, stable across machines, safe to persist, etc.
+
+My recommendation: the runtime trace can absolutely carry internal fields like `sourceByteDigest`, `parsedGraphFingerprint`, or `dependencyFingerprint`, but reserve `sfcfg:hasConfigSourceFingerprint` for persisted `sfcfg:ConfigResolutionRecord` output once we know which one the ontology term actually means.
+
+I’d rewrite that open issue to something clearer:
+
+> What fingerprints should the runtime compute for cache invalidation and diagnostics: source byte digest, parsed graph fingerprint, dependency-set fingerprint, or some combination? Reserve `sfcfg:hasConfigSourceFingerprint` for persisted/exported resolution records until its exact semantics are settled.
+
+# User_2026-05-27_1321_56
+
+makes sense. you can just settle the issue based on your recommendation.
+
+# gpt-5.5_2026-05-27_1322_01
+
+I’ll settle that open issue directly in the note: internal runtime/cache fingerprints are allowed, but the `sfcfg:hasConfigSourceFingerprint` RDF predicate stays reserved for persisted/exported resolution records until its exact semantics are pinned down.
+
+# gpt-5.5_2026-05-27_1322_17
+
+Settled. I removed it from Open Issues and added a Decision:
+
+> Runtime/cache code may compute internal source byte digests, parsed graph fingerprints, and dependency-set fingerprints for invalidation and diagnostics. Reserve the RDF predicate `sfcfg:hasConfigSourceFingerprint` for persisted or exported `sfcfg:ConfigResolutionRecord` output until its exact persisted semantics are settled.
+
+Validation for the edited note passed with `diff --check`.
+
+# User_2026-05-27_1322_54
+
+what are the config roles again? How would you settled "first-slice roleless"
+
+# gpt-5.5_2026-05-27_1323_07
+
+The config attachment roles we’ve been using are:
+
+- `sfcfg:hasMeshConfig`: inline/direct mesh-local config
+- `sfcfg:hasMeshConfigSource`: resolved source that participates as mesh-local config
+- `sfcfg:hasMeshInheritableConfig`: inline/direct config offered from mesh to descendants
+- `sfcfg:hasMeshInheritableConfigSource`: resolved source offered from mesh to descendants
+- `sfcfg:hasKnopLocalConfig`: inline/direct config consumed at the declaring Knop
+- `sfcfg:hasKnopLocalConfigSource`: resolved source consumed at the declaring Knop
+- `sfcfg:hasKnopInheritableConfig`: inline/direct config offered from a Knop to descendants
+- `sfcfg:hasKnopInheritableConfigSource`: resolved source offered from a Knop to descendants
+
+There’s also generic `sfcfg:hasConfig` and `sfcfg:hasConfigSource`, but those are intentionally vague. They say “there is config here” without saying whether it is mesh-local, Knop-local, inheritable, etc.
+
+For “first-slice roleless,” I’d settle it this way:
+
+**Decision:** reject roleless `sfcfg:hasConfigSource` in authored config inputs when it would affect runtime behavior. Require a role-specific attachment property.
+
+That means first slice accepts:
+
+```turtle
+<mesh> sfcfg:hasMeshConfigSource <#source> .
+```
+
+But rejects:
+
+```turtle
+<mesh> sfcfg:hasConfigSource <#source> .
+```
+
+Reason: roleless attachment makes the resolver guess authority. Is it local? inheritable? mesh? Knop? provenance-only? Guessing there would undermine the clean model.
+
+I’d allow generic `sfcfg:hasConfigSource` only in non-authoritative diagnostic/provenance contexts later, where a surrounding `ConfigResolutionRecord` or explicit `ConfigLayer` already states the role. For the first implementation, hard error is better than silent ignore.
+
+# User_2026-05-27_1327_48
+
+So we have "conventional" filesystem locations for things. Where have we captured where the conventional locations of mesh/knop config and inheritable config?
+
+# gpt-5.5_2026-05-27_1328_02
+
+I’ll trace where the docs/specs currently describe conventional config locations before answering. My hunch is mesh config is well captured via `_mesh/_config/config.ttl`, while Knop-local/inheritable conventional locations are probably under-specified or still implicit.
+
+# gpt-5.5_2026-05-27_1328_17
+
+Short answer: **mesh config locations are captured; Knop config and inheritable config locations are not really captured yet.**
+
+Where it exists now:
+
+- `sf.config.md` has the clearest location rule: `MeshConfig` conventionally lives at `_mesh/_config/config.ttl`, with sidecar example `docs/_mesh/_config/config.ttl`.
+- `sf.spec.2026-04-03-mesh-create.md` captures when mesh create writes `_mesh/_config/config.ttl`.
+- Weave runtime/code/tests hard-code `_mesh/_config/config.ttl`.
+- `sf.spec.2026-05-25-config-behavior.md` captures the **roles/layers**: mesh-local, mesh-inheritable projected to descendants, Knop-inherited, Knop-local, command override.
+- `semantic-flow-config-ontology.ttl` captures the **attachment vocabulary**: `hasMeshConfig`, `hasMeshInheritableConfig`, `hasKnopLocalConfig`, `hasKnopInheritableConfig`, plus source variants.
+
+What I don’t see captured cleanly:
+
+- conventional filesystem path for Knop-local config, e.g. maybe `_knop/_config/config.ttl`
+- conventional filesystem path for Knop-inheritable config
+- whether mesh-inheritable config is stored in the same `_mesh/_config/config.ttl` as mesh-local config, or separate support artifact/path
+- whether file location implies a default role, or whether the RDF attachment property always carries the role
+
+My recommendation: **do not make separate conventional paths per role yet.** Use conventional support locations as discovery roots, and require RDF role-specific attachment/properties for semantics.
+
+So:
+
+- mesh conventional config root: `_mesh/_config/config.ttl`
+- future Knop conventional config root: `<knop>/_knop/_config/config.ttl`
+- role is still expressed in RDF:
+  - mesh-local: `sfcfg:hasMeshConfig` / `sfcfg:hasMeshConfigSource`
+  - mesh-inheritable: `sfcfg:hasMeshInheritableConfig` / `sfcfg:hasMeshInheritableConfigSource`
+  - Knop-local: `sfcfg:hasKnopLocalConfig` / `sfcfg:hasKnopLocalConfigSource`
+  - Knop-inheritable: `sfcfg:hasKnopInheritableConfig` / `sfcfg:hasKnopInheritableConfigSource`
+
+That lets `_knop/_config/config.ttl` contain both local and inheritable declarations without inventing paths like `_knop/_config/inheritable.ttl` before we need them. The file is “where config is discovered”; the property is “what role it plays.”
+
+This probably deserves a small section in the new config-source discovery ticket: **Conventional Config Locations**.
+
+# User_2026-05-27_1334_34
+
+in the semi-distant past we've used _config-local/ and _config-inheritable/
+
+One other wrinkle that's been wriggling around... what's the purpose of mesh-inheritable config? It's kinda redundant with a top-level knop inheritable config.  Conceptually, mesh config should really be about things that concern the mesh. Sure, maybe mesh config could include defaults for knops, in case the root knop gets replaced or deleted or something. Probably just need reassurance here, but maybe you think a change of direction is justified.
+
+# gpt-5.5_2026-05-27_1334_58
+
+I’d keep `mesh-inheritable`, but make it a narrow, deliberate thing.
+
+It is not quite redundant with top-level Knop inheritable config because the mesh and the root Knop are different authorities:
+
+- **Mesh config** is about the container: publication profile, workspace relationship, mesh-wide resolver policy, default behavior for mesh-governed artifacts, and bootstrap behavior before or outside any Knop.
+- **Root/top-level Knop config** is about the root resource/subtree: content/resource policy inherited by descendant Knops because they are semantically under that root.
+- **Mesh-inheritable config** is mesh authority projected into Knop scopes. It says: “this mesh’s operating defaults apply to Knops unless locally overridden.”
+
+So the reassurance version: mesh-inheritable exists for mesh-wide defaults that should survive changes to the root Knop and should not depend on a content/resource node being present. It is the right home for “all Knops in this mesh should use ResourcePage presentation X by default” or “all governed artifacts in this mesh default to slim history,” especially when those are publication/runtime defaults of the mesh rather than facts about `/`.
+
+But I share the discomfort. It can become a junk drawer if we are casual. I’d set the rule like this:
+
+- Use **mesh-local** for mesh support behavior.
+- Use **mesh-inheritable** only for mesh-wide defaults intentionally projected into all Knop scopes.
+- Use **Knop-inheritable** for subtree/resource semantics.
+- Do not use mesh-inheritable just because it is convenient.
+
+On `_config-local/` and `_config-inheritable/`: those names are still pretty good for discoverability. I’d make them conventional discovery locations, not the core authority model.
+
+Possible convention:
+
+- `_mesh/_config/config.ttl`: mesh-local
+- `_mesh/_config-inheritable/config.ttl`: mesh-inheritable
+- `<knop>/_knop/_config-local/config.ttl`: Knop-local
+- `<knop>/_knop/_config-inheritable/config.ttl`: Knop-inheritable
+
+But I’d still prefer the RDF attachment/property to carry the role where possible. The path can be a shorthand discovery source; the resolver should normalize it into the same role-specific layer model. That gives us ergonomic filesystem conventions without letting location silently become semantic authority in weird edge cases.
+
+My recommendation: no major direction change. Keep mesh-inheritable, document it as mesh-wide projected defaults, and revive `_config-local/` / `_config-inheritable/` as conventional role-specific discovery locations. That feels like the least surprising model.
+
+# User_2026-05-27_1342_21
+
+You almost don't need the non-inheritable mesh config. What could even go in there? It's almost like MeshInheritableConfig is actually KnopConfig, just specified in another place. I'm edging up to... do we need MeshConfig? 
+
+Also, I'm uncomfortable with all the config attachment roles. It's tempting to go to just four properties: hasConfig, hasConfigSource, and hasInheritableConfig, and hasInheritableConfigSource.
+
+# gpt-5.5_2026-05-27_1342_46
+
+You’re not imagining the weirdness. I think there are two separate simplifications trying to happen here, and one of them is probably good.
+
+**Do We Need MeshConfig?**
+Yes, I still think `MeshConfig` is real.
+
+Things that are mesh config and not naturally Knop config:
+
+- `sfcfg:hasPublicationProfile`: GitHub Pages / none is about the publication surface of the mesh.
+- `sfcfg:workspaceRootRelativeToMeshRoot`: a filesystem relationship for the mesh root.
+- `sfcfg:hasMeshWorkspacePathRule`: portable workspace-bounded path allowances.
+- resolver policy caps or unknown-term behavior for reading the mesh.
+- policy for mesh support artifacts themselves: `_mesh/_inventory`, `_mesh/_meta`, `_mesh/_config`, support pages, etc.
+- config-source discovery for the mesh support surface.
+
+So I would not delete `MeshConfig`.
+
+But I agree that **mesh-inheritable config is suspiciously close to “Knop defaults supplied by the mesh.”** It is not exactly root-Knop config because the mesh is the authority, not a resource in the content tree. But it should be described that way: mesh-level defaults projected into Knop scopes.
+
+**The Attachment Properties**
+Here I think your simplification is attractive.
+
+Instead of:
+
+- `hasMeshConfig`
+- `hasMeshConfigSource`
+- `hasMeshInheritableConfig`
+- `hasMeshInheritableConfigSource`
+- `hasKnopLocalConfig`
+- `hasKnopLocalConfigSource`
+- `hasKnopInheritableConfig`
+- `hasKnopInheritableConfigSource`
+
+we could plausibly use:
+
+- `sfcfg:hasConfig`
+- `sfcfg:hasConfigSource`
+- `sfcfg:hasInheritableConfig`
+- `sfcfg:hasInheritableConfigSource`
+
+Then the role is determined by the subject:
+
+- `SemanticMesh + hasConfig` = mesh-local config
+- `SemanticMesh + hasInheritableConfig` = mesh defaults projected into Knop/descendant scopes
+- `Knop + hasConfig` = Knop-local config
+- `Knop + hasInheritableConfig` = Knop subtree defaults
+
+That is cleaner. The property says **local vs inheritable**, and the subject says **mesh vs Knop**. That’s less vocabulary, less cognitive load, and fewer chances to pick the wrong hyper-specific predicate.
+
+Caveat: the resolver must fail closed when the subject role is ambiguous. `hasConfig` on some random resource should not become magic. It only means something when the subject is a known config-bearing scope like `sflo:SemanticMesh` or `sflo:Knop`.
+
+My suggested direction:
+
+- Keep `MeshConfig` and `KnopConfig` as classes.
+- Replace role-specific attachment properties with the four-property model.
+- Model mesh-inheritable as `SemanticMesh sfcfg:hasInheritableConfig ?config`.
+- Document it as “mesh-authored defaults projected into descendant Knop scopes,” not as a separate conceptual config species.
+- Maybe retire/avoid names like `MeshInheritableConfig` as a class. The inheritable-ness is an attachment role, not a kind of config object.
+
+So: yes to simplifying attachment vocabulary. No to removing `MeshConfig`. And I’d strongly consider making “inheritable” a property role rather than a named mesh/Knop-specific role family.
+
+# User_2026-05-27_1348_15
+
+Agreed. Aren't you glad I'm paying attention? Let's retire MeshInheritableConfig. I'll leave the extremely difficult work (as it seems to me) of figuring out all the work that needs to be done for this change in direction. Please put it in [wa.task.2026.2026-05-27_1347-drop-MeshInheritableConfig.md](wa.task.2026.2026-05-27_1347-drop-MeshInheritableConfig.md)
+
+# gpt-5.5_2026-05-27_1348_30
+
+Yes, I am glad you’re paying attention. This is exactly the kind of ontology simplification that is cheap to decide now and expensive to unwind later, so I’ll turn it into a concrete task with the migration surface spelled out rather than a vague “rename some stuff” note.
+
+# gpt-5.5_2026-05-27_1348_44
+
+A quick sweep confirms the current live vocabulary has mesh/Knop-specific inheritable attachment properties, not an actual `MeshInheritableConfig` class. I’ll write the task as retiring the mesh-specific inheritable role vocabulary/concept, while preserving `MeshConfig` and collapsing attachment roles to the simpler four-property model.
+
+# gpt-5.5_2026-05-27_1350_48
+
+The task note is now filled with the conceptual decision, the concrete ontology/runtime/docs surface, and the scary parts made explicit. I’m checking it for stale links/wording and whitespace now.
+
+# gpt-5.5_2026-05-27_1350_56
+
+Done. I filled out [wa.task.2026.2026-05-27_1347-drop-MeshInheritableConfig.md](wa.task.2026.2026-05-27_1347-drop-MeshInheritableConfig.md).
+
+The task now frames the change as:
+
+- keep `sfcfg:MeshConfig`
+- retire the mesh-specific inheritable attachment vocabulary/concept
+- collapse attachment roles toward `hasConfig`, `hasConfigSource`, `hasInheritableConfig`, `hasInheritableConfigSource`
+- use the subject (`SemanticMesh` vs `Knop`) to determine scope
+- decide whether to revive `_config-local/` and `_config-inheritable/` conventions before implementing config-source discovery
+- update SFLO ontology/SHACL, framework specs, Weave task notes/runtime/tests, and config-source discovery accordingly
+
+I also called out the reassuring distinction: mesh config still owns mesh concerns; mesh-authored inheritable config is just mesh-wide defaults projected into Knop scopes, not root-Knop semantics.
+
+Validation for the edited note passed with `diff --check`.
+
+# User_2026-05-27_1401_06
+
+I know you suggest the other way, but I think having separate _config-local and _config-inheritable is a humane way for people to group things. Otherwise, apparently conflicting triples hinges on the term "inheritable" in the property. It underscores an important distinction cleanly.
+
+Which brings me to the wrinkle... can either of those config files include properties for the other modality? Makes me think we should just have a single _config.
+
+Meshes should definitely just use _config/config.ttl. I think knops too, you can settle those first two open issues. Also hasConfig is fine, and old role-specific properties should be removed. guardrail tests for old terms seem crufty, since we fail closed on unrecognized terms.
+
+internal layer role names: I don't think we need mesh-authored-inherited... anything that applies to knops in the singular mesh config gets inherited? (yikes again) 
+
+I think KnopConfig should disappear too.
+
+# gpt-5.5_2026-05-27_1401_23
+
+I’ll fold those decisions into the task note. There’s a real design pivot here: single conventional config files, generic attachment properties, remove `KnopConfig`, and stop carrying internal “mesh-authored inherited” as a special role unless implementation pressure proves it.
+
+# gpt-5.5_2026-05-27_1402_00
+
+I think the latest wrinkle is the right correction: if mesh config is singular, then mesh-level policy can cover Knops by scope/targeting; we do not need a separate mesh-authored inherited attachment or internal role. I’m updating the task to make `hasInheritableConfig` a Knop/subtree concept and to retire `KnopConfig` too.
+
+# gpt-5.5_2026-05-27_1403_56
+
+Updated the task note to reflect your direction.
+
+Key changes in [wa.task.2026.2026-05-27_1347-drop-MeshInheritableConfig.md](wa.task.2026.2026-05-27_1347-drop-MeshInheritableConfig.md):
+
+- Settled conventional locations:
+  - mesh: `_mesh/_config/config.ttl`
+  - Knop: `<knop>/_knop/_config/config.ttl`
+- Dropped `_config-local/` and `_config-inheritable/` as planned conventions.
+- Kept `sfcfg:MeshConfig`.
+- Added decision to remove `sfcfg:KnopConfig`.
+- Made `hasInheritableConfig` / `hasInheritableConfigSource` Knop-only subtree-default attachments.
+- Made mesh config singular: mesh-level policy can cover Knops by selector/scope, without a mesh-inheritable modality or internal mesh-authored-inherited layer.
+- Settled `hasConfig` as the generic local attachment property.
+- Settled old role-specific properties as removed from live pre-v1 vocabulary, with no bespoke guardrail tests unless the repo’s general retired-term machinery already covers them.
+
+Validation for the edited note passed with `diff --check`.

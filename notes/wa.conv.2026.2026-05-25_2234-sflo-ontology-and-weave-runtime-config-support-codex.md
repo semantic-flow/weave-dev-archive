@@ -1,11 +1,16 @@
 ---
 id: sflo-ontology-and-weave-2y6ni4
-title: 'sflo ontology and weave runtime config support'
+title: sflo ontology and weave runtime config support
 desc: ''
-created: 1779773647136
 updated: 1779773647136
-participants: [codex.gpt-5.5]
-conversationEventKinds: [message.assistant, message.user, tool.call, tool.result]
+created: 1779773647136
+participants:
+  - codex.gpt-5.5
+conversationEventKinds:
+  - message.assistant
+  - message.user
+  - tool.call
+  - tool.result
 ---
 
 # User_2026-05-25_1705_12
@@ -15,7 +20,7 @@ sflo ontology and weave runtime config support
 Please review: 
 
 [[sf.spec.2026-05-25-config-behavior]]
-[[wa.task.2026.2026-05-25_1609-config-policy-ontology-and-runtime]]
+[[wa.completed.2026.2026-05-25_1609-config-policy-ontology-and-runtime]]
 
 And let me know if you have any questions or refinements before we implement.
 

@@ -2,15 +2,20 @@
 id: after-a-few-false-starts-t7clro
 title: 'After a few false starts and much refinement, the goal is t…'
 desc: ''
-created: 1779826144992
 updated: 1779826144992
-participants: [codex.gpt-5.5]
-conversationEventKinds: [message.assistant, message.user, tool.call, tool.result]
+created: 1779826144992
+participants:
+  - codex.gpt-5.5
+conversationEventKinds:
+  - message.assistant
+  - message.user
+  - tool.call
+  - tool.result
 ---
 
 # User_2026-05-26_0017_49
 
-After a few false starts and much refinement, the goal is to implement a major model change in ontology and runtime. Please review [[wa.task.2026.2026-05-25_1609-config-policy-ontology-and-runtime]] and suggest any refinements to the task or ask any questions, but don't make any changes to the code or ontology yet.
+After a few false starts and much refinement, the goal is to implement a major model change in ontology and runtime. Please review [[wa.completed.2026.2026-05-25_1609-config-policy-ontology-and-runtime]] and suggest any refinements to the task or ask any questions, but don't make any changes to the code or ontology yet.
 
 # gpt-5.5_2026-05-26_0017_58
 
@@ -875,6 +880,6 @@ New conversation. This one has a lot of fixture-regeneration sediment in it now.
 
 For the next one, I’d start with:
 
-“Please proceed with [[wa.task.2026.2026-05-25_1609-config-policy-ontology-and-runtime]]. Start by reading the task, current config behavior spec, SFLO config ontology, and Weave config/runtime code. Implement the first runnable slice.”
+“Please proceed with [[wa.completed.2026.2026-05-25_1609-config-policy-ontology-and-runtime]]. Start by reading the task, current config behavior spec, SFLO config ontology, and Weave config/runtime code. Implement the first runnable slice.”
 
 That gives it a clean context window and keeps the config-policy work from being tangled with all the fixture push details.

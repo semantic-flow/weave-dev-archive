@@ -146,14 +146,21 @@ Do not add `MeshConfigSource`, `KnopLocalConfigSource`, or similar subclasses un
 
 This is pre-v1 vocabulary churn. Prefer direct replacement over long-lived compatibility aliases. Weave may use short-lived parser normalization for existing fixture branches if needed to keep tests meaningful during regeneration, but the ontology should not keep old names as normative authoring vocabulary.
 
+### Current status
+
+As of 2026-05-27, the ontology substrate for this cleanup has landed in the active SFLO ontology and SHACL files. Active code, tests, framework notes, and mesh fixture Turtle now use `sflo:ArtifactResolutionSpec`, direct target-coordinate predicates, recursive fallback specs, and `sflo:observedArtifactResolutionSpec`. A targeted old-vocabulary sweep found the retired names only in SFLO guardrail tests that assert retirement and in historical v0.1.0 release notes.
+
+This task should remain the provenance note for the vocabulary cleanup, but the next runtime slice for discovering and resolving config sources belongs in [[wa.task.2026.2026-05-27_1246-config-source-discovery-and-resolution]]. That follow-up should reuse `sfcfg:ConfigSource` as an `sflo:ArtifactResolutionSpec` rather than reopening this vocabulary.
+
 ## Open Issues
 
-- Should `hasArtifactResolutionMode` be shortened to `artifactResolutionMode` or `resolutionMode` while this vocabulary is already changing? Recommendation: decide during ontology edit; `hasArtifactResolutionMode` is verbose but not conceptually wrong.
-- Should `targetLocalRelativePath` remain as-is or become `targetLocalPath`? Recommendation: keep the current name unless the path model itself changes.
-- Should `hasRepositorySourceFloatingLocator` be renamed in this task? It is related but not strictly a spec-coordinate predicate because its domain intentionally includes artifacts as well as specs. Recommendation: leave it unless implementation shows it causes the same confusion.
-- Should multiple fallback specs be allowed? Recommendation: allow the ontology to express multiple only if ordering is also modeled; otherwise validate max one in SHACL for now.
-- Should `observedArtifactResolutionSpec` be required for every observation? Recommendation: require it when the observation records concrete resolved coordinates; allow digest-only observations only if SHACL can distinguish that intentional shape.
-- Should failed resolution attempts be modeled as observations? Recommendation: not in this pass; command/runtime logs can report failures, while observations remain successful evidence unless a later audit model needs failure records.
+- Closed for this pass: keep `sflo:hasArtifactResolutionMode` rather than shortening it.
+- Closed for this pass: keep `sflo:targetLocalRelativePath`.
+- Closed for this pass: keep `sflo:hasRepositorySourceFloatingLocator`; it is related but not merely a spec-coordinate predicate because it can also attach floating repository identity directly to an artifact.
+- Closed for this pass: allow at most one unordered `sflo:hasFallbackArtifactResolutionSpec` value in first-pass SHACL.
+- Closed for this pass: require exactly one `sflo:observedArtifactResolutionSpec` on `sflo:ArtifactResolutionObservation`.
+- Closed for this pass: do not model failed resolution attempts as observations.
+- Remaining adjacent work: implement runtime discovery/resolution of `sfcfg:ConfigSource` attachments in [[wa.task.2026.2026-05-27_1246-config-source-discovery-and-resolution]].
 
 ## Decisions
 
@@ -166,6 +173,11 @@ This is pre-v1 vocabulary churn. Prefer direct replacement over long-lived compa
 - Simplify observations by linking to an observed concrete `ArtifactResolutionSpec` rather than mirroring target coordinate predicates on `ArtifactResolutionObservation`.
 - Keep `observedContentDigest`, `observedAt`, and `observedBy` on `ArtifactResolutionObservation`.
 - Add `sfcfg:ConfigSource` as a subclass of `sflo:ArtifactResolutionSpec`.
+- Keep `sflo:hasArtifactResolutionMode`, `sflo:targetLocalRelativePath`, and `sflo:hasRepositorySourceFloatingLocator` names in this cleanup.
+- Validate unordered fallback specs as max one in first-pass SHACL.
+- Require `sflo:ArtifactResolutionObservation` to point to exactly one `sflo:observedArtifactResolutionSpec`.
+- Treat ordinary reads, page rendering, and config resolution as non-observing operations by default. Append observations only when an operation intentionally records resolution evidence.
+- Defer config-source discovery/resolution behavior to [[wa.task.2026.2026-05-27_1246-config-source-discovery-and-resolution]].
 - Do not mutate [[ont.completed.2026.2026-05-24_1256-artifact-resolution-observations]] except to reference it from this newer cleanup. It remains useful as the completed intermediate design history.
 
 ## Contract Changes
@@ -251,16 +263,16 @@ This is pre-v1 vocabulary churn. Prefer direct replacement over long-lived compa
 
 ## Implementation Plan
 
-- [ ] Update SFLO core ontology class, subclass, property, and comment names from `ArtifactResolutionTarget` to `ArtifactResolutionSpec`.
-- [ ] Rename core target coordinate predicates and update all ontology comments/ranges/domains.
-- [ ] Add `sflo:hasFallbackArtifactResolutionSpec` and remove or retire enum-only fallback policy authoring vocabulary.
-- [ ] Add `sflo:observedArtifactResolutionSpec` and remove or retire mirrored observed target coordinate predicates.
-- [ ] Update SFLO config ontology with `sfcfg:ConfigSource` and config-source property ranges.
-- [ ] Add or update config policy exact-target predicates separately from resolution-spec predicates.
-- [ ] Update SFLO SHACL shapes and tests for specs, source subclasses, fallback specs, config sources, and observations.
-- [ ] Update Weave RDF constants, parser code, serializers, and focused tests for source registries and observations.
-- [ ] Update Weave config-source parsing/rendering if the config policy task starts using `sfcfg:ConfigSource`.
-- [ ] Update Semantic Flow Framework specs/examples/conformance manifests that assert old artifact-resolution vocabulary.
-- [ ] Regenerate affected fixture branches after Weave emits the new shape.
-- [ ] Update relevant docs/task notes to reference this task as superseding the intermediate observation vocabulary shape.
-- [ ] Run focused checks for each touched repo and provide commit messages per repo.
+- [x] Update SFLO core ontology class, subclass, property, and comment names from `ArtifactResolutionTarget` to `ArtifactResolutionSpec`.
+- [x] Rename core target coordinate predicates and update all ontology comments/ranges/domains.
+- [x] Add `sflo:hasFallbackArtifactResolutionSpec` and remove or retire enum-only fallback policy authoring vocabulary.
+- [x] Add `sflo:observedArtifactResolutionSpec` and remove or retire mirrored observed target coordinate predicates.
+- [x] Update SFLO config ontology with `sfcfg:ConfigSource` and config-source property ranges.
+- [x] Add or update config policy exact-target predicates separately from resolution-spec predicates.
+- [x] Update SFLO SHACL shapes and tests for specs, source subclasses, fallback specs, config sources, and observations.
+- [x] Update Weave RDF constants, parser code, serializers, and focused tests for source registries and observations.
+- [d] Update Weave config-source parsing/rendering if the config policy task starts using `sfcfg:ConfigSource`; deferred to [[wa.task.2026.2026-05-27_1246-config-source-discovery-and-resolution]].
+- [x] Update Semantic Flow Framework specs/examples/conformance manifests that assert old artifact-resolution vocabulary.
+- [x] Regenerate affected fixture branches after Weave emits the new shape.
+- [x] Update relevant docs/task notes to reference this task as superseding the intermediate observation vocabulary shape.
+- [x] Run focused checks for each touched repo and provide commit messages per repo.

@@ -283,7 +283,7 @@ The CLI flag currently called `--include-semantic-flow-metadata` may remain as a
 - [x] Update [[sf.spec.2026-05-25-config-behavior]] first, or in the same first implementation commit, to remove `sfcfg:hasDefaultResourcePagePresentationConfig` drift and align page-local generated panel selection semantics.
 - [x] Finalize ontology term names for policy bindings, policy definitions, policy slots/value predicates, policy targets, target properties, and priority.
 - [x] Update `semantic-flow-config-ontology.ttl` with the chosen policy-binding and target vocabulary.
-- [ ] Clarify or revise config layer/attachment-role vocabulary around referenced config and Knop-inheritable config.
+- [x] Clarify or revise config layer/attachment-role vocabulary around referenced config and Knop-inheritable config.
 - [x] Remove `sfcfg:configLayerRole_reusableConfig` from default precedence and layer-role handling.
 - [x] Decide and encode the first-pass treatment of `sfcfg:hasResourcePageRegenerationConfigPolicy`.
 - [x] Replace or retire `sfcfg:panelDataRequirement_semanticFlowMetadataOptIn` in favor of actual metadata availability or explicit policy selection semantics.
@@ -300,5 +300,5 @@ The CLI flag currently called `--include-semantic-flow-metadata` may remain as a
 - [x] Apply the required follow-up updates from the initial ontology cleanup, including Weave defaults, parser constants, test fixtures, docs, and removed operational/access-rule vocabulary references.
 - [x] Add unit tests for ontology parsing, policy-target parsing, policy resolution, scoped settings, and ResourcePage presentation policy behavior.
 - [x] Add integration tests for mesh-local `_mesh/_config/config.ttl` changing history, ResourcePage generation, and ResourcePage presentation behavior.
-- [ ] Update CLI docs and the SFLO replay recipe when durable mesh-local config can replace repeated command overrides.
+- [x] Update CLI docs and the SFLO replay recipe when durable mesh-local config can replace repeated command overrides.
 - [x] Run focused tests/checks during development, then run `deno task lint` for broader Weave structural changes and repo-appropriate checks for ontology/framework changes.

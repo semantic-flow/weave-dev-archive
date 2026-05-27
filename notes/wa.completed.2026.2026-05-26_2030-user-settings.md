@@ -164,7 +164,7 @@ Important split after implementation review: **host-local user settings grants u
 - Use `weave:` terms for host-local user settings access grants.
 - Keep portable mesh-carried path grants in the `sfcfg:` config vocabulary for now. They are mesh-relative operational policy, not user settings state.
 - Treat the future durability of `sfcfg:LocalPathAccessRule` as config-policy ontology work, not as a compatibility shim for `~/.sf-local-access.ttl`.
-- Defer the choice to formalize or replace `sfcfg:LocalPathAccessRule` to [[wa.task.2026.2026-05-25_1609-config-policy-ontology-and-runtime]].
+- Defer the choice to formalize or replace `sfcfg:LocalPathAccessRule` to [[wa.completed.2026.2026-05-25_1609-config-policy-ontology-and-runtime]].
 
 ## Contract Changes
 
@@ -256,7 +256,7 @@ https://semantic-flow.github.io/weave/ontology/
 - Existing docs that mention `~/.sf-local-access.ttl` need to move to the user settings path model.
 - Existing runtime/tests/docs that describe the old global host-local access file should move to Weave ontology terms or be deleted.
 - Existing runtime/tests that use `sfcfg:LocalPathAccessRule`, `sfcfg:hasLocalPathAccessRule`, `sfcfg:hasLocalPathBase`, or `sfcfg:hasLocalPathLocatorKind` inside mesh config should stay in place unless the config-policy ontology task replaces that portable vocabulary explicitly.
-- The config-policy work in [[wa.task.2026.2026-05-25_1609-config-policy-ontology-and-runtime]] should treat user settings and mesh settings group resolution as host-local runtime state, not portable config resolution.
+- The config-policy work in [[wa.completed.2026.2026-05-25_1609-config-policy-ontology-and-runtime]] should treat user settings and mesh settings group resolution as host-local runtime state, not portable config resolution.
 
 ## Testing
 
@@ -297,4 +297,4 @@ https://semantic-flow.github.io/weave/ontology/
 - [x] Change default runtime/CLI logging from workspace `.weave/logs` to the selected XDG state per-mesh `logs/`, preserving `WEAVE_LOG_DIR`.
 - [x] Update CLI/user docs and examples that mention `~/.sf-local-access.ttl`.
 - [x] Add tests for identifier derivation, user settings path resolution, mesh settings group path resolution, access grant storage, and log directory defaults.
-- [d] Decide whether `sfcfg:LocalPathAccessRule` should be formalized in the config ontology during [[wa.task.2026.2026-05-25_1609-config-policy-ontology-and-runtime]] or replaced by a better portable policy term. Deferred to the config-policy ontology task because user settings now has a clear boundary: host-local grants use `weave:`, while mesh-carried path policy remains `sfcfg:` until that task decides otherwise.
+- [d] Decide whether `sfcfg:LocalPathAccessRule` should be formalized in the config ontology during [[wa.completed.2026.2026-05-25_1609-config-policy-ontology-and-runtime]] or replaced by a better portable policy term. Deferred to the config-policy ontology task because user settings now has a clear boundary: host-local grants use `weave:`, while mesh-carried path policy remains `sfcfg:` until that task decides otherwise.

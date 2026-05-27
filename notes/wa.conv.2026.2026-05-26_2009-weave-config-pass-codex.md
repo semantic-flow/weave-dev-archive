@@ -1,18 +1,23 @@
 ---
 id: weave-config-pass-g4gska
-title: 'weave config pass'
+title: weave config pass
 desc: ''
-created: 1779851381958
 updated: 1779851381958
-participants: [codex.gpt-5.5]
-conversationEventKinds: [message.assistant, message.user, tool.call, tool.result]
+created: 1779851381958
+participants:
+  - codex.gpt-5.5
+conversationEventKinds:
+  - message.assistant
+  - message.user
+  - tool.call
+  - tool.result
 ---
 
 # User_2026-05-26_1636_37
 
 weave config pass
 
-Please review [[wa.task.2026.2026-05-25_1609-config-policy-ontology-and-runtime]]. Start by reading the task, current config behavior spec, SFLO config ontology, and Weave config/runtime code. Let me know if you have any questions or suggestions, and then we'll implement the first slice.
+Please review [[wa.completed.2026.2026-05-25_1609-config-policy-ontology-and-runtime]]. Start by reading the task, current config behavior spec, SFLO config ontology, and Weave config/runtime code. Let me know if you have any questions or suggestions, and then we'll implement the first slice.
 
 # gpt-5.5_2026-05-26_1636_47
 
@@ -176,7 +181,7 @@ Note: `weave-dev-archive` still has the pre-existing modified conversation note;
 
 # User_2026-05-26_2006_48
 
-Could you update [[wa.task.2026.2026-05-25_1609-config-policy-ontology-and-runtime]] as we go, e.g. [x] the checkboxes
+Could you update [[wa.completed.2026.2026-05-25_1609-config-policy-ontology-and-runtime]] as we go, e.g. [x] the checkboxes
 
 # gpt-5.5_2026-05-26_2007_03
 
