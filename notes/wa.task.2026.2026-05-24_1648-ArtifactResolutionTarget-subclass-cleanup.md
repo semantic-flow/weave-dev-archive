@@ -2,7 +2,7 @@
 id: skfj38zp53nwu4ecskggesh
 title: 2026-05-24_1648-ArtifactResolutionTarget-subclass-cleanup
 desc: ''
-updated: 1779666550543
+updated: 1779939408168
 created: 1779666550543
 ---
 
@@ -44,7 +44,7 @@ This task should track cross-cutting cleanup, naming consistency, parser/API sha
 Concrete implementation homes:
 
 - `IntegrationSource`: [[wa.completed.2026.2026-05-24_1301-integrate-source-binding-update]]
-- `ImportSource`: [[wa.task.2026.2026-05-21_0907-import]]
+- `ImportSource`: [[wa.completed.2026.2026-05-21_0907-import]]
 - `ReferenceSource`: [[wa.task.2026.2026-05-22_1128-referencelink-clarification]]
 - observations and core vocabulary: [[ont.completed.2026.2026-05-24_1256-artifact-resolution-observations]]
 
@@ -133,7 +133,7 @@ Until then, Weave may keep narrow fixture normalization for old checked-in fixtu
 ## Non-Goals
 
 - Do not implement `weave integrate`; that landed in [[wa.completed.2026.2026-05-24_1301-integrate-source-binding-update]].
-- Do not implement `weave import`; use [[wa.task.2026.2026-05-21_0907-import]].
+- Do not implement `weave import`; use [[wa.completed.2026.2026-05-21_0907-import]].
 - Do not redesign the full content-kind/media-type model for Markdown, HTML, images, or arbitrary binary payloads.
 - Do not make `ReferenceLink` support non-RDF reference data in this cleanup.
 - Do not make ordinary page rendering, source reads, or reference resolution append observations.
@@ -142,10 +142,10 @@ Until then, Weave may keep narrow fixture normalization for old checked-in fixtu
 
 ## Implementation Plan
 
-- [ ] Re-read [[wd.general-guidance]], [[ont.completed.2026.2026-05-24_1256-artifact-resolution-observations]], [[wa.completed.2026.2026-05-24_1301-integrate-source-binding-update]], [[wa.task.2026.2026-05-21_0907-import]], and [[wa.task.2026.2026-05-22_1128-referencelink-clarification]] before editing code.
+- [ ] Re-read [[wd.general-guidance]], [[ont.completed.2026.2026-05-24_1256-artifact-resolution-observations]], [[wa.completed.2026.2026-05-24_1301-integrate-source-binding-update]], [[wa.completed.2026.2026-05-21_0907-import]], and [[wa.task.2026.2026-05-22_1128-referencelink-clarification]] before editing code.
 - [ ] Inventory Weave source-registry and ReferenceCatalog parser/rendering APIs that still treat known source concerns as generic `ArtifactResolutionTarget` records.
 - [x] Land [[wa.completed.2026.2026-05-24_1301-integrate-source-binding-update]].
-- [ ] Land import provenance from [[wa.task.2026.2026-05-21_0907-import]] using the settled source-registry shape.
+- [ ] Land import provenance from [[wa.completed.2026.2026-05-21_0907-import]] using the settled source-registry shape.
 - [ ] Finish ReferenceLink API/CLI terminology cleanup from [[wa.task.2026.2026-05-22_1128-referencelink-clarification]].
 - [ ] Decide whether to rename internal observed-evidence parser fields or keep compatibility wrappers.
 - [ ] Decide whether SHACL should constrain `KnopSourceRegistry` source bindings to concrete source subclasses.

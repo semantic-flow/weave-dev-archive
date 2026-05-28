@@ -1,7 +1,9 @@
 ---
 id: ale6owbna2va4zqwrrir9z9
 title: 2026 05 27_1914 Knop Config Source Discovery and Inheritance
-desc: Teach Weave to discover Knop-local and Knop-inheritable config sources and project inherited config at runtime.
+desc: >-
+  Teach Weave to discover Knop-local and Knop-inheritable config sources and
+  project inherited config at runtime.
 updated: 1779934461288
 created: 1779934461288
 ---

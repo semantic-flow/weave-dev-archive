@@ -717,3 +717,182 @@ contains the _mesh a sflo:SemanticMesh ; sfcfg:hasConfigSource [...] statement.
 # gpt-5.5_2026-05-27_2003_29
 
 I’ll check that integration test and the current diff, then I’ll patch the test so it exercises mesh metadata discovery instead of config-file discovery. That feedback sounds right at a glance: a config source bootstrap should come from `_mesh/_meta/meta.ttl`, not from the resolved config payload itself.
+
+# gpt-5.5_2026-05-27_2003_58
+
+I found the exact test. I’m going to add a small helper that appends a mesh config-source attachment to `_mesh/_meta/meta.ttl`, keep `_mesh/_config/config.ttl` as ordinary mesh config, and update that test to use the helper.
+
+# gpt-5.5_2026-05-27_2004_16
+
+The test now leaves `config.ttl` as config content and appends the bootstrap `hasConfigSource` to `_mesh/_meta/meta.ttl`. I’ll run formatting and the affected integration test file.
+
+# gpt-5.5_2026-05-27_2004_30
+
+The affected integration file passes. Since this is a test-only correction but still TypeScript, I’ll do a quick lint/check sweep and then summarize the exact fix.
+
+# gpt-5.5_2026-05-27_2004_38
+
+Fixed. CodeRabbit was right: that test was proving config-payload bootstrap rather than mesh-metadata bootstrap.
+
+I added `appendMeshConfigSourceAttachment()` and moved the `sfcfg:hasConfigSource` triple into `_mesh/_meta/meta.ttl`; `writeMeshConfig()` now only writes the ordinary mesh config in [validate_version_generate_test.ts](../../../../../tests/integration/validate_version_generate_test.ts:64).
+
+Verification passed:
+- `deno task fmt`
+- `deno test --allow-read --allow-write --allow-env --allow-run=git tests/integration/validate_version_generate_test.ts`
+- `deno task lint`
+- `deno task check`
+
+Only `tests/integration/validate_version_generate_test.ts` is modified.
+
+# gpt-5.5_2026-05-27_2004_40
+
+Fixed. CodeRabbit was right: that test was proving config-payload bootstrap rather than mesh-metadata bootstrap.
+
+I added `appendMeshConfigSourceAttachment()` and moved the `sfcfg:hasConfigSource` triple into `_mesh/_meta/meta.ttl`; `writeMeshConfig()` now only writes the ordinary mesh config in [validate_version_generate_test.ts](../../../../../tests/integration/validate_version_generate_test.ts:64).
+
+Verification passed:
+- `deno task fmt`
+- `deno test --allow-read --allow-write --allow-env --allow-run=git tests/integration/validate_version_generate_test.ts`
+- `deno task lint`
+- `deno task check`
+
+Only `tests/integration/validate_version_generate_test.ts` is modified.
+
+# User_2026-05-27_2005_20
+
+ok, can you update [wd.todo.md](../../../../../documentation/notes/wd.todo.md)
+
+# gpt-5.5_2026-05-27_2005_30
+
+I’ll refresh the todo note against the current state: keep the completed Knop config-source slice marked as landed, make the remaining follow-ups crisp, and avoid touching unrelated archive/Kato churn.
+
+# gpt-5.5_2026-05-27_2005_48
+
+The todo note already had the big Knop slice marked done, so I’m tightening it one step further: make P0 show only live follow-ups, move the completed Knop task out of “Active,” and add a small documentation follow-up for the mesh/Knop metadata bootstrap distinction that CodeRabbit just caught.
+
+# gpt-5.5_2026-05-27_2006_10
+
+The note now has the completed Knop slice out of the active audit list and the live P0 items are cleaner. I’ll do a lightweight markdown sanity diff; no code validation needed for this doc-only edit.
+
+# gpt-5.5_2026-05-27_2006_16
+
+Updated [wd.todo.md](../../../../../documentation/notes/wd.todo.md).
+
+I removed the completed Knop config-source implementation from live P0, moved that task out of the “Active” audit list, and added a concrete docs follow-up for the mesh metadata vs Knop metadata config-source bootstrap distinction. `git diff --check` is clean for the file.
+
+# User_2026-05-27_2009_43
+
+OK, so now what next. We might need an additional source conversions, but I kinda lost the thread on that.
+
+# gpt-5.5_2026-05-27_2010_01
+
+I’ll rehydrate the thread from the task notes instead of guessing from memory. “Source conversions” sounds like it may be the resolver-cleanup follow-up around page/source registry consumers, so I’ll search the backlog and nearby notes for that wording.
+
+# gpt-5.5_2026-05-27_2010_11
+
+The broad search confirms two threads are tangled: “source conversion” in the literal sense is mostly import/integrate/source-registry provenance, while the next resolver cleanup in `wd.todo` points at page-source resolution. I’ll open the two focused task notes so I can separate them cleanly.
+
+# gpt-5.5_2026-05-27_2010_23
+
+One more quick reality check in code: if import/source-registry conversion has already quietly landed, then the next useful thing is not “do import conversion,” it’s task-note cleanup plus maybe ReferenceLink wording. I’ll verify what Weave emits today.
+
+# gpt-5.5_2026-05-27_2011_03
+
+Yeah, I think the thread is:
+
+**Source conversions mostly already landed.** The thing you’re remembering is [[wa.task.2026.2026-05-24_1648-ArtifactResolutionTarget-subclass-cleanup]]: move known source roles away from vague/bare `ArtifactResolutionTarget` usage and toward concrete source subclasses.
+
+Current state looks like:
+- `IntegrationSource`: landed.
+- `ImportSource`: landed.
+- `ExtractionSource`: in use and parser-covered.
+- `ReferenceSource`: in use, but terminology cleanup may still be residual.
+- `ResourcePageSource`: in use, and page-source resolution has been migrated to the shared resolver per the completed resolver note.
+
+So I would **not** start a big “additional source conversion” implementation yet. I’d do a small audit/closure slice first.
+
+My suggested next slice:
+
+1. Audit/update [[wa.task.2026.2026-05-24_1648-ArtifactResolutionTarget-subclass-cleanup]].
+   - Mark landed items.
+   - Split remaining true work into tiny follow-ups: probably ReferenceLink terminology, SHACL/source-registry strictness, and framework fixture regeneration if still relevant.
+   - Close or move the stale “import still needs to land” language.
+
+2. Add one guardrail if it’s cheap:
+   - A test or shape assertion that new source-registry bindings are concrete subclasses (`ExtractionSource`, `IntegrationSource`, `ImportSource`) rather than bare `ArtifactResolutionTarget`.
+
+3. Then pick the next real product/runtime task:
+   - If staying in source/resolver land: page-source exact/fallback semantics from [[wa.task.2026.2026-04-08_1545-resource-page-definition-and-sources]].
+   - If doing correctness debt: append-onlyish inventory.
+   - If reducing confusion: ReferenceLink/source terminology cleanup.
+
+My vote: **do the source-conversion audit/closure next**, not because it’s glamorous, but because it will make the next real task much less foggy.
+
+# User_2026-05-27_2013_57
+
+What do you make of "Split the remaining Knop config follow-ups from [[wa.completed.2026.2026-05-27_1914-knop-config-source-discovery-and-inheritance]]: decide whether inline `hasConfig` / `hasInheritableConfig` is still useful, and broaden runtime wiring beyond single-target operations only after per-target effective config exists."
+
+# gpt-5.5_2026-05-27_2014_18
+
+I read that todo as two different leftovers that got bundled together:
+
+1. **Inline Knop config**: `hasConfig` / `hasInheritableConfig`
+   This would mean putting the actual config graph directly in Knop metadata, instead of attaching a `ConfigSource` that points at `_knop/_config/*.ttl`.
+
+   My take: I’d probably **defer or drop this unless we have a concrete use case**. It makes metadata heavier, mixes “facts about the Knop” with “runtime config payload,” and adds another inheritance path to test. The `ConfigSource` version is cleaner and already gives us explicit bootstrap authority.
+
+2. **Multi-target Knop config**
+   This is the real architectural follow-up. Right now Knop config can safely apply when an operation resolves to one target, because there is one ancestor chain and one effective config. But for recursive or multi-target operations, different targets may inherit different Knop config. A single global `EffectiveConfig` cannot honestly represent that.
+
+   So “per-target effective config” means something like: runtime gets an `EffectiveConfigProvider` or cache keyed by designator path, and version/generate/weave ask for the config for each target as they plan/render it.
+
+I’d rewrite the todo into two sharper items:
+
+```md
+- [ ] Decide whether inline Knop config attachments (`hasConfig` / `hasInheritableConfig`) are worth supporting, or explicitly keep config payloads source-backed through `ConfigSource`.
+- [ ] Add per-target effective config resolution before applying Knop-local/inherited config to recursive or multi-target version/generate/weave operations.
+```
+
+My recommendation: **don’t build inline config now**. Do the per-target effective config only when we have a real multi-target behavior we want Knop config to affect.
+
+# User_2026-05-27_2019_15
+
+So "per-target effective config resolution" hasn't landed?
+
+# gpt-5.5_2026-05-27_2019_21
+
+Correct: **per-target effective config resolution has not landed**.
+
+What landed is the safe first slice:
+
+- If `version` / `generate` resolves to exactly **one target**, Weave loads that target’s Knop ancestor metadata and applies Knop-local/inherited config.
+- If the operation has **multiple targets** or recursive target expansion, Weave does **not** yet compute a distinct effective config per target.
+
+That was intentional, because a single `EffectiveConfig` object can’t honestly represent different inherited Knop config for `alice/data` and `bob/data` at the same time.
+
+So the future work is to introduce something like an effective-config provider/cache keyed by designator path, then have planning/rendering ask for config per target instead of loading one global config up front.
+
+# User_2026-05-27_2022_00
+
+Don't we need per-target effective config for whole-mesh weaves?
+
+# gpt-5.5_2026-05-27_2022_18
+
+Yes. If Knop config is meant to affect whole-mesh behavior, we need **per-target effective config**.
+
+Current behavior is intentionally conservative:
+
+- Single target: Knop-local/inherited config applies.
+- Whole mesh / recursive / multi-target: Knop config is not applied, because applying one target’s inherited config globally would leak it onto unrelated targets.
+
+So a whole-mesh weave today is still correct for mesh-wide config, but incomplete for Knop-scoped config. Example: if `alice/_knop` says descendants suppress payload pages, then `weave --target alice/...` can honor that, but a whole-mesh weave needs to evaluate that policy for Alice descendants without suppressing Bob.
+
+The right next shape is probably:
+
+- Load application + mesh config once.
+- Build an `EffectiveConfigProvider` keyed by designator path.
+- For each candidate/page target, ask `configForTarget(designatorPath)`.
+- Cache results by scope path so whole-mesh doesn’t recompile wastefully.
+- Keep command overrides global and highest-priority.
+
+I’d treat this as the real remaining Knop-config task. Inline `hasConfig` is optional; per-target effective config is required for whole-mesh semantics.
