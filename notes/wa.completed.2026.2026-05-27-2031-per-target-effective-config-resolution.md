@@ -235,23 +235,23 @@ This task should land before the next broader resolver cleanup consumer. Page-so
 
 ## Implementation Plan
 
-- [ ] Re-read [[wd.general-guidance]], [[wa.completed.2026.2026-05-27_1246-config-source-discovery-and-resolution]], [[wa.completed.2026.2026-05-27_1914-knop-config-source-discovery-and-inheritance]], and the current runtime comments in `src/runtime/weave/page_generation.ts` and `src/runtime/weave/version_execution.ts`.
-- [ ] Inventory every runtime call path that loads `EffectiveConfig` once and then processes multiple targets.
-- [ ] Add an `EffectiveConfigProvider` or equivalent helper in the runtime config/execution layer, with operation-wide mesh/default/source inputs and per-target Knop scope lookup.
-- [ ] Separate mesh/global effective config from target-scoped effective config in the provider API.
-- [ ] Use `/` for the provider/cache root Knop key, descendant designator paths without a leading slash for ordinary Knops, and a special mesh/global key such as `MESH_CONFIG`; normalize provider/cache `/` to the existing lower-level `""` root designator path when calling `KnopConfigScopeInput` and designator-path helpers.
-- [ ] Cache ancestor metadata reads, resolved Knop config inputs, and compiled effective config by normalized scope path.
-- [ ] Preserve command override handling as operation-wide input applied above every provider result.
-- [ ] Seed target metadata overrides from the initial operation-start candidate set only; do not pass staged loop candidate metadata from the recursive version overlay into provider config resolution.
-- [ ] Update `prepareVersionExecution` so each candidate planning pass composes planner policy inputs from the correct scopes: mesh/global effective config for mesh-owned support artifacts, target effective config for payload and Knop-owned artifacts, and target or mesh config for ResourcePage work depending on which page or page fact is being planned.
-- [ ] Keep mesh-support-only version planning on mesh/global config.
-- [ ] Refactor whole-mesh page selection so candidate `hasResourcePage` facts are collected broadly, mapped to an owning designator/resource and artifact role, then filtered with the effective config for that owner scope.
-- [ ] Update `generatePreparedPages` / page model assembly so generated page models are assembled with the config for their own designator path, while mesh support pages use mesh/global config.
-- [ ] Update ResourcePage rendering so each page receives its own presentation config, either by carrying presentation config on page render inputs or by adding an `optionsForPage` / provider callback to the render batch.
-- [ ] Audit `loadBestEffortGenerateDesignatorContexts` so selected/generated targets fail closed on config errors while optional child-hint context skips only genuinely optional read/path/runtime failures.
-- [ ] Add `WEAVE_TIMING=1` counters for provider cache hits/misses and per-target config resolution phases.
-- [ ] Add unit tests for provider scoping, command override precedence, cache isolation, and unsafe source failure diagnostics.
-- [ ] Add integration coverage for multi-target `generate` and multi-candidate `version` using different inherited Knop config sources.
-- [ ] Run focused tests, then `deno task check` and `deno task lint` for the Weave repo.
-- [ ] Update [[wd.todo]] and any user/developer docs only if visible behavior or authoring guidance changes.
-- [ ] Provide a detailed semantic-commit-style commit message for the Weave repo.
+- [x] Re-read [[wd.general-guidance]], [[wa.completed.2026.2026-05-27_1246-config-source-discovery-and-resolution]], [[wa.completed.2026.2026-05-27_1914-knop-config-source-discovery-and-inheritance]], and the current runtime comments in `src/runtime/weave/page_generation.ts` and `src/runtime/weave/version_execution.ts`.
+- [x] Inventory every runtime call path that loads `EffectiveConfig` once and then processes multiple targets.
+- [x] Add an `EffectiveConfigProvider` or equivalent helper in the runtime config/execution layer, with operation-wide mesh/default/source inputs and per-target Knop scope lookup.
+- [x] Separate mesh/global effective config from target-scoped effective config in the provider API.
+- [x] Use `/` for the provider/cache root Knop key, descendant designator paths without a leading slash for ordinary Knops, and a special mesh/global key such as `MESH_CONFIG`; normalize provider/cache `/` to the existing lower-level `""` root designator path when calling `KnopConfigScopeInput` and designator-path helpers.
+- [x] Cache ancestor metadata reads, resolved Knop config inputs, and compiled effective config by normalized scope path.
+- [x] Preserve command override handling as operation-wide input applied above every provider result.
+- [x] Seed target metadata overrides from the initial operation-start candidate set only; do not pass staged loop candidate metadata from the recursive version overlay into provider config resolution.
+- [x] Update `prepareVersionExecution` so each candidate planning pass composes planner policy inputs from the correct scopes: mesh/global effective config for mesh-owned support artifacts, target effective config for payload and Knop-owned artifacts, and target or mesh config for ResourcePage work depending on which page or page fact is being planned.
+- [x] Keep mesh-support-only version planning on mesh/global config.
+- [x] Refactor whole-mesh page selection so candidate `hasResourcePage` facts are collected broadly, mapped to an owning designator/resource and artifact role, then filtered with the effective config for that owner scope.
+- [x] Update `generatePreparedPages` / page model assembly so generated page models are assembled with the config for their own designator path, while mesh support pages use mesh/global config.
+- [x] Update ResourcePage rendering so each page receives its own presentation config, either by carrying presentation config on page render inputs or by adding an `optionsForPage` / provider callback to the render batch.
+- [x] Audit `loadBestEffortGenerateDesignatorContexts` so selected/generated targets fail closed on config errors while optional child-hint context skips only genuinely optional read/path/runtime failures.
+- [x] Add `WEAVE_TIMING=1` counters for provider cache hits/misses and per-target config resolution phases.
+- [x] Add unit tests for provider scoping, command override precedence, cache isolation, and unsafe source failure diagnostics.
+- [x] Add integration coverage for multi-target `generate` and multi-candidate `version` using different inherited Knop config sources.
+- [x] Run focused tests, then `deno task check` and `deno task lint` for the Weave repo.
+- [x] Update [[wd.todo]] and any user/developer docs only if visible behavior or authoring guidance changes.
+- [x] Provide a detailed semantic-commit-style commit message for the Weave repo.

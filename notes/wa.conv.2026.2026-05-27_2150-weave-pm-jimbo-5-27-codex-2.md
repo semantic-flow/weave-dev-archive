@@ -660,3 +660,63 @@ data   Dataset
 Those hints decorate the child list on `alice/index.html`. They are not the primary generated page target if the user only asked to generate `alice`.
 
 So if `alice/photo/_knop/_inventory/inventory.ttl` is missing or unreadable while Weave is merely trying to enrich Alice’s child list, it can skip that hint and still render Alice’s page. But if `alice/photo` itself is selected/generated, then its config and context are no longer optional and should fail closed.
+
+# User_2026-05-27_2214_41
+
+OK, that task is in progress. Let's work on grooming our next one.
+
+# gpt-5.5_2026-05-27_2215_00
+
+I’ll treat “next one” as the next groomed implementation task after per-target config, not just a loose discussion. I’m going to re-check the guidance and the three candidate follow-ups, then I’ll recommend one and tighten the task note/backlog rather than leaving the next step fuzzy.
+
+# gpt-5.5_2026-05-27_2215_13
+
+The main Weave tree is dirty with in-progress per-target config code, so I’ll avoid touching runtime files. I’m going to read the candidate notes from the archive and then I’ll either split a tiny page-source task out of the legacy umbrella or recommend a different next item if the dependencies look wrong.
+
+# gpt-5.5_2026-05-27_2215_28
+
+I’m leaning toward page-source exact/fallback as the next groomed task, with one caveat: the old April page-definition note is too broad and mostly historical, so the clean move is probably a new tiny task note that links back to it. Append-onlyish inventory is important, but it’s a bigger correctness project and less directly unlocked by the config/provider work.
+
+# gpt-5.5_2026-05-27_2215_34
+
+The framework spec already defines the desired ResourcePageSource behavior pretty well, including mode/fallback and fail-closed boundaries. That reinforces my read: the next groomed task should be a narrow Weave runtime task to implement/verify those semantics, not another ontology-design umbrella.
+
+# gpt-5.5_2026-05-27_2215_48
+
+I’m going to create a small follow-up task note rather than editing the April umbrella directly. The timestamp from the workspace is still May 27 local time, so I’ll use that archive convention and keep the note linked back to the older page-definition/spec sources.
+
+# gpt-5.5_2026-05-27_2218_35
+
+I created the narrow ResourcePageSource resolution task and pointed the P0 backlog at it. I’m doing the final markdown/diff sanity pass now, including checking that I didn’t disturb the in-progress runtime work.
+
+# gpt-5.5_2026-05-27_2218_52
+
+Groomed the next task. I chose the page-source resolver slice over append-onlyish inventory because it is the cleanest follow-on to per-target config and the shared artifact resolver work.
+
+Created [wa.task.2026.2026-05-27_2215-resourcepage-source-resolution-semantics.md](wa.task.2026.2026-05-27_2215-resourcepage-source-resolution-semantics.md:1). It scopes the next task to:
+
+- exact `targetHistoricalState` support for artifact-backed `ResourcePageSource`
+- one bounded `hasFallbackArtifactResolutionSpec`
+- keeping `targetLocalRelativePath` exact/fail-closed
+- keeping remote/repository resolution out of page generation
+- preferring the shared artifact-resolution service over more custom page resolver code
+
+Updated [wd.todo.md](../../../../../documentation/notes/wd.todo.md:16) so P0 points at the new narrow task instead of the old April umbrella.
+
+Validation: ran `git diff --check` in both Weave and the archive repo; clean. No lint/test run because this was Markdown-only grooming.
+
+Suggested commit messages:
+
+```text
+docs(tasks): add ResourcePageSource resolution follow-up
+
+- split exact/fallback ResourcePageSource behavior out of the legacy page-definition umbrella
+- define first-slice exact state and bounded fallback semantics
+- keep remote/page-source fetch behavior out of scope
+```
+
+```text
+docs(todo): point P0 resolver follow-up at ResourcePageSource task
+
+- replace the broad page-definition umbrella reference with the groomed source-resolution task
+```
