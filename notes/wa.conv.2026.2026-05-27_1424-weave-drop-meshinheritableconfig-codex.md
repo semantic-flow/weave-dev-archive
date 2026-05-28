@@ -141,7 +141,7 @@ Recommended order:
    - `deno task ci` in `sflo`
    - `deno task ci` in `weave` if you’re ready for the longer test run
 
-3. Then start [[wa.task.2026.2026-05-27_1246-config-source-discovery-and-resolution]] with a narrow first slice:
+3. Then start [[wa.completed.2026.2026-05-27_1246-config-source-discovery-and-resolution]] with a narrow first slice:
    - discover `sfcfg:hasConfigSource` on the mesh subject
    - resolve only safe local/workspace-bounded config sources
    - compile resolved config into the mesh-local layer

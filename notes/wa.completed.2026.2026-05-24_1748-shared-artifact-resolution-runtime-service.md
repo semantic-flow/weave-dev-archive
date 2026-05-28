@@ -1,15 +1,17 @@
 ---
 id: trbrhxgf7qgd17x0ec2u3g3
 title: 2026 05 24_1748 Shared Artifact Resolution Runtime Service
-desc: Define a shared runtime resolver for ArtifactResolutionSpec bytes, evidence, and config-source discovery.
-updated: 1779670258967
+desc: >-
+  Define a shared runtime resolver for ArtifactResolutionSpec bytes, evidence,
+  and config-source discovery.
+updated: 1779934805205
 created: 1779670128331
 ---
 
 ## Goals
 
 - Define a shared runtime service for resolving `sflo:ArtifactResolutionSpec`-shaped requests, including subclasses such as `sfcfg:ConfigSource`, `sflo:ResourcePageSource`, `sflo:ExtractionSource`, `sflo:ReferenceSource`, `sflo:ImportSource`, and `sflo:IntegrationSource`.
-- Make the first implementation a config-unblocking resolver core for [[wa.task.2026.2026-05-27_1246-config-source-discovery-and-resolution]], not a broad migration of every existing source consumer.
+- Make the first implementation a config-unblocking resolver core for [[wa.completed.2026.2026-05-27_1246-config-source-discovery-and-resolution]], not a broad migration of every existing source consumer.
 - Resolve governed local bytes/text under active operational policy while preserving the semantic split between requested coordinates and observed evidence.
 - Consolidate duplicated working/latest/exact resolution logic currently spread across page-source loading, extraction-source loading, source-registry parsing, raw source panels, and payload history readers.
 - Keep the resolver explicitly separate from active acquisition: URL fetch is an explicit caller capability, not a general resolution behavior.
@@ -36,7 +38,7 @@ The shared service should not be a URL loader. It should be a local runtime reso
 
 ### Current Motivation: ConfigSource
 
-[[wa.task.2026.2026-05-27_1246-config-source-discovery-and-resolution]] needs to discover `sfcfg:hasConfigSource` and `sfcfg:hasInheritableConfigSource` attachments, resolve each `sfcfg:ConfigSource`, parse the resolved bytes as config, and add the result as an ordinary config input at the scope and role determined by the attachment point.
+[[wa.completed.2026.2026-05-27_1246-config-source-discovery-and-resolution]] needs to discover `sfcfg:hasConfigSource` and `sfcfg:hasInheritableConfigSource` attachments, resolve each `sfcfg:ConfigSource`, parse the resolved bytes as config, and add the result as an ordinary config input at the scope and role determined by the attachment point.
 
 That task should not learn its own path grammar, artifact-history traversal, digest semantics, or no-ambient-fetch boundary. This resolver task should provide the runtime primitive it needs:
 
@@ -191,7 +193,7 @@ The resolver can initially read today's inventory/meta shape. The append-onlyish
 ## Decisions
 
 - Use `sflo:ArtifactResolutionSpec` terminology. `ArtifactResolutionTarget` is historical wording and should not appear in new runtime API names.
-- Make `sfcfg:ConfigSource` the immediate first consumer and [[wa.task.2026.2026-05-27_1246-config-source-discovery-and-resolution]] the first downstream task.
+- Make `sfcfg:ConfigSource` the immediate first consumer and [[wa.completed.2026.2026-05-27_1246-config-source-discovery-and-resolution]] the first downstream task.
 - The shared service is not a remote fetch mechanism. Ambient URL following remains out of scope; explicit HTTP(S) acquisition belongs to caller operations such as `weave import`, and possibly future integrate/refresh flows with their own network policy.
 - Preserve the semantic split between requested coordinates and observed evidence.
 - Keep exact coordinates exact. Do not revive `artifactResolutionMode_pinned`.
@@ -232,7 +234,7 @@ The resolver can initially read today's inventory/meta shape. The append-onlyish
 - Do not inspect live git remotes or floating repository refs.
 - Do not redesign the ontology vocabulary in this task.
 - Do not move current/progression facts out of inventory; that belongs to [[wa.task.2026.2026-05-17-append-onlyish-inventory]].
-- Do not implement full config-source discovery; that belongs to [[wa.task.2026.2026-05-27_1246-config-source-discovery-and-resolution]] and should consume this resolver.
+- Do not implement full config-source discovery; that belongs to [[wa.completed.2026.2026-05-27_1246-config-source-discovery-and-resolution]] and should consume this resolver.
 - Do not implement manifest-driven integrate; that belongs to [[wa.task.2026.2026-05-18_1846-integrate-manifest]].
 - Do not add a conformance fixture solely for the service abstraction. Fixtures should prove externally visible behavior, not internal factoring.
 
@@ -248,7 +250,7 @@ The resolver can initially read today's inventory/meta shape. The append-onlyish
 - [x] Implement exact state and simple exact located-file resolution if doing so is cheap enough for the config-source first slice; otherwise leave explicit fail-closed errors and tests.
 - [x] Add optional byte-reading/digest verification, without remote URL fetching.
 - [x] Add parser/normalizer support for `sfcfg:ConfigSource` subjects as `ArtifactResolutionSpec` instances.
-- [x] Wire the new resolver into [[wa.task.2026.2026-05-27_1246-config-source-discovery-and-resolution]] once the first resolver slice is green.
+- [x] Wire the new resolver into [[wa.completed.2026.2026-05-27_1246-config-source-discovery-and-resolution]] once the first resolver slice is green.
 - [x] After config-source discovery lands, migrate payload-backed `sflo:ResourcePageSource` working/latest-state resolution to the shared service.
 - [x] After page sources, migrate extraction-source selected-source evidence to the shared service.
 - [x] Align source-registry parser output types with the shared request/result model where that reduces duplication.

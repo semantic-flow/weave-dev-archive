@@ -17,7 +17,7 @@ created: 1779914883772
 - Make `sfcfg:hasConfig` / `sfcfg:hasConfigSource` mean local config for recognized config-bearing scopes, and make `sfcfg:hasInheritableConfig` / `sfcfg:hasInheritableConfigSource` a Knop subtree-default attachment.
 - Preserve fail-closed behavior for role ambiguity: generic config attachment properties should be meaningful only on recognized config-bearing scopes such as `sflo:SemanticMesh` and `sflo:Knop`.
 - Settle conventional filesystem discovery on a single `_config/config.ttl` location for meshes and Knops.
-- Update the config ontology, framework specs, Weave runtime task notes, and tests before implementing [[wa.task.2026.2026-05-27_1246-config-source-discovery-and-resolution]].
+- Update the config ontology, framework specs, Weave runtime task notes, and tests before implementing [[wa.completed.2026.2026-05-27_1246-config-source-discovery-and-resolution]].
 
 ## Summary
 
@@ -82,7 +82,7 @@ Within a Knop config file, RDF attachment properties can distinguish local Knop 
 
 ### Relationship to config-source discovery
 
-[[wa.task.2026.2026-05-27_1246-config-source-discovery-and-resolution]] currently references the role-specific source properties. This task should update that follow-up to use the generic four-property model before implementation starts. Otherwise config-source discovery will harden the vocabulary we are trying to simplify.
+[[wa.completed.2026.2026-05-27_1246-config-source-discovery-and-resolution]] currently references the role-specific source properties. This task should update that follow-up to use the generic four-property model before implementation starts. Otherwise config-source discovery will harden the vocabulary we are trying to simplify.
 
 ## Open Issues
 
@@ -129,7 +129,7 @@ Within a Knop config file, RDF attachment properties can distinguish local Knop 
 - Remove any existing config layer role parsing/tracing for `configLayerRole_meshInheritable`.
 - Keep conventional `_mesh/_config/config.ttl` behavior working for current mesh-local config.
 - Add conventional discovery for `<knop>/_knop/_config/config.ttl` when that runtime slice is implemented.
-- Update [[wa.task.2026.2026-05-27_1246-config-source-discovery-and-resolution]] so it no longer asks implementation to discover `hasMeshConfigSource`, `hasKnopLocalConfigSource`, or `hasKnopInheritableConfigSource`.
+- Update [[wa.completed.2026.2026-05-27_1246-config-source-discovery-and-resolution]] so it no longer asks implementation to discover `hasMeshConfigSource`, `hasKnopLocalConfigSource`, or `hasKnopInheritableConfigSource`.
 
 ### Documentation
 
@@ -168,7 +168,7 @@ Within a Knop config file, RDF attachment properties can distinguish local Knop 
 - [x] Update SFLO release notes and decision log with the attachment-role simplification.
 - [x] Update [[sf.config]] and [[sf.spec.2026-05-25-config-behavior]].
 - [x] Update Weave constants/parser/tests for retired role-specific properties if any live code references them.
-- [x] Update [[wa.task.2026.2026-05-27_1246-config-source-discovery-and-resolution]] to use the simplified attachment vocabulary and selected conventional locations.
+- [x] Update [[wa.completed.2026.2026-05-27_1246-config-source-discovery-and-resolution]] to use the simplified attachment vocabulary and selected conventional locations.
 - [x] Run SFLO repo validation, including ontology/SHACL tests and release validation.
 - [x] Run focused Weave checks/tests if runtime constants or tests change.
 - [x] Provide commit messages per touched repo.

@@ -150,7 +150,7 @@ This is pre-v1 vocabulary churn. Prefer direct replacement over long-lived compa
 
 As of 2026-05-27, the ontology substrate for this cleanup has landed in the active SFLO ontology and SHACL files. Active code, tests, framework notes, and mesh fixture Turtle now use `sflo:ArtifactResolutionSpec`, direct target-coordinate predicates, recursive fallback specs, and `sflo:observedArtifactResolutionSpec`. A targeted old-vocabulary sweep found the retired names only in SFLO guardrail tests that assert retirement and in historical v0.1.0 release notes.
 
-This task should remain the provenance note for the vocabulary cleanup, but the next runtime slice for discovering and resolving config sources belongs in [[wa.task.2026.2026-05-27_1246-config-source-discovery-and-resolution]]. That follow-up should reuse `sfcfg:ConfigSource` as an `sflo:ArtifactResolutionSpec` rather than reopening this vocabulary.
+This task should remain the provenance note for the vocabulary cleanup, but the next runtime slice for discovering and resolving config sources belongs in [[wa.completed.2026.2026-05-27_1246-config-source-discovery-and-resolution]]. That follow-up should reuse `sfcfg:ConfigSource` as an `sflo:ArtifactResolutionSpec` rather than reopening this vocabulary.
 
 ## Open Issues
 
@@ -160,7 +160,7 @@ This task should remain the provenance note for the vocabulary cleanup, but the 
 - Closed for this pass: allow at most one unordered `sflo:hasFallbackArtifactResolutionSpec` value in first-pass SHACL.
 - Closed for this pass: require exactly one `sflo:observedArtifactResolutionSpec` on `sflo:ArtifactResolutionObservation`.
 - Closed for this pass: do not model failed resolution attempts as observations.
-- Remaining adjacent work: implement runtime discovery/resolution of `sfcfg:ConfigSource` attachments in [[wa.task.2026.2026-05-27_1246-config-source-discovery-and-resolution]].
+- Remaining adjacent work: implement runtime discovery/resolution of `sfcfg:ConfigSource` attachments in [[wa.completed.2026.2026-05-27_1246-config-source-discovery-and-resolution]].
 
 ## Decisions
 
@@ -177,7 +177,7 @@ This task should remain the provenance note for the vocabulary cleanup, but the 
 - Validate unordered fallback specs as max one in first-pass SHACL.
 - Require `sflo:ArtifactResolutionObservation` to point to exactly one `sflo:observedArtifactResolutionSpec`.
 - Treat ordinary reads, page rendering, and config resolution as non-observing operations by default. Append observations only when an operation intentionally records resolution evidence.
-- Defer config-source discovery/resolution behavior to [[wa.task.2026.2026-05-27_1246-config-source-discovery-and-resolution]].
+- Defer config-source discovery/resolution behavior to [[wa.completed.2026.2026-05-27_1246-config-source-discovery-and-resolution]].
 - Do not mutate [[ont.completed.2026.2026-05-24_1256-artifact-resolution-observations]] except to reference it from this newer cleanup. It remains useful as the completed intermediate design history.
 
 ## Contract Changes
@@ -271,7 +271,7 @@ This task should remain the provenance note for the vocabulary cleanup, but the 
 - [x] Add or update config policy exact-target predicates separately from resolution-spec predicates.
 - [x] Update SFLO SHACL shapes and tests for specs, source subclasses, fallback specs, config sources, and observations.
 - [x] Update Weave RDF constants, parser code, serializers, and focused tests for source registries and observations.
-- [d] Update Weave config-source parsing/rendering if the config policy task starts using `sfcfg:ConfigSource`; deferred to [[wa.task.2026.2026-05-27_1246-config-source-discovery-and-resolution]].
+- [d] Update Weave config-source parsing/rendering if the config policy task starts using `sfcfg:ConfigSource`; deferred to [[wa.completed.2026.2026-05-27_1246-config-source-discovery-and-resolution]].
 - [x] Update Semantic Flow Framework specs/examples/conformance manifests that assert old artifact-resolution vocabulary.
 - [x] Regenerate affected fixture branches after Weave emits the new shape.
 - [x] Update relevant docs/task notes to reference this task as superseding the intermediate observation vocabulary shape.

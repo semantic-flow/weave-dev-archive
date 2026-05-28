@@ -158,7 +158,7 @@ That fixture would prove the key semantic distinction: `working` follows editabl
 ## Implementation Plan
 
 - [x] Inventory existing resolver-like code paths for page sources, extraction sources, source registries, and payload history progression.
-- [d] Define a shared `ArtifactResolutionTarget` runtime resolver that returns the requested target plus observed state/manifestation/located-file/digest evidence. [[2026 05 24_1748 Shared Artifact Resolution Runtime Service|wa.task.2026.2026-05-24_1748-shared-artifact-resolution-runtime-service]]
+- [d] Define a shared `ArtifactResolutionTarget` runtime resolver that returns the requested target plus observed state/manifestation/located-file/digest evidence. [[2026 05 24_1748 Shared Artifact Resolution Runtime Service|wa.completed.2026.2026-05-24_1748-shared-artifact-resolution-runtime-service]]
 - [x] Implement requested-history latest-state resolution for payload-backed `ResourcePageSource` bindings.
 - [x] Implement no-history latest-state resolution through `currentArtifactHistory` for payload-backed `ResourcePageSource` bindings.
 - [x] Fail closed for ambiguous latest-across-histories until an explicit deterministic policy is chosen.

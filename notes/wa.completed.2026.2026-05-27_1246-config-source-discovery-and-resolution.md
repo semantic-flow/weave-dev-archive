@@ -1,8 +1,10 @@
 ---
 id: wgv1vdga8zodyooa52gfeqt
 title: 2026 05 27_1246 Config Source Discovery and Resolution
-desc: Teach Weave to discover and resolve sfcfg:ConfigSource attachments into effective config.
-updated: 1779934447201
+desc: >-
+  Teach Weave to discover and resolve sfcfg:ConfigSource attachments into
+  effective config.
+updated: 1779934666782
 created: 1779911218761
 ---
 
@@ -166,5 +168,5 @@ The effective config compiler should continue to fail closed on malformed Turtle
 - [x] Add trace metadata for accepted/resolved config sources.
 - [x] Add focused unit tests for source discovery, source resolution, layer participation, cycle rejection, digest mismatch, and unsupported remote/path cases.
 - [x] Add an integration test showing existing-mesh commands honoring a policy supplied through `sfcfg:hasConfigSource` on the mesh subject.
-- [ ] Update CLI/user docs only after the authoring pattern is stable enough to recommend.
+- [d] Update CLI/user docs only after the authoring pattern is stable enough to recommend.
 - [x] Run focused Weave tests plus `deno task check` and `deno task lint` if runtime structure changes broadly.

@@ -26,6 +26,39 @@ The e2e tests are mostly using real dependency fixtures, not an internal minimal
 
 Raw `deno test --parallel` is not ready as a switch-flip optimization. Deno's `--parallel` runs test modules in parallel and exposes only job-count control through CPU count / `DENO_JOBS`; it does not let us declare dependency groups like "these tests share a fixture cache" or "these tests mutate process env." We saw failures when trying it, which is useful evidence: first make fixture setup faster and env/log behavior more explicit, then re-test parallelism on a deliberately safe bucket.
 
+## Baseline
+
+Codecov Test Analytics is now the canonical rolling history for test timing: https://app.codecov.io/gh/semantic-flow/weave/tests
+
+Baseline summary captured from the normalized Codecov JUnit artifact at `/tmp/semantic-flow-coverage/codecov-junit.xml` after individual test rows started populating in Codecov:
+
+- Captured artifact timestamp: `2026-05-28T02:07:02.049Z`
+- Tests: 606
+- Suites: 64
+- Failures/errors/skips: 0 / 0 / 0
+- Reported total test time: 512.486s (about 8m 32s)
+
+Slowest suites in this baseline:
+
+- `./tests/e2e/weave_cli_test.ts`: 35 tests, 209.578s
+- `./tests/e2e/integrate_cli_test.ts`: 12 tests, 98.547s
+- `./tests/e2e/extract_cli_test.ts`: 9 tests, 53.875s
+- `./tests/e2e/payload_update_cli_test.ts`: 4 tests, 33.008s
+- `./tests/e2e/knop_add_reference_cli_test.ts`: 3 tests, 24.155s
+- `./tests/e2e/knop_create_cli_test.ts`: 4 tests, 19.013s
+- `./tests/e2e/mesh_create_cli_test.ts`: 4 tests, 18.911s
+- `./tests/integration/weave_test.ts`: 47 tests, 11.144s
+
+Slowest individual tests in this baseline:
+
+- `weave integrate requires a designator path before logging or execution` (`./tests/e2e/integrate_cli_test.ts`): 14.451s
+- `weave payload update rejects conflicting designator paths before logging or execution` (`./tests/e2e/payload_update_cli_test.ts`): 12.695s
+- `weave knop add-reference matches the manifest-scoped alice-bio referenced fixture as a black-box CLI run` (`./tests/e2e/knop_add_reference_cli_test.ts`): 11.376s
+- `weave reports progress by default and --silent suppresses progress` (`./tests/e2e/weave_cli_test.ts`): 11.169s
+- `weave integrate rejects partial repository-backed source metadata before execution` (`./tests/e2e/integrate_cli_test.ts`): 10.767s
+
+The main signal is that e2e CLI tests dominate the baseline. That does not automatically mean "make e2e smaller"; several are valuable black-box acceptance checks. It does mean that optimizing repeated fixture materialization and CLI subprocess setup should come before micro-optimizing core unit tests.
+
 ## Discussion
 
 ### Fixture Materialization
@@ -74,22 +107,18 @@ The current `deno task test` is a good merge-confidence command, but it is too b
 
 The exact buckets should be measured rather than guessed. Some `src/core/*_test.ts` files read fixture files heavily and may not be "unit" in cost even if they are co-located with core code.
 
-### Timing Instrumentation
+### Timing And Fixture Instrumentation
 
-Before changing too much, add a cheap opt-in timing harness:
+Codecov Test Analytics now covers the main per-suite and per-test timing baseline, including slowest tests. Do not add `WEAVE_TEST_TIMING=1` just to duplicate that view locally.
 
-```bash
-WEAVE_TEST_TIMING=1 deno task test
-```
-
-The existing preload already wraps `Deno.test` for temp cleanup. It can also record per-test duration and print a slowest-test summary when the env var is set. This avoids scraping Deno's pretty reporter and gives us repeatable before/after data.
-
-Also useful:
+Local opt-in instrumentation may still be useful, but it should answer questions Codecov cannot:
 
 - Count fixture materializations by repo/ref.
 - Count fixture file reads by repo/ref/path.
-- Print total time spent in fixture helper subprocesses when `WEAVE_TEST_TIMING=1`.
-- Keep timing output opt-in so normal test output stays quiet.
+- Print total time spent in fixture helper subprocesses.
+- Count CLI subprocess launches by test helper, if that turns out to be the real bottleneck after fixture caching.
+
+If added, keep this output opt-in so normal test output stays quiet. The name can still be `WEAVE_TEST_TIMING=1` if the diagnostics stay broad, but a fixture-specific knob such as `WEAVE_FIXTURE_TIMING=1` may be clearer once the implementation is scoped.
 
 ### Parallelism
 
@@ -115,7 +144,7 @@ This is also friendlier for debugging: the failing command can print the env kno
 - Where should immutable fixture snapshots live when `WEAVE_KEEP_TEST_TMP=1` is set?
 - Should snapshot cache keys use the human fixture ref, resolved commit SHA, or both? Resolved commit SHA is the correctness key; the human ref is useful in diagnostics.
 - Which tests are acceptance coverage and should remain on real mesh fixtures even if they are slow?
-- How much timing output belongs in `WEAVE_TEST_TIMING=1` before it becomes noise?
+- Is Codecov timing plus local fixture-cache counters enough, or do we still need a broader local timing knob?
 
 ## Decisions
 
@@ -135,7 +164,7 @@ This is also friendlier for debugging: the failing command can print the env kno
 
 - No user-facing Weave behavior should change.
 - Add developer-facing test task aliases in `deno.json` once buckets are chosen.
-- Add `WEAVE_TEST_TIMING=1` as an opt-in test harness diagnostic.
+- Do not add a local slowest-test timing harness while Codecov Test Analytics is working; add opt-in local fixture/subprocess diagnostics only if Codecov cannot explain the next bottleneck.
 - If a bulk extraction strategy needs more subprocesses, update test task permissions deliberately rather than broadening `--allow-run` casually.
 
 ## Testing
@@ -164,7 +193,9 @@ This is also friendlier for debugging: the failing command can print the env kno
 - [x] Move coverage-producing output out of the repo workspace to `/tmp/semantic-flow-coverage`.
 - [x] Recreate `/tmp/semantic-flow-coverage` before coverage-producing tasks.
 - [x] Normalize Deno JUnit XML into Codecov's expected shape before test analytics upload.
-- [ ] Add `WEAVE_TEST_TIMING=1` support to the test preload wrapper and print the slowest tests plus fixture helper totals.
+- [x] Save a Codecov-backed timing baseline summary in this note.
+- [c] Do not add `WEAVE_TEST_TIMING=1` just to print slowest tests; Codecov Test Analytics now covers that.
+- [ ] Add opt-in fixture/subprocess instrumentation only if fixture-cache work needs finer local attribution than Codecov provides.
 - [ ] Record a serial baseline for `deno task test`, `tests/e2e`, `tests/integration`, and `src` tests.
 - [ ] Cache resolved fixture refs, branch file lists, and branch file contents by fixture repo + resolved commit + path.
 - [ ] Benchmark the content/list cache against the baseline.

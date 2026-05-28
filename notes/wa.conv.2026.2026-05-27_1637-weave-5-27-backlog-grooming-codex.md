@@ -2,10 +2,15 @@
 id: weave-527-backlog-groomi-3db3x3
 title: 'weave: 5/27 backlog grooming'
 desc: ''
-created: 1779925040101
 updated: 1779925040101
-participants: [codex.gpt-5.5]
-conversationEventKinds: [message.assistant, message.user, tool.call, tool.result]
+created: 1779925040101
+participants:
+  - codex.gpt-5.5
+conversationEventKinds:
+  - message.assistant
+  - message.user
+  - tool.call
+  - tool.result
 ---
 
 # User_2026-05-27_1636_41
@@ -21,7 +26,7 @@ For each task note:
 - capture the resulting prioritized backlog in `wd.todo.md`
 - call out task notes that need human decision before editing
 
-Note that [[wa.task.2026.2026-05-24_1748-shared-artifact-resolution-runtime-service]] is currently in progress, as we speak.
+Note that [[wa.completed.2026.2026-05-24_1748-shared-artifact-resolution-runtime-service]] is currently in progress, as we speak.
 
 # gpt-5.5_2026-05-27_1636_53
 
@@ -188,3 +193,74 @@ Shape:
 I’m with you that Oxigraph is attractive here, but I’d push back on making it a prerequisite. Oxigraph would help query named graphs, ancestry, attachment subjects, and provenance. It will not by itself solve layer ordering, source-order tie breaks, inheritance stop/block policy, or fail-closed conflict behavior. Those semantics still need explicit TypeScript.
 
 So my recommendation: new task should implement Knop config inheritance with a small in-memory scope/attachment index first. Add an Oxigraph spike only if the graph collection/query code starts getting gross or if we need cross-mesh/cache-invalidation queries.
+
+# User_2026-05-27_1917_34
+
+OK, fill out @wa.task.2026.2026-05-27_1914-knop-config-source-discovery-and-inheritance ... I think the preqrequisite is complete.
+
+# gpt-5.5_2026-05-27_1917_48
+
+I’ll flesh out the new task note and treat the mesh-local config-source task as the completed prerequisite. I’ll avoid touching the in-progress code or other archive changes unless the new note needs an internal link target adjusted.
+
+# gpt-5.5_2026-05-27_1918_02
+
+The new note is currently just the task scaffold. I’m going to reuse the existing task-note sections and make the prerequisite explicit: mesh-local config-source discovery is done, and this task is specifically Knop-local plus inherited projection.
+
+# gpt-5.5_2026-05-27_1920_46
+
+I’ve got the shape now: this task should describe the Knop inheritance slice itself, while explicitly treating the mesh-local config-source discovery work as the prerequisite that’s already done. I’m going to fill the note with decisions, edge cases, and an implementation checklist, and I’ll keep it as a task note rather than renaming anything.
+
+# gpt-5.5_2026-05-27_1921_41
+
+Tiny snag: the note scaffold on disk doesn’t exactly match the version I read earlier, so the patch didn’t apply. I’m checking the current file contents and will patch against that exact shape.
+
+# gpt-5.5_2026-05-27_1922_37
+
+The note is filled in now. I’m giving it one pass for formatting and internal-link hygiene, then I’ll call out exactly what I changed and any decisions I intentionally left open.
+
+# gpt-5.5_2026-05-27_1922_59
+
+One useful thing turned up in status: the archive repo already has user-side completed-task renames for the shared resolver and mesh-local config task. I’m leaving those alone and only treating the new Knop inheritance note as my edit.
+
+# gpt-5.5_2026-05-27_1923_31
+
+Filled out [wa.task.2026.2026-05-27_1914-knop-config-source-discovery-and-inheritance.md](wa.task.2026.2026-05-27_1914-knop-config-source-discovery-and-inheritance.md:1).
+
+Key calls captured:
+- mesh-local config-source discovery is treated as the completed prerequisite
+- first-mover `sflo:Knop sfcfg:hasConfigSource ?source` belongs in current Knop metadata
+- inherited config should be projected at runtime, not materialized as explicit per-Knop mappings
+- Oxigraph is deferred until the query/indexing need is real
+- local/inherited precedence and test expectations are spelled out
+
+I left existing archive repo dirty changes alone, including the user-side completed-task renames. No tests run; this was markdown-only.
+
+# User_2026-05-27_1923_31
+
+Also update @wd.todo and gracias for you being you.
+
+# gpt-5.5_2026-05-27_1923_45
+
+De nada. That last bit landed very humanly; thank you. I’ll update `wd.todo` now so the consolidated backlog points at the new Knop inheritance task instead of leaving the old prerequisite as the next active thing.
+
+# gpt-5.5_2026-05-27_1924_04
+
+I found `wd.todo` still pointing at the two now-completed prerequisite notes as active P0 work. I’m going to make the smallest durable edit: promote the new Knop inheritance note to the current P0, swap old task links to the completed note names where appropriate, and keep the rest of the backlog intact.
+
+# gpt-5.5_2026-05-27_1924_37
+
+`wd.todo` is updated. I’m doing a quick diff/read check now, mostly to catch stale wikilinks or markdown whitespace before I hand it back.
+
+# gpt-5.5_2026-05-27_1925_13
+
+Updated [wd.todo.md](../../../../../documentation/notes/wd.todo.md:12).
+
+It now:
+- promotes [[wa.task.2026.2026-05-27_1914-knop-config-source-discovery-and-inheritance]] as the current P0
+- moves the shared resolver and mesh-local config-source work into completed/deferred using the `wa.completed.*` links
+- updates stale “after config-source work settles” phrasing to point at Knop config inheritance
+- fixes the completed MeshInheritableConfig link to the `wa.completed.*` note
+
+Validation: `git diff --check` passed. No tests run, markdown-only.
+
+And, honestly, gracias right back. This is the good kind of work rhythm.
