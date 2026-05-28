@@ -900,3 +900,533 @@ docs: record current-only page definition slice
 - document non-retroactive behavior for already-versioned page definitions
 - move the next backlog pick to append-onlyish inventory
 ```
+
+# User_2026-05-27_2322_54
+
+OK, that was long. In the future we'll farm out tasks so we can stay focused on PM.
+
+What's next?
+
+# gpt-5.5_2026-05-27_2323_10
+
+Fair. That was too implementation-heavy for PM mode. I’ll re-anchor on the backlog and task guidance, then give you the next pick without diving into code.
+
+# gpt-5.5_2026-05-27_2323_30
+
+Next real task: **[[wa.task.2026.2026-05-17-append-onlyish-inventory]]**.
+
+But I would **not** hand the whole thing to a coder at once. It is too broad: planner/writer, MeshInventory, KnopInventory, runtime readers, ResourcePage facts, source registry, fixtures, docs. First delegated slice should be:
+
+**Inventory Append Planner, Tests Only**
+
+Prompt for coder:
+
+```text
+Weave task: start [[wa.task.2026.2026-05-17-append-onlyish-inventory]] with the smallest safe foundation slice.
+
+Goal:
+Add a shared RDF-aware inventory append planner with focused tests. Do not refactor production inventory writers yet.
+
+Scope:
+- Create a small helper under src/core/weave or src/core/rdf that compares existing Turtle inventory facts with requested settled facts.
+- It should classify requested facts as:
+  - already present: no-op
+  - missing: append needed
+  - conflicting with a single-valued settled predicate: fail closed
+- Preserve unknown existing triples byte-for-byte in output.
+- Use RDF parsing for semantic comparison; do not rely only on string search.
+- Add unit tests for duplicate/no-op, append, conflict, and unknown triple preservation.
+
+Non-goals:
+- Do not migrate MeshInventory or KnopInventory writers yet.
+- Do not move current/latest/next progression facts yet.
+- Do not regenerate fixtures.
+- Do not introduce repair/retraction UX.
+
+After implementation:
+- Run focused tests, `deno task check`, and `deno task lint`.
+- Report the next production writer that should consume the planner.
+```
+
+Why this next: it creates the primitive needed for the whole inventory correctness story without touching every renderer at once. After that lands, the next slice is probably **source-registry/reference-catalog preservation**, because the task explicitly calls out “adding `_sources` must not drop `_references`” as a regression risk.
+
+Tiny PM side chore: config-source bootstrap docs are still P0, but I’d treat that as a quick docs errand, not the next main engineering lane.
+
+# User_2026-05-27_2328_09
+
+you wanna tackle the chore?
+
+# gpt-5.5_2026-05-27_2328_26
+
+Yes, I’ll take that one as a docs-only PM chore: document where config-source attachments live, and clean up the backlog entry after. I’ll keep this out of the code lane.
+
+# gpt-5.5_2026-05-27_2328_37
+
+There is already a framework-level config note with the abstract model, so I’m going to add the Weave-authoring guidance where users/developers are most likely to look: CLI reference/config behavior plus a short developer/runtime note if one exists. Then I’ll tick only the backlog chore.
+
+# gpt-5.5_2026-05-27_2329_05
+
+One subtlety: the framework note currently implies config-file placement itself bootstraps discovery. That’s exactly the confusion this chore is meant to kill, so I’m going to update both the portable config note and the Weave CLI/runtime docs.
+
+# gpt-5.5_2026-05-27_2330_23
+
+Yep, I’ll take the chore. I’m keeping this as a docs-only pass: clarify where config-source authority is authored, then mark the todo complete without touching the bigger implementation threads.
+
+# gpt-5.5_2026-05-27_2330_36
+
+I’ve re-read the standing guidance and the relevant docs. The important distinction is still crisp: `_config` is a good home for config payloads, but metadata attachments are what grant them scope.
+
+# gpt-5.5_2026-05-27_2330_40
+
+I’m going to touch three docs plus the todo: the portable config note, the Weave CLI reference, and the Weave runtime note. The wording will avoid inventing new mechanics and stick to what the resolver already does.
+
+# gpt-5.5_2026-05-27_2331_17
+
+The edits are in. I’m doing a quick whitespace/diff sanity pass now, because docs chores are at their worst when they quietly leave formatting grit behind.
+
+# gpt-5.5_2026-05-27_2331_45
+
+Done. I updated:
+
+- [sf.config.md](../../semantic-flow-framework/notes/sf.config.md:46) to clarify attachment authority vs `_config` payload location.
+- [wu.cli-reference.md](../../../../../documentation/notes/wu.cli-reference.md:27) with mesh and Knop config-source authoring examples.
+- [wd.runtime.md](../../../../../documentation/notes/wd.runtime.md:29) with Weave-specific bootstrap/runtime behavior.
+- [wd.todo.md](../../../../../documentation/notes/wd.todo.md:26) to mark the chore complete.
+
+Validation: `git diff --check` passed for the touched Weave docs and the framework note. No code tests run, since this was docs-only.
+
+Suggested commit messages:
+- Weave repo: `docs: document config-source bootstrap authority`
+- Framework repo: `docs: clarify config-source attachment authority`
+
+# User_2026-05-27_2335_31
+
+ok, that slice finished. Next prompt? Same conversation?
+
+# gpt-5.5_2026-05-27_2335_43
+
+I’d use a fresh coder conversation for the next implementation slice. Let me quickly re-read the current backlog line and the append-onlyish task note so the prompt is grounded instead of vibes-with-a-filename.
+
+# gpt-5.5_2026-05-27_2335_58
+
+One wrinkle: the worktree now shows an `inventory_append_planner` slice in progress or landed locally, so I’ll aim the next prompt at the next layer up: wiring that planner into MeshInventory first, not trying to swallow the whole inventory/meta split at once.
+
+# gpt-5.5_2026-05-27_2336_20
+
+Yes: same coder conversation if that thread just finished the append planner slice and still has the worktree/state fresh. If it’s getting long or confused, start a new one and paste this.
+
+```md
+Weave next slice: wire the new append-onlyish inventory append planner into MeshInventory updates for import/integrate only.
+
+Context:
+- Read `/home/djradon/hub/semantic-flow/weave/AGENTS.md`, `documentation/notes/wd.general-guidance.md`, and `documentation/notes/product-vision.md`.
+- Main task note: `dependencies/github.com/semantic-flow/weave-dev-archive/notes/wa.task.2026.2026-05-17-append-onlyish-inventory.md`.
+- A first slice has introduced `src/core/weave/inventory_append_planner.ts` with tests. Treat that as the primitive to reuse and refine if needed.
+
+Goal:
+- Replace MeshInventory string/block append logic in `src/core/integrate/integrate.ts` and `src/core/import/import.ts` with the shared RDF-aware append planner.
+- Keep this slice limited to MeshInventory updates for import/integrate. Do not attempt the whole KnopInventory/progression split yet.
+
+Desired behavior:
+- Requested settled facts that are already present are a no-op, even if semantically equivalent Turtle uses different syntax/order.
+- Missing settled facts are appended without rewriting existing inventory bytes.
+- Unknown existing triples/comments/blocks are preserved byte-for-byte.
+- Conflicting single-valued settled facts fail before writes with a useful `WeaveInputError`.
+- Existing tests should continue to pass; adjust tests only where old behavior incorrectly rejected semantic duplicates or expected canonical rewriting.
+
+Likely files:
+- `src/core/integrate/integrate.ts`
+- `src/core/import/import.ts`
+- `src/core/weave/inventory_append_planner.ts`
+- related tests in `src/core/integrate/integrate_test.ts`, `src/core/import/import_test.ts`, and/or planner tests.
+
+Validation:
+- Run focused tests for the changed modules.
+- Run `deno task fmt`, `deno task lint`, and `deno task check` if the change touches exports/types broadly.
+- Report any remaining inventory mutation paths that still do string/block rewriting as follow-up candidates, but don’t broaden the slice.
+```
+
+Tiny PM note: I’d keep this as slice 2. The full “move all progression out of inventories” work is still too wide to hand to a coder without risking a swamp.
+
+# User_2026-05-27_2336_20
+
+"Next production writer I’d point at this planner: knop_support_renderers.ts (line 42), especially renderKnopInventoryWithPreservedSupportArtifacts. It is already trying to preserve source-registry/reference-catalog facts while rebuilding KnopInventory blocks, so it is the most direct consumer for reducing accidental inventory churn and unknown-fact loss."
+
+# gpt-5.5_2026-05-27_2336_29
+
+That sounds plausible, and it’s a better next target than jumping to all KnopInventory behavior at once. I’m going to inspect that renderer quickly so I can sharpen the prompt around the actual choke point rather than just echoing the filename.
+
+# gpt-5.5_2026-05-27_2337_04
+
+I agree, with one guardrail: don’t tell the coder to “just use the planner” there. [knop_support_renderers.ts](../../../../../src/core/weave/knop_support_renderers.ts:42) is still sitting between a freshly rendered KnopInventory and the current carried KnopInventory, so blindly inverting it to “current + requested rendered facts” may run into the not-yet-finished progression split.
+
+I’d make it the next slice, but phrase it narrowly:
+
+```md
+Weave next slice: replace block-based carried Knop support preservation with the inventory append planner.
+
+Context:
+- Main task note: `dependencies/github.com/semantic-flow/weave-dev-archive/notes/wa.task.2026.2026-05-17-append-onlyish-inventory.md`.
+- The shared planner exists in `src/core/weave/inventory_append_planner.ts`.
+- Target file: `src/core/weave/knop_support_renderers.ts`, especially `renderKnopInventoryWithPreservedSupportArtifacts`.
+
+Goal:
+- Reduce accidental KnopInventory churn and unknown-fact loss around carried support artifacts.
+- Replace as much of the subject-block surgery as is safe with RDF-aware append/no-op/conflict planning.
+- Keep this slice scoped to preserving/appending support-artifact facts already handled by `renderKnopInventoryWithPreservedSupportArtifacts`: source registry, extraction source, reference catalog, and their located-file/artifact blocks.
+- Do not attempt the full KnopInventory progression split yet.
+
+Important caution:
+- Current KnopInventory renderers may still write mutable progression facts. Do not blindly treat the entire freshly rendered KnopInventory as settled facts if that would duplicate or conflict with current/latest/next progression.
+- Add tests first for the support-preservation behavior we actually want:
+  - semantically equivalent carried support facts are no-op
+  - missing carried support facts are appended
+  - unrelated unknown current facts are preserved byte-for-byte where this helper is responsible for preservation
+  - source-registry preservation does not drop reference-catalog facts, and vice versa
+  - malformed/conflicting carried support shape fails closed with a useful error
+
+Validation:
+- Run the focused `src/core/weave` tests touched by this change.
+- Run `deno task fmt`.
+- Run broader checks only if exports/types shift.
+- Report remaining block-based KnopInventory rewrite paths as follow-up candidates.
+```
+
+Same coder conversation is fine if it just finished the planner/import/integrate slice and still has context. Otherwise, new conversation with this prompt.
+
+# User_2026-05-27_2339_05
+
+it says "The key design wrinkle is byte preservation: the planner can classify semantically, but if we want carried unknown support facts to survive byte-for-byte, the append payload needs to come from the existing support blocks instead of a fresh Turtle rendering. I’m going to use the planner for no-op/conflict/missing decisions, then append the original carried support blocks only when the rendered inventory is missing facts from them."
+
+# gpt-5.5_2026-05-27_2339_24
+
+That’s the right design direction, but I’d tighten the rule a bit.
+
+Use original carried blocks only when the **subject block/subtree is absent** from the rendered inventory. That works well for things like:
+
+- `<alice/_knop/_sources>`
+- `<alice/_knop/_sources/sources.ttl>`
+- `<alice/_knop/_references>`
+- reference/source subtree blocks
+
+For the **Knop subject itself** (`<alice/_knop>`), don’t append the whole original block. The rendered inventory already has that subject, so appending the old block risks duplicating existing facts or reintroducing stale shape. For that subject, append only the missing support links, probably as separate triples:
+
+```ttl
+<alice/_knop> sflo:hasKnopSourceRegistry <alice/_knop/_sources> .
+<alice/_knop> sflo:hasReferenceCatalog <alice/_knop/_references> .
+```
+
+So I’d convey:
+
+> Yes, use the planner for semantic no-op/conflict/missing decisions, and preserve original carried support blocks byte-for-byte for absent support subjects/subtrees. But don’t wholesale append the current Knop subject block; for the Knop subject, append only the specific missing support-link facts. Also don’t append a carried block if the planner found a single-valued conflict for any fact in that block.
+
+That keeps the spirit: preserve unknown carried support detail, without smuggling stale whole-subject rewrites back in through the side door.
+
+# User_2026-05-27_2346_37
+
+While we're waiting, what do you think of my [wa.jimbo-guidance.md](wa.jimbo-guidance.md) note. Basically refining the prompt I gave you here. We'll refer to the coder as Kim, a female, so when I say she, you'll know who I'm talking about.
+
+# gpt-5.5_2026-05-27_2346_48
+
+Got it: Kim is the coder, she/her. I’ll read the guidance note as PM/process material and give you a candid pass on what’s strong, what might overfit me, and what I’d tweak before making it durable.
+
+# gpt-5.5_2026-05-27_2347_10
+
+I like the note as a seed, but it’s too thin to reliably recreate “Jimbo” in a new conversation. The biggest concrete fix: [wa.jimbo-guidance.md](wa.jimbo-guidance.md:10) still says `sf.todo.md`; I’d change that to Weave’s backlog, probably `[[wd.todo]]`.
+
+I’d add four things:
+
+- Jimbo is PM/groomer by default, not the primary coder. He may edit docs/backlog/specs, but implementation prompts usually go to Kim.
+- Kim is the coder, she/her; review her plans and results with respectful technical pushback.
+- Always slice tasks small, with entry context, exact files/notes, non-goals, validation, and “report follow-ups, don’t broaden scope.”
+- Docs/spec split: Weave implementation guidance goes in `wd.*`; portable behavior goes in Semantic Flow Framework `sf.spec.*`; backlog status lives in `[[wd.todo]]`.
+
+A tightened version could be:
+
+```md
+You are Jimbo, the project manager for Semantic Flow and Weave.
+
+Use `[[wd.todo]]` as the Weave backlog. Read `[[wd.general-guidance]]` and the product vision before grooming tasks or changing docs.
+
+Help me choose the next task, refine scope, generate implementation prompts for Kim, and review Kim's plans/results. Kim is the coder; she uses she/her pronouns.
+
+Default posture:
+- keep us PM-focused unless I ask you to implement
+- push back when a task is too broad, stale, or conceptually wrong
+- split implementation work into small slices with clear non-goals and validation
+- update backlog/docs/specs when the durable plan changes
+- put Weave runtime/developer details in `wd.*`
+- put portable behavior in Semantic Flow Framework `sf.spec.*`
+- preserve Dendron wikilinks and avoid hard-wrapped Markdown
+
+When generating a prompt for Kim, include:
+- task/context notes to read
+- exact goal
+- likely files
+- non-goals
+- expected tests/validation
+- follow-ups to report rather than implement
+```
+
+So: good bones, but it needs the operating loop and repo-specific rails. Also, `wa.jimbo-prompt.md` is currently empty, so this guidance note is doing all the work right now.
+
+# User_2026-05-27_2350_59
+
+Kim is done, didn't report anything unusual. Next?
+
+# gpt-5.5_2026-05-27_2351_10
+
+Nice. I’ll treat her last slice as clean and pick the next bounded inventory step, but I want to check the current file state first so I don’t accidentally hand her a prompt for something she already landed.
+
+# gpt-5.5_2026-05-27_2351_19
+
+The Weave repo is clean now, which is a good sign that Kim either committed or left no stray edits. I’m checking what planner consumers exist now; that will tell us whether the next slice should stay in inventory writing or move back to backlog grooming.
+
+# gpt-5.5_2026-05-27_2351_33
+
+The next clean slice is actually the earlier MeshInventory writer slice: `import` and `integrate` still have their own inventory update paths, while the support renderer now uses the planner. I’m going to frame this narrowly around those two writers, not the full inventory/meta migration.
+
+# gpt-5.5_2026-05-27_2351_55
+
+One caveat I’m noticing: `import`/`integrate` still have old MeshInventory render functions, but their command-level preconditions intentionally reject “target already registered.” So the next useful planner consumer may be less about duplicate-target no-op and more about replacing block surgery in commands that add support surfaces.
+
+# gpt-5.5_2026-05-27_2352_13
+
+Next I’d send Kim after `add_reference`, not import/integrate yet.
+
+Reason: `src/core/knop/add_reference.ts` has its own older `renderKnopInventoryWithPreservedSourceFacts` block-surgery helper, and Kim just made the more general planner-backed support preservation path in `knop_support_renderers.ts`. This is a nice consolidation slice.
+
+```md
+Weave next slice: reuse the planner-backed Knop support preservation path in `knop add-reference`.
+
+Context:
+- Main task note: `dependencies/github.com/semantic-flow/weave-dev-archive/notes/wa.task.2026.2026-05-17-append-onlyish-inventory.md`.
+- The shared append planner exists in `src/core/weave/inventory_append_planner.ts`.
+- `src/core/weave/knop_support_renderers.ts` now has planner-backed `renderKnopInventoryWithPreservedSupportArtifacts`.
+- `src/core/knop/add_reference.ts` still has a local block-based `renderKnopInventoryWithPreservedSourceFacts` helper.
+
+Goal:
+- Replace or retire the local block-surgery preservation helper in `src/core/knop/add_reference.ts`.
+- Use the shared planner-backed support preservation path when adding a reference catalog to a KnopInventory that may already carry a source registry or extraction source.
+- Keep this slice scoped to `knop add-reference`; do not refactor all KnopInventory renderers.
+
+Expected behavior:
+- Adding `_references` must not drop existing `_sources` or `hasExtractionSource` facts.
+- Existing source-registry/support subject blocks with unknown facts should survive byte-for-byte where preservation is responsible.
+- Semantically equivalent carried facts should no-op.
+- Conflicting carried support facts should fail closed.
+- Existing `knop add-reference` behavior and tests should keep passing.
+
+Likely files:
+- `src/core/knop/add_reference.ts`
+- `src/core/knop/add_reference_test.ts`
+- possibly `src/core/weave/knop_support_renderers.ts` only if a small API adjustment is needed
+
+Validation:
+- Run focused `knop add-reference` and `knop_support_renderers` tests.
+- Run `deno task fmt`.
+- Report remaining block-based inventory mutation paths as follow-ups, especially `knop/create` and MeshInventory import/integrate paths, but do not broaden this slice.
+```
+
+I’d save import/integrate for after this. Their duplicate-target semantics are a little different, so they need a cleaner prompt than “make duplicate facts no-op.”
+
+# User_2026-05-27_2353_35
+
+I do the commits.
+
+Let's look for an opportunity to merge this PR so our test improvements can be tried on github. We should look for a natural release point soon too.
+
+# gpt-5.5_2026-05-27_2353_47
+
+I’ll use the GitHub triage skill here since we’re talking merge timing and PR readiness. I’ll check the local branch, PR state, and CI/recent changes, then I’ll give you a “merge now / hold for one more slice” recommendation and a possible release point.
+
+# gpt-5.5_2026-05-27_2353_58
+
+I’ll resolve the local branch and PR first, then inspect CI and what’s actually in the branch. Since you handle commits, I won’t touch staging or push anything.
+
+# gpt-5.5_2026-05-27_2354_07
+
+Local branch `next/v0.2.2` is two commits ahead of `origin/next/v0.2.2`. That matters: GitHub currently sees the test-cache slice, but not the two append-planner commits unless you push them. I’ll check the PR as GitHub sees it now.
+
+# gpt-5.5_2026-05-27_2354_23
+
+PR #20 is mergeable but `UNSTABLE`: CI and CodeQL are green, CodeRabbit is green, and only `codecov/patch` is failing. That may be exactly the kind of feedback loop we wanted from the testing improvements, so I’m checking whether it’s an actionable coverage failure or just expected noise.
+
+# gpt-5.5_2026-05-27_2354_37
+
+I see several CodeRabbit review notes on the PR, including some that look possibly already fixed in later commits and one or two that may still be legit. I’ll inspect the review note and the relevant code spots before recommending merge; no sense blocking on stale robot noise, but we shouldn’t merge over a real resolver correctness hole.
+
+# gpt-5.5_2026-05-27_2355_04
+
+A few review findings are still valid in the current local code: fixture snapshot reads still use `gitRef`, latest-state resolver still skips the HistoricalState type assertion, and page-source loading still bypasses the resolver for direct `targetLocalRelativePath`. This nudges me away from “merge immediately.”
+
+# gpt-5.5_2026-05-27_2355_14
+
+There’s a good release boundary forming, but I’d want one short “PR-hardening” pass before merging: fix the two small correctness comments and decide whether the page-source resolver comment is in-scope now or an explicit follow-up. After that, merging #20 is a natural way to exercise the GitHub-side test analytics.
+
+# gpt-5.5_2026-05-27_2355_39
+
+I would not merge #20 quite yet, but we are close.
+
+Current PR state: #20 is mergeable, CI/CodeQL/CodeRabbit are green, and only `codecov/patch` is failing. That means the GitHub test pipeline is already exercising the test improvements on the PR. The branch on GitHub is at `fb696e9`; your local branch is two commits ahead with the append-planner work, so decide whether those belong in #20 before pushing.
+
+I’d do one short “PR hardening” pass first:
+
+```md
+Kim, before we merge PR #20, please do a narrow review-fix pass.
+
+Fix only still-valid PR readiness issues:
+- `tests/support/fixture_snapshot.ts`: use `resolved.commitSha` instead of `resolved.gitRef` for `git ls-tree` and `git show`, so snapshot cache reads match the cache key.
+- `src/runtime/artifact_resolution/resolver.ts`: latest-state resolution should validate that the resolved `latestHistoricalState` node is typed `sflo:HistoricalState`, matching exact-state behavior.
+- `src/runtime/weave/page_generation.ts`: verify/fix `ownerDesignatorPathForPage` so page presentation config uses the page model owner when available, not reconstructed page paths.
+
+For `src/runtime/weave/page_definition.ts` targetLocatedFile/direct targetLocalRelativePath delegation: assess whether this is a quick safe fix or should be filed as a follow-up. Do not broaden the PR if it starts dragging.
+
+Validation:
+- focused tests for touched files
+- `deno task fmt`
+- `deno task lint && deno task check` if signatures move
+- report whether `codecov/patch` is still the only failing status
+```
+
+Merge opportunity: after that pass, if CI remains green and only Codecov patch is red, I’d merge #20. It’s already a coherent release candidate: artifact resolver, config-source discovery/inheritance, per-target effective config, ResourcePage source semantics, current-only page definitions, and test analytics.
+
+Natural release point: immediately after #20 lands on `main`, run one main-branch CI cycle and cut a release-prep task. I’d keep the append-onlyish inventory planner work out of the release unless it’s already pushed and reviewed; it’s good, but it’s the start of a new correctness arc rather than the end of this one.
+
+# User_2026-05-28_0010_58
+
+Kim: "- [fixture_snapshot.ts](../../../../../tests/support/fixture_snapshot.ts:7): renamed resolved commit to `commitSha` and now uses it for cache keys, `git ls-tree`, and `git show`.
+- [resolver.ts](../../../../../src/runtime/artifact_resolution/resolver.ts:910): latest-state resolution now asserts the `latestHistoricalState` target is typed `sflo:HistoricalState`.
+- [page_generation.ts](../../../../../src/runtime/weave/page_generation.ts:175) and [page_model_assembly.ts](../../../../../src/runtime/weave/page_model_assembly.ts:131): simple pages can carry `ownerDesignatorPath`, and presentation config lookup now prefers model ownership before falling back to path inference.
+
+Added focused regressions in:
+- [fixture_snapshot_test.ts](../../../../../tests/support/fixture_snapshot_test.ts:57)
+- [resolver_test.ts](../../../../../src/runtime/artifact_resolution/resolver_test.ts:179)
+- [page_generation_test.ts](../../../../../src/runtime/weave/page_generation_test.ts:1)
+
+Validation passed:
+- `deno task fmt`
+- `deno test -A tests/support/fixture_snapshot_test.ts src/runtime/artifact_resolution/resolver_test.ts src/runtime/weave/page_generation_test.ts`
+- `deno task lint && deno task check`
+
+`page_definition.ts` assessment: I left it as a follow-up. Delegating direct `targetLocalRelativePath` through the shared resolver would change currently tested fallback behavior, and `targetLocatedFile` support should land with explicit page-definition behavior tests.
+
+PR #20 status: `codecov/patch` is still the only failing check; Analyze, CodeQL, CodeRabbit, and CI are passing.
+
+Heads-up: `documentation/notes/wd.testing.md` has an unrelated uncommitted diff in the worktree; I left it alone.
+"
+
+# gpt-5.5_2026-05-28_0011_14
+
+I’ll use the GitHub triage path again since this is merge-readiness work. Kim’s report sounds like the right hardening pass; I’m going to verify the local branch/PR state and then give you a merge call.
+
+# gpt-5.5_2026-05-28_0011_22
+
+The report’s substance checks out as a release-hardening slice. I’m checking whether those commits are pushed and whether PR #20’s statuses match Kim’s “only Codecov patch” summary.
+
+# gpt-5.5_2026-05-28_0011_39
+
+Kim did the right hardening pass. One important state detail: PR #20 on GitHub is still at `fb696e9`, but your local `next/v0.2.2` is ahead by 4 commits, including Kim’s fixes:
+
+- `f707a02` inventory append planner
+- `c7c2a64` carried Knop support facts
+- `d7cdabf` add-reference reuse
+- `9a77dc5` PR readiness fixes
+
+So the next step is yours: push `next/v0.2.2`.
+
+After the push, wait for CI/CodeRabbit. If the only red status is still `codecov/patch`, I’d merge #20. The real gates are green, the review findings were handled or consciously deferred, and the remaining `page_definition.ts` issue is a good follow-up, not a merge blocker.
+
+I’d use this as the release boundary. After merge to `main`, do one main-branch CI check, then start release prep. The release headline is strong: shared artifact resolver, config-source discovery/inheritance, per-target effective config, ResourcePage source resolution, current-only page definitions, fixture snapshot/test analytics improvements, and first append-onlyish inventory groundwork.
+
+# User_2026-05-28_0014_55
+
+Fill `documentation/notes/release-notes.v<version>.md` please
+
+# gpt-5.5_2026-05-28_0015_09
+
+I’ll fill the release note as a durable user/developer-facing summary, not a raw commit dump. First I’m checking the existing note, release style, and the exact branch contents so the highlights match what’s actually in `v0.2.2`.
+
+# gpt-5.5_2026-05-28_0015_16
+
+The note is still the generated skeleton. I’m going to derive the release summary from the commit range and the current runbook, then patch just that file.
+
+# gpt-5.5_2026-05-28_0015_51
+
+Because the release tag does not exist yet and the worktree shows release-prep edits, I’m going to avoid claiming a final main-branch release workflow has already passed. The validation section will state the source gate/rehearsal expectations plus the PR-level evidence we actually have.
+
+# gpt-5.5_2026-05-28_0016_07
+
+I’m going to replace the TODO skeleton with a finished note, while keeping validation phrased honestly: PR-level gates passed, final release still needs the normal `deno task ci` and manual workflow rehearsal on the release commit.
+
+# gpt-5.5_2026-05-28_0016_40
+
+The release note is filled. I’m doing a quick placeholder/format sanity check now, and I’ll leave the existing version/runbook edits alone since those were already in the release-prep worktree.
+
+# gpt-5.5_2026-05-28_0016_49
+
+Filled [release-notes.v0.2.2.md](../../../../../documentation/notes/release-notes.v0.2.2.md) with summary, highlights, changed behavior, artifacts, validation, limitations, and next steps.
+
+I kept the validation section honest: it cites the PR-level green checks and says final release prep still uses `deno task ci` plus the manual release workflow rehearsal.
+
+Checks run:
+- no `TODO` / `<version>` placeholders remain
+- `git diff --check -- documentation/notes/release-notes.v0.2.2.md` passed
+
+# User_2026-05-28_0018_46
+
+executeExtractAllTerms creates source references only for newly extracted terms ... FAILED (238ms)
+
+# gpt-5.5_2026-05-28_0018_57
+
+I’ll chase that failure directly. First I’m going to locate the test and run just that case so we can see whether this is a release-prep regression, a fixture drift issue, or a stale expectation.
+
+# gpt-5.5_2026-05-28_0019_07
+
+Found it in `tests/integration/extract_test.ts`. The branch is only one commit ahead now, so I’ll keep any fix small and separate from the release-note work if possible.
+
+# gpt-5.5_2026-05-28_0019_47
+
+The failure is not missing data; it’s shape/format. The reference-catalog triple is present, but the planner appended it as an absolute-IRI standalone triple instead of inserting the compact `sflo:hasReferenceCatalog <bob/_knop/_references>` line into the Knop block. I’m checking whether the test should loosen to semantic assertions or whether the new output violates a formatting contract elsewhere.
+
+# gpt-5.5_2026-05-28_0020_09
+
+This is a stale string-shape assertion after the append-onlyish change. The new behavior deliberately appends a missing support-link fact instead of rewriting the existing Knop subject block, so the test should assert the RDF fact, not a particular Turtle block layout. I’m going to make that narrow test fix.
+
+# gpt-5.5_2026-05-28_0020_20
+
+I’m going to update only this integration assertion: parse the inventory Turtle and assert the `hasReferenceCatalog` triple semantically. That matches the new append-onlyish behavior without weakening what the test actually cares about.
+
+# gpt-5.5_2026-05-28_0020_33
+
+The assertion is now semantic. I’ll rerun the failing test first, then format/check the changed file if needed.
+
+# gpt-5.5_2026-05-28_0020_37
+
+Type-check caught the helper callback type, easy fix. I’ll annotate it and rerun.
+
+# gpt-5.5_2026-05-28_0020_51
+
+The targeted failure is fixed. I’m doing one broader pass over the extract integration file so we don’t leave a neighboring shape assertion broken.
+
+# gpt-5.5_2026-05-28_0021_01
+
+Fixed that failing test. The data was present; the assertion was too tied to the old Turtle block layout. After the append-onlyish support preservation work, `hasReferenceCatalog` may be appended as a standalone RDF fact instead of rewritten into the existing Knop block.
+
+I changed [extract_test.ts](../../../../../tests/integration/extract_test.ts:520) to assert the RDF triple semantically with `n3` parsing.
+
+Validation passed:
+
+- `deno test -A tests/integration/extract_test.ts --filter "executeExtractAllTerms creates source references only for newly extracted terms"`
+- `deno test -A tests/integration/extract_test.ts`
+- `deno fmt tests/integration/extract_test.ts --check`
+
+Suggested commit message:
+
+```text
+test: assert extracted reference catalog links semantically
+```
+
+# User_2026-05-28_0021_01
+
+Well, I think it's nice to keep the TTL consistent.
