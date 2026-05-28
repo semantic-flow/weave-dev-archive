@@ -12,7 +12,7 @@ created: 1779670128331
 - Make the first implementation a config-unblocking resolver core for [[wa.task.2026.2026-05-27_1246-config-source-discovery-and-resolution]], not a broad migration of every existing source consumer.
 - Resolve governed local bytes/text under active operational policy while preserving the semantic split between requested coordinates and observed evidence.
 - Consolidate duplicated working/latest/exact resolution logic currently spread across page-source loading, extraction-source loading, source-registry parsing, raw source panels, and payload history readers.
-- Keep the resolver explicitly separate from active acquisition: arbitrary URL fetch remains an explicit `weave import` operation, not a general resolution behavior.
+- Keep the resolver explicitly separate from active acquisition: URL fetch is an explicit caller capability, not a general resolution behavior.
 - Return enough requested coordinates, observed coordinates, byte/text content, digest, and trace context for callers to parse config, render pages, validate sources, or intentionally persist observations.
 - Keep page-source, extraction-source, raw-source-panel, and source-registry migrations as follow-on cleanup after the first config-source-ready resolver slice lands.
 
@@ -30,7 +30,7 @@ Today, Weave has several runtime paths that perform pieces of this behavior inde
 
 The immediate value is to stop config-source discovery from adding a new config-only resolver. A first slice should expose a small service that resolves the coordinate subset needed by `sfcfg:ConfigSource`, then lets the config resolver parse the returned bytes as Turtle and compile the result into the appropriate config layer. Once that exists, page sources and extraction sources can migrate incrementally.
 
-The shared service should not be a URL loader. It should be a local runtime resolver for governed artifact coordinates. If a request carries `sflo:targetAccessUrl` on an `sflo:ImportSource`, that URL is acquisition provenance unless the caller is the explicit import command. Normal resolution should follow governed local working files, local relative paths allowed by operational policy, or settled historical state coordinates.
+The shared service should not be a URL loader. It should be a local runtime resolver for governed artifact coordinates. If a request carries `sflo:targetAccessUrl` on an `sflo:ImportSource`, that URL is acquisition provenance unless the caller has opted into an explicit acquisition capability such as `weave import`. Normal resolution should follow governed local working files, local relative paths allowed by operational policy, or settled historical state coordinates.
 
 ## Discussion
 
@@ -60,7 +60,7 @@ Useful resolver cases include:
 - direct `sflo:targetLocalRelativePath`: resolve workspace/mesh-local source bytes only when local path policy permits the `targetLocalRelativePath` locator kind.
 - digest evidence: compute or compare observed bytes when the caller requires content evidence.
 
-That means the service is useful even if `weave`, `generate`, extraction, and page rendering never fetch arbitrary URLs. Explicit import remains the one command that may acquire outside HTTP(S) bytes.
+That means the service is useful even if config resolution, generation, extraction, and page rendering never fetch arbitrary URLs. Explicit acquisition commands may opt into URL fetching under their own network policy; today that means `weave import`, and future integrate/refresh flows may define a similarly explicit capability for "get latest data" scenarios.
 
 ### First Slice
 
@@ -163,7 +163,7 @@ The artifact resolver should remain responsible for:
 
 `weave import` is active acquisition. It may fetch an explicit HTTP(S) URL, copy bytes into a governed local working file, compute an observed digest, and record the original URL on `sflo:ImportSource` as provenance.
 
-The shared resolver should not make ordinary runtime operations follow `ImportSource.targetAccessUrl`. After import succeeds, the artifact's active bytes are the governed working file or settled historical states created later. If a future caller wants to refresh from an import URL, that should be an explicit repeated import operation, not a generic artifact resolution side effect.
+The shared resolver should not make ordinary runtime operations follow `ImportSource.targetAccessUrl`. URL resolution should be granted by the caller's operation and policy, not inferred from ordinary artifact-resolution coordinates or local path policy. After import succeeds, the artifact's active bytes are the governed working file or settled historical states created later. If a future caller wants to refresh from an import URL, or if integrate wants to download data from the world, that should be an explicit acquisition flow rather than a generic artifact resolution side effect.
 
 ### Relationship To Page Sources And Extraction
 
@@ -192,7 +192,7 @@ The resolver can initially read today's inventory/meta shape. The append-onlyish
 
 - Use `sflo:ArtifactResolutionSpec` terminology. `ArtifactResolutionTarget` is historical wording and should not appear in new runtime API names.
 - Make `sfcfg:ConfigSource` the immediate first consumer and [[wa.task.2026.2026-05-27_1246-config-source-discovery-and-resolution]] the first downstream task.
-- The shared service is not a remote fetch mechanism. Ambient URL following remains out of scope; explicit HTTP(S) acquisition belongs to `weave import`.
+- The shared service is not a remote fetch mechanism. Ambient URL following remains out of scope; explicit HTTP(S) acquisition belongs to caller operations such as `weave import`, and possibly future integrate/refresh flows with their own network policy.
 - Preserve the semantic split between requested coordinates and observed evidence.
 - Keep exact coordinates exact. Do not revive `artifactResolutionMode_pinned`.
 - Start fail-closed: if requested coordinates cannot be proven to belong to the target artifact when such proof is required, or if a required located file/digest cannot be observed, resolution fails before writes.
@@ -227,8 +227,8 @@ The resolver can initially read today's inventory/meta shape. The append-onlyish
 
 ## Non-Goals
 
-- Do not implement arbitrary URL import/fetch in the resolver.
-- Do not refresh imports from their original URL. Use repeated `weave import --replace-working` for that.
+- Do not implement arbitrary URL import/fetch in ordinary shared resolution.
+- Do not refresh imports from their original URL through ordinary resolution. Use explicit acquisition instead; today that is repeated `weave import --replace-working`, and future integrate/refresh commands may define their own URL policy.
 - Do not inspect live git remotes or floating repository refs.
 - Do not redesign the ontology vocabulary in this task.
 - Do not move current/progression facts out of inventory; that belongs to [[wa.task.2026.2026-05-17-append-onlyish-inventory]].
@@ -248,10 +248,10 @@ The resolver can initially read today's inventory/meta shape. The append-onlyish
 - [x] Implement exact state and simple exact located-file resolution if doing so is cheap enough for the config-source first slice; otherwise leave explicit fail-closed errors and tests.
 - [x] Add optional byte-reading/digest verification, without remote URL fetching.
 - [x] Add parser/normalizer support for `sfcfg:ConfigSource` subjects as `ArtifactResolutionSpec` instances.
-- [ ] Wire the new resolver into [[wa.task.2026.2026-05-27_1246-config-source-discovery-and-resolution]] once the first resolver slice is green.
-- [ ] After config-source discovery lands, migrate payload-backed `sflo:ResourcePageSource` working/latest-state resolution to the shared service.
-- [ ] After page sources, migrate extraction-source selected-source evidence to the shared service.
-- [ ] Align source-registry parser output types with the shared request/result model where that reduces duplication.
-- [ ] Add regression coverage that `sflo:ImportSource` / `sflo:targetAccessUrl` is not used by ordinary resolution.
-- [ ] Update developer docs or task notes with the final resolver contract and consumer migration status.
+- [x] Wire the new resolver into [[wa.task.2026.2026-05-27_1246-config-source-discovery-and-resolution]] once the first resolver slice is green.
+- [x] After config-source discovery lands, migrate payload-backed `sflo:ResourcePageSource` working/latest-state resolution to the shared service.
+- [x] After page sources, migrate extraction-source selected-source evidence to the shared service.
+- [x] Align source-registry parser output types with the shared request/result model where that reduces duplication.
+- [x] Add regression coverage that `sflo:ImportSource` / `sflo:targetAccessUrl` is not used by ordinary resolution.
+- [x] Update developer docs or task notes with the final resolver contract and consumer migration status.
 - [x] Run focused tests, then `deno task fmt`, `deno task lint`, `deno task check`, and relevant integration tests.

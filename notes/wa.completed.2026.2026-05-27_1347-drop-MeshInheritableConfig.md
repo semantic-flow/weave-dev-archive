@@ -1,7 +1,9 @@
 ---
 id: ck1a1hs1jhm32utu5qy0jgb
 title: 2026-05-27_1347-drop-MeshInheritableConfig
-desc: Simplify config attachment roles by keeping mesh config singular, dropping KnopConfig, and using generic Knop inheritable attachments.
+desc: >-
+  Simplify config attachment roles by keeping mesh config singular, dropping
+  KnopConfig, and using generic Knop inheritable attachments.
 updated: 1779918284724
 created: 1779914883772
 ---

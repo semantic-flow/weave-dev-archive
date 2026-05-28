@@ -75,7 +75,7 @@ I want to generate a /carol/data Turtle dataset, Similar to Alice's but maybe re
 - extract the terms from /carol/data (should only be /carol in scope)
 - import my carol bio down from the github raw URL, to /carol/bio
 
-You can fill out [[wa.task.2026.2026-05-25_0849-carol]] , and feel free to include any other SF/weave-pushing test ideas.
+You can fill out [[wa.completed.2026.2026-05-25_0849-carol]] , and feel free to include any other SF/weave-pushing test ideas.
 
 # gpt-5.5_2026-05-25_0852_29
 
@@ -156,7 +156,7 @@ Carol page/shared-shell/follow-up items are now `[d]` with references to `[[wa.t
 
 # User_2026-05-25_0909_10
 
-And you can add to [[wa.task.2026.2026-05-25_0849-carol]] that we need a 27-carol-woven, and then you can implement.
+And you can add to [[wa.completed.2026.2026-05-25_0849-carol]] that we need a 27-carol-woven, and then you can implement.
 
 Also can you make me the creator of these datasets (alice and carol), my IRI is https://djradon.github.io/ns/dave-richardson
 
@@ -210,7 +210,7 @@ Key files:
 - [carol-data.ttl](../../mesh-alice-bio/.assets/26-carol/carol-data.ttl)
 - [26-carol.jsonld](../../semantic-flow-framework/examples/alice-bio/conformance/26-carol.jsonld)
 - [27-carol-woven.jsonld](../../semantic-flow-framework/examples/alice-bio/conformance/27-carol-woven.jsonld)
-- [[wa.task.2026.2026-05-25_0849-carol]]
+- [[wa.completed.2026.2026-05-25_0849-carol]]
 
 I also made `https://djradon.github.io/ns/dave-richardson` the creator for the Alice and Carol datasets, updated the conformance expectations, and fixed Weave so:
 - nested first payloads like `/carol/data` can weave before `/carol` exists

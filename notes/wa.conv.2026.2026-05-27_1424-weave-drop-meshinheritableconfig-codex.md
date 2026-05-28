@@ -2,17 +2,22 @@
 id: weave-drop-meshinheritab-zgsy6b
 title: 'weave: drop MeshInheritableConfig'
 desc: ''
-created: 1779917056605
 updated: 1779917056605
-participants: [codex.gpt-5.5]
-conversationEventKinds: [message.assistant, message.user, tool.call, tool.result]
+created: 1779917056605
+participants:
+  - codex.gpt-5.5
+conversationEventKinds:
+  - message.assistant
+  - message.user
+  - tool.call
+  - tool.result
 ---
 
 # User_2026-05-27_1406_01
 
 weave: drop MeshInheritableConfig
 
-Please review [[wa.task.2026.2026-05-27_1347-drop-MeshInheritableConfig]] and let me know if you have any questions or suggestions for improvement.
+Please review [[wa.completed.2026.2026-05-27_1347-drop-MeshInheritableConfig]] and let me know if you have any questions or suggestions for improvement.
 
 # gpt-5.5_2026-05-27_1406_14
 

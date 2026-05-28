@@ -13,7 +13,7 @@ created: 1779728403457
 - Keep `alice/data` as Alice's RDF Turtle dataset and `alice/bio` as Alice's authored Markdown biography, so the fixture clearly separates data from narrative content.
 - Use the freed `18` and `19` slots for a small, useful new artifact story: integrate and weave `favicon.ico` as the first image/binary `DigitalArtifact` in the Alice Bio ladder.
 - Keep `targetLocalRelativePath` available as an ontology/runtime feature, but stop presenting it as the recommended page-source pattern for authored content that should be governed.
-- Keep this redesign focused on the Alice 14-19 rung story; defer mesh-wide ResourcePage layout policy to [[wa.task.2026.2026-05-24_2304-honor-mesh-config]] and Carol-specific work to [[wa.task.2026.2026-05-25_0849-carol]].
+- Keep this redesign focused on the Alice 14-19 rung story; defer mesh-wide ResourcePage layout policy to [[wa.task.2026.2026-05-24_2304-honor-mesh-config]] and Carol-specific work to [[wa.completed.2026.2026-05-25_0849-carol]].
 
 ## Summary
 
@@ -141,7 +141,7 @@ This task should not add the references panel or all generated panels page-by-pa
 ## Non-Goals
 
 - Do not implement mesh-wide ResourcePage layout/profile config here; that belongs to [[wa.task.2026.2026-05-24_2304-honor-mesh-config]].
-- Do not add Carol custom page behavior here; that belongs to [[wa.task.2026.2026-05-25_0849-carol]].
+- Do not add Carol custom page behavior here; that belongs to [[wa.completed.2026.2026-05-25_0849-carol]].
 - Do not remove `sflo:targetLocalRelativePath` from the ontology or runtime.
 - Do not add a rich media-type ontology slice unless the first favicon integration cannot be represented correctly without it.
 - Do not make every mesh asset automatically governed just because `favicon.ico` becomes governed in this fixture.

@@ -2,7 +2,7 @@
 id: wgv1vdga8zodyooa52gfeqt
 title: 2026 05 27_1246 Config Source Discovery and Resolution
 desc: Teach Weave to discover and resolve sfcfg:ConfigSource attachments into effective config.
-updated: 1779918078039
+updated: 1779934447201
 created: 1779911218761
 ---
 
@@ -106,7 +106,7 @@ The effective config compiler should continue to fail closed on malformed Turtle
 - Allow conventional `_mesh/_config/config.ttl` and accepted resolved config-source graphs to attach additional mesh-local config sources with `<meshIri> sfcfg:hasConfigSource ?source`. Chaining is necessary for reusable config composition.
 - Treat `sfcfg:hasConfigSource` or `sfcfg:hasInheritableConfigSource` on unrecognized subjects in authored config inputs as hard errors.
 - Support workspace-bounded `sflo:targetLocalRelativePath` in the first slice only when the existing local path policy permits it; a config source must not grant itself the access needed to read itself.
-- Use deterministic source processing only for reproducibility. Source order should not become an override mechanism. Existing policy resolution semantics still apply inside resolved config content: layer, selector specificity, and `sfcfg:policyPriority` can resolve policy-binding conflicts, while same-layer singleton setting conflicts still fail closed unless a specific merge rule supports them.
+- Use deterministic source processing for reproducibility and as a same-layer tie-breaker: earlier sources in the effective source chain win over later sources. The config graph that attaches a source is earlier than the source it attaches, so reusable config can supply defaults behind the referring config without overriding it. Existing policy resolution semantics still apply first: layer, selector specificity, and `sfcfg:policyPriority` resolve before source order.
 - Keep Knop attachment-subject discovery out of the first mesh-local slice. A mesh-local attachment may resolve a Knop-owned `ConfigArtifact`, but Weave should not yet scan Knop config graphs or consume `sflo:Knop sfcfg:hasConfigSource` / `sflo:Knop sfcfg:hasInheritableConfigSource` as ordinary source-discovery entry points. If those Knop attachment statements appear in an active first-slice config input, reject them as unsupported until Knop source discovery is implemented.
 - Runtime/cache code may compute internal source byte digests, parsed graph fingerprints, and dependency-set fingerprints for invalidation and diagnostics. Reserve the RDF predicate `sfcfg:hasConfigSourceFingerprint` for persisted or exported `sfcfg:ConfigResolutionRecord` output until its exact persisted semantics are settled.
 
@@ -138,7 +138,7 @@ The effective config compiler should continue to fail closed on malformed Turtle
 - Digest mismatch on `sflo:expectsContentDigest` fails closed.
 - Unsupported remote `sflo:targetAccessUrl` fails closed under the default resolver policy.
 - Workspace/local path config sources require the same local path policy as other source resolution and cannot grant themselves access.
-- Multiple same-layer sources with conflicting singleton settings or policy bindings fail closed with diagnostics that include participating source identities.
+- Multiple same-layer sources with conflicting singleton settings or policy bindings are resolved by effective source order after layer, selector specificity, and `sfcfg:policyPriority`; unresolved ties within the same effective source order fail closed with diagnostics that include participating source identities.
 - Command overrides still beat mesh-local config-source values.
 - Conventional `_mesh/_config/config.ttl` behavior remains unchanged when no config-source attachments are present.
 - Ordinary config-source reads do not write `sfcfg:ResolvedConfig`, `sfcfg:ConfigResolutionRecord`, or `sflo:ArtifactResolutionObservation` records to the mesh.
@@ -155,16 +155,16 @@ The effective config compiler should continue to fail closed on malformed Turtle
 ## Implementation Plan
 
 - [ ] Verify [[ont.completed.2026.2026-05-26_2205-artifact-resolution-spec-and-observation-cleanup]] remains reflected in active ontology, SHACL, runtime, docs, and fixtures before implementing source discovery.
-- [ ] Inventory the current effective-config loader and identify the smallest layer-input abstraction needed for resolved config sources.
-- [ ] Confirm the first supported config-source coordinate subset and update [[sf.spec.2026-05-25-config-behavior]] if the spec needs that first-slice boundary.
-- [ ] Add config-source attachment discovery for mesh-local attachments from the conventional mesh config graph and/or mesh metadata.
-- [ ] Add recursive mesh-local attachment discovery from accepted resolved config-source graphs.
-- [ ] Implement safe config-source byte resolution for the first supported coordinate subset.
-- [ ] Parse resolved bytes as Turtle with an appropriate base IRI and compile them into the attachment property's layer.
-- [ ] Add cycle detection and deterministic source processing.
-- [ ] Add digest verification for `sflo:expectsContentDigest`.
-- [ ] Add trace metadata for accepted/rejected config sources.
-- [ ] Add focused unit tests for source discovery, source resolution, layer participation, cycle rejection, digest mismatch, and unsupported remote/path cases.
-- [ ] Add an integration test showing existing-mesh commands honoring a policy supplied through `sfcfg:hasConfigSource` on the mesh subject.
+- [x] Inventory the current effective-config loader and identify the smallest layer-input abstraction needed for resolved config sources.
+- [x] Confirm the first supported config-source coordinate subset and update [[sf.spec.2026-05-25-config-behavior]] if the spec needs that first-slice boundary.
+- [x] Add config-source attachment discovery for mesh-local attachments from the conventional mesh config graph and/or mesh metadata.
+- [x] Add recursive mesh-local attachment discovery from accepted resolved config-source graphs.
+- [x] Implement safe config-source byte resolution for the first supported coordinate subset.
+- [x] Parse resolved bytes as Turtle with an appropriate base IRI and compile them into the attachment property's layer.
+- [x] Add cycle detection and deterministic source processing.
+- [x] Add digest verification for `sflo:expectsContentDigest`.
+- [x] Add trace metadata for accepted/resolved config sources.
+- [x] Add focused unit tests for source discovery, source resolution, layer participation, cycle rejection, digest mismatch, and unsupported remote/path cases.
+- [x] Add an integration test showing existing-mesh commands honoring a policy supplied through `sfcfg:hasConfigSource` on the mesh subject.
 - [ ] Update CLI/user docs only after the authoring pattern is stable enough to recommend.
-- [ ] Run focused Weave tests plus `deno task check` and `deno task lint` if runtime structure changes broadly.
+- [x] Run focused Weave tests plus `deno task check` and `deno task lint` if runtime structure changes broadly.
