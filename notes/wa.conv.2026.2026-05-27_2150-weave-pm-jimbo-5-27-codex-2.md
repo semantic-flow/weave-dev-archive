@@ -1430,3 +1430,540 @@ test: assert extracted reference catalog links semantically
 # User_2026-05-28_0021_01
 
 Well, I think it's nice to keep the TTL consistent.
+
+# gpt-5.5_2026-05-28_0021_22
+
+I agree with you. The semantic assertion is a decent guardrail, but the generated Turtle should still look like the rest of the file when we’re producing fallback append facts. I’ll change the renderer to emit mesh-relative subjects/objects and `sflo:`/`a` where appropriate, then restore the test to care about the readable TTL shape too.
+
+# gpt-5.5_2026-05-28_0021_55
+
+I’m going to preserve the append-onlyish rule: don’t rewrite the existing Knop subject block just to make it prettier. But appended fallback facts should use the same compact vocabulary style, so they’ll come out as `<bob/_knop> sflo:hasReferenceCatalog <bob/_knop/_references> .` instead of absolute IRIs everywhere.
+
+# gpt-5.5_2026-05-28_0022_57
+
+The renderer now keeps appended support facts compact without reverting to subject-block surgery. I’ll run the focused tests around this path plus formatting.
+
+# gpt-5.5_2026-05-28_0024_06
+
+You’re right; consistency in the emitted Turtle is worth protecting here. I’m picking up from the failure I introduced: compact `sflo:` snippets need a prefix when we parse them internally, even though the final inventory already speaks that dialect.
+
+# gpt-5.5_2026-05-28_0024_17
+
+The failure shape is clear now: we made the planner’s internal snippets prettier, then asked a bare Turtle parser to understand `sflo:` without telling it what `sflo:` means. I’m going to make that parser context match the inventories it’s validating, then rerun the narrow and renderer tests.
+
+# gpt-5.5_2026-05-28_0024_30
+
+That parser context fix is in. I’m going to run the renderer/add-reference tests first because they cover the append-preservation path directly, then the integration test that caught the TTL-shape mismatch.
+
+# gpt-5.5_2026-05-28_0024_35
+
+The next break is one layer downstream: the append planner also parses those generated requested facts. I’m going to teach this caller to pass planner-ready Turtle with the same `sflo:` directive, while leaving the actual appended facts compact.
+
+# gpt-5.5_2026-05-28_0024_54
+
+I’ve kept the compact rendered/appended facts as the durable output, and added the prefix only to the planner’s parse input. That should keep the planner semantic without letting absolute-IRI formatting leak back into the inventories.
+
+# gpt-5.5_2026-05-28_0025_12
+
+The integration test now shows the nuance: freshly-created Bob has the link inside the main Knop block, while the preservation path appends it as a separate compact triple. I’m tightening the assertion around the real invariant we care about: compact project-local Turtle, not an absolute predicate.
+
+# gpt-5.5_2026-05-28_0025_24
+
+That gives us a test that won’t force block surgery into this release slice, while still catching the ugly absolute-predicate regression. Now I’m running the focused integration test again, then the whole extract integration file if it passes.
+
+# gpt-5.5_2026-05-28_0025_31
+
+Focused failure is fixed, and formatting is clean. I’m doing the broader local pass now: all extract integration tests plus the renderer/add-reference tests together, so we know the planner path and the original failing path still agree.
+
+# gpt-5.5_2026-05-28_0025_37
+
+The repair holds across the direct renderer tests and the full extract integration file. I’m doing a quick diff/status pass now, then I’ll run lint/check unless something surprising shows up.
+
+# gpt-5.5_2026-05-28_0025_40
+
+Only the compact Turtle preservation fix and its regression assertion are dirty now; the release-note edits appear to already be out of the worktree. I’m running lint and type/check next so this is release-friendly, not just test-green.
+
+# gpt-5.5_2026-05-28_0025_55
+
+Agreed, and I fixed it that way.
+
+Updated [knop_support_renderers.ts](../../../../../src/core/weave/knop_support_renderers.ts) so preserved support facts are rendered with compact Turtle terms like `sflo:hasReferenceCatalog` and `<bob/_knop/_references>`, while still giving the internal parser/planner the prefix context it needs.
+
+Updated [extract_test.ts](../../../../../tests/integration/extract_test.ts) to assert the compact form survives both extraction and a later weave, and specifically rejects the absolute `hasReferenceCatalog` predicate regression.
+
+Validation passed:
+
+```sh
+deno test -A tests/integration/extract_test.ts
+deno test -A src/core/weave/knop_support_renderers_test.ts src/core/knop/add_reference_test.ts
+deno fmt --check src/core/weave/knop_support_renderers.ts tests/integration/extract_test.ts
+deno task lint && deno task check
+```
+
+Suggested commit message:
+
+```text
+weave: keep preserved support facts in compact Turtle form
+
+Render carried Knop support facts with sflo prefixes and mesh-local relative IRIs
+instead of absolute predicate/object IRIs. Provide parser directives when those
+compact snippets are fed through the append planner, and cover the extraction
+source-reference path that exposed the formatting regression.
+```
+
+# User_2026-05-28_0028_06
+
+Are you feeling a task around RDF/RDF-formatting in the future? Teaching   callers to pass planner-ready Turtle? telling parsers what sflo: means?
+
+# gpt-5.5_2026-05-28_0028_13
+
+Yeah, I’m feeling one. Before I turn it into PM-shaped language, I’m quickly re-grounding in the repo guidance notes so I don’t accidentally invent a task that fights the local docs.
+
+# gpt-5.5_2026-05-28_0028_23
+
+The thing I’m checking is whether this is a one-off paper cut or a repeated boundary smell. If it shows up in a few parser/rendering sites, I’d make it a small correctness task rather than just a comment in the release notes.
+
+# gpt-5.5_2026-05-28_0028_44
+
+Yes, but I’d frame it less as “RDF formatting” and more as **RDF parse/render context boundaries**.
+
+The smell is not just `sflo:`. It’s that some code is passing around Turtle snippets as strings, and each caller has to remember whether the snippet is:
+
+- a full Turtle document with `@base` / `@prefix`
+- a fragment that assumes mesh base
+- a fragment that assumes `sflo:`
+- semantically parseable but not stylistically acceptable for Weave output
+- byte-preserved source text that should not be re-rendered
+
+That’s enough cognitive load to deserve a task.
+
+Suggested task prompt for Kim:
+
+```md
+Groom and implement a small RDF/Turtle context cleanup.
+
+Goal: make Weave RDF snippet parsing/rendering explicit so callers do not need to manually remember prefix declarations, mesh-base behavior, or compact `sflo:` formatting.
+
+Focus areas:
+- Add shared helpers for standard Weave Turtle directives/prefixes, at least `sflo:` and probably `sfcfg:`, `xsd:`, and `rdf:` where already used.
+- Add a helper for parsing Weave Turtle snippets with a mesh base and standard prefixes.
+- Add or consolidate a helper for rendering named nodes/literals in Weave’s preferred compact style:
+  - `a` for `rdf:type`
+  - `sflo:*` for SFLO ontology terms
+  - `sfcfg:*` for config terms where applicable
+  - mesh-local IRIs as `<relative/path>`
+  - external IRIs as absolute `<https://...>`
+- Migrate the highest-risk callers first:
+  - `knop_support_renderers.ts`
+  - `inventory_append_planner.ts` caller boundary
+  - `add_reference.ts` carried-support preservation paths if applicable
+- Add focused regressions proving:
+  - compact `sflo:` snippets parse without callers hand-adding prefixes
+  - preserved/appended support facts do not emit absolute SFLO predicate IRIs
+  - byte-preserved carried blocks remain byte-preserved
+
+Non-goals:
+- Do not build a general Turtle pretty-printer.
+- Do not reformat all existing generated TTL.
+- Do not change append-onlyish byte-preservation semantics.
+```
+
+My take: not a release blocker now that the failing path is fixed, but absolutely worth queueing soon. It’s exactly the kind of small infrastructure debt that otherwise keeps turning into “why did this parser forget what `sflo:` means?” little fires.
+
+# User_2026-05-28_0030_30
+
+Should we consider using one of the RDF.js libraries or N3 to actually pass around triple objects? That could smooth the way for oxigraph implementation.
+
+# gpt-5.5_2026-05-28_0030_39
+
+I’m going to answer this as an architecture call rather than immediately touching code. The short version in my head: yes to RDF objects as an internal representation in some places, no to making every caller speak raw parser/library types.
+
+# gpt-5.5_2026-05-28_0031_01
+
+Yes. I think the cleaner direction is: **pass RDF facts/terms across semantic boundaries, serialize Turtle only at file boundaries**.
+
+But with two guardrails:
+
+1. Don’t leak raw `N3.Quad` everywhere as the public internal API.
+2. Don’t expect RDF libraries to preserve Turtle bytes, comments, block order, or style.
+
+So I’d aim for a thin Weave RDF layer:
+
+```ts
+type WeaveRdfFact = {
+  subject: NamedNode;
+  predicate: NamedNode;
+  object: NamedNode | Literal;
+};
+
+type WeaveRdfDocument = {
+  baseIri: string;
+  quads: readonly Quad[];
+  originalTurtle?: string;
+};
+```
+
+Then helpers like:
+
+- `parseWeaveTurtleDocument(...)`
+- `parseWeaveTurtleSnippet(...)`
+- `renderWeaveFact(...)`
+- `renderWeaveFacts(...)`
+- `hasNamedNodeFact(...)`
+- `objectNamedNodePaths(...)`
+- `quadKey(...)`
+
+The immediate practical improvement: `planInventoryAppend` should probably accept requested facts/quads directly, not `requestedSettledFactsTurtle`. That would have avoided this whole “caller must pass planner-ready Turtle with prefix declarations” situation. A Turtle-string overload can still exist for tests or CLI-ish convenience, but the production path should hand it facts.
+
+For Oxigraph, this helps, but it’s not magic. The important thing is to depend on a small RDF/JS-like abstraction: terms, quads, dataset-ish lookup. Then today’s adapter can be N3 parser/arrays, and a later adapter can be Oxigraph-backed without rewriting every policy/resolver/planner function.
+
+The byte-preservation wrinkle remains separate. For carried unknown support blocks, we still need:
+
+```ts
+{
+  originalBlock: string;
+  parsedQuads: readonly Quad[];
+}
+```
+
+Semantic decisions use quads; append output uses `originalBlock` when preserving unknown facts. RDF libraries won’t solve that part, and if we let them reserialize those blocks we lose the thing we were trying to protect.
+
+So: yes, I’d queue this. I’d call it something like **RDF fact API for parse/render boundaries**, with the first slice being `inventory_append_planner` accepting facts/quads instead of Turtle snippets. That’s small, valuable, and it moves us toward Oxigraph without swallowing the whole RDF ocean.
+
+# User_2026-05-28_0032_04
+
+I think you have the context to fill the task. You're a PM with serious technical chops. But let me know if you want to delegate. ;)
+
+# gpt-5.5_2026-05-28_0032_14
+
+I’ve got this one. I’ll fill it as a groomed implementation task rather than a vague “RDF cleanup” umbrella, with a first slice Kim can actually land without derailing release prep.
+
+# gpt-5.5_2026-05-28_0032_25
+
+The task note is currently just the section scaffold, and the worktree is clean. I’m going to borrow the repo’s task-note shape and anchor this to the append-planner incident plus the existing RDF helper extraction work.
+
+# gpt-5.5_2026-05-28_0032_41
+
+I’ve got the shape: first slice is not “swap parsers” and not “canonicalize all Turtle.” It’s a local RDF fact/document boundary that lets production code stop passing semantically meaningful facts as prefix-dependent strings.
+
+# gpt-5.5_2026-05-28_0033_25
+
+Patch missed the exact blank-line shape in the note; no harm done. I’m going to replace the scaffold more directly.
+
+# gpt-5.5_2026-05-28_0034_26
+
+The task is filled now. I’m giving it one quick read for Dendron/task-note hygiene and checking status; this was documentation-only, so no test run should be needed.
+
+# gpt-5.5_2026-05-28_0034_30
+
+The main Weave worktree doesn’t track the archive note directly, since that’s inside the nested `weave-dev-archive` repo. I’m checking that repo’s status too so the handoff is precise.
+
+# gpt-5.5_2026-05-28_0034_39
+
+Done. I filled [wa.task.2026.2026-05-28-0030-rdf-and-turtle-cleanup.md](wa.task.2026.2026-05-28-0030-rdf-and-turtle-cleanup.md).
+
+Shape of the task:
+
+- Focuses on RDF parse/render context boundaries, not vague formatting churn.
+- Recommends using N3/RDF.js-style terms now, with a seam that could support Oxigraph later.
+- Makes `inventory_append_planner` the first practical slice.
+- Keeps Turtle strings at file/byte-preservation boundaries, facts/quads at semantic planner boundaries.
+- Explicitly protects byte-preserved unknown support blocks.
+- Lists focused tests and non-goals so Kim has guardrails.
+
+No tests run since this was archive-note-only. The `weave-dev-archive` repo now has the new task note untracked; it also had an existing modified conversation note.
+
+# User_2026-05-28_0037_57
+
+Update [wd.todo.md](../../../../../documentation/notes/wd.todo.md) ?
+
+# gpt-5.5_2026-05-28_0038_07
+
+Yep, I’ll add this to the durable backlog rather than leaving it only in the archive task. I’m checking the current todo shape first so the new entry lands in the right section and uses the local note style.
+
+# gpt-5.5_2026-05-28_0038_13
+
+I’m going to add it in two places: a real backlog item under the developer/correctness queue, and the audit index as an active task note. I’ll keep it framed as the narrow RDF fact/API boundary, not a broad Oxigraph migration.
+
+# gpt-5.5_2026-05-28_0038_26
+
+The todo entry is in. I’m doing a quick diff/status check so I can tell you exactly what changed and whether anything else is dirty.
+
+# gpt-5.5_2026-05-28_0038_34
+
+Updated [wd.todo.md](../../../../../documentation/notes/wd.todo.md).
+
+I added:
+
+- A P2 backlog item for the first RDF parse/render boundary slice.
+- An Active task-note audit entry for [[wa.task.2026.2026-05-28-0030-rdf-and-turtle-cleanup]].
+
+Kept the framing narrow: shared Turtle context/fact helpers, `inventory_append_planner` accepting facts/quads, and no Oxigraph migration or broad TTL churn.
+
+# User_2026-05-28_0038_49
+
+What do you think of coderabbits comments:
+
+Verify each finding against current code. Fix only still-valid issues, skip the
+rest with a brief reason, keep changes minimal, and validate.
+
+Inline comments:
+In `@src/core/weave/inventory_append_planner.ts`:
+- Around line 85-115: The planner currently only checks conflicts against
+currentBySubjectPredicate; add detection of divergent requestedFacts for the
+same slot by tracking previously seen requested objects keyed by
+toSubjectPredicateKey(requestedQuad) (e.g., a requestedSeen map); for each
+requestedFact, if requestedSeen has the slot and rdfTermsEqual(existingObject,
+requestedQuad.object) is false, push a conflict entry (use
+requestedFact.summary, toFactSummary for existing, predicate from
+requestedQuad.predicate.value, and formatConflictMessage) and continue;
+otherwise store the object in requestedSeen and proceed with the existing
+current/inventory checks (currentKeys, alreadyPresent, missing) as before.
+
+In `@src/core/weave/knop_support_renderers_test.ts`:
+- Around line 184-197: The test renderKnopInventoryWithPreservedSupportArtifacts
+currently asserts on the emitted text which can miss leaked progression facts
+serialized under different prefixes; change the assertions to parse the Turtle
+output into RDF quads and assert semantically that the predicate IRIs for the
+progression facts (e.g., the full IRIs corresponding to
+sflo:currentArtifactHistory and sflo:nextHistoryOrdinal) are not present. In the
+test that calls renderKnopInventoryWithPreservedSupportArtifacts, use the
+project’s Turtle/RDF parser (or an N3/rdflib parser available in the repo) to
+convert output into quads and then check that no quad has predicate equals the
+exact progression IRIs; keep the same inputs (inventoryWithSupportFacts,
+meshBase, knopPath) and replace the string-based
+assertFalse(output.includes(...)) checks with quad-level absence assertions for
+those predicate IRIs.
+
+---
+
+Nitpick comments:
+In `@src/core/knop/add_reference.ts`:
+- Around line 299-310: The catch currently converts any Error from
+renderKnopInventoryWithPreservedSupportArtifacts into
+KnopAddReferenceInputError; instead, import/identify the specific
+validation/input-shape error type that the renderer throws (the exact class/name
+used by renderKnopInventoryWithPreservedSupportArtifacts) and only remap that
+type to KnopAddReferenceInputError, leaving all other errors rethrown unchanged
+so renderer bugs keep their original stack and type; update the catch to check
+instanceof (or a type guard/error.name match) against the renderer's validation
+error class and throw new KnopAddReferenceInputError(error.message) only in that
+case, otherwise rethrow the original error.
+
+# gpt-5.5_2026-05-28_0039_03
+
+I’ll sanity-check them against the current code before giving you a thumbs-up/down. These sound plausible, but the first one especially depends on whether the planner dedupes by quad key only or also guards same subject/predicate divergent requested objects.
+
+# gpt-5.5_2026-05-28_0039_06
+
+I’ve verified the three spots. My read: two are real and worth fixing; the nit is probably also valid, but I’d treat it as lower priority because the renderer currently mostly throws input/validation errors by design.
+
+# gpt-5.5_2026-05-28_0039_43
+
+I think CodeRabbit is mostly right, with one important sharpening.
+
+**1. Planner divergent requested facts: valid, but scope it to single-valued predicates.**
+
+Current code only checks requested facts against existing inventory facts. If `currentInventoryTurtle` is empty and `requestedSettledFactsTurtle` asks for two different objects for the same single-valued subject/predicate slot, the planner will currently append both.
+
+That is a real bug.
+
+But I would not implement CodeRabbit’s wording blindly for all same subject/predicate slots. Multi-valued predicates are valid: `rdf:type`, `sflo:hasHistoricalState`, etc. The `requestedSeen` conflict check should only apply when `singleValuedPredicates.has(requestedQuad.predicate.value)` is true.
+
+**2. Progression-fact test should be semantic: valid.**
+
+The current test only checks:
+
+```ts
+assertFalse(output.includes("sflo:currentArtifactHistory"));
+assertFalse(output.includes("sflo:nextHistoryOrdinal"));
+```
+
+That would miss absolute IRIs or alternate prefixes. Since the test already has `parseQuads`, this is cheap and better. Replace with “no quad has predicate `${SFLO_NAMESPACE}currentArtifactHistory` / `nextHistoryOrdinal`.”
+
+**3. Catch/remap in `add_reference.ts`: valid nit, but lower priority.**
+
+Current code catches any `Error` from `renderKnopInventoryWithPreservedSupportArtifacts` and converts it to `KnopAddReferenceInputError`. That can hide real renderer bugs. Better:
+
+```ts
+} catch (error) {
+  if (error instanceof WeaveInputError) {
+    throw new KnopAddReferenceInputError(error.message);
+  }
+  throw error;
+}
+```
+
+That requires importing `WeaveInputError` from `../weave/errors.ts`.
+
+My recommendation to Kim: fix all three, but treat the first as the substantive correctness issue. Add a regression where requested facts contain two different objects for one single-valued predicate and no current inventory conflict exists yet. That’s the hole.
+
+# User_2026-05-28_0039_54
+
+prompt for kim
+
+# gpt-5.5_2026-05-28_0040_10
+
+Prompt for Kim:
+
+```md
+Please verify and address these CodeRabbit comments against current code. Fix only still-valid issues, keep the diff minimal, and validate.
+
+Context from Jimbo:
+- The planner conflict finding is valid, but only for predicates declared single-valued. Do not treat all repeated subject/predicate requested facts as conflicts, because multi-valued predicates like `rdf:type` and `sflo:hasHistoricalState` are legitimate.
+- The progression-fact test comment is valid.
+- The `add_reference.ts` catch/remap comment is valid but lower priority; fix if cheap.
+
+Tasks:
+
+1. In `src/core/weave/inventory_append_planner.ts`, detect divergent requested facts for the same subject/predicate slot when that predicate is in `singleValuedSettledPredicates`.
+   - Track previously seen requested facts keyed by `toSubjectPredicateKey(requestedQuad)`.
+   - If the slot was already requested with a different object, push a conflict using the existing `InventoryFactConflict` shape and `formatConflictMessage`.
+   - Continue to allow duplicate identical requested facts to dedupe/no-op as today.
+   - Continue to allow multi-valued predicates to request multiple objects.
+
+2. Add a regression in `src/core/weave/inventory_append_planner_test.ts`.
+   - Current inventory can be empty or unrelated.
+   - Requested Turtle should contain two different objects for the same subject and single-valued predicate, e.g. `sflo:hasPayloadArtifact`.
+   - Assert `plan.kind === "conflict"` and the message mentions both requested objects.
+   - Also add or preserve coverage showing multi-valued repeated predicates still append/behave normally if needed.
+
+3. In `src/core/weave/knop_support_renderers_test.ts`, change the mutable progression fact absence test to parse output Turtle and assert semantically:
+   - no quad predicate equals `${SFLO_NAMESPACE}currentArtifactHistory`
+   - no quad predicate equals `${SFLO_NAMESPACE}nextHistoryOrdinal`
+   This replaces string checks like `output.includes("sflo:currentArtifactHistory")`.
+
+4. In `src/core/knop/add_reference.ts`, narrow the catch around `renderKnopInventoryWithPreservedSupportArtifacts`.
+   - Import `WeaveInputError` from `../weave/errors.ts`.
+   - Remap only `WeaveInputError` to `KnopAddReferenceInputError`.
+   - Rethrow all other errors unchanged so renderer bugs preserve original type/stack.
+
+Validation:
+- Run `deno test -A src/core/weave/inventory_append_planner_test.ts src/core/weave/knop_support_renderers_test.ts src/core/knop/add_reference_test.ts`.
+- Run `deno fmt --check` on touched files.
+- Run `deno task lint && deno task check` if the changes touch imports/types.
+```
+
+# User_2026-05-28_0045_17
+
+I've added a weave vision document to complement [sf.vision.md](../../semantic-flow-framework/notes/sf.vision.md) . Simple for now. Any suggested improvements?
+
+# gpt-5.5_2026-05-28_0045_29
+
+I’ll read the new Weave vision next to the Semantic Flow vision and the repo guidance, then I’ll give you doc-level suggestions rather than barging in with edits unless something is obviously tiny.
+
+# gpt-5.5_2026-05-28_0045_41
+
+Yes. It’s good as a seed. I’d tighten two things:
+
+1. Fix grammar: “a versatile”, “an RDF-native core”.
+2. Make the relationship between the three prongs clearer: CLI, API, and web app are surfaces over the same core, not three separate products.
+
+Suggested version:
+
+```md
+Weave will be a versatile, filesystem-oriented implementation of the Semantic Flow Framework, built around an RDF-native core and exposed through three coordinated surfaces:
+
+- an agile CLI for local authoring, publishing, repair, and automation
+- a stable API for applications, agents, and integrations
+- a web application that consumes the API for browsing, editing, and managing meshes
+```
+
+If you want one more sentence, I’d add the “why Weave exists” bit:
+
+```md
+Its job is to make semantic meshes practical: easy to create locally, safe to version, simple to publish through static hosting, and pleasant to inspect through generated pages or interactive tools.
+```
+
+Tiny PM pushback: I’d avoid saying just “an API” without qualifying it. That can mean library API, HTTP API, daemon API, or Semantic Flow API. “stable API for applications, agents, and integrations” gives it a little more shape without overcommitting.
+
+# User_2026-05-28_0046_59
+
+How does "runtime" fit in?
+
+# gpt-5.5_2026-05-28_0047_06
+
+I’d treat **runtime** as the layer between the RDF-native core and the user-facing surfaces.
+
+Something like:
+
+- **Core**: pure-ish Semantic Flow planning and RDF logic. Given inputs, decide facts/files/operations.
+- **Runtime**: applies that core in a real host environment: workspace paths, filesystem reads/writes, config loading, source resolution, settings, logging, timing, safety policy, command orchestration.
+- **CLI**: human/automation shell over the runtime.
+- **API**: programmatic surface over the runtime.
+- **Web app**: UI that consumes the API.
+
+So the vision could say:
+
+```md
+Weave will be a versatile, filesystem-oriented implementation of the Semantic Flow Framework, built around an RDF-native core, a host-aware runtime, and three coordinated surfaces:
+
+- an agile CLI for local authoring, publishing, repair, and automation
+- a stable API for applications, agents, and integrations
+- a web application that consumes the API for browsing, editing, and managing meshes
+```
+
+I like “host-aware runtime” because it captures the stuff that is not portable Semantic Flow theory: local files, git-ish source resolution, settings, trust policy, generated artifacts, logs, and eventually daemon/server behavior. It’s the practical machinery that makes the core useful without letting those host concerns pollute the core model.
+
+# User_2026-05-28_0049_24
+
+commit message for merge
+
+# gpt-5.5_2026-05-28_0049_34
+
+I’ll check the current diff so the message matches what’s actually in the worktree rather than inventing a grand title from memory.
+
+# gpt-5.5_2026-05-28_0049_40
+
+For the current Weave repo diff:
+
+```text
+docs: clarify Weave product vision
+
+- Describe Weave as a filesystem-oriented Semantic Flow implementation
+  with an RDF-native core and host-aware runtime.
+- Name the three coordinated surfaces: CLI, API, and web application.
+- Add a short practical-purpose statement for local creation, versioning,
+  static publication, and mesh inspection.
+```
+
+For the archive repo, if you’re committing the new RDF/Turtle task plus conversation exports separately:
+
+```text
+docs: add RDF/Turtle cleanup task note
+
+- Capture the RDF parse/render boundary cleanup as a groomed task.
+- Frame the first slice around shared Turtle context helpers and
+  inventory append planner fact inputs.
+- Preserve the distinction between semantic RDF facts and byte-preserved
+  carried Turtle blocks.
+```
+
+# User_2026-05-28_0049_53
+
+Sorry, I mean for the PR merge.
+
+# gpt-5.5_2026-05-28_0050_02
+
+Ah, got it. I’ll base this on the actual PR branch history so the merge message reads like a release integration, not just the last little docs tweak.
+
+# gpt-5.5_2026-05-28_0050_13
+
+For the PR merge/squash commit, I’d use:
+
+```text
+release: prepare v0.2.2
+
+- Add shared artifact-resolution runtime paths for source-backed config,
+  extraction evidence, and ResourcePageSource loading.
+- Resolve effective config per target, including Knop-local and inherited
+  config for recursive/multi-target workflows.
+- Support exact and fallback ResourcePageSource semantics plus current-only
+  ResourcePageDefinition behavior.
+- Introduce RDF-aware append planning for inventory/support facts and preserve
+  carried source-registry/reference-catalog data without accidental churn.
+- Improve fixture/test reliability with immutable fixture snapshot caching,
+  focused regressions, and release-note coverage for v0.2.2.
+```
+
+Small heads-up: your local `wd.vision.md` edit is uncommitted and not on `origin/next/v0.2.2`, so it won’t be part of the PR merge unless you commit/push it first.

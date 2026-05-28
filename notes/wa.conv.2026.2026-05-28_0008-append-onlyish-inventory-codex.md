@@ -339,3 +339,87 @@ Fix PR readiness issues for fixture snapshots and page config
 - thread owner designator paths through simple page models
 - add focused regression coverage
 ```
+
+# User_2026-05-28_0040_24
+
+Please verify and address these CodeRabbit comments against current code. Fix only still-valid issues, keep the diff minimal, and validate.
+
+Context from Jimbo:
+- The planner conflict finding is valid, but only for predicates declared single-valued. Do not treat all repeated subject/predicate requested facts as conflicts, because multi-valued predicates like `rdf:type` and `sflo:hasHistoricalState` are legitimate.
+- The progression-fact test comment is valid.
+- The `add_reference.ts` catch/remap comment is valid but lower priority; fix if cheap.
+
+Tasks:
+
+1. In `src/core/weave/inventory_append_planner.ts`, detect divergent requested facts for the same subject/predicate slot when that predicate is in `singleValuedSettledPredicates`.
+   - Track previously seen requested facts keyed by `toSubjectPredicateKey(requestedQuad)`.
+   - If the slot was already requested with a different object, push a conflict using the existing `InventoryFactConflict` shape and `formatConflictMessage`.
+   - Continue to allow duplicate identical requested facts to dedupe/no-op as today.
+   - Continue to allow multi-valued predicates to request multiple objects.
+
+2. Add a regression in `src/core/weave/inventory_append_planner_test.ts`.
+   - Current inventory can be empty or unrelated.
+   - Requested Turtle should contain two different objects for the same subject and single-valued predicate, e.g. `sflo:hasPayloadArtifact`.
+   - Assert `plan.kind === "conflict"` and the message mentions both requested objects.
+   - Also add or preserve coverage showing multi-valued repeated predicates still append/behave normally if needed.
+
+3. In `src/core/weave/knop_support_renderers_test.ts`, change the mutable progression fact absence test to parse output Turtle and assert semantically:
+   - no quad predicate equals `${SFLO_NAMESPACE}currentArtifactHistory`
+   - no quad predicate equals `${SFLO_NAMESPACE}nextHistoryOrdinal`
+   This replaces string checks like `output.includes("sflo:currentArtifactHistory")`.
+
+4. In `src/core/knop/add_reference.ts`, narrow the catch around `renderKnopInventoryWithPreservedSupportArtifacts`.
+   - Import `WeaveInputError` from `../weave/errors.ts`.
+   - Remap only `WeaveInputError` to `KnopAddReferenceInputError`.
+   - Rethrow all other errors unchanged so renderer bugs preserve original type/stack.
+
+Validation:
+- Run `deno test -A src/core/weave/inventory_append_planner_test.ts src/core/weave/knop_support_renderers_test.ts src/core/knop/add_reference_test.ts`.
+- Run `deno fmt --check` on touched files.
+- Run `deno task lint && deno task check` if the changes touch imports/types.
+
+# gpt-5.5_2026-05-28_0040_36
+
+I’ll verify the comments against the current tree first, then only patch the ones that still apply. Since the worktree already has prior PR-readiness edits, I’ll keep this new pass tightly scoped and avoid touching unrelated files.
+
+# gpt-5.5_2026-05-28_0041_05
+
+I confirmed the planner currently only checks requested facts against existing inventory, so the “two divergent requested objects for a single-valued slot” case is still open. The progression test is still string-based, and the add-reference remap is catching all errors, so all three comments are still valid.
+
+# gpt-5.5_2026-05-28_0041_29
+
+I’ll patch this in three small spots: planner slot tracking, semantic predicate assertions in the Knop support test, and the catch narrowing in `knop add-reference`. The planner change will only activate for predicates the caller declares single-valued.
+
+# gpt-5.5_2026-05-28_0043_04
+
+The patches are in. I’m going to let Deno format/check the touched files, then run the requested focused tests; because `add_reference.ts` gained an import, I’ll run lint/check after the focused tests.
+
+# gpt-5.5_2026-05-28_0043_16
+
+Focused tests are green: 26 passed. Since the import/type surface changed a little, I’m running lint and check now.
+
+# gpt-5.5_2026-05-28_0043_47
+
+Implemented the still-valid CodeRabbit fixes.
+
+- [inventory_append_planner.ts](../../../../../src/core/weave/inventory_append_planner.ts:78): now detects divergent requested facts for the same subject/predicate only when the predicate is declared single-valued.
+- [inventory_append_planner_test.ts](../../../../../src/core/weave/inventory_append_planner_test.ts:90): added regression coverage for divergent `sflo:hasPayloadArtifact`, plus multi-valued `sflo:hasHistoricalState` still appending normally.
+- [knop_support_renderers_test.ts](../../../../../src/core/weave/knop_support_renderers_test.ts:184): progression absence test now parses Turtle and checks predicates semantically.
+- [add_reference.ts](../../../../../src/core/knop/add_reference.ts:10): narrowed renderer error remapping to `WeaveInputError`; other errors rethrow unchanged.
+
+Validation passed:
+- `deno fmt --check src/core/weave/inventory_append_planner.ts src/core/weave/inventory_append_planner_test.ts src/core/weave/knop_support_renderers_test.ts src/core/knop/add_reference.ts`
+- `deno test -A src/core/weave/inventory_append_planner_test.ts src/core/weave/knop_support_renderers_test.ts src/core/knop/add_reference_test.ts`
+- `deno task lint && deno task check`
+
+Unrelated dirty docs remain untouched: `documentation/notes/wd.todo.md` and untracked `documentation/notes/wd.vision.md`.
+
+Suggested commit message:
+```text
+Fix append planner requested-fact conflicts
+
+- detect divergent requested objects for declared single-valued inventory slots
+- preserve multi-valued requested predicate behavior
+- assert Knop support progression omissions semantically
+- narrow knop add-reference renderer error remapping
+```
