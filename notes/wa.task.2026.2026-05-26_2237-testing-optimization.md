@@ -70,7 +70,9 @@ The obvious first target is `tests/support/mesh_alice_bio_fixture.ts` and siblin
 3. For each file, create its parent directory and read content through `git show`.
 4. Write the file into a fresh temp workspace.
 
-This is simple and correct, but expensive. Possible improvements, roughly from safest to bolder:
+This is simple and correct, but expensive. The first optimization should be an immutable per-ref snapshot cache: resolve each fixture ref to a commit, materialize that commit once into a process-local temp snapshot, then copy from the snapshot into each test's private workspace. This keeps test workspaces isolated while avoiding repeated `git show` calls for the same fixture files.
+
+Possible improvements, roughly from safest to bolder:
 
 - Cache `read*BranchFile(ref, path)` results by resolved commit and path. This helps both unit/core tests that read expected fixture files and materialization helpers that read the same files repeatedly.
 - Cache `list*BranchFiles(ref)` by resolved commit. This is tiny but removes repeated `git ls-tree` calls.
@@ -78,7 +80,16 @@ This is simple and correct, but expensive. Possible improvements, roughly from s
 - Use a bulk Git export path instead of per-file `git show`. `git archive` is the cleanest mental model, but extraction needs either a Deno tar implementation or allowing `tar` in the test task. Another candidate is a carefully reviewed Git work-tree checkout into a scratch directory, but that has more foot-gun potential around the fixture repo's index.
 - Use hardlinks or copy-on-write clones from immutable snapshots when the platform supports it, falling back to normal copy. This can be a later optimization once correctness is measured.
 
-My bias: start with in-process content/list caching because it is small and low risk, then add immutable snapshot caches if the baseline still hurts.
+Decision for the first implementation pass: start with the immutable per-ref snapshot cache, implemented without adding `tar` or widening test task subprocess permissions. It can still internally cache resolved refs, file lists, and file contents while building the snapshot, but the external materializer API should copy from the snapshot into a fresh workspace.
+
+First-pass local smoke checks after adding the snapshot cache:
+
+- `deno test --preload=tests/support/test_tmp_harness.ts --allow-read --allow-write --allow-run=git --allow-env tests/support/fixture_snapshot_test.ts`: passed
+- `deno test --preload=tests/support/test_tmp_harness.ts --allow-read --allow-write --allow-run=git,deno --allow-env tests/integration/import_test.ts`: passed in 42ms
+- `deno test --preload=tests/support/test_tmp_harness.ts --allow-read --allow-write --allow-run=git,deno --allow-env --filter "weave integrate requires a designator path before logging or execution" tests/e2e/integrate_cli_test.ts`: passed in about 2s on a warm local run
+- `deno test --preload=tests/support/test_tmp_harness.ts --allow-read --allow-write --allow-run=git,deno --allow-env --filter "weave knop add-reference matches the manifest-scoped alice-bio referenced fixture as a black-box CLI run" tests/e2e/knop_add_reference_cli_test.ts`: passed in about 5s on a warm local run
+
+These are smoke checks, not the final benchmark. Use Codecov and a fresh CI/local baseline to judge the actual suite-level improvement.
 
 ### Narrow Fixtures
 
@@ -197,9 +208,9 @@ This is also friendlier for debugging: the failing command can print the env kno
 - [c] Do not add `WEAVE_TEST_TIMING=1` just to print slowest tests; Codecov Test Analytics now covers that.
 - [ ] Add opt-in fixture/subprocess instrumentation only if fixture-cache work needs finer local attribution than Codecov provides.
 - [ ] Record a serial baseline for `deno task test`, `tests/e2e`, `tests/integration`, and `src` tests.
-- [ ] Cache resolved fixture refs, branch file lists, and branch file contents by fixture repo + resolved commit + path.
-- [ ] Benchmark the content/list cache against the baseline.
-- [ ] Add an immutable per-ref fixture snapshot cache if per-file Git subprocess overhead remains significant.
+- [x] Add an immutable per-ref fixture snapshot cache keyed by fixture repo + resolved commit.
+- [x] Convert Alice Bio, Sidecar Fantasy Rules, and Branch Fantasy Rules fixture materializers to copy from snapshots.
+- [ ] Benchmark the snapshot cache against the baseline.
 - [ ] Add a tiny mesh fixture builder for tests that do not need the real Alice Bio or Sidecar fixture ladder.
 - [ ] Migrate obvious validation/logging/host-policy tests from heavy real fixtures to the tiny mesh builder.
 - [ ] Split test task aliases in `deno.json` after the bucket boundaries are clear.

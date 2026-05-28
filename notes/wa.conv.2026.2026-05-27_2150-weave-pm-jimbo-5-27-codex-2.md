@@ -720,3 +720,183 @@ docs(todo): point P0 resolver follow-up at ResourcePageSource task
 
 - replace the broad page-definition umbrella reference with the groomed source-resolution task
 ```
+
+# User_2026-05-27_2257_01
+
+ok, apparently that completed quickly. What's our next task?
+
+# gpt-5.5_2026-05-27_2257_18
+
+I’ll do a quick backlog reality check first, because “next” depends on whether the page-source resolver task really landed or just got scoped. Then I’ll give you a decisive recommendation rather than a menu soup.
+
+# gpt-5.5_2026-05-27_2258_06
+
+I’ll do a quick read of the current backlog and the just-finished task state so I don’t recommend from stale memory. Tiny PM hat, but with the clipboard actually in hand.
+
+# gpt-5.5_2026-05-27_2258_16
+
+The backlog has already been updated in a useful way: it names the next pick as the optional-history/slim support-artifact task, with append-onlyish inventory kept as the larger follow-on. I’m going to locate that task note and sanity-check whether it’s ready or needs another grooming pass.
+
+# gpt-5.5_2026-05-27_2258_24
+
+The main repo is clean except for the backlog note, so I’m not seeing fresh code churn that would change the recommendation. The archive path isn’t where the usual dependency checkout says it is; I’m checking the sibling workspace layout now.
+
+# gpt-5.5_2026-05-27_2258_47
+
+The optional-history task is a real task, but it’s also carrying a lot of old design geology. I’m checking the tail now because the useful next slice is probably smaller than the whole note.
+
+# gpt-5.5_2026-05-27_2259_03
+
+My vote: next task is the narrow slice inside [optional-history-and-slim-support-artifacts-by-default](wa.task.2026.2026-05-05-optional-history-and-slim-support-artifacts-by-default.md).
+
+Specifically: make `_knop/_page` / `ResourcePageDefinition` support current-only behavior when history policy says current-only, then make custom page generation render from that current definition when `_knop/_page/_history001` is absent.
+
+Why this next: it’s P0 in [wd.todo.md](../../../../../documentation/notes/wd.todo.md), it follows naturally from per-target config, and it closes a real mismatch: `ReferenceCatalog` can already be current-only, but `ResourcePageDefinition` still has legacy versioned-history assumptions.
+
+I would **not** jump straight to append-onlyish inventory yet. That’s the next bigger correctness task, but this history-policy slice is smaller and will clarify what inventory/meta facts need to exist before the append-only work gets serious.
+
+Suggested implementation slice:
+
+- Refactor `ResourcePageDefinition` planning so `_knop/_page` can be current-only.
+- Render current custom pages when `_knop/_page/_history001` is missing.
+- Remove/generated-page links to omitted support histories.
+- Add focused tests around current-only `_knop/_page` plus per-target history policy.
+- Leave inventory current/progression relocation for [append-onlyish inventory](wa.task.2026.2026-05-17-append-onlyish-inventory.md).
+
+# User_2026-05-27_2304_31
+
+Are we talking about the case where config says current-only but the current ArtifactHistory isn't the defaul _history001?
+
+# gpt-5.5_2026-05-27_2304_47
+
+Mostly no. If config says `_knop/_page` is **current-only**, then there should not be a current `ArtifactHistory` at all. The page definition should be usable from its current artifact file, e.g. `_knop/_page/page.ttl`, without requiring `_knop/_page/_history001`.
+
+So the key case is:
+
+- history policy = current-only
+- `_knop/_page/page.ttl` exists as the current `ResourcePageDefinition`
+- no `_knop/_page/_history001`
+- custom page generation still works
+
+The case you named is adjacent but different:
+
+- history policy = versioned
+- current history exists, but it is named something other than `_history001`
+- runtime should resolve the current history from metadata/progression, not hard-code `_history001`
+
+That second case is worth a regression test if the current code has `_history001` assumptions, but the “slim support artifacts” task is mainly about removing the requirement that behavior-bearing support artifacts like `_knop/_page` have history at all.
+
+# User_2026-05-27_2306_42
+
+oh, history policy = current-only. aka unversioned.
+
+OK that is very narrow. 
+
+Can we just tackle the whole of [wa.task.2026.2026-05-05-optional-history-and-slim-support-artifacts-by-default.md](wa.task.2026.2026-05-05-optional-history-and-slim-support-artifacts-by-default.md) ?  Or if you want it to be smaller slices, can you provide a prompt? Or would you just rather do it yourself, I don't think you'd need any additional context.
+
+# gpt-5.5_2026-05-27_2306_59
+
+I’d push back on “the whole note” as written: it still contains future inventory/meta-split and page-manifest design that belong to append-onlyish inventory or a later regeneration task. But I can take the useful remaining implementation slice myself: current-only `_knop/_page` plus page rendering/link cleanup, and I’ll verify whether any `_history001` hard-coding falls out while I’m there.
+
+# gpt-5.5_2026-05-27_2307_08
+
+What I’m seeing confirms the task note’s own split: only four implementation checkboxes remain in the near-term lane, and the broader inventory/meta migration is explicitly non-goal for this pass. I’m going into the code now to find the `_knop/_page` history dependency and the generated link surface.
+
+# gpt-5.5_2026-05-27_2310_48
+
+I’m going to make the slice policy-aware rather than retroactive: a `_knop/_page` that already has an explicit history will keep versioning so repeated runs do not churn forever against an old snapshot. The new current-only path will apply when the page definition has no history yet: it adds the current page surface and renders from `page.ttl` without minting `_history001`.
+
+# gpt-5.5_2026-05-27_2312_10
+
+The first code pass is in: policy reaches page-definition planning, current-only page definitions now render from the working `page.ttl`, and slice detection should stop re-queuing a settled current-only `_knop/_page`. I’m going to run the focused tests now; that will tell us whether any hidden `_history001` assumption still has teeth.
+
+# gpt-5.5_2026-05-27_2312_16
+
+The raw `deno test` command is hitting Deno permission guards from npm transitive modules, not our code. I’m checking the repo’s test tasks and will rerun through the project’s normal permission wrapper.
+
+# gpt-5.5_2026-05-27_2312_31
+
+The page-definition resolver tests passed, including the new current-only case. My first filtered core test command filtered everything out because of how Deno parsed that invocation, so I’m rerunning the relevant core tests with the filter placed in Deno’s preferred spot.
+
+# gpt-5.5_2026-05-27_2312_35
+
+Focused tests are green. I’m formatting now, then I’ll run type check, lint, and a broader targeted test set around weave/page generation so we catch integration-ish fallout before touching the task checklist.
+
+# gpt-5.5_2026-05-27_2313_11
+
+Type check and lint are clean. I’m going one notch wider now, especially through the integration paths that exercise default config, because this change makes the default current-only policy actually matter for `_knop/_page`.
+
+# gpt-5.5_2026-05-27_2313_52
+
+The integration filter is being unhelpful with these long names, so I’m going to stop trying to be clever and run the two relevant integration files outright. They’re exactly where page-definition/version/generate fallout would show up.
+
+# gpt-5.5_2026-05-27_2314_11
+
+Both integration files passed cleanly, including the old versioned page-definition flows, so the current-only path isn’t disturbing existing fixture expectations. I’m running the full test task once now because this touched core slice classification and page planning.
+
+# gpt-5.5_2026-05-27_2314_50
+
+Full tests are still running and are into the CLI/e2e section now; all failures would be noisy at this point, and so far it’s clean. I’m letting it finish rather than stopping at the unit/integration layer.
+
+# gpt-5.5_2026-05-27_2317_06
+
+The full suite is in the e2e `weave` CLI tests now and still green. This is longer than the code change deserves emotionally, but exactly the sort of thing that catches accidental planning drift.
+
+# gpt-5.5_2026-05-27_2319_21
+
+Full `deno task test` passed: 626 tests. I’m going to do the small documentation bookkeeping now: mark the current-only `_knop/_page` items complete in the task note and tighten the backlog wording so it points at the remaining residue, not the work we just landed.
+
+# gpt-5.5_2026-05-27_2319_36
+
+One thing surfaced from the full test run: there are pre-existing or test-created support-file changes showing up that I did not touch. I’m going to inspect those before doing documentation bookkeeping, so I don’t accidentally mix my slice with someone else’s fixture-support work.
+
+# User_2026-05-27_2319_49
+
+Don't worry about them, we're optimizing the testing.
+
+# gpt-5.5_2026-05-27_2320_05
+
+Got it, I’ll treat the fixture snapshot/cache changes as parallel testing-optimization work and keep my bookkeeping scoped to this history-policy slice. I’m marking only the `_knop/_page` bits we actually landed, not pretending the whole old task note is finished.
+
+# gpt-5.5_2026-05-27_2321_58
+
+Implemented the narrow slice myself: current-only `_knop/_page` now works.
+
+What changed:
+- `planPageDefinitionWeave` now honors `resourcePageDefinition: "currentOnly"` when `_knop/_page` has no existing history, without minting `_history001`: [weave.ts](../../../../../src/core/weave/weave.ts:1068)
+- Custom page rendering now loads current-only `ResourcePageDefinition` artifacts from `page.ttl`: [page_definition.ts](../../../../../src/runtime/weave/page_definition.ts:123)
+- Slice detection no longer keeps re-queuing a settled current-only page definition after `_knop/_page/index.html` exists: [slice_classification.ts](../../../../../src/core/weave/slice_classification.ts:163)
+- Added focused tests for current-only planning and rendering: [weave_test.ts](../../../../../src/core/weave/weave_test.ts:3367)
+
+I also updated the task/backlog notes:
+- [wd.todo.md](../../../../../documentation/notes/wd.todo.md:17)
+- [optional-history task](wa.task.2026.2026-05-05-optional-history-and-slim-support-artifacts-by-default.md:219)
+
+Important boundary: this is non-retroactive. If a `ResourcePageDefinition` already has an `ArtifactHistory`, Weave keeps versioning it to avoid repeated churn against the old snapshot. Truly converting an already-versioned `_knop/_page` back to unversioned should be an explicit repair/migration task.
+
+Validation passed:
+- `deno task fmt`
+- `deno task lint`
+- `deno task check`
+- `deno task test` — 626 passed
+
+I left the parallel testing-optimization files alone.
+
+Suggested commit messages:
+
+```text
+weave: support current-only resource page definitions
+
+- route ResourcePageDefinition history policy into page-definition weave planning
+- render current-only _knop/_page from working page.ttl without minting _history001
+- stop re-detecting settled current-only page definitions as pending weave slices
+- add tests for current-only page-definition planning and custom page loading
+```
+
+```text
+docs: record current-only page definition slice
+
+- mark ResourcePageDefinition current-only checklist items complete
+- document non-retroactive behavior for already-versioned page definitions
+- move the next backlog pick to append-onlyish inventory
+```

@@ -216,6 +216,12 @@ The safe order is:
 - Do not wait for the full resolver before implementing bridge slices; do wait before broad fixture migration that would bake temporary policy behavior into examples.
 - Do not implement a broad resource-page generation toggle in the same first pass.
 
+### ResourcePageDefinition Slice Note
+
+The current-only `_knop/_page` slice is deliberately non-retroactive. If a `ResourcePageDefinition` already has an explicit `ArtifactHistory`, Weave keeps using that history so later runs can compare the working page definition with the latest snapshot and avoid repeated churn. If `_knop/_page` has no history and the effective history policy is current-only, Weave now adds only the current `_knop/_page/index.html` page fact and renders custom identifier pages directly from `_knop/_page/page.ttl`.
+
+Changing an already-versioned `ResourcePageDefinition` back to truly unversioned would need an explicit repair/migration story, not an ordinary weave.
+
 ## Contract Changes
 
 - Current-only support artifacts are valid DigitalArtifacts when they have current working-file facts and resource-page facts but no `sflo:hasArtifactHistory`, `sflo:currentArtifactHistory`, `sflo:nextHistoryOrdinal`, `ArtifactHistory`, `HistoricalState`, or manifestation snapshot for that support artifact itself.
@@ -263,10 +269,10 @@ The safe order is:
 - [x] Move the first MeshInventory current/latest/next progression reads and writes from `_mesh/_inventory` into `_mesh/_meta` for first Knop, first payload, and first extracted-Knop weave planning while keeping stable MeshInventory history/state membership in inventory.
 - [x] Keep `_knop/_inventory` history rendering unchanged until a Knop-local progression seam exists.
 - [x] Confirm `ReferenceCatalog` supports current-only first weaving without creating `_knop/_references/_history001`.
-- [ ] Refactor `ResourcePageDefinition` weave planning so `_knop/_page` can be current-only when history policy says current-only, without creating page-definition history/state/manifestation snapshots.
-- [ ] Refactor custom identifier page generation so a current-only `ResourcePageDefinition` can drive best-effort current page rendering when `_knop/_page/_history001` is absent.
-- [ ] Audit generated page models and hand-rendered pages so current support pages do not link to omitted support histories.
+- [x] Refactor `ResourcePageDefinition` weave planning so `_knop/_page` can be current-only when history policy says current-only, without creating page-definition history/state/manifestation snapshots.
+- [x] Refactor custom identifier page generation so a current-only `ResourcePageDefinition` can drive best-effort current page rendering when `_knop/_page/_history001` is absent.
+- [x] Audit generated page models and hand-rendered pages so current support pages do not link to omitted support histories.
 - [x] Update focused core tests for the first `_mesh/_meta` MeshInventory progression seam, including hinted named state minting and later ordinal advancement after a named latest state.
 - [ ] Update focused integration tests for the new default output shape after fixture regeneration removes legacy ontology IRI assumptions.
-- [ ] Run the relevant Deno validation tasks after code changes, at minimum `deno task test` and `deno task lint` for a broad renderer/planner change.
+- [x] Run the relevant Deno validation tasks after code changes, at minimum `deno task test` and `deno task lint` for a broad renderer/planner change.
 - [ ] Leave clear TODOs for later config-driven policy and resource-page generation policy.
