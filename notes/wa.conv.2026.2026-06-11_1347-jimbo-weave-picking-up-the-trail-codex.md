@@ -2499,3 +2499,709 @@ Or if you want the stronger physical sense:
 > making them inexpensive to publish and easily transplantable between hosting providers
 
 “Portable” is less vivid, but more academically frictionless.
+
+# djradon_2026-06-12_0907_49
+
+I like "cooler IRIs" as a juxtaposition with "Cool URIs"
+
+# gpt-5.5_2026-06-12_0907_56
+
+I like it too. It has the right little wink, and it’s actually meaningful: Cool URIs were about stable, dereferenceable identifiers; “cooler IRIs” can mean stable, dereferenceable, statically hostable, inspectable, and artifact-aware.
+
+I’d use it sparingly, probably as a section title or closing phrase, not in the main abstract unless the venue tolerates a little play.
+
+Good options:
+
+- **Toward Cooler IRIs**
+- **Cooler IRIs for Static Semantic Publication**
+- **From Cool URIs to Cooler IRIs**
+- **Cooler IRIs: Static, Inspectable, and Artifact-Aware**
+
+The safest academic version:
+
+> In this sense, Semantic Meshes extend the Cool URIs tradition toward “cooler IRIs”: identifiers that are not only stable and dereferenceable, but also statically hostable, artifact-aware, and supported by inspectable RDF evidence.
+
+That’s a good sentence. It lets the joke work while immediately paying rent.
+
+# djradon_2026-06-12_1012_36
+
+Regarding "the distinction between identifiers that have senses, identifiers that identify DigitalArtifacts, and support artifacts that help establish those senses" -- maybe "identifiers that identify DigitalArtifacts, in all their facets" or something that hints at the complexity of the DigitalArtifact model.
+
+# gpt-5.5_2026-06-12_1012_41
+
+Yes. The current phrase makes `DigitalArtifact` sound like a single flat kind of referent, when the whole point is that its identity is distributed across facets.
+
+A cleaner version:
+
+> the distinction between identifiers and their senses, identifiers that identify DigitalArtifacts across their histories, states, manifestations, and located files, and the support artifacts that help establish those senses
+
+Or a little less list-heavy:
+
+> the distinction between identifiers and their senses, identifiers that identify DigitalArtifacts through a faceted artifact model, and support artifacts that help establish those senses
+
+My vote is the second one for the contribution sentence. It hints at the complexity without stuffing half the ontology into the abstract.
+
+# djradon_2026-06-12_1013_24
+
+I think maybe we introduce the Digital Artifact model first?
+
+# gpt-5.5_2026-06-12_1013_38
+
+Yes, I’m warming to that. Especially for FOMI, the **DigitalArtifact model is the more ontological contribution**; Semantic Mesh is the publication environment that makes it useful.
+
+I’d still open with the broad problem, but make the first technical section DigitalArtifact:
+
+1. **Problem:** Semantic Web identifiers need persistence, dereferenceability, and evidence over time.
+2. **DigitalArtifact Model:** artifact identity as facets: `DigitalArtifact`, `ArtifactHistory`, `HistoricalState`, `ArtifactManifestation`, `LocatedFile`.
+3. **DCAT Alignment:** `HistoricalState` as DCAT version-ish; `ArtifactManifestation` as `dcat:Distribution`; `LocatedFile` separates byte-pattern/representation from retrieval location.
+4. **Identifier/Sense Distinction:** not every IRI identifies a DigitalArtifact; term IRIs, class IRIs, person IRIs, etc. still need sense-support.
+5. **Semantic Mesh:** the structure that hosts both DigitalArtifact stacks and non-artifact identifier support.
+6. **ResourcePages:** static dereferenceability and page/resource distinction.
+7. **Weave:** reference implementation.
+
+The key guardrail: introduce DigitalArtifact first without implying every identifier is a DigitalArtifact. Something like:
+
+> We begin with DigitalArtifacts because they are the case where the need for precise publication coordinates is clearest. We then generalize to Semantic Meshes, which support both DigitalArtifact identifiers and identifiers whose referents are concepts, terms, people, or other non-artifact resources.
+
+That sequence may be more persuasive: start with the concrete formal model, then show how the mesh wraps and generalizes it.
+
+# djradon_2026-06-12_1035_10
+
+Maybe "Awesome IRIs" instead of cooler.
+
+Maybe the Fantasy Rule ontology is a better worked example. It has the benefit of simplicity and demonstrates
+
+# gpt-5.5_2026-06-12_1035_19
+
+“Awesome IRIs” has charm, but I want to check whether the Fantasy Rule material is already in the workspace before I opine too hard. If it gives us a small, legible mesh with terms, documents, pages, and releases, it may be a much better worked example than SFLO eating its own tail.
+
+# gpt-5.5_2026-06-12_1035_32
+
+The fixture is definitely real and already carries exactly the story beats we want: source-only branch, generated publication branch, term extraction, ResourcePages, and release weaving. I’m going to peek at the fixture shape so I can say what it demonstrates without inventing details.
+
+# gpt-5.5_2026-06-12_1035_46
+
+I’d stick with **“Cooler IRIs”** over **“Awesome IRIs”** for the paper. “Awesome” is fun but generic; “Cooler” pays off the exact reference to **Cool URIs**, so the joke is also an argument. Maybe:
+
+> From Cool URIs to Cooler IRIs
+
+That said, **Awesome IRIs** might be great for the website/docs, where the tone can be a little looser.
+
+And yes, I think **Fantasy Rules** may be the better worked example. SFLO is intellectually satisfying but recursive: we have to explain Semantic Flow while using Semantic Flow to explain Semantic Flow. Fantasy Rules is simpler and gives readers something concrete: classes, properties, individuals, examples, SHACL, ontology document, release pages, term pages.
+
+It demonstrates:
+
+- a small ontology whose terms are understandable without knowing SFLO
+- the distinction between term IRIs and the ontology document as a DigitalArtifact
+- RDF document publication plus SHACL/document companion artifacts
+- ResourcePages for ontology and term IRIs
+- source branch vs generated publication branch, if we use the branch-published fixture
+- static hosting through GitHub Pages
+- extracted term pages and sense-support artifacts without making every identifier a DigitalArtifact
+- artifact lineages in a domain that does not feel self-referential
+
+My vote: use **Fantasy Rules as the main worked example**, then use **SFLO briefly as a reflexive note**: “the framework’s own ontology is also published this way.” That keeps the paper accessible while still letting us show the delicious bootstrapping bit.
+
+# djradon_2026-06-12_1037_17
+
+For ordering, maybe we cover resources before the "Identifiers, Senses, Referents, and Support" section.
+
+# gpt-5.5_2026-06-12_1037_24
+
+Yes, I think that’s better.
+
+“Identifiers, Senses, Referents, and Support” is abstract and philosophical. If it arrives too early, readers may not yet care. If we first give them the resource model, the sense/referent distinction lands as a problem the model naturally exposes.
+
+A stronger order might be:
+
+1. **Introduction**
+   - persistence, FAIRness, static hosting, “Cooler IRIs”
+2. **Digital Artifacts and Publication Resources**
+   - `DigitalArtifact`
+   - `ArtifactHistory`
+   - `HistoricalState`
+   - `ArtifactManifestation`
+   - byte pattern vs `LocatedFile`
+   - `ResourcePage` as a special located file presenting another resource
+3. **DCAT Alignment**
+   - DCAT versions/distributions are reused
+   - SFLO adds named internal histories, modeled located files, pages, and resolution coordinates
+4. **Identifiers, Senses, Referents, and Support**
+   - now we can say: not every identifier names a DigitalArtifact
+   - term IRIs, class IRIs, person IRIs have senses and support artifacts
+   - support artifacts are not the referent
+5. **Semantic Meshes**
+   - the container/support structure that hosts all of this
+6. **Worked Example: Fantasy Rules**
+7. **Weave**
+8. **Discussion / Limitations**
+
+That gives the reader concrete nouns before the semiotic distinction. It also puts the main ontology contribution upfront, which feels right for FOMI.
+
+# djradon_2026-06-12_1053_53
+
+I still feel like we need a term to differentiate the primary IRIs (that get supporting artifacts, the things people mint when they want an identifier for something) from supporting artifact IRIs. Maybe just "Mesh identifier" or "Primary identifier", vs "supporting identifier"
+
+# gpt-5.5_2026-06-12_1054_03
+
+Yes, we need that term. Without it, the paper keeps saying “identifier” for both the public thing people care about and the machinery around it.
+
+I’d use **primary identifier** and **support identifier**.
+
+- **Primary identifier**: the minted IRI whose referent is the thing the publisher wants to name: a class, property, person, ontology, dataset, concept, artifact, etc.
+- **Support identifier**: an IRI minted for a mesh-managed support resource: ResourcePage, ReferenceCatalog, KnopMetadata, ArtifactHistory, HistoricalState, ArtifactManifestation, LocatedFile, etc.
+
+“Mesh identifier” is tempting, but it’s ambiguous because support artifacts are also inside the mesh and have mesh IRIs. “Primary” gives the reader a clean axis: what the mesh is *for* versus what the mesh *uses*.
+
+Maybe define it like:
+
+> We call an IRI a **primary identifier** when it names the resource a publisher intended to identify for external use: an ontology term, dataset, document, concept, organization, or other referent. A mesh may also mint **support identifiers** for the RDF artifacts, pages, histories, states, manifestations, located files, catalogs, and metadata that help maintain and explain a primary identifier. Support identifiers are first-class IRIs, but their role is instrumental: they make the primary identifier inspectable, dereferenceable, and citable at appropriate levels of specificity.
+
+This would do a lot of work. It lets us say:
+
+- every primary identifier gets a Knop?
+- not every support identifier gets the same support treatment
+- ResourcePages present primary identifiers or support identifiers
+- DigitalArtifact facets may be support identifiers for a primary DigitalArtifact identifier
+- some support identifiers can be promoted to primary identifiers if someone wants to discuss them directly
+
+That last bit is important and elegant: “primary” is a role in a mesh context, not an eternal metaphysical class.
+
+# djradon_2026-06-12_1055_49
+
+Can you update [sf.glossary.md](../../semantic-flow-framework/notes/sf.glossary.md) with that. It could probably use an update pass while you're there.
+
+# gpt-5.5_2026-06-12_1055_59
+
+I’ll update the framework glossary directly, and I’ll keep the pass scoped to terminology cleanup rather than trying to rewrite the whole framework vocabulary from orbit. First I’m reading the existing note so the new primary/support identifier distinction lands in the local style.
+
+# gpt-5.5_2026-06-12_1056_13
+
+The glossary is quite short right now and mostly resolver-focused, so I’m going to add a front section that defines the core nouns we keep tripping over: primary identifier, support identifier, Semantic Mesh, DigitalArtifact facets, and ResourcePage. I’ll also smooth the existing resolution wording around default history versus “current.”
+
+# gpt-5.5_2026-06-12_1056_18
+
+I have enough context. I’m adding the identifier-role distinction near the top, then a short resource-model cluster, and I’ll update the resolver section so it no longer talks like “current/default history” is one thing.
+
+# gpt-5.5_2026-06-12_1056_40
+
+The main glossary pass is in. I noticed `Knop` is now mentioned in the new sections but not defined in this note, so I’m adding a compact definition rather than making readers chase another file.
+
+# gpt-5.5_2026-06-12_1056_48
+
+I’ll do a quick readback of the edited glossary and check the framework repo status so I can tell you exactly what changed.
+
+# gpt-5.5_2026-06-12_1056_55
+
+One small prose bump in the new ResourcePage definition: “assert that the requested resource `hasResourcePage` that page” is RDF-shaped but human-hostile. I’m smoothing that before I wrap.
+
+# gpt-5.5_2026-06-12_1057_02
+
+Updated [sf.glossary.md](../../semantic-flow-framework/notes/sf.glossary.md).
+
+I added concise entries for:
+
+- `Primary Identifier`
+- `Support Identifier`
+- `Sense-Finding`
+- `Semantic Mesh`
+- `Knop`
+- `DigitalArtifact`
+- `DigitalArtifact Facets`
+- `ArtifactHistory`
+- `ResourcePage`
+
+I also updated the existing `Artifact Resolution` section so `LatestState` without an explicit history now says it should use `defaultArtifactHistory` or fail closed, instead of the mushier “current/default history.”
+
+No tests run; this was a framework glossary/documentation edit only.
+
+# djradon_2026-06-12_1101_45
+
+waht's a general term for "returning index.html on requests for the parent URL"
+
+# gpt-5.5_2026-06-12_1101_54
+
+A good general term is **directory index resolution**.
+
+Other usable phrases:
+
+- **directory index serving**
+- **index document fallback**
+- **default index document resolution**
+- **serving an index document**
+- **directory URL index resolution**
+
+For the paper, I’d use:
+
+> static hosts that support directory index resolution, returning `index.html` for directory-like IRIs
+
+That’s precise and readable. It also avoids making it sound like a weird Semantic Flow-specific trick.
+
+# djradon_2026-06-12_1102_24
+
+what is the apache config term?
+
+# gpt-5.5_2026-06-12_1102_32
+
+In Apache, the directive is **`DirectoryIndex`**.
+
+Example:
+
+```apache
+DirectoryIndex index.html
+```
+
+That means when a directory URL is requested, Apache looks for `index.html` and serves it as the directory’s index document.
+
+Related term: **`DirectorySlash`**. Apache usually redirects `/thing` to `/thing/` before applying `DirectoryIndex`.
+
+So for the paper, the general web-server phrase could be:
+
+> directory index resolution, conventionally implemented in Apache with `DirectoryIndex` and `DirectorySlash` behavior.
+
+# djradon_2026-06-12_1120_50
+
+Is the "single referent principle" a thing outside Semantic Flow. Can you provide references?
+
+# gpt-5.5_2026-06-12_1120_59
+
+I’ll check the phrase and nearby W3C terminology. My prior is that “single referent principle” is a good Semantic Flow phrase, but the wider literature more often talks about URI ownership, URI collision, persistence, and “one URI identifies one resource.”
+
+# gpt-5.5_2026-06-12_1121_47
+
+Yes: the **idea** is very much a thing outside Semantic Flow, but **“single referent principle” does not seem to be the standard name**. The standard Web Architecture term is closer to **URI collision**.
+
+Useful references:
+
+- **W3C Architecture of the World Wide Web, §2.2.1 URI collision**  
+  It states: “By design, a URI identifies one resource.” Reusing the same URI for different resources is called a **URI collision**.  
+  https://www.w3.org/TR/webarch/#URI-collision
+
+- **W3C TAG URI/resource FAQ**  
+  Says each valid use of a URI reference unambiguously identifies one resource, while acknowledging messy real-world cases where the same absolute URI may be used differently over time or context.  
+  https://www.w3.org/2001/tag/doc/ures14.html
+
+- **RFC 3986, §1.1.1 Generic Syntax**  
+  Defines an identifier as distinguishing “one resource from all other resources” within its scope, but importantly says URI specs do not require persistence over time, even though persistence is a common goal.  
+  https://datatracker.ietf.org/doc/html/rfc3986#section-1.1.1
+
+- **RDF 1.1 Concepts, §1.2 Resources and Statements**  
+  RDF uses “referent” directly: the resource denoted by an IRI is its referent.  
+  https://www.w3.org/TR/rdf11-concepts/#resources-and-statements
+
+- **Cool URIs for the Semantic Web, §3 URIs for Real-World Objects**  
+  Its “Be unambiguous” requirement says not to confuse identifiers for Web documents with identifiers for other resources.  
+  https://www.w3.org/TR/cooluris/#semweb
+
+For the paper, I’d write something like:
+
+> We use **single-referent discipline** for the Web Architecture norm that a URI should not be used to directly identify multiple resources; W3C calls violations of this norm **URI collisions**.
+
+That gives you your term, but anchors it to the standard one.
+
+# djradon_2026-06-12_1140_00
+
+What do you thing of having ResourcePages "  - ideally contains RDF metadata via RDFa and/or JSON-LD embedded in a script tag that differentiates the corresponding IRIs referent (a skos:Concept) from the resource page itself (a sflo:ResourcePage)"
+
+# gpt-5.5_2026-06-12_1140_11
+
+I think the idea is right, but I’d avoid saying the referent is **a `skos:Concept`** except as an example. The referent might be a class, property, person, dataset, DigitalArtifact, HistoricalState, organization, etc.
+
+I’d phrase the principle like this:
+
+> A ResourcePage should contain machine-readable RDF, via RDFa and/or embedded JSON-LD, that distinguishes the requested IRI’s referent from the ResourcePage itself.
+
+Then example it:
+
+```json
+{
+  "@context": {
+    "sflo": "https://semantic-flow.github.io/sflo/ontology/",
+    "schema": "https://schema.org/",
+    "skos": "http://www.w3.org/2004/02/skos/core#"
+  },
+  "@graph": [
+    {
+      "@id": "https://example.org/vocab/alignment",
+      "@type": "skos:Concept",
+      "sflo:hasResourcePage": {
+        "@id": "https://example.org/vocab/alignment/index.html"
+      }
+    },
+    {
+      "@id": "https://example.org/vocab/alignment/index.html",
+      "@type": ["sflo:ResourcePage", "schema:WebPage"],
+      "schema:about": {
+        "@id": "https://example.org/vocab/alignment"
+      }
+    }
+  ]
+}
+```
+
+Two useful refinements:
+
+- Use **SHOULD** rather than “ideally” if this is intended as a norm.
+- Say **requested IRI** or **presented resource** rather than “corresponding IRI’s referent,” which is accurate but a little chewy.
+
+Maybe the bullet becomes:
+
+> A `ResourcePage` SHOULD embed RDFa and/or JSON-LD stating both the presented resource and the page resource itself, so an agent can distinguish the requested IRI’s referent from the HTML file returned to present it.
+
+# djradon_2026-06-12_1145_41
+
+Can you give that same example in RDFa
+
+# gpt-5.5_2026-06-12_1145_48
+
+Sure. Here’s a compact RDFa version of the same pattern:
+
+```html
+<!doctype html>
+<html lang="en"
+  prefix="
+    sflo: https://semantic-flow.github.io/sflo/ontology/
+    schema: https://schema.org/
+    skos: http://www.w3.org/2004/02/skos/core#
+  ">
+
+<head>
+  <title>Alignment</title>
+</head>
+
+<body
+  resource="https://example.org/vocab/alignment/index.html"
+  typeof="sflo:ResourcePage schema:WebPage"
+  about="https://example.org/vocab/alignment/index.html">
+
+  <main>
+    <h1>Alignment</h1>
+
+    <section
+      resource="https://example.org/vocab/alignment"
+      typeof="skos:Concept">
+
+      <link
+        property="sflo:hasResourcePage"
+        href="https://example.org/vocab/alignment/index.html" />
+
+      <link
+        rev="schema:about"
+        href="https://example.org/vocab/alignment/index.html" />
+
+      <p property="skos:prefLabel">Alignment</p>
+      <p property="skos:definition">
+        A broad description of ethical attitudes and ideals.
+      </p>
+    </section>
+  </main>
+</body>
+</html>
+```
+
+The key triples are:
+
+```turtle
+<https://example.org/vocab/alignment>
+  a skos:Concept ;
+  sflo:hasResourcePage <https://example.org/vocab/alignment/index.html> .
+
+<https://example.org/vocab/alignment/index.html>
+  a sflo:ResourcePage, schema:WebPage ;
+  schema:about <https://example.org/vocab/alignment> .
+```
+
+In prose: the page identifies itself as the `sflo:ResourcePage`, while the concept IRI remains the referent being presented.
+
+# djradon_2026-06-12_1206_06
+
+One concern about embedding RDF in the Resource Pages is "which RDF?". But I can we can define that in our ResourcePageDefinition.
+
+# gpt-5.5_2026-06-12_1206_14
+
+Yes, exactly. That concern is real, and `ResourcePageDefinition` is the right place to make it explicit.
+
+A `ResourcePage` should not be understood as “dump all known triples about the referent into HTML.” It should be a rendered artifact whose embedded RDF is selected by a page definition.
+
+I’d frame it like:
+
+> A `ResourcePageDefinition` specifies which RDF assertions are embedded into a generated `ResourcePage`, which sources or panels provide them, and what role those assertions play in distinguishing the presented resource from the page artifact itself.
+
+At minimum, I think every generated ResourcePage should embed a small **page identity graph**:
+
+```turtle
+<presented-resource>
+  sflo:hasResourcePage <page-iri> .
+
+<page-iri>
+  a sflo:ResourcePage, schema:WebPage ;
+  schema:about <presented-resource> .
+```
+
+Then `ResourcePageDefinition` controls optional additions:
+
+- labels and descriptions
+- type assertions
+- selected ontology axioms
+- selected SKOS fields
+- selected provenance/source links
+- links to manifestations/downloads
+- panels generated from canonical, supplemental, or deprecated sources
+- whether RDF is embedded as JSON-LD, RDFa, or both
+
+This actually strengthens the paper: Semantic Flow doesn’t merely say “embed RDF in pages”; it says **page RDF is governed publication content**, with its own definition, sources, and possibly history.
+
+# djradon_2026-06-12_1223_40
+
+OK, my outline is kinda messed up, and I'm not sure about the best ordering, what do you think?
+
+# gpt-5.5_2026-06-12_1223_48
+
+I’ll read your current outline/draft and the Codex draft side by side, then I’ll propose a cleaner ordering rather than editing your human-authored file. The shape matters here; we need the reader to meet the concrete artifact model before the semiotics get too misty.
+
+# gpt-5.5_2026-06-12_1223_58
+
+Yes, your outline is trying to do three papers’ worth of conceptual work in one hallway. I think the fix is to make the **DigitalArtifact model the spine**, then treat ResourcePages and Semantic Meshes as consequences/extensions.
+
+My preferred ordering:
+
+1. **Introduction**
+   - FAIR / persistence / static hosting / “Cooler IRIs”
+   - contributions
+   - Fantasy Rules as running example
+
+2. **DigitalArtifacts and Publication Resources**
+   - start concrete
+   - `DigitalArtifact`
+   - `ArtifactHistory`
+   - `HistoricalState`
+   - `ArtifactManifestation`
+   - `LocatedFile`
+   - manifestation vs file location
+   - skip-level links
+   - figure: artifact chain
+
+3. **DCAT Alignment**
+   - `DigitalArtifact` as `dcat:Dataset`
+   - `HistoricalState` via `dcat:hasVersion`
+   - `ArtifactManifestation` as `dcat:Distribution`
+   - `LocatedFile` as the extra byte-location distinction
+   - `ArtifactHistory` as named internal lineages
+   - table: DCAT vs SFLO
+
+4. **Identifiers, Referents, and ResourcePages**
+   - primary identifiers vs support identifiers
+   - single-referent discipline / URI collision
+   - not every primary identifier is a DigitalArtifact
+   - ResourcePages as returned index documents
+   - RDFa / JSON-LD embedded page identity graph
+   - “Cooler IRIs”
+
+5. **Semantic Meshes**
+   - now introduce the whole publication structure
+   - hierarchical IRI surface
+   - Knops
+   - support artifacts: reference catalogs, source registries, inventories, metadata, page definitions
+   - static hosting / portability
+   - integrate vs import / repository options, briefly
+
+6. **Worked Example: Fantasy Rules**
+   - ontology document as DigitalArtifact
+   - terms as primary identifiers that are not DigitalArtifacts
+   - generated ResourcePages
+   - release/state/manifestation/file coordinates
+   - maybe one RDFa or JSON-LD listing
+   - SFLO only as a brief reflexive note, not the main example
+
+7. **Implementation: Weave**
+   - CLI creates/updates meshes
+   - generates ResourcePages
+   - integrates source files
+   - versions states
+   - validates/generates static output
+
+8. **Related Work**
+   - Cool URIs / httpRange-14
+   - DCAT 3
+   - FRIR/WEMI
+   - FAIR vocabulary publishing
+   - Pubby/LodView/Widoco/LODE/pyLODE/Jekyll RDF/Walder/Harshp
+   - Git/ACIMOV/repository-native ontology work
+
+9. **Limitations**
+   - not a theory of works/concepts
+   - not a semantic diff/migration tool
+   - static hosting trades away header negotiation
+   - page RDF depends on `ResourcePageDefinition`
+   - vocabulary learning cost
+
+10. **Conclusion**
+
+The key sequencing move: don’t put “Identifier Ambiguity” before the reader knows what kinds of resources exist. First give them the artifact/resources ladder; then the ambiguity section becomes useful instead of philosophical fog.
+
+# djradon_2026-06-12_1312_47
+
+What is "Publication Resources" in "DigitalArtifacts and Publication Resources"
+
+# gpt-5.5_2026-06-12_1312_59
+
+“Publication Resources” was my attempt to name the non-artifact-ish things involved in publication, but I don’t think it’s a great section title. It’s too vague.
+
+I meant: the resources in the publication surface that are not just “the artifact” itself:
+
+- `ArtifactHistory`
+- `HistoricalState`
+- `ArtifactManifestation`
+- `LocatedFile`
+- `ResourcePage`
+- maybe `ResourcePageDefinition`
+- support artifacts like inventories and metadata
+
+But since most of those are actually **DigitalArtifact facets** or **support artifacts**, the title muddies the model.
+
+Better section titles:
+
+- **The DigitalArtifact Facet Model**
+- **DigitalArtifact Identity and Its Facets**
+- **From Artifacts to Located Bytes**
+- **DigitalArtifact Histories, States, and Files**
+- **Byte-Grounded Artifact Identity**
+
+My vote:
+
+> **The DigitalArtifact Facet Model**
+
+Then later:
+
+> **ResourcePages and Support Artifacts**
+
+That keeps the ontology cleaner.
+
+# djradon_2026-06-12_1318_14
+
+what do you think now?
+
+# gpt-5.5_2026-06-12_1318_25
+
+I’ll re-read your current outline/draft shape now, especially around the “Be Unambiguous” section, and then give you a structural critique rather than touching the file.
+
+# gpt-5.5_2026-06-12_1318_34
+
+Much better. The spine is visible now: **DigitalArtifact model -> ambiguity/resource pages -> mesh -> example -> implementation**. That’s the right direction.
+
+A few sharp fixes I’d make next:
+
+- Renumbering: it jumps from `3` to `5` to `7`. Easy later, but it makes the outline feel messier than it is.
+
+- Section 3 title is doing too much. I’d use:
+  **3. Identifiers, Referents, and ResourcePages**
+  Then make “ambiguity” and “Be Unambiguous” subsections. “Ambiguity” in the title makes the section sound less constructive.
+
+- “Be Unambiguous” is a good subsection, but it needs an immediate anchor:
+  W3C Cool URIs says “Be unambiguous”; Web Architecture calls the failure case a URI collision. Semantic Flow operationalizes that with primary identifiers, support identifiers, and ResourcePages.
+
+- The RDFa and JSON-LD listings should not both stay full-size in a short paper. Pick one full listing, probably RDFa because it demonstrates page-embedded RDF in HTML. Mention JSON-LD in prose or move it to appendix/docs.
+
+- “Cooler IRIs” should probably be the capstone of section 3, not a standalone subsection with bullets. Something like:
+  **3.3 From Cool URIs to Cooler IRIs**
+  Then tie together directory index resolution, ResourcePages, embedded RDF, static hosting, and anchors/fragments.
+
+- Fantasy Rules should become the running example earlier. In section 2, introduce “we use the Fantasy Rules ontology as a running example.” Then the worked example section can synthesize rather than introduce from scratch.
+
+- The SFLO metadata listing probably belongs in a footnote/brief note, not the main worked example. If the main example is Fantasy Rules, stay disciplined. SFLO can be “the framework ontology is also published this way.”
+
+- “pseudo-immutable” may read weaker than you want. I’d prefer **quasi-immutable** or **immutable evidence traces**. “Pseudo” sounds fake; “quasi” sounds qualified.
+
+My recommended section outline now:
+
+1. Introduction  
+2. The DigitalArtifact Facet Model  
+   2.1 Change, Lineage, and Coordinates  
+   2.2 DCAT Alignment  
+3. Identifiers, Referents, and ResourcePages  
+   3.1 Primary and Support Identifiers  
+   3.2 Be Unambiguous  
+   3.3 ResourcePages and Embedded RDF  
+   3.4 From Cool URIs to Cooler IRIs  
+4. Semantic Meshes  
+   4.1 Knops and Support Artifacts  
+   4.2 Static Hosting and Repository Topologies  
+5. Worked Example: Fantasy Rules  
+6. Implementation: Weave  
+7. Related Work  
+8. Limitations  
+9. Conclusion
+
+That’s a solid paper shape. It’s no longer wandering; it just needs the joints tightened.
+
+# djradon_2026-06-12_1324_22
+
+I decided on pseudo-immutable because it captures "the underlying data is fully mutable, but external edits are discouraged or restricted", vs quasi-immutable "effectively permanent"
+
+# gpt-5.5_2026-06-12_1324_33
+
+That makes sense, and with that definition **pseudo-immutable** is doing real work.
+
+I’d just define it early, because readers may otherwise hear “pseudo” as “fake” or “not really trustworthy.” You can turn that into a strength:
+
+> We use **pseudo-immutable** for artifacts whose underlying bytes remain technically mutable, but whose published coordinates are governed by norms, tooling, and access controls that discourage or restrict external mutation. The claim is not that the data cannot change, but that settled identifiers should not be reused for different content.
+
+Then contrast:
+
+- **Immutable**: cannot change, or is content-addressed.
+- **Quasi-immutable**: effectively permanent in practice.
+- **Pseudo-immutable**: mutable substrate, immutability imposed by publication discipline.
+
+That’s actually very Semantic Flow: GitHub Pages files can be edited; static-hosted bytes can be replaced; but the mesh model says settled states and located files are **not supposed** to be mutated in place. The discipline is social/tooling/operational, not physical.
+
+# djradon_2026-06-12_1328_39
+
+OK, give the paper another draft into [codex-sf-paper_v2.md](../papers/2026-fomi-digitalartifact/codex-sf-paper_v2.md) using the new outline and all the gems we've uncovered.
+
+# gpt-5.5_2026-06-12_1328_54
+
+I’ll draft this into the Codex-owned v2 file and leave your human-authored `semantic-flow-paper.md` alone. I’m going to pull the latest outline plus v1 wording and the Fantasy Rules fixture details, then I’ll write a cleaner full draft around the new sequence.
+
+# gpt-5.5_2026-06-12_1329_05
+
+The v2 target is empty, and I’ve got the latest outline plus the Fantasy Rules source. I’m doing one more pass over the generated Fantasy Rules mesh output so the worked example can describe actual structure rather than hand-wavy “pretend pages.”
+
+# gpt-5.5_2026-06-12_1329_18
+
+I have the structure and example material. I’m going to write v2 as a coherent short-paper draft now: not final polished prose, but a real draft with the new spine, Fantasy Rules as main example, and the DCAT/ResourcePage/pseudo-immutability distinctions integrated.
+
+# gpt-5.5_2026-06-12_1331_36
+
+I’ve got the v2 draft in place from the new ordering. I’m doing a quick readback now for structure, length, and a couple of factual slips before I hand it back.
+
+# gpt-5.5_2026-06-12_1331_44
+
+The structure is coherent and the draft is about 4,236 words, so probably 8 to 10 pages before references depending on template. I spotted one place where an illustrative RDFa example can be made tighter against the Fantasy Rules fixture, so I’m going to tune that instead of leaving a generic `skos:Concept` shape where the actual term is a `fant:Ability`.
+
+# gpt-5.5_2026-06-12_1331_53
+
+I’m making one small factual polish: the Wisdom term in the fixture is modeled as `fant:Ability` with `rdfs:label`, so the embedded RDFa example should show that exact shape. The broader point stays the same: the page is a page; the thing presented is a separate resource.
+
+# gpt-5.5_2026-06-12_1332_04
+
+That correction is in. I’m just checking the final size and making sure the file is visible in the archive repo status; no code tests are needed for this markdown-only draft.
+
+# gpt-5.5_2026-06-12_1332_12
+
+Done: the new draft is in [codex-sf-paper_v2.md](../papers/2026-fomi-digitalartifact/codex-sf-paper_v2.md).
+
+It’s about **4,240 words / 262 lines**, with the new ordering:
+
+1. DigitalArtifact model first
+2. DCAT comparison
+3. primary/support identifiers and ResourcePages
+4. Semantic Meshes
+5. Fantasy Rules worked example
+6. Weave implementation
+7. related work, limitations, conclusion
+
+I folded in the good bits: pseudo-immutability, “Cooler IRIs,” directory index resolution, `ResourcePageDefinition`, primary vs support identifiers, `ArtifactHistory` as internal lineage, DCAT versioning alignment, manifestations vs located files, and Fantasy Rules as the simpler worked example.
+
+I also corrected the RDFa example so Wisdom is modeled as `fant:Ability` with `rdfs:label`, matching the fixture instead of pretending it is generically `skos:Concept`.
+
+No tests run; this was a markdown-only drafting pass.
