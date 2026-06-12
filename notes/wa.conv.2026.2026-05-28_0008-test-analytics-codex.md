@@ -1062,3 +1062,370 @@ I’d add a short section like **Next Pass: E2E Subprocess And Workspace Overhea
 - defer hardlink/reflink/tar unless measurement points there
 
 Fresh task only makes sense after we choose one concrete implementation slice, like “Extract shared e2e CLI helper” or “Replace validation e2e fixtures with tiny mesh builder.”
+
+# User_2026-05-28_0057_15
+
+I installed the latest weave binary, you want to do a test with that?
+
+# gpt-5.5_2026-05-28_0057_35
+
+Yes, that’s exactly the comparison I’m curious about: installed binary startup versus `deno run src/main.ts` startup. I’ll keep it tiny and non-invasive first: identify the binary, check versions, then run a short repeated `--version` benchmark so we get a clean startup-overhead signal without touching fixtures.
+
+# gpt-5.5_2026-05-28_0057_47
+
+Small wrinkle: the `weave` on `PATH` is reporting `0.1.3`, while this checkout’s `deno run src/main.ts --version` reports `0.2.2`. I’m going to look for other `weave` binaries before benchmarking, because a version-mismatched A/B would be a little too apples-to-doorhinges.
+
+# User_2026-05-28_0058_54
+
+I expected "pnpm update -g @semantic-flow/weave --latest " to do the upgrade, but it says: "global:
++ @semantic-flow/weave 0.1.3 (0.2.2 is available)"
+
+# gpt-5.5_2026-05-28_0059_11
+
+That output smells like pnpm is respecting the global install’s existing `^0.1.3` range despite `--latest`, or at least not replacing the global spec the way we’d expect. I’m going to keep this lightweight and inspect pnpm’s own local help/version plus the installed package metadata, then I’ll give you the safest command to force the upgrade.
+
+# gpt-5.5_2026-05-28_0059_25
+
+Interesting: pnpm’s help says `-L/--latest` should ignore ranges, so your expectation was reasonable. The shim path I saw may also be stale or pnpm’s global layout has moved under it, so I’m checking the actual target and the global manifest before recommending the clean force-upgrade command.
+
+# gpt-5.5_2026-05-28_0059_56
+
+Your expectation was fair: `pnpm update -g --latest @semantic-flow/weave` ought to ignore the old range. But your global pnpm manifest is still pinned as:
+
+```json
+{
+  "dependencies": {
+    "@semantic-flow/weave": "^0.1.3"
+  }
+}
+```
+
+For `0.x`, `^0.1.3` does **not** allow `0.2.2`, so plain update stays at `0.1.3`. Since npm says `latest` is definitely `0.2.2`, I’d force-rewrite the global spec:
+
+```bash
+pnpm add -g @semantic-flow/weave@latest
+```
+
+or exact:
+
+```bash
+pnpm add -g @semantic-flow/weave@0.2.2
+```
+
+Then check:
+
+```bash
+weave --version
+```
+
+Right now your `PATH` shim reports `weave 0.1.3`, while this checkout reports `weave 0.2.2` via `deno run src/main.ts --version`, so I’d wait to benchmark until the global binary matches.
+
+# User_2026-05-28_0059_56
+
+full output in case its helpful:
+
+❯ pnpm update -g @semantic-flow/weave --latest                                                                        ─╯
+Packages: +2
+++
+Progress: resolved 5, reused 2, downloaded 0, added 0, done
+
+global:
++ @semantic-flow/weave 0.1.3 (0.2.2 is available)
+
+Done in 127ms using pnpm v11.1.3
+
+# gpt-5.5_2026-05-28_0100_11
+
+That is helpful, especially the `Packages: +2` bit. It suggests pnpm did fetch/link something, but still resolved the global dependency to the old `^0.1.3` range instead of replacing the top-level spec. I’m going to check the published `0.2.2` metadata for any engine/platform constraint before calling it a pnpm global-update quirk.
+
+# gpt-5.5_2026-05-28_0100_34
+
+Yep, that confirms it.
+
+`pnpm update -g` is behaving like a range-respecting update of the existing global manifest entry:
+
+```json
+"@semantic-flow/weave": "^0.1.3"
+```
+
+Because this is `0.x`, `^0.1.3` allows `>=0.1.3 <0.2.0`, so `0.2.2` is outside the allowed range. The odd part is that `--latest` didn’t rewrite the global spec; I’d treat that as pnpm global-update weirdness.
+
+Use `add`, not `update`, to rewrite the global dependency spec:
+
+```bash
+pnpm add -g @semantic-flow/weave@latest
+rehash
+weave --version
+```
+
+Expected:
+
+```text
+weave 0.2.2
+```
+
+The `Packages: +2` likely came from relinking the wrapper plus platform optional package, but still within the old `0.1.3` line.
+
+# User_2026-05-28_0101_17
+
+Packages: +2
+++
+Progress: resolved 5, reused 2, downloaded 0, added 0, done
+
+global:
++ @semantic-flow/weave 0.1.3 (0.2.2 is available)
+
+Done in 134ms using pnpm v11.1.3
+weave 0.1.3
+
+# gpt-5.5_2026-05-28_0101_33
+
+Yep, that output means the upgrade did **not** happen. It reinstalled/relinked `0.1.3` and merely noticed `0.2.2` exists.
+
+Try this instead:
+
+```bash
+pnpm add -g @semantic-flow/weave@0.2.2
+rehash
+weave --version
+```
+
+If it still says `0.1.3`, do the clean version:
+
+```bash
+pnpm remove -g @semantic-flow/weave
+pnpm add -g @semantic-flow/weave@0.2.2
+rehash
+weave --version
+```
+
+`pnpm update -g` is acting like “update within the old global dependency spec” here. `pnpm add -g ...@0.2.2` should rewrite that spec.
+
+# User_2026-05-28_0101_57
+
+[ERR_PNPM_RESOLUTION_POLICY_VIOLATIONS_UNHANDLED] 5 resolution-policy violations were produced but no handleResolutionPolicyViolations callback was wired to react to them.
+
+Internal: resolveDependencies needs a handleResolutionPolicyViolations callback whenever a policy that can produce violations (today: minimumReleaseAge) is active. Wire setupPolicyHandlers (in @pnpm/installing.commands) or supply a callback directly.
+Progress: resolved 1, reused 0, downloaded 0, added 0
+weave 0.1.3
+
+# gpt-5.5_2026-05-28_0102_11
+
+That error is not your package doing anything wrong; it looks like pnpm itself tripped over its `minimumReleaseAge` resolution policy path. I’ll check just the relevant pnpm config knobs, avoiding a full config dump so we don’t risk printing registry tokens.
+
+# gpt-5.5_2026-05-28_0102_29
+
+Your pnpm binary is `11.1.3`, and the current published pnpm is `11.4.0`. Since this error names an internal missing callback, my strongest guess is “pnpm bug fixed or avoided by newer pnpm,” possibly triggered by a release-age policy coming from config we haven’t seen yet. I’m checking only for that policy name in npmrc files.
+
+# User_2026-05-28_0102_42
+
+this is a recent pnpm, 11.1.3; maybe behavior changed
+
+# gpt-5.5_2026-05-28_0103_27
+
+Yes, behavior changed in pnpm 11. You’re hitting two overlapping things:
+
+1. `pnpm@11` now has a default `minimumReleaseAge` of `1440` minutes, so freshly published packages are held back for 24 hours. pnpm’s own v11 notes say newly published packages won’t resolve until at least 1 day old unless you opt out. Source: pnpm v11 discussion / release notes mention `minimumReleaseAge` defaulting to `1440`.  
+https://github.com/orgs/pnpm/discussions/11377
+
+2. `0.2.2` was published today: `2026-05-28T07:55:25Z`, so pnpm is probably trying to block all 5 fresh packages: the wrapper plus 4 optional platform packages. But instead of giving the nice policy error, `pnpm@11.1.3` is throwing an internal callback error. That looks like a pnpm bug, not a Weave packaging issue.
+
+Best clean choices:
+
+```bash
+# wait until after 2026-05-29 00:55:25 America/Los_Angeles
+pnpm add -g @semantic-flow/weave@0.2.2
+```
+
+Or temporarily bypass pnpm 11’s age gate:
+
+```bash
+pnpm_config_minimumReleaseAge=0 pnpm add -g @semantic-flow/weave@0.2.2
+rehash
+weave --version
+```
+
+If that still trips the internal pnpm bug, I’d update pnpm first. Your `11.1.3` is recent, but `11.4.0` is currently published:
+
+```bash
+pnpm add -g @pnpm/exe@latest
+rehash
+pnpm --version
+pnpm add -g @semantic-flow/weave@0.2.2
+```
+
+Slightly annoying, but also kind of reassuring: the package is likely being blocked exactly because it is brand new.
+
+# User_2026-05-28_0106_07
+
+❯ pnpm                                                                                                                ─╯
+/home/djradon/.local/share/pnpm/bin/../global/v11/2ac09a-19e6d9cd528/node_modules/@pnpm/exe/pnpm: 1: This: not found
+
+# gpt-5.5_2026-05-28_0106_21
+
+Oof, that means the global `pnpm` shim now points at a file that is not an executable shell/ELF binary. I’ll inspect just the shim target and first line so we can recover without printing any config or tokens.
+
+# gpt-5.5_2026-05-28_0106_34
+
+Found it: the shim is valid, but its target is a 34-byte placeholder containing `This file intentionally left blank`. So the self-update/install of `@pnpm/exe` left pnpm pointing at a package entry that is not the actual executable. I’m checking whether the real binary landed elsewhere in that package before suggesting a reinstall path.
+
+# gpt-5.5_2026-05-28_0106_48
+
+The real runnable code is present as `dist/pnpm.mjs`; the package’s top-level `pnpm` file is the placeholder. I’m going to test the module entry directly; if it works, we can use it to repair the global install without needing the broken shim.
+
+# gpt-5.5_2026-05-28_0107_18
+
+Yep, pnpm 11 changed behavior, and now it looks like `@pnpm/exe` half-installed itself.
+
+What happened: your shim points here:
+
+```text
+~/.local/share/pnpm/global/v11/.../node_modules/@pnpm/exe/pnpm
+```
+
+and that file literally contains:
+
+```text
+This file intentionally left blank
+```
+
+The real JS entry exists at `dist/pnpm.mjs`, but the platform binary package that should replace the blank placeholder did not get linked. My guess: pnpm 11’s new 24-hour `minimumReleaseAge` policy blocked the fresh `@pnpm/linux-x64` optional package during pnpm’s own upgrade. Very cursed, very modern.
+
+Fastest recovery:
+
+```bash
+npm install -g pnpm@11.4.0
+rm ~/.local/share/pnpm/bin/pnpm ~/.local/share/pnpm/bin/pn ~/.local/share/pnpm/bin/pnpx ~/.local/share/pnpm/bin/pnx
+hash -r
+pnpm --version
+```
+
+Then try Weave again, ideally after bypassing the age gate only for this install:
+
+```bash
+pnpm_config_minimumReleaseAge=0 pnpm add -g @semantic-flow/weave@0.2.2
+hash -r
+weave --version
+```
+
+Temporary workaround, if you need pnpm before repairing the shim:
+
+```bash
+node ~/.local/share/pnpm/store/v11/links/@pnpm/exe/11.3.0/*/node_modules/@pnpm/exe/dist/pnpm.mjs --version
+```
+
+The nice boring fix is probably `npm install -g pnpm@11.4.0` and removing the broken pnpm-home shims so your shell stops finding the placeholder first.
+
+# User_2026-05-28_0107_53
+
+ok, try the tests
+
+# gpt-5.5_2026-05-28_0108_17
+
+I’ll do this in two layers: first confirm the installed `weave` is actually the new version, then run a small benchmark against `deno run src/main.ts` before we try anything heavier. That gives us a clean answer on whether the binary is even worth wiring into the e2e harness.
+
+# gpt-5.5_2026-05-28_0108_27
+
+Good, we’re aligned now: both installed `weave` and the checkout report `0.2.2`, and pnpm is back as `11.4.0`. I’m running the startup benchmark next; if the binary wins there, I’ll try one representative CLI workflow.
+
+# gpt-5.5_2026-05-28_0108_52
+
+Startup-only is not helping the binary case: installed `weave --version` averaged about `155ms`, while `deno run ... --version` averaged about `131ms` with some noisy outliers. I’m going one step deeper with a tiny `mesh create` workflow, because that includes real command parsing and filesystem setup but avoids the heavy fixtures.
+
+# gpt-5.5_2026-05-28_0110_07
+
+Aha, that result exposed a much bigger thing than “binary is faster”: with a fresh `XDG_CACHE_HOME` per run, `deno run` averaged `2.87s`, while installed `weave` averaged `167ms`. That matches the test harness pattern, so we may be forcing every e2e subprocess to use a fresh Deno cache. I’m testing fixed `DENO_DIR` now; if that collapses the gap, we’ve found the next lever.
+
+# gpt-5.5_2026-05-28_0110_30
+
+That was the smoking crater, in the useful sense: with a fixed `DENO_DIR`, `deno run` dropped from `2.87s` to `113ms`, and actually beat the installed binary. So I’m going to try a real e2e file with a shared temp Deno cache, because this may be the cleanest route to the 2-minute target without changing the production package path.
+
+# gpt-5.5_2026-05-28_0110_43
+
+That is a big win: `mesh_create_cli_test.ts` went from the Codecov baseline of about `9.4s` for the suite to `470ms` of test time with shared `DENO_DIR`. I’m going to try a fixture-touching e2e file next to make sure this isn’t only the tiny command case.
+
+# gpt-5.5_2026-05-28_0110_53
+
+Fixture-touching `payload_update_cli_test.ts` also collapsed: about `624ms` versus the previous `9.2s` suite timing. That’s strong enough that I’m going to try the big `weave_cli_test.ts` file, since it was the main remaining slow suite.
+
+# gpt-5.5_2026-05-28_0111_19
+
+The big one is the clincher: `weave_cli_test.ts` passed in `9s`, down from the last Codecov suite timing of `116s`. I’m going to run the whole e2e directory with the shared `DENO_DIR`; this should give us a more honest next-pass number.
+
+# gpt-5.5_2026-05-28_0111_59
+
+Whole e2e is the real headline: `74 passed | 0 failed` in `15s` with shared `DENO_DIR`; the last analytics run had e2e suites adding up to several minutes. I’m going to do one full non-uploading coverage run with that same cache setting so we get an end-to-end number before we touch the task plumbing.
+
+# User_2026-05-28_0112_30
+
+just fix the plumbing already.
+
+# gpt-5.5_2026-05-28_0112_44
+
+Got it. The plumbing fix is to stop the per-test isolated `XDG_CACHE_HOME` from accidentally forcing every child `deno run` to rebuild its cache. I’m going to set a stable test `DENO_DIR` for subprocesses in the test harness, then re-run the targeted e2e checks and enough validation to make sure we didn’t trade speed for weirdness.
+
+# gpt-5.5_2026-05-28_0113_13
+
+Full coverage with a shared `DENO_DIR` finished cleanly: `647 passed | 0 failed` in `54s`. I’m applying the actual fix now in the test env harness so individual e2e subprocesses inherit a stable Deno cache automatically, instead of needing us to remember the env var at the shell.
+
+# gpt-5.5_2026-05-28_0113_56
+
+The change is small but central: the test env now restores `DENO_DIR` like the other isolated env vars, then sets it to a stable `/tmp` cache for child Deno subprocesses. I added a harness test so this doesn’t quietly regress later.
+
+# gpt-5.5_2026-05-28_0114_15
+
+Cold-cache behavior is sane: the first child Deno run paid about `5s` to populate `/tmp/semantic-flow-deno-test-cache`, then the rest dropped back to ~`110-130ms`. That’s acceptable plumbing; the full suite gets one cold-cache hit instead of one per test. I’m running the whole e2e directory without any shell-level `DENO_DIR` now.
+
+# gpt-5.5_2026-05-28_0114_54
+
+The harness-level e2e run is now fixed without shell help: `74 passed | 0 failed` in `15s`. I’m going to record the finding in the task/docs and then run the normal validation commands; the code change is tiny, but it sits in the shared test harness, so it deserves a real check.
+
+# gpt-5.5_2026-05-28_0115_30
+
+I recorded the cache finding and the fix in the optimization task and testing docs. Now I’m running lint/check; after that I’ll decide whether the full coverage run is necessary or whether the focused e2e run plus type/lint is enough for this harness-only change.
+
+# gpt-5.5_2026-05-28_0115_39
+
+Lint and type-check passed. I’m going to run one normal `deno task test:coverage` without manually setting `DENO_DIR`; that’s the proof that the plumbing is now self-contained.
+
+# gpt-5.5_2026-05-28_0116_51
+
+Normal `deno task test:coverage` now passes without any shell-level cache override: `648 passed | 0 failed` in `54s`. I’m going to add that final validation line to the task note and grab the JUnit reported total so our recorded numbers stay comparable with Codecov.
+
+# gpt-5.5_2026-05-28_0117_46
+
+Fixed the plumbing.
+
+The test harness now sets `DENO_DIR=/tmp/semantic-flow-deno-test-cache` during each test, so child `deno run src/main.ts ...` subprocesses no longer rebuild their dependency cache inside every per-test `XDG_CACHE_HOME`. It restores any prior `DENO_DIR` afterward, same as the other isolated env vars.
+
+Results:
+
+- `tests/e2e`: `74 passed | 0 failed` in `15s`
+- `deno task test:coverage`: `648 passed | 0 failed` in `54s`
+- Normalized JUnit reported total: `54.170s`
+- `deno task lint`: passed
+- `deno task check`: passed
+- `git diff --check`: passed
+
+I also updated [wd.testing.md](../../../../../documentation/notes/wd.testing.md) and the optimization task note with the finding and timings. The 2-minute target is met on a warm cache. Nice.
+
+I left unrelated existing changes alone, including `documentation/notes/wd.vision.md` and the archive conversation note.
+
+Suggested main repo commit:
+
+```text
+test: share Deno cache for CLI subprocess tests
+
+- set DENO_DIR in the test tmp harness so child deno run commands reuse a stable /tmp cache
+- cover the harness env behavior and document the cache path
+- record the e2e and full-suite timing improvement
+```
+
+Suggested archive repo commit:
+
+```text
+docs: record test subprocess cache optimization
+
+- document the per-test XDG cache issue and shared DENO_DIR fix
+- record validation timings after the plumbing change
+```

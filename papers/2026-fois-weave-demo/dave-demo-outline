@@ -1,0 +1,7 @@
+
+## Thesis
+
+- leverage commodity hosting providers to publish RDF data and facilitate the effortless minting of long-lived identifiers. 
+- give that RDF data a humane user interface while preserving discoverability and raw availbility in multiple syntaxes for machines
+  - no dynamic server-side generation of corresponding web pages; this data needs to be highly-available, transposable to different hosting environments, and support effortless "local-first" (i.e., filesystem-based) use cases
+- Incorporate the TBL's "View Source Lesson": people need to be able to click or paste an identifier into their browser and get an idea of what its sense is.

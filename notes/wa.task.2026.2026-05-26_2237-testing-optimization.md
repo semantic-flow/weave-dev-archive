@@ -113,6 +113,33 @@ Slowest suites after the snapshot cache:
 
 The snapshot cache had a large suite-level impact and should stay. The next optimization should target the remaining e2e CLI subprocess/workspace overhead rather than reworking fixture extraction again immediately.
 
+### E2E Subprocess Cache
+
+The next bottleneck turned out to be accidental Deno cache isolation. The test harness gives each test an isolated `XDG_CACHE_HOME`, and child `deno run src/main.ts ...` CLI subprocesses inherited that setting. Without an explicit `DENO_DIR`, each black-box CLI subprocess rebuilt the Deno dependency cache under its private per-test cache root.
+
+Installed `weave` was useful as a comparison point, but not the fix:
+
+- `weave --version`: about 155ms
+- `deno run --allow-read --allow-write --allow-env src/main.ts --version`: about 131ms on a warm cache
+- `weave mesh create ...`: about 167ms
+- `deno run ... mesh create ...` with per-test cache isolation: about 2.872s
+- `deno run ... mesh create ...` with shared `DENO_DIR=/tmp/semantic-flow-weave-deno-e2e-cache`: about 113ms
+
+Plumbing fix: the shared test temp harness now sets `DENO_DIR` to `/tmp/semantic-flow-deno-test-cache` for each test, while still restoring any caller-provided `DENO_DIR` afterward. This keeps CLI subprocesses fast without switching e2e tests to an installed binary.
+
+Validation after the fix:
+
+- Cold-cache focused run after deleting `/tmp/semantic-flow-deno-test-cache`: `tests/support/test_tmp_test.ts` plus `tests/e2e/mesh_create_cli_test.ts` passed. The first CLI subprocess paid a one-time cache fill of about 5s; following CLI subprocesses ran around 110-130ms.
+- Warm-cache `tests/e2e`: 74 tests, 0 failures, 15s.
+- Normal `deno task test:coverage`, without a shell-level `DENO_DIR`: 648 tests, 0 failures, 54s wall-clock; normalized Codecov JUnit reported 54.170s. This meets the 2-minute local full-suite target on a warm cache.
+
+Slowest suites after the subprocess cache fix:
+
+- `./tests/e2e/weave_cli_test.ts`: 35 tests, 16.267s, down from 116.413s after the fixture snapshot pass.
+- `./tests/integration/weave_test.ts`: 47 tests, 4.161s.
+- `./tests/e2e/integrate_cli_test.ts`: 12 tests, 3.166s, down from 46.456s after the fixture snapshot pass.
+- `./tests/e2e/extract_cli_test.ts`: 9 tests, 2.613s, down from 31.753s after the fixture snapshot pass.
+
 ### Narrow Fixtures
 
 Some e2e tests need the real fixture ladder because the behavior is meaningful only against settled mesh output and conformance manifests. Others only need a mesh root with `_mesh/_meta`, `_mesh/_inventory`, a config file, and one or two content files. Those should not pay the Alice Bio fixture cost.
@@ -190,6 +217,7 @@ This is also friendlier for debugging: the failing command can print the env kno
 - Optimize fixture materialization before broad scheduling changes.
 - Target a 2-minute full-suite analytics run as the next performance bar.
 - Keep immutable fixture snapshots in `/tmp/semantic-flow-fixture-snapshots`; reboot-cleared temp storage is fine for this cache.
+- Keep the child Deno subprocess cache at `/tmp/semantic-flow-deno-test-cache`; per-test `XDG_CACHE_HOME` should not imply per-test Deno dependency caches.
 - Use resolved commit SHA as the correctness key for fixture snapshots. Human fixture labels are diagnostic and path-grouping context.
 - Do not add `tar` or another bulk export path now; the snapshot cache made extraction a smaller problem than e2e CLI subprocess/workspace overhead.
 - Keep the full `deno task test` as the merge-confidence command while introducing narrower developer-loop tasks.
@@ -237,6 +265,8 @@ This is also friendlier for debugging: the failing command can print the env kno
 - [x] Add an immutable per-ref fixture snapshot cache keyed by fixture repo + resolved commit.
 - [x] Convert Alice Bio, Sidecar Fantasy Rules, and Branch Fantasy Rules fixture materializers to copy from snapshots.
 - [x] Benchmark the snapshot cache against the baseline.
+- [x] Give child Deno CLI subprocesses a stable shared test cache outside per-test `XDG_CACHE_HOME`.
+- [x] Hit the 2-minute local full-suite target on a warm cache.
 - [ ] Add a tiny mesh fixture builder for tests that do not need the real Alice Bio or Sidecar fixture ladder.
 - [ ] Migrate obvious validation/logging/host-policy tests from heavy real fixtures to the tiny mesh builder.
 - [ ] Split test task aliases in `deno.json` after the bucket boundaries are clear.
