@@ -1956,3 +1956,381 @@ The Fable handoff is written. I’m giving it one pass for stale phrasing and to
 Done. I created [fable-sf-paper.md](../papers/2026-fomi-digitalartifact/fable-sf-paper.md) with a headings-only paper outline plus a self-contained Fable 5 prompt.
 
 I kept the prompt roomy: it names the strongest ideas and references from our thread, but tells Fable not to mechanically expand my outline. I also left [dave-sf-outline.md](../papers/2026-fomi-digitalartifact/dave-sf-outline.md) untouched, as requested.
+
+# djradon_2026-06-11_2216_40
+
+Whew, it finished. I've already made some edits, but... gads, how long do you think it is in pages? 26?
+
+# gpt-5.5_2026-06-11_2216_46
+
+Let me measure the draft rather than vibe-counting it. Page estimates get weird fast with CEUR/LaTeX formatting, but word count will give us a decent first answer.
+
+# gpt-5.5_2026-06-11_2217_03
+
+Yep, the 26-page instinct is the double-spaced-manuscript math.
+
+`fable-sf-paper.md` is currently **6,517 words**. Rough estimates:
+
+- **Double-spaced draft:** ~26 pages
+- **Proceedings/LaTeX single-column:** probably **12-15 pages**
+- **Tighter two-column style:** maybe **8-10 pages**
+
+So: scary-looking, but not “26-page paper” scary unless formatted like a classroom essay. If FOMI has a 10-12 page target, we probably need to cut maybe **1,000-2,000 words**, especially from the SFLO worked example and prior-work sections.
+
+# djradon_2026-06-11_2221_24
+
+One thing I notice right away is a lack of conceptual separation between identifiers that refer to concepts (all of them), and identifiers that identify DigitalArtifacts.
+
+What issues do you notice?
+
+# gpt-5.5_2026-06-11_2221_34
+
+I’ll read the current paper draft as a critic, with your concept-vs-DigitalArtifact distinction as the lens. I’ll keep this to diagnosis for now and avoid touching the file.
+
+# gpt-5.5_2026-06-11_2221_42
+
+Small twist: `codex-sf-paper.md` is empty right now, so the thing to critique is presumably the Fable draft. I’m switching to that file and looking for the structural problems rather than doing line edits.
+
+# gpt-5.5_2026-06-11_2222_02
+
+One concrete thing I want to sanity-check before I answer: the worked example is only as strong as its fidelity to the actual SFLO stanza, so I’m comparing that draft snippet against the ontology file too.
+
+# gpt-5.5_2026-06-11_2222_43
+
+Yes. The big issue is exactly that: the draft says the distinction, but it does not *organize the paper around it*.
+
+A few things jump out:
+
+- **“All identifiers have senses” is cleaner than “all identifiers refer to concepts.”** I’d be careful there. A `LocatedFile` IRI really does identify a byte-bearing file resource, but it still has a sense in context. So the key distinction is: every identifier participates in sense-finding; only some identifiers denote DigitalArtifacts; only some denote classes/properties/concepts/persons/etc.
+
+- **The referent/support split needs to appear before DigitalArtifact.** The abstract gestures at this in [fable-sf-paper.md](../papers/2026-fomi-digitalartifact/fable-sf-paper.md:17), but §4 then becomes the gravity well. I think we need an early mini-taxonomy: identifier, sense, referent, support artifacts, DigitalArtifact, DigitalArtifact facets.
+
+- **`ResourcePage` is wrongly bundled into “the six layers.”** In [§4](../papers/2026-fomi-digitalartifact/fable-sf-paper.md:101), Fable treats `ResourcePage` like another layer in the DigitalArtifact stack. But it’s more orthogonal: every layer can have a ResourcePage. A `ResourcePage` presents some resource; it is not simply the sixth coordinate after `LocatedFile`.
+
+- **The SFLO example risks overclaiming the current Turtle.** In [the worked example](../papers/2026-fomi-digitalartifact/fable-sf-paper.md:200), it says `<ontology>` is the ontology as a `DigitalArtifact`, but the actual stanza does not type it that way yet. That’s fine as an interpretation, but the prose should say “read as” or the ontology should assert it.
+
+- **It needs a term IRI example, not just an ontology artifact example.** The cleanest conceptual separation might be: `sflo:DigitalArtifact` as a class IRI has a sense and a ResourcePage, but it is not itself the ontology document artifact. The ontology document is a DigitalArtifact; the class is a vocabulary term supported by the mesh.
+
+- **“Sense-finding support should not [evolve]” is slightly false.** The support can evolve too; the point is that its prior states remain inspectable. So I’d retitle that idea to something like “Senses evolve; evidence should remain reconstructable.”
+
+- **DCAT novelty still needs sharper framing.** The draft says SF refines DCAT, but the reader may wonder why `dcat:Dataset`, `dcat:Distribution`, `dcat:landingPage`, and `dcat:downloadURL` are not enough. The answer is the expected navigation grammar: internal lineages, historical states, byte files as modeled resources, resource pages, and explicit mutable/exact coordinates.
+
+- **Knop may be too much too soon.** It is useful, but [§3.2](../papers/2026-fomi-digitalartifact/fable-sf-paper.md:81) may feel like a sudden product-specific object unless the paper first establishes the general identifier-support problem.
+
+My instinct: insert a short section before current §3 called something like **Identifiers, Senses, Referents, and Support Artifacts**. That section would save the whole paper from repeatedly drifting back into “DigitalArtifact explains everything.”
+
+# djradon_2026-06-11_2227_04
+
+we don't really distinguish "current", right? Just latest? Current is kinda subjective. i.e., might be a "current release" or a current working file, or current published draft.
+
+# gpt-5.5_2026-06-11_2227_21
+
+Yes, I think that’s right. **“Current” should not be a core Semantic Flow coordinate**, because it’s contextual and policy-laden.
+
+The stable distinctions are more like:
+
+- **latest**: objective within a specific `ArtifactHistory`, e.g. latest release state, latest draft state.
+- **default**: operational default write target, via `defaultArtifactHistory`.
+- **working**: mutable authoring surface, not settled publication evidence.
+- **exact**: pinned state, manifestation, located file, digest, or repository coordinate.
+- **endorsed/current**: publisher or application judgment, not a universal temporal fact.
+
+So “current release” should probably mean “latest state in the release history” or “publisher-endorsed release state,” depending on intent. “Current published draft” means latest in a draft history. “Current working file” means working coordinates. Those are all different.
+
+For the paper, I’d replace “latest, current, working, default, and exact” with something like:
+
+> explicit coordinates that distinguish exact settled references, latest state within a named history, mutable working references, and default write-target lineages.
+
+And if we mention `currentArtifactHistory`, I’d frame it as legacy/advisory/publisher-endorsed lineage vocabulary, not part of the clean conceptual core. “Current” is a useful English word, but a slippery ontology primitive.
+
+# djradon_2026-06-11_2234_29
+
+"keep the whole structure inspectable in RDF rather than buried in server behavior or repository internals" - server behavior applies more to content vs sense, and content negotiation via request headers, not so much to the DigitalArtifact stack. 
+
+Do you want to take the best parts of the fable-sf-paper, review it critically paragraph by paragraph, and translate it into something more correct and more succinct in [codex-sf-paper.md](../papers/2026-fomi-digitalartifact/codex-sf-paper.md) ? Or maybe it's best to take an inventory of all the problems first, then asses the coherence and sequencing separately before you try a rewrite?
+
+# gpt-5.5_2026-06-11_2234_41
+
+I think the right move is: inventory the problems first, then rewrite. Otherwise I’ll just polish Fable’s shape and preserve a few wrong joints. I’ll do the critique pass internally, then use [codex-sf-paper.md](../papers/2026-fomi-digitalartifact/codex-sf-paper.md) as a cleaner, shorter draft surface.
+
+# gpt-5.5_2026-06-11_2234_50
+
+The inventory pass confirms the main diagnosis: Fable has good raw material, but it lets DigitalArtifact become the universal explanatory hammer. I’m going to write the Codex draft around a sharper ladder: identifiers and senses first, support artifacts second, DigitalArtifact only when the referent is byte-governed.
+
+# gpt-5.5_2026-06-11_2235_20
+
+I’ve got the new sequencing now. Before editing, the rewrite will intentionally demote `ResourcePage` out of the DigitalArtifact stack, remove “current” as a core coordinate, and make “DigitalArtifact” a conditional model: used when the referent has byte-grounded artifact identity, not when the identifier is just a term or concept.
+
+# djradon_2026-06-11_2236_53
+
+This is an ugly non-sentence: "States chain via `previousHistoricalState` (a specialization of `prov:wasRevisionOf`), giving each lineage an inspectable revision order."
+
+Probably the ontology should declare itself a DigitalArtifact, no?
+
+# gpt-5.5_2026-06-11_2237_05
+
+Yep, I agree on both counts. That Fable sentence has the “verb chosen by committee” problem, and the ontology IRI should probably type itself as `DigitalArtifact` if we want the paper’s worked example to be literal rather than interpretive. I’ll patch the ontology header narrowly and then run the SFLO checks again.
+
+# gpt-5.5_2026-06-11_2237_18
+
+That patch is intentionally tiny: just the ontology header now says the ontology resource is both an `owl:Ontology` and a Semantic Flow `DigitalArtifact`. I’m running the local validation/checks so we don’t leave the ontology in a weird half-state.
+
+# gpt-5.5_2026-06-11_2237_26
+
+Agreed. I’d replace that Fable sentence with:
+
+> Each `HistoricalState` can point to its immediate predecessor with `previousHistoricalState`, a subproperty of `prov:wasRevisionOf`. Within an `ArtifactHistory`, those links make the revision sequence explicit.
+
+I also made the ontology change you suggested: [semantic-flow-core-ontology.ttl](../../sflo/semantic-flow-core-ontology.ttl:13) now declares the ontology IRI as both `owl:Ontology` and `<DigitalArtifact>`.
+
+Also: I finished the Codex rewrite in [codex-sf-paper.md](../papers/2026-fomi-digitalartifact/codex-sf-paper.md). It’s about **4,152 words**, so much leaner than Fable’s draft and structured around the identifier/sense/DigitalArtifact separation.
+
+Validation passed in `sflo`:
+
+- `deno task check`
+- `deno task test` - 27 passed
+- Turtle parse check for `semantic-flow-core-ontology.ttl`
+
+# djradon_2026-06-11_2237_26
+
+I guess that is a sentence, actually.
+
+# gpt-5.5_2026-06-11_2237_33
+
+Ha, yes, technically it has all the organs. It’s just a little unhappy in its body.
+
+“States chain via…” is grammatical, but it sounds more like API documentation than paper prose. I’d still smooth it unless you want that compressed spec-ish register. My vote remains:
+
+> Each `HistoricalState` can point to its immediate predecessor with `previousHistoricalState`, a subproperty of `prov:wasRevisionOf`. Within an `ArtifactHistory`, those links make the revision sequence explicit.
+
+# djradon_2026-06-11_2242_38
+
+Yeah, your formulation is good there.
+
+"Ontology terms, dataset identifiers, publication pages, release files, and byte-level artifacts are all named with IRIs, but they do not all name the same kind of thing. " doesn't really say much. "publication pages" might not be as understandable about "reference pages" and "release files" vs "byte-level artifacts" is both opaque and innacurate/misleading.
+
+# gpt-5.5_2026-06-11_2242_50
+
+Yep, that sentence is doing the classic abstract thing where it gestures at a distinction instead of actually cashing it out. I’ll make it name the referent categories directly: term/class, continuing artifact, page-about-a-resource, settled state, and concrete retrievable bytes.
+
+# gpt-5.5_2026-06-11_2242_54
+
+There’s only one instance of the fuzzy phrase, in the abstract. I’m going to trade the list of vague nouns for one concrete contrastive sentence, even if it’s a bit longer; abstract real estate is worth spending on this distinction.
+
+# gpt-5.5_2026-06-11_2243_06
+
+Agreed, and I patched that abstract sentence in [codex-sf-paper.md](../papers/2026-fomi-digitalartifact/codex-sf-paper.md:5).
+
+It now says the distinction directly:
+
+> A class IRI, a dataset IRI, a ResourcePage IRI, a release-state IRI, and a Turtle-file IRI are all identifiers, but they respectively name a vocabulary term, a continuing artifact, a page presenting a resource, a settled historical state, and concrete retrievable content.
+
+That feels much more load-bearing. “Release file” was indeed muddy; the important thing is release *state* versus retrievable content.
+
+# djradon_2026-06-11_2250_02
+
+"resource identified" is probably better as "identified resource" unless you mean "resource identifier" which might be better.  But really, the whole abstract is kinda a jumbly drudge.  
+
+regarding dcat, there is dcat:hasVersion so... what is the gap we're filling? Is it that by using ArtifactHistory we establish "collections of versions"?
+
+# gpt-5.5_2026-06-11_2250_11
+
+You’re right on the prose: “identified resource” is better, and the abstract is still wearing too many backpacks. On DCAT, I’m going to check the spec language directly because `dcat:hasVersion` changes the prior-work positioning in a real way.
+
+# gpt-5.5_2026-06-11_2251_14
+
+Yes, this is a good catch. The DCAT gap is **not** “DCAT lacks versioning.” DCAT 3 absolutely has versioning now: `dcat:hasVersion` relates a non-versioned or abstract resource to more specific versioned resources/snapshots, and DCAT also has `dcat:previousVersion` and `dcat:hasCurrentVersion` for version chains/current snapshots. The spec explicitly says versioning is for revisions in a resource life cycle. See W3C DCAT 3, especially `dcat:hasVersion` and versioning guidance: https://www.w3.org/TR/vocab-dcat-3/#Property:resource_has_version and https://www.w3.org/TR/vocab-dcat-3/#versioning
+
+So yes: **`ArtifactHistory` is partly about establishing named collections/lineages of versions**, but I’d phrase the gap more sharply:
+
+DCAT gives you version relationships. Semantic Flow gives you **artifact publication topology**.
+
+More concretely:
+
+- DCAT can say: this dataset has these versions, this one is the current version, this one follows that one.
+- Semantic Flow says: this DigitalArtifact has multiple internal histories, such as release, draft, source-import, editorial curation, archived predecessor, etc.
+- DCAT has `dcat:DatasetSeries`, but that is a collection of separately published datasets sharing characteristics, not necessarily an internal lineage facet of one artifact. The spec even distinguishes series ordering (`dcat:prev`) from version revision (`dcat:previousVersion`). See https://www.w3.org/TR/vocab-dcat-3/#Class:Dataset_Series and https://www.w3.org/TR/vocab-dcat-3/#Property:resource_prev
+- Semantic Flow adds `HistoricalState` as the settled state coordinate inside a chosen history.
+- Semantic Flow adds byte-facing publication layers: `ArtifactManifestation`, `LocatedFile`, digests, ResourcePages, static paths, resolution specs, and observations.
+- Semantic Flow adds operational semantics DCAT does not try to own: default write-target history, latest within a named history, working coordinates, exact coordinates.
+
+So the paper should stop implying “DCAT is missing versions.” The stronger claim is:
+
+> DCAT 3 provides general version relationships for cataloged resources. Semantic Flow profiles that space for static RDF publication by making version lineages first-class artifact facets, distinguishing multiple histories within one DigitalArtifact, and connecting settled states to manifestations, located files, ResourcePages, and resolution coordinates.
+
+And yes, “resource identified” should become “identified resource.” But I think the abstract needs a deeper rewrite than that. It should probably open with the DCAT distinction honestly instead of trying to make every idea arrive in one paragraph wearing a tiny hat.
+
+# djradon_2026-06-11_2251_14
+
+https://www.w3.org/TR/vocab-dcat-3/#Property:resource_has_version
+
+# gpt-5.5_2026-06-11_2251_30
+
+That section is exactly the pressure point. I’m going to use it to correct the paper’s DCAT framing: DCAT already has versioning, so our claim needs to be “Semantic Flow profiles and operationalizes artifact publication lineages,” not “DCAT lacks versions.”
+
+# gpt-5.5_2026-06-11_2251_44
+
+The DCAT text is actually helpful to Semantic Flow if we treat it fairly: DCAT 3 already defines version chains and hierarchies, and even says versioning can apply to datasets, distributions, catalogs, and records. The gap is narrower and better: named internal histories plus static publication coordinates from state to bytes/pages.
+
+# gpt-5.5_2026-06-11_2251_54
+
+I found the main places where the draft still overclaims against DCAT: the abstract, the intro gap paragraph, the DigitalArtifact model setup, and the prior-work section. I’m patching those so the paper sounds like it understands DCAT 3 rather than discovering versioning in a dramatic fog.
+
+# gpt-5.5_2026-06-11_2252_18
+
+That patch lands the core correction. I’m doing one quick scan for remaining “DCAT lacks versioning” ghosts and for the wording you flagged.
+
+# gpt-5.5_2026-06-11_2252_32
+
+Yep, that link settles it. I updated [codex-sf-paper.md](../papers/2026-fomi-digitalartifact/codex-sf-paper.md:5) so it no longer implies DCAT lacks versioning.
+
+The gap we fill is not “versions”; DCAT 3 has `dcat:hasVersion`, `dcat:previousVersion`, `dcat:hasCurrentVersion`, and `dcat:DatasetSeries`. The gap is more like:
+
+> Semantic Flow turns DCAT-compatible version/resource metadata into a static artifact-publication grammar: named internal histories, settled states, manifestations, located files, ResourcePages, and resolution coordinates.
+
+So yes, `ArtifactHistory` is partly “collections of versions,” but more specifically: **named internal lineages of HistoricalStates within one DigitalArtifact**. That lets one artifact have release history, draft history, source-import history, curation history, etc., with `defaultArtifactHistory` telling tools where ordinary writes go.
+
+I used these DCAT 3 sections as the anchor:
+
+- `dcat:hasVersion`: https://www.w3.org/TR/vocab-dcat-3/#Property:resource_has_version
+- DCAT versioning guidance: https://www.w3.org/TR/vocab-dcat-3/#versioning
+- `dcat:DatasetSeries`: https://www.w3.org/TR/vocab-dcat-3/#Class:Dataset_Series
+
+Also changed “resource identified” to “identified resource.” The abstract is still a bit dense, but it’s now conceptually less guilty.
+
+# djradon_2026-06-11_2254_06
+
+In the ontology header, probably we use dcat:hasVersion instead of dcterms:hasVersion? Or better yet, just use sflo:hasHistoricalState?
+
+And it's not too late to make HistoricalState into HistoricalVersion or something. I preferred state because version implies a release, but people understand the version can be any time you hit save or publish. hasHistoricalState could be subproperty dcat:hasVersion?
+
+# gpt-5.5_2026-06-11_2254_19
+
+I’m going to check the current SFLO property declarations before taking a position, because this is exactly the kind of naming/detail decision where the ontology can quietly teach us what it wants.
+
+# gpt-5.5_2026-06-11_2255_10
+
+My read: use DCAT for the broad artifact-to-state version relationship, keep `HistoricalState` as the SFLO term, and make `hasHistoricalState` a more specific version relation. I’m going to make that alignment narrowly: `dcat:hasVersion` / `dcat:isVersionOf` in the header, `hasHistoricalState` under `dcat:hasVersion`, and `previousHistoricalState` under `dcat:previousVersion`.
+
+# gpt-5.5_2026-06-11_2255_19
+
+There are a few internal references still assuming `dcterms:hasVersion`, including the release validation tests and runbook. I’m keeping this pass focused on the core ontology alignment and the paper excerpt, then I’ll run the tests and update any guardrail expectations that break.
+
+# gpt-5.5_2026-06-11_2255_31
+
+This alignment is a little wider than the one line in the core ontology because release validation enforces the metadata pattern across the ontology files. I’m updating those expectations too, otherwise the repo will immediately complain about its own new convention.
+
+# gpt-5.5_2026-06-11_2255_34
+
+One small design note before I patch: I would not rename `HistoricalState`. DCAT can infer “version” through the property alignment; the SFLO word “state” still earns its keep because it does not imply a formal release label.
+
+# gpt-5.5_2026-06-11_2256_02
+
+The combined patch didn’t apply cleanly around `previousHistoricalState`, likely because that bit moved since the last read. I’ll split the edits into smaller patches so we don’t smear anything.
+
+# gpt-5.5_2026-06-11_2256_05
+
+A bit of the output is squashed because I read several file headers in one command, but the actual files are fine. I’m applying the narrower patches now.
+
+# gpt-5.5_2026-06-11_2256_14
+
+Core ontology is aligned now. I’m making the same metadata vocabulary switch in the other active ontology headers so release validation has one convention instead of a split personality.
+
+# gpt-5.5_2026-06-11_2256_25
+
+Next I’m updating the release validator. This is not just paperwork: otherwise the release task would keep enforcing the old DCTERMS version relation and make the new ontology look invalid.
+
+# gpt-5.5_2026-06-11_2256_34
+
+I’m also syncing the paper’s worked example to the new header vocabulary, so the draft doesn’t immediately contradict the ontology.
+
+# gpt-5.5_2026-06-11_2256_44
+
+There are a couple of durable docs still teaching the old DCTERMS pattern. I’m going to update the guidance notes and decision log too; release notes can stay historical unless they’re used as current instructions.
+
+# gpt-5.5_2026-06-11_2256_50
+
+I’m leaving the old release note alone because it describes what v0.2.0 used at the time, but I’m updating active guidance and the summary so future work points at DCAT.
+
+# gpt-5.5_2026-06-11_2257_05
+
+The runbook only had the checklist term; the example lives in the dereferenceability use case. I’ll patch them separately.
+
+# gpt-5.5_2026-06-11_2257_09
+
+Found the exact live guidance spots. Applying the docs update now.
+
+# gpt-5.5_2026-06-11_2257_17
+
+I’m recording the design decision too, because this one affects how we explain SFLO against DCAT in the paper and future docs.
+
+# gpt-5.5_2026-06-11_2257_37
+
+The ontology and docs are patched. I’m scanning for stale `dcterms:hasVersion` / `dcterms:isVersionOf` uses now, then I’ll run the SFLO checks.
+
+# gpt-5.5_2026-06-11_2258_12
+
+Only stale live-paper uses are in Fable’s worked example; the release note is historical. I’ll update Fable’s two predicates too so both drafts match the ontology.
+
+# gpt-5.5_2026-06-11_2258_21
+
+Everything visible is now aligned. Running the SFLO checks and Turtle parser pass so we know whether the release tooling and RDF still agree with the new DCAT convention.
+
+# gpt-5.5_2026-06-11_2258_35
+
+Checks passed cleanly. I’m taking one final diff summary so I can give you the exact scope and not hand-wave the edits.
+
+# gpt-5.5_2026-06-11_2258_41
+
+One thing popped up: `deno.lock` changed, probably from the ad hoc `npm:n3` parse check. That’s my generated noise, not part of the ontology decision, so I’m inspecting it and will remove it if it’s just lockfile churn.
+
+# gpt-5.5_2026-06-11_2258_46
+
+Yep, that’s just lockfile churn from my parse command adding `npm:n3@*`. I’m removing that line so the diff stays about the model, not my tool habit.
+
+# gpt-5.5_2026-06-11_2258_53
+
+Lockfile noise is gone. One last quick status check, then I’ll summarize the recommendation and what changed.
+
+# gpt-5.5_2026-06-11_2259_11
+
+Yes. I think the right alignment is:
+
+- Use `dcat:hasVersion` / `dcat:isVersionOf` in ontology headers.
+- Keep `HistoricalState`, not `HistoricalVersion`.
+- Make `sflo:hasHistoricalState` a subproperty of `dcat:hasVersion`.
+- Make `sflo:previousHistoricalState` a subproperty of `dcat:previousVersion`.
+- Do not equate `latestHistoricalState` with `dcat:hasCurrentVersion`; “current” is still too policy/context dependent.
+
+I made those changes across the active SFLO ontology headers and release validation tooling. The core change is in [semantic-flow-core-ontology.ttl](../../sflo/semantic-flow-core-ontology.ttl:17) and [semantic-flow-core-ontology.ttl](../../sflo/semantic-flow-core-ontology.ttl:87). I also updated the paper examples in both Fable and Codex drafts, plus the release runbook, use-case note, summary, and decision log.
+
+The reason I’d keep `HistoricalState`: DCAT supplies the version semantics, but “state” still better captures “any settled save/publish point,” not only named releases. `ArtifactHistory` remains the thing SFLO adds: named internal lineages of those states.
+
+Validation passed:
+
+- `deno task check`
+- `deno task test` - 27 passed
+- `deno task release:validate`
+- Turtle parse check for all active ontology/SHACL TTL files
+
+DCAT anchor references: `dcat:hasVersion` and versioning guidance in DCAT 3: https://www.w3.org/TR/vocab-dcat-3/#Property:resource_has_version and https://www.w3.org/TR/vocab-dcat-3/#versioning
+
+Suggested `sflo` commit message:
+
+```text
+Align historical states with DCAT versioning
+
+- use dcat:hasVersion and dcat:isVersionOf in active ontology headers
+- make hasHistoricalState specialize dcat:hasVersion
+- make previousHistoricalState specialize dcat:previousVersion
+- update release validation, guidance notes, and decision log
+```
+
+Suggested archive commit message:
+
+```text
+Update FOMI drafts for DCAT versioning alignment
+
+- switch worked examples from dcterms version predicates to DCAT version predicates
+- keep Codex draft aligned with SFLO historical-state terminology
+```
