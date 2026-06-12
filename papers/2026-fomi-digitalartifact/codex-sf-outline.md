@@ -1,179 +1,594 @@
-# Outline: FOMI 2026 DigitalArtifact Paper
+# Codex Outline: FOMI 2026 Semantic Mesh / DigitalArtifact Paper
 
 Working title:
 
+> Semantic Meshes: Stable Identifiers, Immutable Data, and Dynamic Sense-Finding
+
+More precise variant:
+
+> Semantic Meshes: Stable Identifiers, Immutable Evidence, and Dynamic Sense-Finding
+
+Literal fallback title:
+
 > Semantic Flow: Byte-Grounded Digital Artifact Histories for Static RDF Publication
 
-## Boundary
+## Scope
 
-This is the model/practice paper, not the Weave demo paper.
-
-The FOMI paper argues that ontology and RDF publication need a byte-grounded DigitalArtifact layer. It should explain the model, its relation to prior work, and the practical ontology-engineering problems it helps make reviewable. Weave appears as the reference implementation and running case.
-
-The FOIS Demonstrations paper argues that Weave demonstrates a concrete filesystem-native workflow for publishing ontology resources as static, inspectable SemanticMeshes. It should include command flow, ResourcePage screenshots, source registries, validation, and implementation limitations.
+- FOMI model/practice paper
+- Semantic Meshes first
+- Semantic Flow as the framework/model behind them
+- Weave as reference implementation and running example
+- FOIS Demonstrations paper reserved for:
+  - command workflow
+  - screenshots
+  - static site generator comparison
+  - Weave implementation details
+  - interactive resource browsing
 
 ## Thesis
 
-Repository-native RDF publication needs an explicit model of governed digital artifacts, publication states, concrete manifestations, located files, and source coordinates. Git provides excellent storage and collaboration mechanics, and Linked Data guidance explains dereferenceable identifiers, but neither makes ontology artifact histories, byte manifestations, major revision boundaries, and provenance directly reviewable as RDF. Semantic Flow supplies that publication layer while leaving domain-level work/expression modeling to publishers.
+- Public RDF identifiers need:
+  - high availability and no server-side fixes
+  - stable sense-finding support
+  - governed artifact-level continuity handles
+  - reviewable byte coordinates
+  - explicit histories
+  - dereferenceable presentation pages
+- Identifier senses can evolve, and may even become inconsistent with earlier states.
+- Semantic Flow does not freeze meaning; it supplies a coherent framework for establishing, inspecting, and revising meaning.
+- Identifiers for digital artifacts and their facets should be as specific and predictable as the reference task requires.
+- A `DigitalArtifact` IRI can serve as a governed artifact-level continuity handle.
+- Histories, states, manifestations, located files, and per-layer ResourcePages are facets of that artifact identity in the broader modeling sense.
+- These layers make artifact identity inspectable at chosen levels of specificity.
+- For identifiers that are not themselves `DigitalArtifact`s, Knop support artifacts still help establish sense:
+  - `ReferenceCatalog`
+  - `KnopSourceRegistry`
+  - `KnopInventory`
+  - `KnopMetadata`
+  - `ResourcePageDefinition`
+- Primary data and settled historical states should be persistent or quasi-immutable.
+- Evolving metadata artifacts can point at latest, working, current, deprecated, replaced, or exact coordinates.
+- Metadata can itself have states.
+- Meta-metadata can have states if somebody mints an IRI for it.
+- Semantic Flow contributes a DCAT-compatible publication layer.
+- Semantic Flow does not replace:
+  - DCAT catalogs
+  - Git storage and collaboration
+  - WEMI/domain work-expression modeling
+  - downstream ontology diff, compatibility analysis, or migration tooling
 
 ## Contribution Claims
 
-- A byte-grounded `DigitalArtifact` model for RDF and ontology publication.
-- A practical distinction between artifact identity, publication history, historical state, manifestation, located file, and source coordinate.
-- A WEMI-aware but not WEMI-shaped treatment of digital files: Semantic Flow leaves work/expression/domain interpretation to publisher ontologies.
-- A sparse modeling strategy using skip-level properties when the full artifact/state/manifestation/file chain would not add evidence.
-- A mechanical ResourcePage pattern for static dereferenceability: commodity hosting may return `index.html`, while RDF distinguishes the identified resource from the page file returned to present it.
-- A treatment of major ontology revisions as public contract changes, not merely repository diffs.
-- A reference implementation case: Weave demonstrates the model over the SFLO static publication surface.
+- DCAT-compatible byte-grounded artifact model.
+- `DigitalArtifact` as governed artifact identity, subclassing `dcat:Dataset`.
+- `ArtifactManifestation` as state-situated representation, subclassing `dcat:Distribution`.
+- `HistoricalState` as explicit immutable temporal facet.
+- `ArtifactHistory` as explicit internal lineage support for one artifact.
+- `LocatedFile` as first-class retrievable byte identity.
+- `ResourcePage` as special located HTML file for static dereferenceability.
+- `ArtifactResolutionSpec` as reviewable coordinate relator.
+- Sparse modeling via consistency-preserving skip-level properties.
+- Expected navigation grammar:
+  - artifact
+  - history
+  - state
+  - manifestation
+  - located file
+  - resource page
+  - source coordinate
 
-## Section Plan
+## 1. Introduction
 
-### 1. Introduction
+- Opening pressure:
+  - ontology publication exposes public IRIs
+  - evidence lives in files, generated pages, release directories, source registries, shapes, examples, repository commits, and static hosting paths
+  - major revisions create public contract changes, not only diffs
+- Current gap:
+  - Git tracks repository bytes
+  - DCAT describes cataloged data resources and distributions
+  - Cool URI guidance explains dereferenceability patterns
+  - existing ontology publication tools generate useful pages
+  - missing: one RDF-native publication grammar for identity, state, representation, file, page, and coordinate
+- Main claim:
+  - Semantic Flow supplies the missing publication layer for byte-grounded digital artifact histories.
 
-Open with the publication problem:
+## 2. Prior Work Spine
 
-Ontology projects publish public identifiers, but their evidence lives in repository files, generated pages, release artifacts, source registries, examples, SHACL shapes, and static hosting paths. Major revisions complicate this further: term meanings, imports, examples, generated documentation, validation shapes, and deprecated identifiers may all change at once.
+- DCAT 3:
+  - broad `dcat:Dataset`
+  - `dcat:Distribution` as representation
+  - `dcat:DatasetSeries`
+  - versioning terms
+  - `dcat:landingPage`
+  - `dcat:accessURL`
+  - `dcat:downloadURL`
+  - `spdx:checksum`
+- FRIR:
+  - information-resource provenance
+  - closest conceptual touchpoint
+  - no explicit Semantic Flow-style `HistoricalState`
+- WEMI / OpenWEMI:
+  - useful warning about layered ambiguity
+  - not Semantic Flow's model
+  - Semantic Flow leaves work/expression interpretation to publisher ontologies
+- Cool URIs / httpRange-14 / Tennison:
+  - resource/content distinction
+  - punning and URI sense
+  - Semantic Flow stance: URI has a socially governed sense in context; URI does not literally refer to a sense
+- Structure versus concept:
+  - Cagle and Shannon distinguish structural ontology from conceptual/taxonomic layers
+  - useful warning against collapsing concept meaning into formal structure
+  - Semantic Meshes separate support structure from the domain concepts whose senses are being established
+  - DigitalArtifact facets describe artifact structure
+  - ReferenceCatalogs, source registries, inventories, metadata, and ResourcePages support sense-finding
+- FAIR vocabulary guidance and RDF publication recipes:
+  - metadata
+  - version IRIs
+  - documentation
+  - serializations
+  - persistence
+- Static RDF and ontology publication tools:
+  - Jekyll RDF
+  - Widoco
+  - LODE / pyLODE
+  - Pubby
+  - LodView
+  - Walder
+  - Harshp
+  - useful publication surfaces, not artifact-history coordinate models
+- Repository-native ontology work:
+  - Git as excellent substrate
+  - ACIMOV / continuous integration
+  - collaborative knowledge management using Git
+  - missing reviewable RDF coordinates for artifact identity and historical state
 
-Position Semantic Flow:
+## 3. DCAT 3 Comparison
 
-Semantic Flow models the publication layer between conceptual RDF identifiers and concrete repository/static-site mechanics. It is not an ontology of all intellectual works, and it is not a replacement for Git. It is a byte-grounded artifact layer for governed RDF publication.
+- DCAT 3 baseline:
+  - `dcat:Dataset`: broad conceptual data resource
+  - includes text, images, sound, video, RDF, and other data forms
+  - `dcat:Distribution`: specific representation of a dataset
+  - distributions may vary by format, serialization, schema, profile, language, resolution, packaging, fidelity
+  - provider decides whether resources are same dataset, different datasets, or dataset series
+- Semantic Flow alignment:
+  - `DigitalArtifact rdfs:subClassOf dcat:Dataset`
+  - `ArtifactManifestation rdfs:subClassOf dcat:Distribution`
+  - `hasManifestation rdfs:subPropertyOf dcat:distribution`
+  - `locatedFileForManifestation rdfs:subPropertyOf dcat:downloadURL`
+- Semantic Flow differences:
+  - `DigitalArtifact`: governed artifact identity, not only catalog entry
+  - `HistoricalState`: immutable artifact-state facet, absent from DCAT's core pattern
+  - `ArtifactManifestation`: DCAT distribution constrained by Semantic Flow's state/artifact stack
+  - `LocatedFile`: retrievable bytes as resource, not only URL value
+  - `ResourcePage`: concrete static page file, not only landing page
+  - `ArtifactResolutionSpec`: coordinate relator for latest, working, exact, fallback, digest, and source
+- What Semantic Flow replaces in practice:
+  - bare `dcat:distribution` with `hasManifestation` for artifact/state representation links
+  - bare `dcat:downloadURL` with `locatedFileForManifestation` when the downloadable thing is a modeled file resource
+  - generic `dcat:landingPage` with `hasResourcePage` when the page itself is a modeled static `ResourcePage`
+  - `dcat:DatasetSeries` for internal artifact lineage; use `ArtifactHistory` instead
+  - ad hoc "latest" links with explicit `defaultArtifactHistory`, `currentArtifactHistory`, `latestHistoricalState`, and resolution modes
+- What Semantic Flow does not replace from DCAT:
+  - catalog-level aggregation
+  - broad discovery metadata
+  - external interoperability vocabulary
+  - DCAT export or crosswalks
+- `dcat:DatasetSeries` contrast:
+  - series is itself a dataset
+  - collection of separately published datasets
+  - outside/around the artifact
+  - not the internal publication lineage of one `DigitalArtifact`
+- `ArtifactHistory` contrast:
+  - inside a `DigitalArtifact`
+  - multiple lineages for same artifact
+  - typed as `DigitalArtifactFacet` and `SemanticFlowResource`
+  - facet of the artifact's diachronic identity
+  - not a `DigitalArtifact`
+  - not a container superclass
+  - drafts
+  - releases
+  - editorial curation
+  - extracted/source histories
+  - local working versus published histories
+  - default write-target history pointer
+  - latest state pointer as mutable metadata, not historical-state content
+  - release versus non-release separation lives here
 
-### 2. Prior Work and Pressure Points
+## 4. Core Model
 
-Use a tight reference spine:
+- Full chain:
+  - `SemanticMesh`
+  - `Knop`
+  - `DigitalArtifact`
+  - `ArtifactHistory`
+  - `HistoricalState`
+  - `ArtifactManifestation`
+  - `LocatedFile`
+  - `ResourcePage`
+  - `ArtifactResolutionSpec`
+- `SemanticMesh`:
+  - governed namespace region
+  - static publication surface
+  - filesystem-backed in Weave, but framework-level concept
+- `Knop`:
+  - naming anchor
+  - support object for an identifier
+  - place for payload, metadata, inventory, reference catalog, source registry, page definition
+  - sense-finding support even when the identified resource is not itself a `DigitalArtifact`
+- `DigitalArtifact`:
+  - governed artifact-level continuity handle
+  - "digital artifact" in the sense of byte-realizable governed content
+  - identity clarified by its histories, states, manifestations, located files, pages, and metadata
+  - not a complete theory of books, works, expressions, performances, or products
+- `ArtifactHistory`:
+  - lineage resource
+  - diachronic facet in prose
+  - typed as `DigitalArtifactFacet` and `SemanticFlowResource`
+  - draft/release/curation separation
+  - release history versus archive/draft/curation history
+  - named histories such as `releases`
+  - ordinals
+  - `defaultArtifactHistory` as default write target
+  - `currentArtifactHistory` as compatibility/current-lineage pointer
+  - if default and latest/current history differ, write operations require explicit history selection
+  - `latestHistoricalState`
+  - optional resource page
+- `HistoricalState`:
+  - immutable publication-state facet
+  - revision chain
+  - major/minor/release semantics can attach here
+  - coordinates for exact citation
+- `ArtifactManifestation`:
+  - representation of a state or sparse artifact
+  - Turtle
+  - JSON-LD
+  - RDF/XML
+  - Markdown
+  - PDF
+  - canonicalized graph
+  - zipped package
+  - build output
+- `LocatedFile`:
+  - retrievable byte identity
+  - typically file-like and extension-bearing
+  - digest-bearing
+  - mirrorable
+  - concrete enough for download, cache, citation, and verification
+- `ResourcePage`:
+  - special `LocatedFile`
+  - HTML page
+  - conventionally `index.html`
+  - presents another resource
+  - can become its own governed artifact if page identity, page version, or page history matters
+- Support artifacts for sense-finding:
+  - `ReferenceCatalog`: curated RDF reference links about the identified resource
+  - `KnopSourceRegistry`: source bindings and extraction provenance for grounded identifier support
+  - `KnopInventory`: current managed surface for the Knop and its support artifacts
+  - `KnopMetadata`: metadata about the Knop and support structure
+  - `ResourcePageDefinition`: authored page-composition policy for the identifier page
+  - these artifacts do not freeze meaning, but make sense-establishing evidence inspectable and revisable
+- `ArtifactResolutionSpec`:
+  - target artifact
+  - target history
+  - target state
+  - target manifestation
+  - target located file
+  - target local path
+  - target access URL
+  - repository source coordinate
+  - expected digest
+  - fallback
+  - observation
+  - resolution mode
 
-- Linked Data and Cool URIs for dereferenceability and information-resource pressure.
-- FAIR vocabulary/ontology publication guidance for metadata, version IRIs, documentation, and serializations.
-- FRIR/WEMI/OpenWEMI for information-resource layers and provenance.
-- Ontology versioning/change-analysis literature for semantic vs syntactic changes.
-- Git-backed RDF collaboration and ACIMOV for repository-native workflows.
-- Jekyll RDF and existing publication tools as static publication context.
-- Cool URI/httpRange-14 literature, including Tennison's punning proposal, for the distinction between an identified resource, the content returned by dereferencing, and the socially governed sense a URI has in context.
+## 5. Expected Navigation Grammar
 
-Keep the point clear: Semantic Flow integrates known concerns into a byte-grounded publication model; it does not claim to invent dereferenceability, provenance, versioning, or static RDF publication.
+- Common exact path:
+  - artifact -> current history -> latest state -> manifestation -> located file
+- Common citation path:
+  - artifact -> release history -> exact state -> exact manifestation -> exact located file -> digest
+- Common update path:
+  - artifact -> default/current history -> next/new historical state
+  - if default history and latest-updated history diverge, require explicit history selection
+- Common sparse path:
+  - artifact -> located file
+- Common state shortcut:
+  - historical state -> located file
+- Common working path:
+  - artifact -> working located file
+  - artifact -> working local relative path
+  - artifact -> working access URL
+- Coordinate modes:
+  - working
+  - latest state
+  - exact
+- Skip-level properties:
+  - not alternate metaphysics
+  - convenience coordinates
+  - should remain consistent with the full chain when both are asserted
+- Why grammar matters:
+  - reviewable metadata
+  - reproducible publication
+  - durable citation
+  - release/non-release lineage separation
+  - static hosting
+  - LLM/IDE authoring workflows
+  - separation of mutable pointers from immutable states
 
-### 3. FRIR/WEMI As Touchpoint and Contrast
+## 6. URI Sense and Resource Pages
 
-Core stance:
+- Problem:
+  - dereferencing a public IRI returns bytes
+  - the public IRI may identify an ontology term, artifact, concept, page, file, or other resource
+  - static hosts often return `index.html` for parent path requests
+  - no dynamic host headers
+  - no required server-side content negotiation
+  - no required 303 redirect machinery
+- Semantic Flow stance:
+  - URIs have senses in social and graph contexts
+  - URIs do not literally refer to senses
+  - RDF should state what the identifier denotes or presents when distinction matters
+- Static pattern:
+  - parent IRI requested
+  - commodity host serves `index.html`
+  - returned page declares itself a `ResourcePage`
+  - identified resource links to that page with `hasResourcePage`
+  - embedded RDFa or JSON-LD carries the assertion
+- Content/page distinction:
+  - `LocatedFile`s identify content directly
+  - ordinary located files are terminal byte resources
+  - ordinary located files normally do not need resource pages
+  - `ResourcePage` is the located file whose role is presentation of another resource
+- File extension convention:
+  - extension-bearing IRIs usually identify concrete retrievable content
+  - extensionless or slash paths often identify higher-level resources
+  - convention, not universal law
+  - RDF assertions remain authoritative
+- ResourcePage as artifact:
+  - page can have its own IRI
+  - page can be a `DigitalArtifact`
+  - page can have historical states
+  - page can have manifestations and located files
+  - optional, not forced
 
-> Semantic Flow is WEMI-aware but not WEMI-shaped.
+## 7. Structure, Concept, and Sense-Finding
 
-Explain:
+- Starting distinction:
+  - structures and concepts serve different jobs
+  - structure can be precise, operational, and application-dependent
+  - concepts and identifier senses can evolve socially and editorially
+  - retrieval, reasoning, validation, and human interpretation need different kinds of support
+- Semantic Flow stance:
+  - SFLO is not primarily a domain ontology that says what is true in the world
+  - SFLO describes how to capture, publish, support, and revise semantic resources predictably
+  - "everything is a concept" in the broad sense that every identifier needs sense-finding support
+  - but not everything is a `DigitalArtifact`
+- What gets structural treatment:
+  - `DigitalArtifact` stack
+  - histories
+  - states
+  - manifestations
+  - located files
+  - ResourcePages
+  - source bindings
+  - inventories
+- What remains publisher/domain responsibility:
+  - conceptual interpretation
+  - class membership in a domain ontology
+  - SKOS concept schemes
+  - social meaning of an identifier
+  - semantic compatibility claims
+- Claim:
+  - Semantic Meshes keep structure and concept from collapsing into each other.
+  - Mesh structure provides durable, inspectable evidence for dynamic sense-finding.
 
-- WEMI distinctions expose real ambiguity around work, expression, manifestation, and item.
-- FRIR is the closest touchpoint for information-resource provenance.
-- Semantic Flow deliberately omits an expression layer from the core model.
-- A `DigitalArtifact` may be modeled by a publisher as an expression of something more abstract, but Semantic Flow does not require that.
-- Different formats, serializations, packages, or build outputs are `ArtifactManifestation`s.
-- `HistoricalState` is the temporal publication-state layer absent from FRIR/WEMI.
+## 8. Digital Artifacts, Metadata, and Meta-Metadata
 
-Use the two-column comparison table from the shared outline, including the skip-level row.
+- Primary data:
+  - governed artifact-level continuity
+  - persistent historical states
+  - quasi-immutable located files
+  - digests for verification
+- Metadata:
+  - can evolve
+  - can carry latest/current pointers
+  - can describe histories, pages, manifestations, located files, source coordinates
+  - can itself be a `DigitalArtifact`
+- Metadata states:
+  - exact metadata state citation
+  - changing metadata without rewriting old primary data
+  - current metadata view as mutable coordinate
+- Meta-metadata:
+  - possible by minting an IRI for the metadata artifact
+  - no infinite-stack obligation
+  - explicit only when useful
+- Practical rule:
+  - materialize layers when they carry evidence
+  - skip layers when they are ceremonial
 
-### 4. DigitalArtifact Model
+## 9. FRIR/WEMI Contrast
 
-Define terms on first use:
+- FRIR:
+  - useful information-resource provenance lens
+  - Web resource concerns
+  - provenance requirements
+  - expression-like distinctions
+  - no native `HistoricalState` role as Semantic Flow uses it
+- WEMI/OpenWEMI:
+  - work/expression/manifestation/item
+  - useful for library and cultural object cases
+  - physical-library bias
+  - intentionally fuzzy at boundaries
+- Semantic Flow:
+  - not WEMI
+  - not an expression model
+  - rooted in concrete bytes
+  - leaves "Beethoven's 9th", draft, performance, recording, edition, product, or work modeling to domain ontologies
+  - models governed byte-realizable artifacts and their publication coordinates
+- Possible table:
+  - FRIR/WEMI layer
+  - DCAT layer
+  - Semantic Flow layer
+  - what SFLO accepts
+  - what SFLO leaves to publisher
 
-- `SemanticMesh`: governed namespace and publication surface.
-- `Knop`: support object and naming anchor for a public identifier.
-- `DigitalArtifact`: mesh-governed digital artifact, not merely a repository path.
-- `ArtifactHistory`: lineage of a DigitalArtifact.
-- `HistoricalState`: immutable published snapshot in an ArtifactHistory.
-- `ArtifactManifestation`: concrete format/package/build/canonicalization variant.
-- `LocatedFile`: retrievable byte identity, usually file-like and often extension-bearing.
-- `ArtifactResolutionSpec`: relation resource describing source/target coordinates, mode, fallback, digest, and observations.
-- `ResourcePage`: generated page that makes identifier support metadata inspectable.
+## 10. Major Ontology Revisions
 
-Full explanatory chain:
+- Why major revisions are hard:
+  - term meanings change
+  - term IRIs persist
+  - deprecations need pages
+  - replacements need links
+  - examples change
+  - SHACL profiles change
+  - generated documentation changes
+  - serialized RDF changes
+  - dependent meshes may need migration
+- Git helps:
+  - diffs
+  - branches
+  - tags
+  - commits
+  - collaboration
+- Git is not enough:
+  - repo-level history, not identifier-level public history
+  - hard-to-review publication metadata
+  - no RDF-native distinction among artifact/state/manifestation/file/page
+  - no mesh-level latest/exact coordinate grammar
+- Semantic Flow role:
+  - public artifact-state boundary
+  - exact release coordinates
+  - old states remain citeable
+  - new metadata can point to deprecated/replaced/current
+  - analysis tools can attach semantic diffs and migration notes to states
 
-`Knop -> DigitalArtifact -> ArtifactHistory -> HistoricalState -> ArtifactManifestation -> LocatedFile`
+## 11. Worked Example: SFLO Metadata Stanza
 
-Sparse/skip-level point:
+- Source:
+  - `semantic-flow-core-ontology.ttl`
+  - opening metadata stanza
+- Show as listing:
+  - ontology/artifact IRI
+  - version IRI
+  - release state IRI
+  - Turtle manifestation IRI
+  - located file IRI
+  - content URL
+  - resource page link if present or proposed
+- Explain coordinates:
+  - artifact-level identifier
+  - history lineage
+  - exact historical state
+  - manifestation format
+  - located byte resource
+  - digest/checksum where available
+  - page returned for human exploration
+- Possible table:
+  - coordinate
+  - class
+  - example IRI
+  - mutability expectation
+  - why it exists
 
-Semantic Flow can use the full chain when it carries evidence, and direct coordinate links when intermediate layers would be ceremonial. Mention `hasManifestation`, `locatedFileForState`, `locatedFileForArtifact`, `hasWorkingLocatedFile`, working coordinates, and resolution targets such as `targetLocatedFile`.
+## 12. Weave Note
 
-Dereferenceability and ResourcePages:
+- Keep short in FOMI paper.
+- Weave:
+  - reference implementation
+  - filesystem-native
+  - static-hosting-friendly
+  - publishes Semantic Meshes
+  - generates ResourcePages
+  - records source registries
+  - validates with SHACL
+  - supports IDE/LLM-era authoring
+- Detailed demonstration belongs in FOIS demo paper.
 
-Semantic Flow also needs a mechanical distinction between a resource and the page returned to present it. Static hosting commonly returns `index.html` when a parent IRI is requested; Semantic Flow should be explicit about that convention instead of hiding it. The identified resource can be linked to the concrete page file with `hasResourcePage`, and the returned `index.html` can declare itself a `ResourcePage`. In the paper's terminology, URIs have socially governed senses in context; the URI does not literally refer to a sense as if the sense were the target object.
+## 13. Figures and Tables
 
-The DigitalArtifact stack is content-oriented at each level: `DigitalArtifact`, `HistoricalState`, `ArtifactManifestation`, and `LocatedFile` identify content with increasing specificity and concreteness. Ordinary `LocatedFile`s are terminal byte resources and normally do not need their own ResourcePages. `ResourcePage` is the special `LocatedFile` whose role is to present another resource; if a page itself needs to be cited, versioned, or discussed as an artifact, it can also be given its own governed artifact identity.
+- Figure 1:
+  - DCAT/SFLO refinement ladder
+  - `dcat:Dataset` / `DigitalArtifact`
+  - `HistoricalState`
+  - `dcat:Distribution` / `ArtifactManifestation`
+  - `LocatedFile`
+  - `ResourcePage`
+- Figure 2:
+  - static dereferenceability graph
+  - resource IRI
+  - served `index.html`
+  - `ResourcePage`
+  - `hasResourcePage`
+  - embedded RDFa/JSON-LD
+- Table 1:
+  - DCAT 3 term
+  - Semantic Flow term
+  - relationship
+  - added constraint or commitment
+- Table 2:
+  - FRIR/WEMI versus SFLO
+  - expression omitted
+  - manifestation comparison
+  - temporal state comparison
+  - byte grounding comparison
+- Listing 1:
+  - SFLO opening metadata stanza
+- Table 3:
+  - SFLO coordinate examples
+  - latest
+  - exact state
+  - exact located file
+  - working file
+  - metadata state
 
-### 5. Worked Example: SFLO Metadata Stanza
+## 14. Limitations
 
-Use the opening metadata stanza from `semantic-flow-core-ontology.ttl`.
+- Not a universal theory of intellectual works.
+- Not WEMI.
+- Not a replacement for DCAT cataloging.
+- Not a replacement for Git.
+- Not an ontology semantic-diff algorithm.
+- Not a complete migration framework.
+- Static publication cannot express every dynamic server behavior.
+- File-extension conventions are mechanical hints, not metaphysical rules.
+- Layering can be sparse.
+- Reviewers need vocabulary explained before use.
 
-Explain:
+## 15. Conclusion
 
-- the ontology IRI as the stable artifact-level resource;
-- `/ontology/releases/v0.2.0` as a named `HistoricalState`;
-- `/ontology/releases/v0.2.0/ttl` as a Turtle manifestation;
-- `/ontology/releases/v0.2.0/ttl/semantic-flow-core-ontology.ttl` as the located file;
-- `owl:versionIRI` as useful GitHub raw/tag metadata, not a replacement for mesh-native artifact coordinates.
+- DCAT gives broad datasets and distributions.
+- Semantic Flow refines that pattern for byte-grounded publication.
+- `HistoricalState` and `ArtifactHistory` make artifact histories explicit.
+- `LocatedFile` makes retrievable bytes first-class.
+- `ResourcePage` makes static dereferenceability graph-visible.
+- Coordinates make latest, working, exact, and historical references reviewable.
+- Weave demonstrates feasibility, but Semantic Flow is the framework-level contribution.
 
-This can be Listing 1 plus a small coordinate table.
-
-### 6. Major Ontology Revisions
-
-Treat major revisions as the clearest practice problem:
-
-- A breaking release can change term meanings, generated documentation, validation shapes, examples, dependent meshes, and persistence obligations for prior IRIs.
-- Maintainers may need deprecation pages, replacement links, migration guidance, and exact bytes for old and new states.
-- Git can show diffs, but Semantic Flow can make the public artifact-state boundary reviewable as RDF.
-- Semantic Flow does not solve semantic ontology migration or diffing; it provides the publication coordinates where those analyses can attach.
-
-### 7. Weave As Reference Implementation
-
-Keep this short:
-
-- Weave implements Semantic Flow against ordinary files and static hosting.
-- The SFLO public mesh demonstrates ontology resources, release states, manifestations, located files, source registries, extracted terms, and generated ResourcePages.
-- The detailed command workflow belongs in the FOIS Demonstrations paper.
-
-### 8. Discussion and Limitations
-
-State plainly:
-
-- Semantic Flow is not WEMI and does not decide what a domain-level work/expression is.
-- `DigitalArtifact` is a broad, upper-level Semantic Flow category for governed digital artifacts, but it is not a complete theory of every domain-specific digital object distinction.
-- Histories are artifact publication histories, not full semantic-diff histories.
-- Static publication cannot replace every server-side content negotiation pattern.
-- Weave is pre-1.0 and should be described as a reference implementation.
-
-### 9. Conclusion
-
-Close on:
-
-- ontology publication needs explicit relations between public identifiers and concrete bytes;
-- major revisions need reviewable artifact-state boundaries;
-- Semantic Flow supplies a byte-grounded model for those publication concerns;
-- Weave shows the model can be realized in a filesystem-native static publication workflow.
-
-## Approximate Page Budget
+## Page Budget
 
 - Introduction: 0.75 page
-- Prior work and pressure points: 1 page
-- FRIR/WEMI contrast: 1 page
-- DigitalArtifact model: 1.5 pages
-- SFLO worked example and coordinates: 1 page
-- Major revisions: 0.75 page
-- Weave implementation note: 0.75 page
-- Discussion/conclusion: 0.75 page
+- Prior work spine: 1 page
+- DCAT comparison: 1 page
+- Core model and navigation grammar: 1.5 pages
+- URI sense and ResourcePages: 1 page
+- Histories, metadata, major revisions: 1 page
+- Structure, concept, and sense-finding: 0.75 page
+- SFLO metadata example: 1 page
+- Discussion, limitations, conclusion: 0.75 page
 - References: 1 page
 
-Total target: 8-9 CEUR pages including references.
+## Core Reference Pool
 
-## Core References
-
-Use the shared reference pool in `../2026-fois-weave-demo/potential-references.md`.
-
-Likely final ten:
-
-1. [[ar.functional-requirements-for-information-resource-provenance-on-the-web]]
-2. [[ar.works-expressions-manifestations-items-an-ontology]]
-3. [[ar.w3.design-issues.linked-data]]
-4. [[ar.w3.cool-uris]]
-5. [[ar.best-practices-for-implementing-fair-vocabularies-and-ontologies-on-the-web]]
-6. [[ar.w3.best-practice-recipes-for-publishing-rdf-vocabularies]]
-7. [[ar.jekyll-rdf-template-based-linked-data-publication-with-minimized-effort-and-maximum-scalability]]
-8. [[ar.the-acimov-methodology-agile-and-continuous-integration-for-modular-ontologies-and-vocabularies]]
-9. [[ar.analysing-multiple-versions-of-an-ontology]]
-10. [[ar.decentralized-collaborative-knowledge-management-using-git]]
+- W3C DCAT 3
+- Kurt Cagle and Chloe Shannon, "Structure vs. Concept"
+- [[ar.functional-requirements-for-information-resource-provenance-on-the-web]]
+- [[ar.works-expressions-manifestations-items-an-ontology]]
+- Jeni Tennison, "Using 'Punning' to Answer httpRange-14"
+- [[ar.w3.design-issues.linked-data]]
+- [[ar.w3.cool-uris]]
+- [[ar.best-practices-for-implementing-fair-vocabularies-and-ontologies-on-the-web]]
+- [[ar.w3.best-practice-recipes-for-publishing-rdf-vocabularies]]
+- [[ar.jekyll-rdf-template-based-linked-data-publication-with-minimized-effort-and-maximum-scalability]]
+- [[ar.the-acimov-methodology-agile-and-continuous-integration-for-modular-ontologies-and-vocabularies]]
+- [[ar.analysing-multiple-versions-of-an-ontology]]
+- [[ar.decentralized-collaborative-knowledge-management-using-git]]

@@ -1373,3 +1373,586 @@ OK, can you rewrite your outline (or start a new one from scratch) that includes
 # gpt-5.5_2026-06-11_1838_10
 
 Yes. I’ll treat `codex-sf-outline.md` as my scratch outline and leave your human-authored files alone. I’m going to read the current outline and the local repo guidance, then I’ll replace my version with a tighter point-form outline that foregrounds DCAT, URI sense/page mechanics, histories, and coordinates.
+
+# gpt-5.5_2026-06-11_1838_46
+
+I have enough context. I’m going to replace my outline with a more skeletal, argument-shaped version: less prose, more slots and contrasts, with DCAT 3 as the spine and `ArtifactHistory` treated as an internal lineage mechanism rather than an external series.
+
+# gpt-5.5_2026-06-11_1839_49
+
+The rewrite is in place. I’m doing a quick skim/diff check now for accidental old phrasing, especially the older “referenced semantic web data wants to be immutable” line and anything about imports.
+
+# gpt-5.5_2026-06-11_1840_00
+
+Updated my outline in [codex-sf-outline.md](../papers/2026-fomi-digitalartifact/codex-sf-outline.md:1).
+
+I rewrote it in point-form and centered it around the DCAT 3 comparison: `DigitalArtifact`/`ArtifactManifestation` as DCAT-compatible, with SFLO’s added value being `HistoricalState`, internal `ArtifactHistory`, `LocatedFile`, `ResourcePage`, coordinates, and the “expected navigation grammar.” I also folded in the URI sense/httpRange-14 material, static `index.html` ResourcePage mechanics, multiple histories, metadata states, FRIR/WEMI contrast, and major ontology revisions.
+
+I left `dave-sf-outline.md` and `semantic-flow-paper.md` untouched. No tests/lint run since this was a markdown-only planning edit.
+
+# djradon_2026-06-11_1852_00
+
+I updated my thesis and added "  - high availability and no server-side fixes" to yours. is "stable artifact identity" a sub-bullet or consequence of "persistent senses"?
+
+# gpt-5.5_2026-06-11_1852_18
+
+I’d make `stable artifact identity` a sibling, not a sub-bullet.
+
+It is related to `persistent senses`, but not identical:
+
+- `persistent senses`: broad URI/Linked Data claim. An IRI should not silently drift in what it is taken to mean.
+- `stable artifact identity`: Semantic Flow’s specific commitment for artifact IRIs. A `DigitalArtifact` IRI keeps identifying the same governed digital artifact, even while metadata, latest pointers, histories, manifestations, and pages evolve.
+
+So the entailment is something like: persistent sense implies you should not reuse an artifact IRI for a different artifact. But stable artifact identity adds the artifact-stack machinery that makes that commitment operational.
+
+I’d phrase the bullet cluster like:
+
+```markdown
+- Public RDF identifiers need:
+  - persistent senses
+  - high availability without server-side fragility
+  - stable artifact identity for digital artifact IRIs
+  - explicit histories for changing artifact states
+  - reviewable byte coordinates
+  - dereferenceable presentation pages
+```
+
+Tiny pushback: “persistent senses” is philosophically nice but reviewer-risky if introduced too early. “Stable artifact identity” is more concrete. I’d let the paper define persistent sense through the artifact example rather than making it the first abstraction the reader has to swallow.
+
+# djradon_2026-06-11_1854_27
+
+"stable artifact identity" is complex though... a DigitalArtifact IRI represents a fuzzy identity, the sense of the thing that is stable over time. But really its whole identity is captured by including the other layers.
+
+# gpt-5.5_2026-06-11_1854_45
+
+Yes, I think you’re right. “Stable artifact identity” may sound too clean, like the `DigitalArtifact` IRI denotes a crisp object whose identity is obvious independent of the model. That is not quite it.
+
+A better framing:
+
+- `DigitalArtifact` is the stable **artifact-level sense** or continuity handle.
+- The IRI does not identify one byte pattern.
+- It identifies a governed “thing-through-time” whose boundaries are partly social/editorial.
+- The other layers make that fuzzy identity operational:
+  - `ArtifactHistory` says which lineage we mean.
+  - `HistoricalState` says which settled temporal state.
+  - `ArtifactManifestation` says which representation of that state.
+  - `LocatedFile` says which retrievable bytes.
+  - `ResourcePage` says which page presents it.
+
+So I’d avoid “stable artifact identity” and use something like:
+
+```markdown
+- governed artifact-level continuity
+```
+
+Or:
+
+```markdown
+- stable artifact-level reference, made concrete through explicit histories, states, manifestations, and located files
+```
+
+And replace:
+
+```markdown
+Identifiers for digital artifacts should keep identifying the same artifact over time.
+```
+
+with:
+
+```markdown
+Identifiers for digital artifacts should preserve a governed artifact-level sense over time, while explicit histories, states, manifestations, and located files make that sense inspectable at concrete levels of specificity.
+```
+
+That feels closer: the identity is not magic; it is maintained by the stack.
+
+# djradon_2026-06-11_1857_22
+
+"ResourcePage says which page presents it." but remember each of those layers has its own ResourcePage. The ResourcePage for the DigitalArtifact presents the whole thing, but isn't necessarily complete.
+
+# gpt-5.5_2026-06-11_1857_31
+
+Yes, important correction. `ResourcePage` is not a single presentation endpoint for the whole stack; it is a presentation relation that can attach at any layer.
+
+So:
+
+- `DigitalArtifact` can have a `ResourcePage` presenting the artifact-level continuity handle.
+- `ArtifactHistory` can have a `ResourcePage` presenting a lineage.
+- `HistoricalState` can have a `ResourcePage` presenting a settled state.
+- `ArtifactManifestation` can have a `ResourcePage` presenting a representation/package/build.
+- `LocatedFile` usually does not need one, because it already is retrievable content, but it could in edge cases.
+- A `ResourcePage` itself is a located file, and can be modeled as a governed artifact if its own history matters.
+
+The DigitalArtifact page is therefore a view, not an exhaustive identity definition. It may summarize current state, histories, manifestations, metadata, and links, but the identity is carried by the graph and the coordinate stack, not by that page alone.
+
+Better sentence:
+
+```markdown
+`ResourcePage` links any layer to a human-oriented presentation of that layer; a `DigitalArtifact` page presents the artifact-level continuity handle, while state, history, manifestation, or page artifacts may have their own pages when useful.
+```
+
+And for the earlier replacement:
+
+```markdown
+Identifiers for digital artifacts preserve a governed artifact-level sense over time, while histories, states, manifestations, located files, and per-layer ResourcePages make that sense inspectable at chosen levels of specificity.
+```
+
+# djradon_2026-06-11_1900_19
+
+keep updating your outline as we go.
+
+"ontology diff or migration tools" -- where did this come from, and why doesn't SF replace them?
+
+# gpt-5.5_2026-06-11_1900_22
+
+I’ll keep the Codex outline live as our scratchpad. For this point, I’m going to adjust the thesis language so it doesn’t sound like we randomly introduced a whole tool category, then I’ll explain the distinction.
+
+# gpt-5.5_2026-06-11_1900_28
+
+I see the outline still had the older “stable artifact identity” sentence too. I’m going to revise that cluster now to match your fuzzier artifact-level sense point and make the “diff/migration” mention explicitly optional downstream tooling.
+
+# gpt-5.5_2026-06-11_1900_36
+
+I updated [codex-sf-outline.md](../papers/2026-fomi-digitalartifact/codex-sf-outline.md:17) to replace “stable artifact identity” with “governed artifact-level continuity,” and to soften the tool line to “downstream ontology diff, compatibility analysis, or migration tooling.”
+
+That phrase came from the “major ontology revisions are hard” thread. Once we talk about breaking ontology releases, reviewers may expect tools that detect semantic changes, classify compatibility breaks, generate migration guidance, or compare versions. SF is adjacent to that, but it doesn’t replace it because it does not decide whether a change is semantically breaking or how data should migrate.
+
+What SF gives those tools is the coordinate system: this artifact, this history, this exact state, this manifestation, these bytes, this digest, these replacement/deprecation links. Diff/migration tools can then attach their findings to those coordinates. So SF is more like the publication substrate and evidence ledger, not the analyzer.
+
+# djradon_2026-06-11_1909_38
+
+OK, good. If we bring that up, it deserves an explanation like that. 
+
+Should we say what sflo does replace from dcat? I think we leave PROV out because SF-prov is still evolving. 
+
+"identifiers that point to digital artifacts should always refer to the same thing" is kind of unnerving, especially since we say it can evolve in the next bullet point. I think what I really mean is "identifiers that point to digital artifacts (or facets or Digital Artifacts) should be as specific and preditable as appropriate" or something like that.
+
+We decided not to make ArtifactHistories DigitalArtifactFacets, or really you did (not blaming, your context was different) but I'm second-guessing that choice. Can you find where in *.conv.* we made that decision and summarize for me?
+
+# gpt-5.5_2026-06-11_1909_46
+
+Good, I’ll do two things: update my outline so the thesis says “appropriate specificity/predictability” instead of the unnerving sameness claim, and search the archived conversations for the `ArtifactHistory` / `DigitalArtifactFacet` decision trail.
+
+# gpt-5.5_2026-06-11_1909_55
+
+The broad search found a lot, including the current conversation echo. I’m narrowing to the older design threads now, especially places where `ArtifactHistory` was contrasted with facets or where the ontology/task note was completed.
+
+# gpt-5.5_2026-06-11_1910_07
+
+I found the decision thread. The short version: the actual decision was less “ArtifactHistory must not be a facet” and more “ArtifactHistory should not be a DigitalArtifact or vague container; make lineage structure explicit with properties.” I’m going to update the outline to keep that nuance and de-emphasize PROV.
+
+# gpt-5.5_2026-06-11_1910_15
+
+I’m patching only the Codex outline. The main changes: replace “same artifact over time” with “specific and predictable as appropriate,” remove PROV/PAV from the main spine for now, and add a DCAT “what SFLO replaces in practice” subsection without claiming SFLO replaces DCAT as a standard.
+
+# gpt-5.5_2026-06-11_1910_35
+
+The outline now says SFLO replaces some bare DCAT terms *inside Semantic Flow metadata*, not DCAT itself. I’m doing one quick scan for stale PROV wording and old identity phrasing.
+
+# gpt-5.5_2026-06-11_1910_42
+
+Two stale bits popped up: “stable artifact identity” under metadata and PROV/PAV in the core reference pool. I’m cleaning those too.
+
+# gpt-5.5_2026-06-11_1910_53
+
+The decision trail is clear enough now. I’m grabbing exact line references for the handoff so you can jump back into the conversation and task record if you want to revisit it.
+
+# gpt-5.5_2026-06-11_1911_03
+
+One more sanity check before I give you my judgment: I’m checking whether `DigitalArtifactFacet` currently carries any operational constraints. If it is just a marker superclass, making `ArtifactHistory` a facet may be much less risky than the old “container” discussion made it feel.
+
+# gpt-5.5_2026-06-11_1911_26
+
+Updated my outline again in [codex-sf-outline.md](../papers/2026-fomi-digitalartifact/codex-sf-outline.md:17): specificity/predictability wording, DCAT replacement nuance, PROV/PAV removed from the core spine/reference pool for now.
+
+**DCAT**
+Yes, I think we should say what SFLO replaces from DCAT, but carefully: SFLO does not replace DCAT as catalog vocabulary. It replaces *bare DCAT usage inside Semantic Flow metadata* with more specific terms:
+
+- `dcat:distribution` -> `sflo:hasManifestation`
+- `dcat:downloadURL` -> `sflo:locatedFileForManifestation`
+- `dcat:landingPage` -> `sflo:hasResourcePage` when the page is modeled
+- `dcat:DatasetSeries` -> `sflo:ArtifactHistory` for internal lineages of one artifact
+- ad hoc latest/current links -> `currentArtifactHistory`, `latestHistoricalState`, resolution modes
+
+DCAT remains the external interoperability/catalog layer. SFLO is the stricter publication-coordinate layer.
+
+**ArtifactHistory Trail**
+The decision is mostly in [sf.conv.2026.2026-03-25_1413-title-mesh-alice-bio-codex.md](sf.conv.2026.2026-03-25_1413-title-mesh-alice-bio-codex.md:1165).
+
+Key path:
+
+- You revived `_history` because it wanted a `ResourcePage` and might represent a real diachronic thing, not just a folder. See [line 1165](sf.conv.2026.2026-03-25_1413-title-mesh-alice-bio-codex.md:1165).
+- I initially pushed back: optionality alone is not distinct identity; `ArtifactHistory` earns its keep only for multiple lineages, retention/redaction policy, lineage replacement, or metadata about the version stream. See [line 1203](sf.conv.2026.2026-03-25_1413-title-mesh-alice-bio-codex.md:1203).
+- You then leaned explicit because of multiple histories, moves, amended/redacted histories, and ordinal allocation. See [line 1281](sf.conv.2026.2026-03-25_1413-title-mesh-alice-bio-codex.md:1281).
+- I agreed: `ArtifactHistory` carries facts that do not sit cleanly on the artifact or a single state. See [line 1296](sf.conv.2026.2026-03-25_1413-title-mesh-alice-bio-codex.md:1296).
+- The “not facet/container” part happened when you said it represents a facet but should not be an `ArtifactContainer`; I argued the real structure should be explicit properties and `ArtifactHistory` should just be a `SemanticFlowResource`. See [line 1403](sf.conv.2026.2026-03-25_1413-title-mesh-alice-bio-codex.md:1403) and [line 1425](sf.conv.2026.2026-03-25_1413-title-mesh-alice-bio-codex.md:1425).
+- The completed task records the final decision: `ArtifactHistory` typed only as `SemanticFlowResource`. See [ont.completed...ArtifactHistory.md](ont.completed.2026.2026-03-26-ArtifactHistory.md:123).
+
+My current take: second-guessing is legitimate. The old decision was really “not a vague container, not a DigitalArtifact,” not a deep argument against “diachronic facet.” Since `DigitalArtifactFacet` is currently mostly a grouping superclass, making `ArtifactHistory` a facet might be coherent. But for the paper deadline, I’d avoid ontology churn and say:
+
+> `ArtifactHistory` is an internal lineage resource, arguably a diachronic facet of a `DigitalArtifact`, but currently modeled separately from the content-specific facets `HistoricalState`, `ArtifactManifestation`, and `LocatedFile`.
+
+# djradon_2026-06-11_1953_30
+
+I don't think we're going to be able to make the paper deadline. It's possible we'll leave in the morning tomorrow, so maybe I only have a few hours to work on it. But I want to write this paper anyhow. It's a useful exercise for us, it gives us something solid to ground website/documentation on, and some day some conference will get a version of it submitted.
+
+We don't have ArtifactContainer any more. I can't even remember what I was thinking there. But I think the more important point is... all the layers are facets of a DigitalArtifact's identity.
+
+I sure am glad that we accepted ArtifactHistory... that's how we differentiate releases from non-releases. amiright? I hope we have language for "defaultArtifactHistory", so weave can usually put updates in one lineage, not just the last one.
+
+# gpt-5.5_2026-06-11_1953_42
+
+That sounds like the healthier pivot: treat the paper as durable design pressure, not a doomed sprint. I’ll check the actual ontology wording for `currentArtifactHistory`/default-history semantics and then update my outline with the “all layers are facets of DigitalArtifact identity” framing.
+
+# gpt-5.5_2026-06-11_1953_54
+
+The ontology has `currentArtifactHistory`, not `defaultArtifactHistory`; its comment explicitly says “current/default explicit ArtifactHistory” and “normative target for subsequent weave/version operations.” So the language exists, but under “current” rather than “default.” I’m adding that nuance to the outline now, plus the release/non-release lineage point.
+
+# gpt-5.5_2026-06-11_1954_02
+
+The codebase search also shows Weave already uses named history segments like `releases` and `archive`, with `currentArtifactHistory` pointing to `releases` in release-style tests. So yes: ArtifactHistory is the mechanism we accepted that lets release lineages be distinct from drafts/archives/curation. It may still need role vocabulary later, but the structure is there.
+
+# gpt-5.5_2026-06-11_1954_14
+
+I updated the outline. One nice thing this clarified: we can distinguish the ontology class `DigitalArtifactFacet` from the paper’s broader prose claim that every layer is a facet of artifact identity. That gives us the wording without forcing ontology churn tonight.
+
+# gpt-5.5_2026-06-11_1954_17
+
+Yes, amiright with a footnote.
+
+`ArtifactHistory` is absolutely the thing that lets us distinguish `releases` from `drafts`, `archive`, `curation`, etc. The structure is there: one `DigitalArtifact` can have multiple histories, and `currentArtifactHistory` says which one Weave should normally extend. The ontology comment already calls it the “current/default explicit ArtifactHistory,” so we don’t have `defaultArtifactHistory`, but we do have the concept under `currentArtifactHistory`.
+
+I updated [codex-sf-outline.md](../papers/2026-fomi-digitalartifact/codex-sf-outline.md:17) with:
+
+- all layers as facets of artifact identity in the broader prose sense
+- `DigitalArtifact` as a continuity handle, not a crisp total identity
+- `ArtifactHistory` as diachronic facet / lineage resource
+- release versus non-release separation living in `ArtifactHistory`
+- `currentArtifactHistory` as the current/default update target
+- no separate `defaultArtifactHistory` term currently
+
+I agree on the paper too. Missing this deadline is disappointing, but not wasteful. This is turning into the conceptual spine for the docs, website, and future submission. That’s a good artifact to have.
+
+# djradon_2026-06-11_1956_15
+
+I think currentArtifactHistory is supposed to mean something like "this is the latest one, for you to re-use on next weave", but probably we should replace that with defaultArtifactHistory, or maybe there's a use for both. Like we can require explicit history selection if latest and default don't point to the same history.
+
+# gpt-5.5_2026-06-11_1956_25
+
+That distinction feels real. I’m going to add it to my outline as an open model refinement: `currentArtifactHistory` currently carries both “default write target” and “current/latest lineage” semantics, and those may deserve separate properties.
+
+# gpt-5.5_2026-06-11_1956_30
+
+I found the outline spots. I’m patching them to treat this as an unresolved but important refinement rather than pretending the current property name is settled.
+
+# gpt-5.5_2026-06-11_1956_50
+
+Yes. I think `currentArtifactHistory` is doing too much, and the name is especially risky once multiple histories exist.
+
+I’d split the concepts:
+
+- `defaultArtifactHistory`: the lineage Weave should extend when no history is explicitly selected.
+- `latestHistoricalState`: still lives on each `ArtifactHistory`.
+- Optional later: something like `latestUpdatedArtifactHistory` only if we truly need to record “the history most recently touched across all histories.”
+
+I would probably **not** keep `currentArtifactHistory` long-term unless we define it as a public/endorsed current lineage, which is different from both “default write target” and “most recently changed.” That feels like a three-way ambiguity waiting to bite us.
+
+Your rule is good:
+
+> If the default history and the latest-updated history differ, require explicit history selection.
+
+That preserves safety. For example, if `drafts` was updated yesterday but `releases` is the default publication lineage, Weave should not guess. Likewise, if `archive` was just backfilled, that should not silently become the target for the next ordinary weave.
+
+I updated my outline with this as an open refinement: current property acts like current/default today, but likely wants a `defaultArtifactHistory` split.
+
+# djradon_2026-06-11_1957_45
+
+Sorry, I'm suggesting ontology changes now. If you agree on default and also on making ArtifactHistory a facet, go ahead and draft those changes to the ontology and record in [ont.dev.decision-log.md](../../sflo/notes/ont.dev.decision-log.md)
+
+# gpt-5.5_2026-06-11_1957_59
+
+I agree on both changes: `defaultArtifactHistory` is the safer write-target concept, and `ArtifactHistory` really is a diachronic facet of the artifact. I’m going to make this as a draft ontology change, keeping `currentArtifactHistory` around for compatibility rather than ripping it out underneath Weave.
+
+# gpt-5.5_2026-06-11_1958_06
+
+The `sflo` working tree is clean. I see the old decision log explicitly says the March model was only “partially superseded” by ArtifactHistory; this new change can be recorded as the next refinement rather than pretending it came out of nowhere.
+
+# gpt-5.5_2026-06-11_1958_15
+
+There are a few stale summary-note lines saying “ArtifactHistory is not a facet.” I’m going to update those too while I’m here, because otherwise the ontology and docs would immediately contradict each other.
+
+# gpt-5.5_2026-06-11_1958_19
+
+I’ve got the exact edit shape now: add `defaultArtifactHistory` as the functional write-target/default lineage property, keep `currentArtifactHistory` as a compatibility/endorsed-current pointer for now, and make `ArtifactHistory` a `DigitalArtifactFacet` as well as a `SemanticFlowResource`. I’ll update SHACL so new data can validate cleanly.
+
+# gpt-5.5_2026-06-11_1958_40
+
+I’m making the change conservatively: new vocabulary plus comments and validation, no runtime migration. That keeps this as an ontology draft until Weave is ready to emit/use `defaultArtifactHistory`.
+
+# gpt-5.5_2026-06-11_1959_06
+
+SHACL now validates the new default pointer and still accepts the old current pointer. I’m tidying the shape IRI name so the vocabulary doesn’t say “current” in one place and “default” in another.
+
+# gpt-5.5_2026-06-11_1959_10
+
+Next I’m aligning the core summary note with the ontology: ArtifactHistory becomes the diachronic facet, and `defaultArtifactHistory` gets the write-target wording.
+
+# gpt-5.5_2026-06-11_1959_21
+
+Now I’m recording the decision, and marking the older March ArtifactHistory decision as refined rather than deleting it. This keeps the audit trail intact.
+
+# gpt-5.5_2026-06-11_1959_32
+
+The decision log is updated. I’m also syncing my paper outline so it reflects the ontology draft we just made, instead of carrying the “currently not typed as facet” caveat forward.
+
+# gpt-5.5_2026-06-11_1959_44
+
+One more ontology consistency pass: there are resolution-mode comments that still say “current/default history.” I’m narrowing those to `defaultArtifactHistory` language too.
+
+# gpt-5.5_2026-06-11_1959_48
+
+The scan found one live ontology comment and two outline phrases still carrying old “current/default” wording. I’m patching those. The old March decision text remains as historical/superseded context, which is okay because the new decision immediately above replaces it.
+
+# gpt-5.5_2026-06-11_2000_13
+
+The remaining “current/default” hit is inside the explicitly superseded March decision text, so I’m leaving that as historical trace. Now I’m validating the Turtle syntax for the ontology and SHACL.
+
+# gpt-5.5_2026-06-11_2000_18
+
+`riot` is available, and this repo has Deno tasks too. I’ll run the lightweight syntax validation first; if that passes, I’ll run the focused Deno checks/tests for the ontology repo.
+
+# gpt-5.5_2026-06-11_2000_26
+
+`riot` is installed but Java is not on PATH, so Jena validation is blocked. I’ll use the repo’s Deno/N3 toolchain to at least parse the changed Turtle files, then run the Deno checks/tests that don’t require Java.
+
+# gpt-5.5_2026-06-11_2000_33
+
+`deno task check` passed. The local Deno version doesn’t accept `--allow-read` on `deno eval`, so I’m rerunning the parse without that flag.
+
+# gpt-5.5_2026-06-11_2000_37
+
+The Turtle parse passed. I’m going to run the ontology test suite now; this is the one likely to catch guardrail expectations around term lists or SHACL shapes.
+
+# gpt-5.5_2026-06-11_2000_48
+
+The ontology tests all passed. I’m doing one final status/diff check so I can give you the exact changed files and note the validation caveat about Java/Jena.
+
+# gpt-5.5_2026-06-11_2001_00
+
+Done. I drafted the ontology change and recorded the decision.
+
+Changed in `sflo`:
+
+- [semantic-flow-core-ontology.ttl](../../sflo/semantic-flow-core-ontology.ttl:51)
+  - `ArtifactHistory` now subclasses both `DigitalArtifactFacet` and `SemanticFlowResource`.
+  - Added `defaultArtifactHistory` as functional `DigitalArtifact -> ArtifactHistory`, subproperty of `hasArtifactHistory`.
+  - Narrowed `currentArtifactHistory` to compatibility/current-lineage wording.
+  - Updated latest-state resolution wording to prefer `defaultArtifactHistory` or explicit selection.
+
+- [semantic-flow-core-shacl.ttl](../../sflo/semantic-flow-core-shacl.ttl:804)
+  - Validates optional `defaultArtifactHistory`.
+  - Requires `defaultArtifactHistory` to also be among `hasArtifactHistory`.
+  - Keeps `currentArtifactHistory` valid for compatibility.
+  - Replaces the “histories should have current” warning with “histories should have default.”
+
+- [ont.summary.core.md](../../sflo/notes/ont.summary.core.md:53)
+  - Updated the summary so `ArtifactHistory` is a diachronic facet.
+
+- [ont.dev.decision-log.md](../../sflo/notes/ont.dev.decision-log.md:12)
+  - Added today’s decision.
+  - Marked the 2026-03-26 ArtifactHistory decision as partially superseded.
+
+I also kept my paper outline in sync at [codex-sf-outline.md](../papers/2026-fomi-digitalartifact/codex-sf-outline.md:157).
+
+Validation:
+- `deno task check` passed in `sflo`.
+- `deno task test` passed: 27 tests.
+- Turtle parsed with Deno/N3 for core ontology and SHACL.
+- `riot --validate` could not run because Java/JDK is not on PATH.
+
+Suggested commit message for `sflo`:
+
+```text
+Refine ArtifactHistory facets and default history targeting
+
+- type ArtifactHistory as a DigitalArtifactFacet as well as SemanticFlowResource
+- add defaultArtifactHistory as the default implicit write-target lineage
+- keep currentArtifactHistory as compatibility/current-lineage vocabulary
+- update SHACL constraints for default history membership and warnings
+- record the ontology decision and refresh the core summary
+```
+
+Suggested archive commit message:
+
+```text
+Update FOMI outline for default history refinement
+
+- align Codex paper outline with ArtifactHistory-as-facet model
+- replace current/default history wording with defaultArtifactHistory and currentArtifactHistory distinction
+```
+
+# djradon_2026-06-11_2017_12
+
+Back to your outline for the paper:
+
+"persistent senses" just doesn't seem right. We're acknowledge that senses evolve. they might even evolve inconsistencies with earlier states. what they needs is a consistent framework for establishing their meaning, their sense. 
+
+If they refer to DigitalArtifacts, we've got our facet layers model to help out, 
+
+And whether or not they are DigitalArtifacts themselves, we've got our ReferenceCatalogs, and our KnopSourceRegistry, and the supporting KnopInventory/KnopMetadata, all of which help to define their senses. 
+
+Either way, we have conceptually coherent norms about the things referenced and the artifacts we use to support the sense-finding.
+
+# gpt-5.5_2026-06-11_2017_23
+
+Yes, “persistent senses” is too static for what we now mean. I’ll update my outline so the thesis is about sense governance and sense-finding support, with DigitalArtifact facets on one side and Knop support artifacts on the other.
+
+# gpt-5.5_2026-06-11_2017_27
+
+I’ll make the thesis less brittle and add a small “sense support” subsection under the model. This is where `ReferenceCatalog`, `KnopSourceRegistry`, `KnopInventory`, and `KnopMetadata` belong.
+
+# gpt-5.5_2026-06-11_2017_41
+
+I’ve replaced the static “persistent senses” claim. I’m doing a quick scan to make sure the old phrase is gone and that the new framing is visible in the outline.
+
+# gpt-5.5_2026-06-11_2017_47
+
+Agreed. “Persistent senses” was giving the wrong promise. I changed my outline to say `stable sense-finding support` and added the key nuance:
+
+> Semantic Flow does not freeze meaning; it supplies a coherent framework for establishing, inspecting, and revising meaning.
+
+I also added the two-sided structure:
+
+- For `DigitalArtifact`s, the facet stack helps establish the artifact-level sense: history, state, manifestation, located file, ResourcePage.
+- For identifiers that are not themselves `DigitalArtifact`s, the Knop support artifacts help establish sense: `ReferenceCatalog`, `KnopSourceRegistry`, `KnopInventory`, `KnopMetadata`, `ResourcePageDefinition`.
+
+Updated in [codex-sf-outline.md](../papers/2026-fomi-digitalartifact/codex-sf-outline.md:19).
+
+I think this is much better. It avoids pretending meaning is immutable while still giving reviewers a firm claim: the framework provides norms and evidence structures for sense-finding.
+
+# djradon_2026-06-11_2022_09
+
+the paper could be titled "Semantic Meshes: Dynamic sense-finding on a quasi-immutable semantic web"
+
+# gpt-5.5_2026-06-11_2022_21
+
+That title has juice. I’m going to put it into my outline as the leading candidate title, while keeping the byte-grounded title as a more literal fallback/subtitle.
+
+# gpt-5.5_2026-06-11_2022_25
+
+I’ll tweak the header too, because this title shifts the paper from “DigitalArtifact only” toward the broader Semantic Mesh sense-finding frame.
+
+# gpt-5.5_2026-06-11_2022_31
+
+Yes. That title is stronger as an intellectual frame:
+
+> Semantic Meshes: Dynamic Sense-Finding on a Quasi-Immutable Semantic Web
+
+I added it as the leading candidate in [codex-sf-outline.md](../papers/2026-fomi-digitalartifact/codex-sf-outline.md:1), with the old byte-grounded title as the literal fallback.
+
+Tiny title nit: “dynamic” and “quasi-immutable” create useful tension, but reviewers may expect us to unpack it quickly in the abstract. The thesis becomes: meanings evolve, but the evidence and coordinates that support sense-finding should be durable, inspectable, and mostly immutable.
+
+# djradon_2026-06-11_2049_52
+
+I love that it highlights the "Semantic Mesh", which is really the interesting concept, and not the Semantic Flow framework. Obviously the tension is useful and provocative, and staticness is a multi-faceted them of the paper, what with the static-site lessons. But "Quasi-immutable semantic web" is not quite right...  I almost want to say "Semantic Meshes: Stable Identifiers, Immutable Data, and Dynamic Sense-Finding"
+
+I had a memory glimpse of Kurt Cagle in "The Ontologist" talking about stable vs ____ -- my intuition is that it was a valuable juxtaposition. basically stable vs 
+
+I couldn't find what I thought I remembered but in https://ontologist.substack.com/p/structure-vs-concept I found "The concept is relatively stable; Batman’s meaning in cultural discourse changes slowly. The structural representation is contingent on what you are trying to do with the data; it may vary substantially across applications."
+
+https://ontologist.substack.com/p/structure-vs-concept
+
+"An ontology tells a reasoner what is true. A taxonomy tells a retrieval system what is near."
+
+At first I was concerned that we are mixing structure and concept, but actually I think we are separating them nicely. DigitalArtifacts have structure. We don't say much about concepts. Our sflo ontology isn't so much about what is true, it's about how to capture concepts (everything is a concept) in a predicatble way.
+
+# gpt-5.5_2026-06-11_2050_08
+
+That title direction is better, and I agree the paper is really about Semantic Meshes as the interesting unit. I’m going to check the Cagle piece you linked so I don’t rely on half-memory, then I’ll fold the “structure vs concept” point into my outline without touching yours.
+
+# gpt-5.5_2026-06-11_2050_20
+
+I like the new candidate, and I’d probably make one precision tweak: “immutable data” is punchier, “immutable evidence” is safer. I’m going to update the outline with both as title candidates and add a structure/concept thread from Cagle/Shannon into the prior work and discussion slots.
+
+# gpt-5.5_2026-06-11_2050_28
+
+I’m also going to shift the scope line away from “Semantic Flow framework first.” Your instinct is right: the paper’s object should be Semantic Meshes, with Semantic Flow as the model/framework behind them.
+
+# gpt-5.5_2026-06-11_2050_33
+
+The outline is cleanly numbered, so I’ll insert the structure/concept section and bump the later headings.
+
+# gpt-5.5_2026-06-11_2050_59
+
+I think the juxtaposition you were reaching for is probably **stable vs. contingent**. In the Cagle/Shannon piece, the useful point is: concepts may be relatively stable, while structural representations vary by application and purpose. Source: [Structure vs. Concept](https://ontologist.substack.com/p/structure-vs-concept).
+
+I updated [codex-sf-outline.md](../papers/2026-fomi-digitalartifact/codex-sf-outline.md:1) with:
+
+- New lead title:
+  - **Semantic Meshes: Stable Identifiers, Immutable Data, and Dynamic Sense-Finding**
+- More precise variant:
+  - **Semantic Meshes: Stable Identifiers, Immutable Evidence, and Dynamic Sense-Finding**
+- Added a new section:
+  - **Structure, Concept, and Sense-Finding**
+- Added Cagle/Shannon to the reference pool.
+
+My preference is actually the “Immutable Evidence” version. “Immutable Data” is stronger and catchier, but it risks overclaiming because Semantic Meshes have evolving metadata, mutable default/current pointers, and changing sense-support. The thing we really want to be immutable or quasi-immutable is the **evidence**: historical states, located bytes, source coordinates, digests, and pages-as-artifacts when needed.
+
+And yes: I think we are *not* mixing structure and concept. SFLO gives structure for supporting sense-finding. It does not try to own the concept. That’s the clean move.
+
+# djradon_2026-06-11_2051_55
+
+Immutable evidence is good, and safety is good... but does it capture the sense that data itself (either in ReferenceLinks or in DigitalArtifact manifestations/distributions) also leave immutable traces?
+
+# gpt-5.5_2026-06-11_2052_05
+
+Yes, “immutable evidence” captures that if we define evidence broadly enough, but it may not *sound* broad enough on first read.
+
+In this paper’s vocabulary, evidence includes data artifacts:
+
+- a `LocatedFile` is evidence: retrievable bytes at a specific coordinate
+- an `ArtifactManifestation` is evidence: a representation/distribution of a state
+- a `HistoricalState` is evidence: a settled snapshot in a lineage
+- a `ReferenceSource` / `ReferenceLink` can be evidence: curated claims plus the source bytes or coordinates that support them
+- `KnopInventory` / `KnopMetadata` states can be evidence about how the mesh supported an identifier at a time
+
+So “Immutable Evidence” is safer than “Immutable Data,” but we should make it clear that evidence is not merely audit metadata. It includes the data-bearing artifacts and reference data that support sense-finding.
+
+Possible title variants:
+
+1. **Semantic Meshes: Stable Identifiers, Immutable Evidence, and Dynamic Sense-Finding**
+   - safest, broad enough if defined well
+
+2. **Semantic Meshes: Stable Identifiers, Immutable Data Traces, and Dynamic Sense-Finding**
+   - more explicit that data leaves durable traces, but a little less elegant
+
+3. **Semantic Meshes: Stable Identifiers, Immutable Artifact Traces, and Dynamic Sense-Finding**
+   - very Semantic Flow-ish, maybe too inward-facing
+
+4. **Semantic Meshes: Stable Identifiers, Durable Data Evidence, and Dynamic Sense-Finding**
+   - maybe the best compromise if “immutable” feels too absolute
+
+My vote remains **Immutable Evidence**, with an early sentence like:
+
+> Here, evidence includes not only provenance metadata, but also the settled data artifacts themselves: historical states, manifestations, located files, reference sources, and the inventories and metadata that make them inspectable.
+
+# djradon_2026-06-11_2055_27
+
+Let's give Fable 5 a run at a whole paper. Could you compose a headings-only outline in [fable-sf-paper.md](../papers/2026-fomi-digitalartifact/fable-sf-paper.md) that reflects your preferred ordering of my [dave-sf-outline.md](../papers/2026-fomi-digitalartifact/dave-sf-outline.md) structure and then a prompt for Fable that doesn't steer it too closely to your outline, but touches on the best references and the best ideas from this conversation?
+
+# gpt-5.5_2026-06-11_2055_37
+
+Great idea. I’ll treat `fable-sf-paper.md` as a clean handoff artifact for another model: headings only first, then a deliberately roomy prompt that gives Fable the conceptual load-bearing beams without making it trace my outline step by step.
+
+# gpt-5.5_2026-06-11_2055_50
+
+I’ve got the pieces. I’m going to write `fable-sf-paper.md` as a handoff document: candidate titles, a true headings-only skeleton, then a self-contained Fable prompt with guardrails and reference anchors.
+
+# gpt-5.5_2026-06-11_2056_32
+
+The Fable handoff is written. I’m giving it one pass for stale phrasing and to make sure the “headings-only” block really stays heading-only.
+
+# gpt-5.5_2026-06-11_2057_16
+
+Done. I created [fable-sf-paper.md](../papers/2026-fomi-digitalartifact/fable-sf-paper.md) with a headings-only paper outline plus a self-contained Fable 5 prompt.
+
+I kept the prompt roomy: it names the strongest ideas and references from our thread, but tells Fable not to mechanically expand my outline. I also left [dave-sf-outline.md](../papers/2026-fomi-digitalartifact/dave-sf-outline.md) untouched, as requested.
