@@ -2334,3 +2334,168 @@ Update FOMI drafts for DCAT versioning alignment
 - switch worked examples from dcterms version predicates to DCAT version predicates
 - keep Codex draft aligned with SFLO historical-state terminology
 ```
+
+# djradon_2026-06-12_0817_50
+
+Looking at the Abstract: settled historical states and manifestations,  are  pretty similar to DCAT versions, distributions.
+
+# gpt-5.5_2026-06-12_0818_01
+
+Yes, that phrasing is still too grabby. `HistoricalState` is a Semantic Flow specialization of DCAT versioning, and `ArtifactManifestation` is already explicitly a specialization of `dcat:Distribution`; the abstract should not make them sound like clean-sheet inventions. I’ll tighten that claim.
+
+# gpt-5.5_2026-06-12_0818_05
+
+I also see the same slight overstatement in the DCAT prior-work paragraph. I’m changing both spots to say Semantic Flow *uses/specializes* DCAT versions and distributions, while adding the missing lineage/file/page/coordinate structure around them.
+
+# gpt-5.5_2026-06-12_0818_25
+
+Yes, exactly. I patched [codex-sf-paper.md](../papers/2026-fomi-digitalartifact/codex-sf-paper.md:5) so the abstract no longer lists `HistoricalState` and `ArtifactManifestation` as if they were wholly new things beside DCAT.
+
+The abstract now says DCAT already provides “versioning, distributions, and dataset-series vocabulary,” and that Semantic Flow profiles that space by adding the pieces DCAT does not try to specify: named internal artifact histories, modeled located files, ResourcePages, resolution coordinates, and operational pointers.
+
+I also tightened the DCAT prior-work paragraph: `HistoricalState` is now described as a settled version resource reached through `dcat:hasVersion` / `sflo:hasHistoricalState`, and `ArtifactManifestation` as a specialization of `dcat:Distribution`.
+
+# djradon_2026-06-12_0820_20
+
+maybe the SF contribution around files is differentiating between sets of bytes (which may be in memory) and file locations?
+
+# gpt-5.5_2026-06-12_0820_31
+
+Yes. I think that is a sharper contribution than “we add files.”
+
+The distinction should be:
+
+- **Manifestation**: a byte-pattern / representation form. Conceptually, this can exist without caring where it is stored. Turtle serialization of state X, JSON-LD serialization of state X, canonical RDF graph bytes, generated HTML bytes, etc.
+- **LocatedFile**: a retrievable location for bytes. This is where URL/path, access mechanics, hosting, mirroring, and maybe concrete byte retrieval live.
+- **Digest / observed bytes**: evidence that a retrieved located file matched some expected byte pattern at some time.
+
+So the real SFLO refinement is that DCAT `Distribution` is still somewhat broad: it can mix representation, access service, media type, download URL, and actual file. Semantic Flow separates:
+
+> representational identity from retrieval location.
+
+That is useful because the same manifestation may be served from several locations, moved across static hosts, mirrored, or available in memory/build output before it has a public location. Conversely, a file location can be a working file, stale file, generated file, or mirrored file whose relationship to a manifestation needs evidence.
+
+I’d phrase the contribution as:
+
+> Semantic Flow refines DCAT's distribution/download pattern by distinguishing an `ArtifactManifestation` as the representation or byte pattern of an artifact state from `LocatedFile` as a retrievable location for bytes, so publication metadata can talk separately about what bytes are intended and where equivalent or observed copies are available.
+
+And yes, that probably deserves a sentence in the abstract and DCAT comparison.
+
+# djradon_2026-06-12_0849_14
+
+should we capitalize Semantic Mesh?
+
+# gpt-5.5_2026-06-12_0849_23
+
+I’d capitalize **Semantic Mesh** when you mean the named Semantic Flow construct, and lowercase **semantic mesh** only when speaking generically.
+
+So:
+
+- **Semantic Mesh**: the framework concept/class-like construct you are introducing.
+- **a Semantic Mesh**: one instance of that construct.
+- **semantic mesh**: a looser ordinary-language phrase, probably rare in the paper.
+
+For this paper, I’d mostly use **Semantic Mesh** consistently. It helps readers recognize it as the contribution, not just a metaphor. Later, if it becomes standard terminology, lowercase can loosen up.
+
+# djradon_2026-06-12_0850_50
+
+what about Semantic Web?
+
+# gpt-5.5_2026-06-12_0850_56
+
+Capitalize **Semantic Web** when referring to the established W3C-linked field/vision/technology stack.
+
+Use lowercase **semantic web** only if you mean a generic web of meaning, not the field. In this paper, I’d almost always write **Semantic Web**.
+
+So:
+
+- **Semantic Web identifiers**
+- **Semantic Web publication**
+- **the Semantic Web stack**
+- **a quasi-immutable Semantic Web** if you mean the actual linked-data ecosystem
+
+But maybe:
+
+- “a semantic web of evidence” if you are intentionally speaking metaphorically, not about the W3C tradition.
+
+Given the venue, capitalize it. It signals respect for the established term.
+
+# djradon_2026-06-12_0851_38
+
+What do you think of my abstract? 
+
+The Semantic Flow framework seeks to make the Semantic Web more usable and FAIR (findable, accessible, interoperable, and reusable) by addressing several historically-challenging issues. This paper introduces the Semantic Mesh: a hierarchical identifier space that allows for easy minting of IRIs; that can carry arbitrary digital artifacts, but with special support for RDF documents; that can contain resource pages, making IRIs de-referenceable; and that can be hosted via commodity static hosting. We also introduce the Weave command-line utility, which can be used for creating and updating Semantic Meshes and generating resource pages for its implied IRIs.
+
+# gpt-5.5_2026-06-12_0851_46
+
+It’s a clear start, but I think it undersells the paper and slightly misleads in two places.
+
+“Hierarchical identifier space” makes Semantic Mesh sound mostly like a namespace/tree convention. That’s true, but too thin. The stronger claim is that it is an **identifier-support structure**: it carries evidence, pages, artifacts, histories, and coordinates around identifiers.
+
+“Making IRIs dereferenceable” is also a little too broad. ResourcePages do not magically make every IRI dereferenceable in the Cool URI sense; they provide a static-host-friendly way for a returned `index.html` to declare itself as the page presenting the identified resource.
+
+I’d revise toward:
+
+> The Semantic Flow framework seeks to make the Semantic Web more usable and FAIR by addressing long-standing problems in identifier persistence, dereferenceability, artifact versioning, and static publication. This paper introduces the Semantic Mesh: a statically hostable identifier-support structure that combines a hierarchical IRI surface with RDF-described support artifacts, ResourcePages, and byte-grounded DigitalArtifact histories. A Semantic Mesh can carry arbitrary digital artifacts, with particular support for RDF documents and ontology publication, while distinguishing identified resources from the pages, files, and metadata artifacts that support finding their senses. We also introduce Weave, a command-line utility for creating and updating Semantic Meshes and generating ResourcePages for mesh-managed IRIs.
+
+That keeps your shape, but makes the contribution less “we made a folder tree” and more “we made a durable publication model.”
+
+# djradon_2026-06-12_0854_38
+
+It makes IRIs derferencable as long as the hosting serves the index.html when the IRI is requested.
+
+# gpt-5.5_2026-06-12_0854_44
+
+Yes, fair correction. In the static-hosting sense, it *does* make them dereferenceable, provided the host returns `index.html` for the parent/directory IRI.
+
+The nuance is: it does not make dereferenceability depend on 303 redirects or content negotiation. It relies on the common static-host behavior that `/some/resource/` returns `/some/resource/index.html`, and then the returned page declares itself as the `ResourcePage` for the identified resource.
+
+So your claim can be stronger, just precise:
+
+> ResourcePages make mesh IRIs dereferenceable on commodity static hosts, provided the host serves `index.html` when the corresponding directory-like IRI is requested.
+
+Or in abstract prose:
+
+> ... ResourcePages that make IRIs dereferenceable on commodity static hosts by allowing the returned `index.html` page to identify itself as a page presenting the requested resource ...
+
+That says the real trick without apologizing for it.
+
+# djradon_2026-06-12_0902_27
+
+How's this: 
+
+The Semantic Flow framework seeks to make the Semantic Web more usable and FAIR (findable, accessible, interoperable, and reusable) by addressing several historically-challenging issues. This paper introduces the Semantic Mesh, a hierarchical identifier space and accompanying support structure that: allows for easy minting of IRIs; can carry arbitrary digital artifacts, with special support for artifact lineages and RDF documents; ensures straightforward IRI de-referenceability via resource pages; and that can be hosted as a static site via commodity hosting. We also introduce the Weave command-line utility, which can be used for creating and updating Semantic Meshes and generating resource pages for their implied IRIs.
+
+# djradon_2026-06-12_0902_31
+
+The Semantic Flow framework seeks to make the Semantic Web more usable and FAIR (findable, accessible, interoperable, and reusable) by addressing several historically-challenging issues. This paper introduces the Semantic Mesh: a hierarchical identifier space with accompanying RDF-described support structure and conventions. Semantic Meshes allow for easy minting of IRIs; can carry arbitrary digital artifacts, with special support for artifact lineages and RDF documents; and straightforward IRI de-referenceability via resource pages. Semantic Meshes can be hosted as static sites via commodity hosting like GitHub Pages, making them easily transplantable betweeen providers and free to host publicly. We also introduce the Weave command-line utility, which can be used for creating and updating Semantic Meshes and generating resource pages for their implied IRIs.
+
+# gpt-5.5_2026-06-12_0902_47
+
+This is much better. The shape is right; it just needs a little tightening and one grammar fix: the list has “allow,” “can carry,” then “and straightforward…” without a verb.
+
+I’d polish it like this:
+
+> The Semantic Flow framework seeks to make the Semantic Web more usable and FAIR (findable, accessible, interoperable, and reusable) by addressing several historically challenging issues. This paper introduces the Semantic Mesh: a hierarchical IRI space with an accompanying RDF-described support structure and publication conventions. Semantic Meshes support easy IRI minting; can carry arbitrary digital artifacts, with special support for artifact lineages and RDF documents; and provide straightforward dereferenceability through ResourcePages on static hosts that serve `index.html` for directory-like IRIs. Semantic Meshes can be hosted as static sites via commodity providers such as GitHub Pages, making them inexpensive to publish and easier to move between hosts. We also introduce Weave, a command-line utility for creating and updating Semantic Meshes and generating ResourcePages for mesh-managed IRIs.
+
+Small notes: use **dereferenceability** rather than **de-referenceability**, and “mesh-managed IRIs” is clearer than “implied IRIs.”
+
+# djradon_2026-06-12_0905_00
+
+transplantable or transposable
+
+# gpt-5.5_2026-06-12_0905_06
+
+**Transplantable** is better if you mean “can be moved to another host and keep functioning.” It has the right concrete infrastructure feel.
+
+**Transposable** means more like “can be converted or mapped into another key/context/form.” It’s elegant, but it suggests structural transformation rather than hosting portability.
+
+I’d probably use **portable** in the abstract, though:
+
+> making them inexpensive to publish and portable across hosting providers
+
+Or if you want the stronger physical sense:
+
+> making them inexpensive to publish and easily transplantable between hosting providers
+
+“Portable” is less vivid, but more academically frictionless.

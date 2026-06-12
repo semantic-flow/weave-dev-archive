@@ -51,7 +51,7 @@ We adopt the principle that *identifiers should be as specific and predictable a
 
 Even a well-run identifier acquires its meaning socially. A class IRI's sense may narrow when a revision tightens its definition; a property may drift as a community uses it in ways the original comment did not anticipate; an concept's specificity may shift as its ecosystem changes. Occasionally an identifier's current sense becomes outright inconsistent with assertions made against an earlier state.
 
-There are two tempting responses, both wrong. One is to declare senses frozen — to insist the identifier means what it meant at minting, which the surrounding usage simply falsifies over time. The other is to give up on stability and let identifiers mean whatever their latest documentation says, hampering the ability to interpret older data. The workable position is in between: let senses evolve, but make the *evidence trail* durable, so that any agent can reconstruct what the identifier was being used to mean at any settled point. When a sense genuinely splits, the publisher can mint new identifiers — preferably two new ones, leaving the old identifier as a documented fork point — and the trail records the split rather than papering over it.
+There are two tempting responses, both wrong. One is to declare senses frozen — to insist the identifier means what it meant at minting, which the surrounding usage simply falsifies over time. The other is to give up on stability and let identifiers mean whatever their latest documentation says, destroying the ability to interpret older data. The workable position is in between: let senses evolve, but make the *evidence trail* durable, so that any agent can reconstruct what the identifier was being used to mean at any settled point. When a sense genuinely splits, the publisher can mint new identifiers — preferably two new ones, leaving the old identifier as a documented fork point — and the trail records the split rather than papering over it.
 
 This reframing matters because it changes what the support infrastructure must do. It does not need to adjudicate meaning. It needs to keep settled states settled, keep them retrievable, keep mutable pointers (latest, current, working, deprecated, replaced) clearly distinguished from settled coordinates, and keep the whole structure inspectable in RDF rather than buried in server behavior or repository internals.
 
@@ -180,14 +180,14 @@ The Semantic Flow core ontology is published as a mesh, so its own opening metad
 
 <ontology> a owl:Ontology ;
   dcterms:title "Semantic Flow Core Ontology" ;
-  dcat:hasVersion <ontology/releases/v0.2.0> ;
+  dcterms:hasVersion <ontology/releases/v0.2.0> ;
   dcterms:modified "2026-05-19"^^xsd:date ;
   owl:versionIRI <https://raw.githubusercontent.com/semantic-flow/sflo/
                   refs/tags/v0.2.0/semantic-flow-core-ontology.ttl> ;
   owl:versionInfo "0.2.0" .
 
 <ontology/releases/v0.2.0> a owl:Ontology, sflo:HistoricalState ;
-  dcat:isVersionOf <ontology> ;
+  dcterms:isVersionOf <ontology> ;
   dcterms:issued "2026-05-24"^^xsd:date ;
   owl:versionInfo "0.2.0" ;
   sflo:hasManifestation <ontology/releases/v0.2.0/ttl> ;

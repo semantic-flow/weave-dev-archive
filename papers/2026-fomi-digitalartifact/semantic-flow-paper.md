@@ -1,4 +1,4 @@
-# Semantic Flow: Byte-Grounded Digital Artifact Histories for Static RDF Publication
+# Semantic Meshes: Stable Identifiers, Pseudo-Immutable Evidence, and Dynamic Sense-Finding
 
 Draft target: FOMI 2026 short paper, CEUR-ART LaTeX, one-column mode.
 
@@ -13,7 +13,7 @@ Draft target: FOMI 2026 short paper, CEUR-ART LaTeX, one-column mode.
 
 ## Abstract
 
-TODO
+The Semantic Flow framework seeks to make the Semantic Web more usable and FAIR (findable, accessible, interoperable, and reusable) by addressing several historically-challenging issues. This paper introduces the Semantic Mesh: a hierarchical identifier space with accompanying RDF-described support structures and conventions. Semantic Meshes allow for easy minting of IRIs; can carry arbitrary digital artifacts, with special support for artifact lineages and RDF documents; and support straightforward IRI dereferenceability via resource pages. Semantic Meshes can be hosted as static sites via commodity hosting like GitHub Pages, making them easily transplantable betweeen providers and free to host publicly. We also introduce the Weave command-line utility, which can be used for creating and updating Semantic Meshes and generating resource pages for their implied IRIs.  
 
 ## Keywords
 
