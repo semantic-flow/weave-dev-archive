@@ -3205,3 +3205,58 @@ I folded in the good bits: pseudo-immutability, “Cooler IRIs,” directory ind
 I also corrected the RDFa example so Wisdom is modeled as `fant:Ability` with `rdfs:label`, matching the fixture instead of pretending it is generically `skos:Concept`.
 
 No tests run; this was a markdown-only drafting pass.
+
+# djradon_2026-06-12_1348_39
+
+I revised the abstract. Thoughts?
+
+# gpt-5.5_2026-06-12_1348_44
+
+I’ll read the revised abstract in place so I’m reacting to your actual wording, not the ghost of the previous draft.
+
+# gpt-5.5_2026-06-12_1349_00
+
+Much better. It now has a real argumentative spine: problem → Semantic Mesh → DigitalArtifact stack → Fantasy Rules/Weave. The abstract finally says what the paper contributes instead of just gesturing at “publication.”
+
+A few things I’d tune:
+
+- Typo: “between between representation-level manifestations”
+- “extends DCAT 3” may sound like you are proposing a replacement or formal extension. I’d use “specializes and reuses DCAT 3…” unless you want to foreground ontology-level subclassing/subproperties.
+- The long `At the center...` sentence is doing too much. It has four contributions packed into one breath.
+- “skip-level properties” is probably too internal/jargony for the abstract. Maybe say “sparse descriptions where unnecessary layers can be omitted.”
+- The title says “Dynamic Sense-Finding,” but the abstract no longer explicitly mentions sense-finding, primary/support identifiers, or ResourcePages distinguishing page from referent. I’d sneak that back in.
+
+A tightened version might be:
+
+```markdown
+The Semantic Flow framework addresses long-standing Semantic Web problems in identifier persistence, identifier ambiguity, artifact modeling, and low-friction publication. This paper introduces the Semantic Mesh: a hierarchical IRI surface with RDF-described support structures and publication conventions. Semantic Meshes support easy IRI minting, static-site dereferenceability through ResourcePages, and publication of arbitrary digital artifacts, with special support for RDF documents and artifact lineages. At the center of the model is a faceted, five-layer `DigitalArtifact` stack that specializes and reuses DCAT 3 versioning and distribution vocabulary while adding named internal lineages, settled historical states, representation-level manifestations, explicit located files, resolution coordinates, and sparse descriptions where unneeded layers can be omitted. The model also distinguishes primary identifiers from support identifiers, allowing ResourcePages, catalogs, metadata, histories, states, manifestations, and files to help establish the sense of an IRI without being confused with the resource it primarily identifies. We illustrate the model with the Fantasy Rules ontology fixture and introduce Weave, a command-line implementation for creating and updating Semantic Meshes and generating ResourcePages for mesh-managed IRIs.
+```
+
+I’d probably use something close to that. It’s still dense, but it hits the paper’s actual jewels.
+
+# djradon_2026-06-12_1356_23
+
+Sorry, didn't read your tightened version. I'm trying to do the authoring myself, so probably better to just make suggestions than to provide big prose blocks. 
+
+What do you think now?
+
+# gpt-5.5_2026-06-12_1356_27
+
+Totally fair. I’ll keep this in suggestion mode and avoid dropping replacement blocks unless you ask for one. Reading the current abstract now.
+
+# gpt-5.5_2026-06-12_1356_40
+
+This is definitely stronger. It has less “abstract soup” and more of your actual thesis: identifier surface, sense-making, DigitalArtifact facets, ResourcePages, Weave.
+
+Suggestions, staying out of your authoring lane:
+
+- “seeks to make” is a little soft/mission-statementy. Academic abstracts often do better with “addresses” or “presents.”
+- The first sentence’s list is slightly uneven: “identifier persistence and ambiguity; artifact modeling; and ease of publication.” Maybe split “identifier persistence” and “identifier ambiguity” so the three problems feel parallel.
+- “designed to help humans and computers make sense of IRIs” is good. That is the dynamic sense-finding idea in plain English.
+- “Semantic Meshes support easy IRI minting; can carry…” has a tiny grammar wobble because only the first clause has an explicit subject/verb shape. It’s readable, but you might make all three verbs parallel.
+- “faceted, five-layer `DigitalArtifact` model” followed by “At the center of the model” repeats “model.” Maybe “At the center is…”
+- I’d still avoid “extends DCAT 3” unless you mean formal extension in a standards sense. “reuses and specializes DCAT 3…” is safer and more accurate.
+- “embedding the DigitalArtifact model” sounds slightly software-ish. For an ontology, “defines” or “formalizes” probably fits better.
+- “resolution coordinates” is worth keeping, but the quotes make it feel tentative. If it’s your term, own it.
+
+The main missing jewel is still the page-vs-referent distinction. “ResourcePages” are named, but not what makes them philosophically useful. You don’t need much; even “ResourcePages that distinguish the returned page from the resource presented” would plant the flag.

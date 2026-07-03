@@ -4,7 +4,7 @@ Draft target: FOMI 2026 short paper, CEUR-ART one-column mode.
 
 ## Abstract
 
-The Semantic Flow framework seeks to make the Semantic Web more usable and FAIR by addressing long-standing problems in identifier persistence, dereferenceability, artifact versioning, and static publication. This paper introduces the Semantic Mesh: a hierarchical IRI surface with RDF-described support structures and publication conventions. Semantic Meshes support easy IRI minting; can carry arbitrary digital artifacts, with special support for artifact lineages and RDF documents; and provide straightforward dereferenceability through ResourcePages on static hosts that support directory index resolution. At the center of the model is a faceted `DigitalArtifact` stack that reuses DCAT 3 versioning and distribution vocabulary while adding named internal lineages, settled historical states, representation-level manifestations, explicit located files, and resolution coordinates. The model also distinguishes primary identifiers from support identifiers so that ontology terms, datasets, generated pages, files, and support artifacts are not collapsed into one kind of resource. We illustrate the model with the Fantasy Rules ontology fixture and introduce Weave, a command-line implementation for creating and updating Semantic Meshes and generating ResourcePages for mesh-managed IRIs.
+The Semantic Flow framework seeks to make the Semantic Web more usable and FAIR by addressing long-standing problems with identifier persistence and ambiguity; artifact modeling; and ease of publication. This paper introduces the Semantic Mesh: a hierarchical identifier surface with RDF-described support structures and publication conventions designed to help humans and computers make sense of IRIs. Semantic Meshes support easy IRI minting; can carry arbitrary digital artifacts, with special support for artifact lineages and RDF documents; and provide straightforward dereferenceability through ResourcePages. At the center of the model is a faceted, five-layer `DigitalArtifact` model that extends DCAT 3 versioning and distribution vocabulary while adding named internal lineages with settled historical states, and making a cleaner distinction between representation-level byte manifestations and explicit located files. The Semantic Flow ontology embeds the DigitalArtifact model along with conventions for specifying the needed or acceptable facets via "resolution coordinates". We illustrate the model with the Fantasy Rules ontology fixture and introduce Weave, a command-line implementation for creating and updating Semantic Meshes and generating ResourcePages for mesh-managed IRIs.
 
 **Keywords:** Semantic Web, Linked Data, FAIR, persistent identifiers, digital artifacts, DCAT, ontology publication, static sites, dereferenceability
 
@@ -98,8 +98,6 @@ Listing 1 shows the minimal RDFa pattern for a Fantasy Rules term page.
 <html lang="en"
   prefix="
     sflo: https://semantic-flow.github.io/sflo/ontology/
-    fant: https://semantic-flow.github.io/mesh-branch-fantasy-rules/ontology/
-    rdfs: http://www.w3.org/2000/01/rdf-schema#
     schema: https://schema.org/
     skos: http://www.w3.org/2004/02/skos/core#
   ">
@@ -116,11 +114,11 @@ Listing 1 shows the minimal RDFa pattern for a Fantasy Rules term page.
   <main>
     <section
       resource="https://semantic-flow.github.io/mesh-branch-fantasy-rules/ontology/wisdom"
-      typeof="fant:Ability">
+      typeof="skos:Concept">
       <link
         property="sflo:hasResourcePage"
         href="https://semantic-flow.github.io/mesh-branch-fantasy-rules/ontology/wisdom/index.html" />
-      <p property="rdfs:label">Wisdom</p>
+      <p property="skos:prefLabel">Wisdom</p>
       <p property="skos:definition">Perceptiveness and mental fortitude.</p>
     </section>
   </main>

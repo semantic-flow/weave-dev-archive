@@ -16,6 +16,10 @@ created: 1780073658016
 
 ## Summary
 
+Post-vacation status on 2026-06-30: the paper deadline was missed and paper writing is parked for now. The drafts remain useful as concept scratch for Semantic Flow terminology, documentation, and future submissions, but they should not drive near-term Weave implementation. Semantic Flow is still in flux, and engineering focus is returning to runtime/publication correctness plus application-driven needs from Stagecraft.
+
+Next venue target: KGSWC 2026, tracked separately in [[wa.task.2026.2026-06-30_1159-kgswc-2026-paper-target]].
+
 As of 2026-06-11, this is a paper production sprint with a hard human-availability stop before vacation on 2026-06-13. SEMANTiCS is the fastest deadline but should be dropped unless nearly free. FOIS Demonstrations is the clean topical fit for a Weave implementation demo, FOMI is the clean topical fit for the DigitalArtifact model, and FOIS Ontology Showcase is mostly a separate SFLO ontology paper rather than a Weave tool paper.
 
 Recommended path after the vacation constraint: produce two coordinated but non-duplicative submission packages by 2026-06-13. The FOMI paper should be a short model/practice paper on the DigitalArtifact model and the practical ontology-publication problems it addresses. The FOIS Demonstrations paper should be a short tool/method paper on Weave's implementation workflow, generated ResourcePages, and repeatable static publication. The same SFLO public site, figures, and screenshots can be reused as shared evidence, but the thesis and contribution claims must remain distinct.

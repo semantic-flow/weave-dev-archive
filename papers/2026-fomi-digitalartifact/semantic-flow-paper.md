@@ -13,13 +13,16 @@ Draft target: FOMI 2026 short paper, CEUR-ART LaTeX, one-column mode.
 
 ## Abstract
 
-The Semantic Flow framework seeks to make the Semantic Web more usable and FAIR (findable, accessible, interoperable, and reusable) by addressing several historically-challenging issues. This paper introduces the Semantic Mesh: a hierarchical identifier space with accompanying RDF-described support structures and conventions. Semantic Meshes allow for easy minting of IRIs; can carry arbitrary digital artifacts, with special support for artifact lineages and RDF documents; and support straightforward IRI dereferenceability via resource pages. Semantic Meshes can be hosted as static sites via commodity hosting like GitHub Pages, making them portable across hosting providers and inexpensive or free to host. We also introduce the Weave command-line utility, which can be used for creating and updating Semantic Meshes and generating resource pages for their implied IRIs.  
+The Semantic Flow framework seeks to make the Semantic Web more usable and FAIR by addressing long-standing problems with identifier persistence and ambiguity; digital artifact modeling; and ease of publication. This paper introduces the Semantic Mesh: a hierarchical identifier surface with RDF-described support structures and publication conventions designed to help humans and computers make sense of IRIs. Semantic Meshes support easy IRI minting; can carry arbitrary digital artifacts, with special support for artifact lineages and RDF documents; and provide straightforward dereferenceability through ResourcePages without any dependence on request or response headers or hash IRIs. At the center of the model is a faceted, five-layer `DigitalArtifact` model that builds on DCAT 3 versioning and distribution concepts while adding named internal lineages with settled historical states, and makes a cleaner distinction between representation-level byte manifestations and explicit located files. The Semantic Flow ontology embeds the DigitalArtifact model along with conventions for specifying the needed or acceptable facets via "resolution coordinates". We illustrate the model with the Fantasy Rules ontology fixture and introduce Weave, a command-line implementation for creating and updating Semantic Meshes and generating ResourcePages for mesh-managed IRIs.
+
 
 ## Keywords
 
 Semantic Web, Linked Data, FAIR, cooler IRIs, pseudo-immutability, DCAT, ontology publishing, static sites, dereferenceability
 
 ## 1. Introduction
+
+
 
 This paper makes n contributions:
 
@@ -66,14 +69,24 @@ ArtifactHistory as named internal lineages
 
 ## 3 Identifiers, Referents, and ResourcePages
 
-- not every identifier names a DigitalArtifact
+- not every identifier names a DigitalArtifact (aka Information Resource, Web document)
 - term IRIs, class IRIs, person IRIs have senses and support artifacts
 - support artifacts are not the referent, but they can get their own IRIs
 
 ### 3.1 Primary and Supporting Identifiers
 
 
+
 ### 3.2 Be Unambiguous
+
+- "Web architecture tells you that for a thing resource (URI) it is inappropriate to return a 200 because there is, in fact, no suitable representation for those resources." [CoolURIs]
+  - ultimately it doesn't really matter, but what does githubpages do? i.e., does the response header indicate the index.html is what's returned?
+- the problem with "Machines should get RDF data and humans should get a readable representation, such as HTML." is that it is inherently ambiguous. An identifier alone no longer identifies something, it requires a request header as well. 
+- "The challenge is to find a solution that allows us to find the describing documents if we have just the resource's URI, using standard Web technologies." gets the problem exactly right.
+- The additional wrinkle is that information resources/web documents are also things in the world, and you may want to refer to them in the abstract as well.
+- The SF proposed solution is simple: ID -> Resource Page (HTML document which may have embedded RDF) that describes a thing OR ID+/index.html refers to the Resource Page itself OR ID -> file/informational resource
+  - don't hide the source from humans! Learn the "view source" lesson
+  - in fact, the HTML page should both be able to expose RDF (so humans don't have to literally view source and search through all that other stuff) as well as silently embed it for machines. 
 
 ### 3.3 Resource Pages and Embedded RDF
 
