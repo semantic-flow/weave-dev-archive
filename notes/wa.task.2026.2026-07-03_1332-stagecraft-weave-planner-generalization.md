@@ -106,8 +106,8 @@ The first Weave fix should therefore support appending `_sNNNN` from the current
 
 ### Task 6: Add Acceptance Coverage
 
-- [d] Add or update an Accord manifest that proves the Stagecraft-shaped transition adds or updates the expected paths.
-- [d] Pair new RDF paths with `hasAskAssertion` checks for the important semantic facts rather than relying only on byte comparison.
+- [x] Add or update an Accord manifest that proves the Stagecraft-shaped transition adds or updates the expected paths.
+- [x] Pair new RDF paths with `hasAskAssertion` checks for the important semantic facts rather than relying only on byte comparison.
 - [x] Keep `conformance/` off rung refs unless the fixture explicitly needs to be self-contained.
 - [x] Add Weave integration coverage that exercises the same transition locally.
 
@@ -134,7 +134,7 @@ The first Weave fix should therefore support appending `_sNNNN` from the current
 - The implementation should start from a failing reproducible test and widen the planner only as far as that test and existing fixture behavior justify.
 - Failure messages should describe the invalid state, not the implementation slice that failed to recognize it.
 - First implementation slice supports single-target later-ordinal payload advancement; multi-target advancement remains the immediate next planner slice.
-- Accord acceptance coverage is deferred until the scenario-runner exists, so this slice uses Weave-native planner/runtime tests and leaves per-step evidence manifests for the follow-up.
+- Accord acceptance coverage for the triggering rung uses a focused one-step scenario index now that `accord check-scenario` exists. The full Stagecraft scenario index is not this slice's gate because unrelated later-rung conformance-file expectations still fail there.
 - Append-onlyish inventory is not a prerequisite for this narrow fix. This slice reuses current support-fact preservation and adds a fact-driven later-payload read model; broader append/no-op/conflict inventory writes remain in [[wa.task.2026.2026-05-17-append-onlyish-inventory]].
 - For later payload advancement, versioned/default support-history policy does not force creation of missing support histories. If the current KnopInventory/KnopMetadata facts are current-only, the later-payload path preserves that current-only support policy and advances only the payload history.
 
@@ -157,6 +157,29 @@ The first Weave fix should therefore support appending `_sNNNN` from the current
 - Add diagnostic tests for at least one missing-fact and one conflicting-fact failure that previously collapsed into the settled-shape error.
 - Run `deno task test` for the implementation slice and `deno task lint` after significant code changes.
 - If Accord manifests are updated, run the relevant Accord transition checks against the fixture repo.
+
+## Replay Evidence 2026-07-06
+
+Real Stagecraft replay used fixture repo `/home/djradon/hub/spectacular-voyage/stagecraft/dependencies/github.com/spectacular-voyage/test-inn-ambush`, source ref `a.11-temporal-vocabulary-records`, and target ref `a.12-temporal-vocabulary-woven`.
+
+Sequential single-target invocations from a detached temp worktree all succeeded:
+
+```sh
+weave --silent --target designatorPath=projections/contracts/inn-ambush-contract-context
+weave --silent --target designatorPath=projections/contracts/inn-ambush-contract-shapes
+weave --silent --target designatorPath=world/states/inn-ambush-plan-b-state
+```
+
+Each invocation wove exactly one designator path, created the expected new payload state files, and updated that designator's current inventory/pages. The replay checked 72 pre-existing `*_history*/*_s*/*` files with `sha256sum -c`; all prior historical state files stayed byte-identical. The staged replay produced the same 21 path changes as `a.12-temporal-vocabulary-woven`. Payload snapshots and inventory Turtle files matched the woven branch byte-for-byte after the later-payload renderer kept the established state/manifestation block order and trimmed excess blank lines. The remaining 15 HTML differences were generated timestamp footers only and normalized to the woven branch with the same timestamp-only comparison Weave already uses for generated pages.
+
+Accord coverage for the rung uses existing manifest `conformance/12-temporal-vocabulary-woven.jsonld` plus focused scenario index `conformance/12-temporal-vocabulary-woven-scenario.jsonld` in the `test-inn-ambush` fixture repo. The manifest covers the added/updated paths and includes SPARQL ASK assertions for the important payload and inventory facts.
+
+```sh
+accord validate conformance/12-temporal-vocabulary-woven-scenario.jsonld
+accord check-scenario conformance/12-temporal-vocabulary-woven-scenario.jsonld --fixture-repo-path /home/djradon/hub/spectacular-voyage/stagecraft/dependencies/github.com/spectacular-voyage/test-inn-ambush
+```
+
+Evidence: `accord validate` reported conformant with `results=0 errors=0`; `accord check-scenario` passed with scenario summary `pass=1 fail=0 error=0` and wrapped check summary `pass=33 fail=0 error=0`.
 
 ## Non-Goals
 
@@ -184,6 +207,6 @@ The first Weave fix should therefore support appending `_sNNNN` from the current
 - [x] Replace the Stagecraft-blocking fixture assertion with RDF fact validation and condition-specific diagnostics.
 - [x] Preserve existing carried fixture tests.
 - [x] Add integration coverage for the accepted Stagecraft-shaped transition.
-- [d] Add Accord coverage for the accepted Stagecraft-shaped transition after the scenario-runner lands.
+- [x] Add Accord coverage for the accepted Stagecraft-shaped transition after the scenario-runner lands.
 - [x] Decide whether the next slice should tackle multi-candidate planning, append-onlyish inventory writes, or another shape-specific assertion exposed by the same ladder.
 - [x] Update [[wd.todo]], [[wd.decision-log]], and [[wd.codebase-overview]] when the implementation lands if the public or developer contract changes.
