@@ -71,51 +71,51 @@ The first Weave fix should therefore support appending `_sNNNN` from the current
 
 ### Task 1: Capture The Stagecraft Reproducer
 
-- [ ] Record the exact Stagecraft repo, branch, fixture repo path, source ref, target ref, command, and failing designator path.
-- [ ] Preserve the failing checkout or add a small Stagecraft-shaped Weave fixture that reproduces the same second-payload weave rejection.
-- [ ] Identify whether the rung needs full `weave` or only `weave generate`; if it needs new or advanced histories, keep full `weave` as the expected operation.
-- [ ] Write a failing test in Weave before changing planner behavior.
+- [x] Record the exact Stagecraft repo, branch, fixture repo path, source ref, target ref, command, and failing designator path.
+- [x] Preserve the failing checkout or add a small Stagecraft-shaped Weave fixture that reproduces the same second-payload weave rejection.
+- [x] Identify whether the rung needs full `weave` or only `weave generate`; if it needs new or advanced histories, keep full `weave` as the expected operation.
+- [x] Write a failing test in Weave before changing planner behavior.
 
 ### Task 2: Inventory Fixture-Shaped Payload Gates
 
 - [ ] List every payload-weave path that still throws "current local weave slice only supports..." for a settled shape.
 - [ ] Classify each gate as a true invariant, a malformed-state diagnostic, or fixture-shaped implementation debt.
-- [ ] For the Stagecraft blocker, write down the exact facts that should be required: payload artifact type, current artifact history, latest historical state, KnopInventory relationship, MeshInventory progression, ResourcePage eligibility, and working-source resolution.
-- [ ] Replace one broad fixture-shaped assertion with a smaller read model that reports missing or conflicting facts.
+- [x] For the Stagecraft blocker, write down the exact facts that should be required: payload artifact type, current artifact history, latest historical state, KnopInventory relationship, MeshInventory progression, ResourcePage eligibility, and working-source resolution.
+- [x] Replace one broad fixture-shaped assertion with a smaller read model that reports missing or conflicting facts.
 
 ### Task 3: Generalize Later Payload Weave Progression
 
-- [ ] Generalize the second-payload weave path so it derives existing payload history, latest state, next state naming, support-artifact policy, and KnopInventory progression from RDF rather than a carried Turtle shape.
-- [ ] Support later payload revisions in meshes that have additional unrelated Knops, support artifacts, source registries, or generated pages.
-- [ ] Ensure target selection can weave the requested payload without requiring unrelated pending candidates to match the same slice.
-- [ ] Preserve current successful Alice/Fantasy fixture behavior except for intentional, semantically equivalent output normalization.
+- [x] Generalize the second-payload weave path so it derives existing payload history, latest state, next state naming, support-artifact policy, and KnopInventory progression from RDF rather than a carried Turtle shape.
+- [x] Support later payload revisions in meshes that have additional unrelated Knops, support artifacts, source registries, or generated pages.
+- [x] Ensure target selection can weave the requested payload without requiring unrelated pending candidates to match the same slice.
+- [x] Preserve current successful Alice/Fantasy fixture behavior except for intentional, semantically equivalent output normalization.
 
 ### Task 4: Unify Payload-Weave Diagnostics And Candidate Selection
 
 - [ ] Replace "settled first/second payload weave shape" messages with condition-specific diagnostics.
-- [ ] Revisit the one-candidate limit in `planWeave` only where a concrete Stagecraft or existing ladder case needs multi-target payload advancement.
-- [ ] Keep exact targets narrow: `weave --target designatorPath=x` should not silently advance unrelated pending payloads.
+- [d] Revisit the one-candidate limit in `planWeave` only where a concrete Stagecraft or existing ladder case needs multi-target payload advancement.
+- [x] Keep exact targets narrow: `weave --target designatorPath=x` should not silently advance unrelated pending payloads.
 - [ ] Keep untargeted behavior deterministic if multiple selected candidates become supported.
 
 ### Task 5: Align Inventory Progression With Append-Onlyish Behavior
 
-- [ ] Decide how much of [[wa.task.2026.2026-05-17-append-onlyish-inventory]] must land before the Stagecraft blocker can be fixed cleanly.
-- [ ] Prefer appending/no-oping settled inventory facts and failing on conflicts over regenerating exact subject blocks.
-- [ ] Keep current/latest/next progression explicit and auditable.
-- [ ] Avoid inventing a Stagecraft-only inventory path.
+- [x] Decide how much of [[wa.task.2026.2026-05-17-append-onlyish-inventory]] must land before the Stagecraft blocker can be fixed cleanly.
+- [x] Prefer appending/no-oping settled inventory facts and failing on conflicts over regenerating exact subject blocks.
+- [x] Keep current/latest/next progression explicit and auditable.
+- [x] Avoid inventing a Stagecraft-only inventory path.
 
 ### Task 6: Add Acceptance Coverage
 
-- [ ] Add or update an Accord manifest that proves the Stagecraft-shaped transition adds or updates the expected paths.
-- [ ] Pair new RDF paths with `hasAskAssertion` checks for the important semantic facts rather than relying only on byte comparison.
-- [ ] Keep `conformance/` off rung refs unless the fixture explicitly needs to be self-contained.
-- [ ] Add Weave integration coverage that exercises the same transition locally.
+- [d] Add or update an Accord manifest that proves the Stagecraft-shaped transition adds or updates the expected paths.
+- [d] Pair new RDF paths with `hasAskAssertion` checks for the important semantic facts rather than relying only on byte comparison.
+- [x] Keep `conformance/` off rung refs unless the fixture explicitly needs to be self-contained.
+- [x] Add Weave integration coverage that exercises the same transition locally.
 
 ### Task 7: Document The Operational Rule
 
 - [ ] Update developer docs if the implementation changes the boundary between `weave`, `weave version`, and `weave generate`.
 - [ ] Update user docs only if the externally visible CLI behavior or recommended Stagecraft workflow changes.
-- [ ] Add a decision-log entry if this generalization changes the planner contract beyond removing a bug.
+- [x] Add a decision-log entry if this generalization changes the planner contract beyond removing a bug.
 
 ## Open Issues
 
@@ -133,6 +133,10 @@ The first Weave fix should therefore support appending `_sNNNN` from the current
 - Stagecraft should drive a concrete generalization slice, not a Stagecraft-specific workaround.
 - The implementation should start from a failing reproducible test and widen the planner only as far as that test and existing fixture behavior justify.
 - Failure messages should describe the invalid state, not the implementation slice that failed to recognize it.
+- First implementation slice supports single-target later-ordinal payload advancement; multi-target advancement remains the immediate next planner slice.
+- Accord acceptance coverage is deferred until the scenario-runner exists, so this slice uses Weave-native planner/runtime tests and leaves per-step evidence manifests for the follow-up.
+- Append-onlyish inventory is not a prerequisite for this narrow fix. This slice reuses current support-fact preservation and adds a fact-driven later-payload read model; broader append/no-op/conflict inventory writes remain in [[wa.task.2026.2026-05-17-append-onlyish-inventory]].
+- For later payload advancement, versioned/default support-history policy does not force creation of missing support histories. If the current KnopInventory/KnopMetadata facts are current-only, the later-payload path preserves that current-only support policy and advances only the payload history.
 
 ## Contract Changes
 
@@ -140,6 +144,7 @@ The first Weave fix should therefore support appending `_sNNNN` from the current
 - `weave` should reject malformed or ambiguous current state with specific errors: missing current history, missing latest state, conflicting latest states, unsupported history policy, missing working file, invalid target selection, or impossible inventory progression.
 - Existing `weave generate` behavior remains page-rendering-only and should not create new payload histories.
 - Existing single-payload fixture ladders remain valid.
+- In the later-payload path, current-only support artifacts without support histories are valid when the payload history itself is coherent.
 
 ## Testing
 
@@ -173,11 +178,12 @@ The first Weave fix should therefore support appending `_sNNNN` from the current
 
 ## Implementation Plan
 
-- [ ] Add the Stagecraft repro details to this note.
-- [ ] Create a focused failing Weave test that reproduces the settled second-payload weave rejection without requiring the full Stagecraft app test suite.
-- [ ] Trace the failing planner path from candidate discovery through slice classification and the shape assertion.
-- [ ] Replace the Stagecraft-blocking fixture assertion with RDF fact validation and condition-specific diagnostics.
-- [ ] Preserve existing carried fixture tests.
-- [ ] Add integration/Accord coverage for the accepted Stagecraft-shaped transition.
-- [ ] Decide whether the next slice should tackle multi-candidate planning, append-onlyish inventory writes, or another shape-specific assertion exposed by the same ladder.
-- [ ] Update [[wd.todo]], [[wd.decision-log]], and [[wd.codebase-overview]] when the implementation lands if the public or developer contract changes.
+- [x] Add the Stagecraft repro details to this note.
+- [x] Create a focused failing Weave test that reproduces the settled second-payload weave rejection without requiring the full Stagecraft app test suite.
+- [x] Trace the failing planner path from candidate discovery through slice classification and the shape assertion.
+- [x] Replace the Stagecraft-blocking fixture assertion with RDF fact validation and condition-specific diagnostics.
+- [x] Preserve existing carried fixture tests.
+- [x] Add integration coverage for the accepted Stagecraft-shaped transition.
+- [d] Add Accord coverage for the accepted Stagecraft-shaped transition after the scenario-runner lands.
+- [x] Decide whether the next slice should tackle multi-candidate planning, append-onlyish inventory writes, or another shape-specific assertion exposed by the same ladder.
+- [x] Update [[wd.todo]], [[wd.decision-log]], and [[wd.codebase-overview]] when the implementation lands if the public or developer contract changes.
