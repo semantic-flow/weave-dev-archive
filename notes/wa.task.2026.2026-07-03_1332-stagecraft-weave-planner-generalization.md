@@ -93,7 +93,7 @@ The first Weave fix should therefore support appending `_sNNNN` from the current
 ### Task 4: Unify Payload-Weave Diagnostics And Candidate Selection
 
 - [ ] Replace "settled first/second payload weave shape" messages with condition-specific diagnostics.
-- [d] Revisit the one-candidate limit in `planWeave` only where a concrete Stagecraft or existing ladder case needs multi-target payload advancement.
+- [x] Revisit the one-candidate limit in `planWeave` only where a concrete Stagecraft or existing ladder case needs multi-target payload advancement.
 - [x] Keep exact targets narrow: `weave --target designatorPath=x` should not silently advance unrelated pending payloads.
 - [ ] Keep untargeted behavior deterministic if multiple selected candidates become supported.
 
@@ -134,6 +134,7 @@ The first Weave fix should therefore support appending `_sNNNN` from the current
 - The implementation should start from a failing reproducible test and widen the planner only as far as that test and existing fixture behavior justify.
 - Failure messages should describe the invalid state, not the implementation slice that failed to recognize it.
 - First implementation slice supports single-target later-ordinal payload advancement; multi-target advancement remains the immediate next planner slice.
+- The second slice supports explicit multi-target payload advancement for exact payload targets. It keeps recursive/mixed-slice target sets on the existing deterministic sequential planner, orders exact payload batches by canonical designator path, merges shared support-artifact progression once per batch, and no-ops already-current payloads on rerun.
 - Accord acceptance coverage for the triggering rung uses a focused one-step scenario index now that `accord check-scenario` exists. The full Stagecraft scenario index is not this slice's gate because unrelated later-rung conformance-file expectations still fail there.
 - Append-onlyish inventory is not a prerequisite for this narrow fix. This slice reuses current support-fact preservation and adds a fact-driven later-payload read model; broader append/no-op/conflict inventory writes remain in [[wa.task.2026.2026-05-17-append-onlyish-inventory]].
 - For later payload advancement, versioned/default support-history policy does not force creation of missing support histories. If the current KnopInventory/KnopMetadata facts are current-only, the later-payload path preserves that current-only support policy and advances only the payload history.
@@ -209,4 +210,5 @@ Evidence: `accord validate` reported conformant with `results=0 errors=0`; `acco
 - [x] Add integration coverage for the accepted Stagecraft-shaped transition.
 - [x] Add Accord coverage for the accepted Stagecraft-shaped transition after the scenario-runner lands.
 - [x] Decide whether the next slice should tackle multi-candidate planning, append-onlyish inventory writes, or another shape-specific assertion exposed by the same ladder.
+- [x] Land the explicit multi-target payload advancement follow-up from [[wa.task.2026.2026-07-05-multi-target-payload-advancement]].
 - [x] Update [[wd.todo]], [[wd.decision-log]], and [[wd.codebase-overview]] when the implementation lands if the public or developer contract changes.
