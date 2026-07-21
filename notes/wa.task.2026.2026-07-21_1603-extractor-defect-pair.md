@@ -162,3 +162,41 @@ r2 CONVERGED (0 residuals). Amendments r1 governs. Build fires: codex HIGH, weav
 #### End state
 
 **Complete (awaiting close review).**
+
+### Close review (r-impl, 2026-07-21)
+
+Scoped adversarial pass over `698b644` + `b46d5c8` on base `b7cbf89`. `deno task fmt --check` and `deno task lint` re-run clean (228/227 files) as a sanity spot-check; full `deno task ci` cited per brief, not re-earned.
+
+#### PROPOSED MEDIUM — G1: the `set extraction-source --all-terms` e2e test does not discriminate the fix; the receipts overclaim what it proves
+
+R3 requires "focused coverage for both commands" sharing the census predicate, and the receipts (line ~131) state the new set-extraction-source test "reports zero update candidates rather than admitting the file to its shared census." This is not true in a fail-on-old sense.
+
+`planSetExtractionSourceAllTerms` (`src/runtime/extract/extract.ts:679-762`) only iterates `discovery.skippedExistingDesignatorPaths`; its result's `discoveredDesignatorPaths` field is `discovery.skippedExistingDesignatorPaths` verbatim (line 758), and `printSetExtractionSourceAllTermsPreview` (`src/cli/run.ts:1523-1531`) prints only that field. The two sets the new `isWorkspaceFile` exclusion actually redirects candidates between — `discovered` and `skippedSupport` — are never read by this command's plan or CLI output. The checked-in `conditions.csvw.json` in the new test is never a member of `existingDesignatorPaths` (it was never extracted), so it was never eligible to reach `skippedExisting` either before or after the fix.
+
+Verified directly: swapped `src/runtime/extract/extract.ts` for its pre-fix `b7cbf89` content (keeping the current test file) and ran `deno test --allow-read --allow-write --allow-env --allow-run --filter "excludes workspace files from its census" tests/e2e/extract_cli_test.ts` — **1 passed / 0 failed**, identical to the post-fix result. By contrast, the same weakening procedure applied to the actual exclusion condition (inverting `if (isWorkspaceFile)` to `if (!isWorkspaceFile)` in the current tree) correctly turned the `extract --all-terms` fail-on-old test red (`Not a directory (os error 20): stat '.../conditions.csvw.json/_knop/_meta/meta.ttl'`) while leaving the set-extraction-source test green — confirming the second test is inert to this defect class. Both weakening edits were reverted with `git checkout --`; tree is clean at `b46d5c8`.
+
+This is not a functional defect in the shipped fix — `set extraction-source --all-terms` has no equivalent crash-on-file-designator exposure to begin with, since it never plans writes against newly discovered candidates, only against already-extracted terms. But check-item 1 of this review's brief ("Confirm both all-terms commands are covered by the tests") is not actually satisfied for the second command, and the receipts' claim should not stand uncorrected.
+
+Required resolution (either arm; both are cheap): (a) correct the receipts sentence to state that the set-extraction-source test is a same-input parity check rather than a fail-on-old regression test for that surface, since that command has no equivalent defect; or (b) if genuine coverage is wanted, construct a case where the fix's redirection is observable — e.g. a designator path present in `existingDesignatorPaths` (a genuinely extracted term per the MeshInventory) whose on-disk `_knop` home was replaced by a file, which is the only path through which `isWorkspaceFile` can move a candidate out of `skippedExisting` and thus change this command's output.
+
+#### Boundary sanity (item 2) — no mis-fire found, confirmed by code
+
+`ensureDirectoryExists` (`src/runtime/extract/extract.ts:2232-2247`) walks up from the target file's directory and throws `Workspace path is not a directory` on the first non-directory ancestor; every planned extraction write lands under `<designator>/_knop/...`, so any designator path that already exists as a non-directory file is guaranteed to crash staging regardless of this fix — the new exclusion only moves that guaranteed failure from staging time to discovery/preview time. No legitimate term can have a file-shaped designator home, so R1's positive rule cannot exclude a genuine term; it only pre-empts a crash that was unconditional for that shape.
+
+#### R1 predicate and fences — confirmed as ruled
+
+`discoverAllTermDesignatorPaths` (`src/runtime/extract/extract.ts:1381-1489`) checks `GENERATED_RESOURCE_CLASS_IRIS`-derived paths and reserved segments first (unchanged), then the new `isWorkspaceFile` stat-based check (`join(meshRoot, designatorPath)`, `.isFile`, cached per candidate), then existing-term membership — matching R1's "existing exclusions unchanged" instruction. Both all-terms commands share the one call path confirmed by r2/F3 (`executeExtractAllTerms`, `previewExtractAllTerms`, `planSetExtractionSourceAllTerms`); no second census surface found. `git diff b7cbf89..b46d5c8 --stat` touches only `documentation/notes/wd.todo.md`, `src/runtime/extract/extract.ts`, `tests/e2e/extract_cli_test.ts`; no CLI flag/option changes and no fixture-repo references anywhere in the diff (grepped clean).
+
+#### R2 diagnosis — evidence-backed, not speculation; no code rode along
+
+Spot-checked the three central code citations against the current tree: `assertCurrentMeshInventoryShapeForFirstExtractedKnopWeave` (`src/core/weave/shape_assertions.ts:232-301`) does derive `rootDesignatorPath`/`rootKnopPath` from the source payload's designator and does assert root-Knop typing plus its working-inventory-file fact, matching the "nested-source root-Knop planner assumption" claim; the fixed `_s0001`–`_s0004` history-state list is present verbatim at `src/core/weave/weave.ts:1497-1502`, matching the history-index claim. The scale extrapolation is explicitly self-labeled "an extrapolation, not a claimed end-to-end benchmark," and the heap-ceiling figure is independently sourced from a `getHeapStatistics()` call rather than asserted from the phase-A OOM alone — appropriately hedged, not overclaimed. `git show b46d5c8` confirms the commit is a single-line, path-scoped addition to `documentation/notes/wd.todo.md`; no source file changed. The boarded follow-up item names five concrete deliverables (remove the root-Knop assumption, bounded-memory batching, targeted/untargeted agreement, dynamic history rendering, a ~1,700-term regression workload) — actionable, not vague.
+
+#### r-impl proposed verdict
+
+**CHANGES-REQUIRED** — the R1 fix and R2 diagnosis are both sound and correctly fenced, but the receipts' claim that the set-extraction-source e2e test proves coverage against the shared exclusion is false (verified by reproducing an identical pass against pre-fix `extract.ts`), so the receipts need a one-line correction (or the test needs a genuinely discriminating case) before this closes clean.
+
+### r-impl adjudication + G1 declaration (stagecraft PM, flagship seat `52b05338` — 2026-07-21 16:5x)
+
+Verdict accepted: CHANGES-REQUIRED on exactly G1 (MEDIUM) — CONCUR. The `set extraction-source --all-terms` e2e test does not discriminate the fix (proven by the reviewer's old-code swap: identical pass pre/post), so the receipts' both-commands-covered sentence is false as written. Everything else verified clean, including the weakening probe and the boundary-sanity citation.
+
+**G1 (declared):** first establish WITH EVIDENCE whether `planSetExtractionSourceAllTerms`'s observable output changes under the R1 exclusion for a mesh containing a checked-in file URL (the reviewer's read says it consumes only `skippedExistingDesignatorPaths`). If it changes → replace the test with a genuinely discriminating case (fail-on-old proven). If it provably does NOT change → keep the test as an honest non-regression pin with a comment stating exactly what it does and does not prove, and CORRECT the receipts sentence in place with a dated strikethrough-style annotation (append-only honesty: mark the original claim superseded, don't erase it). Builder-verified (trivial round); re-earned at the landing ci.
