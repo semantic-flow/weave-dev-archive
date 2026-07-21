@@ -211,3 +211,7 @@ Verdict accepted: CHANGES-REQUIRED on exactly G1 (MEDIUM) — CONCUR. The `set e
 - Weave commit: `b71276f1d5f01c4f5d5f847da3e95819d050c39f` (`test(extract): clarify all-terms parity coverage`), containing only `tests/e2e/extract_cli_test.ts`. No push.
 - Verification: touched e2e family `deno test -A tests/e2e/extract_cli_test.ts` → 10 passed / 0 failed; `deno task fmt` → 228 files checked; `deno task lint` → 227 files checked. Full `deno task ci` intentionally not run; it is re-earned at landing.
 - Archive ownership: this receipts/correction append remains uncommitted in `weave-dev-archive` for the runner.
+
+## LANDED (2026-07-21 17:0x — flagship seat `52b05338`)
+
+G1 closed on the honest-pin arm (builder-verified trivial round per the adjudication). Landed on weave `main`: merge of `fix/extractor-defect-pair` (`698b644` R1 fix + `b46d5c8` diagnosis/boarding + `b71276f` G1) — full `deno task ci` re-earned green on the merged tip; origin verified. The stagecraft-side follow-up (drop the srd-extraction workarounds once regeneration re-runs) boards on the stagecraft lab's sc.todo. The extract→weave scale defect (nested source-root Knop requirement + MeshInventory reprocessing) is boarded in wd.todo with the diagnosis evidence.
