@@ -429,3 +429,12 @@ No regressions found: focused core planner family (`src/core/weave/weave_test.ts
 #### recheck proposed verdict
 
 CLEAN — all five G1 fixes verified against their adjudicated arms (including the stronger per-candidate-plan-data arm for HIGH-2, not the rejected cross-member-scan-with-guard), no regressions, protected boundaries intact.
+
+## LANDED (2026-07-21 15:40 PDT — flagship seat `52b05338`)
+
+G1 light re-check CLEAN (5/5 verified; the stronger HIGH-2 arm confirmed in the diff — the cross-member scan deleted, snapshots threaded per-candidate from the planner). Landed on weave `main`:
+
+- `916b247` — Merge branch 'api/version-payloads' (six implementation commits + G1 `0c910bc`; final `deno task ci` 701/701 green; the v0.4.0 bump + release notes rode `c9b45ea`).
+- `b7cbf89` — Merge branch 'fix/raw-source-inline-limit' (the Dave-ruled 4 MiB raw-source inline limit bump, kin lane; full `deno task ci` proven green on the merged tip in the provisioned clone — the lane clone's earlier 241 failures were environmental provisioning, never code).
+
+Origin `main` verified at `b7cbf89`. The packaged-release workflow (npm / GitHub Release) is deliberately UN-RUN: v1 distribution is pinned-checkout source import per PM GO ruling 1, packaging remains on wd.todo, and any Release Manual run is Dave's word (outward-facing publication). Consumers import `src/mod.ts` / `src/api/mod.ts` at pin `916b247` or later. The play-stack seat is notified via sc.handoff (press-completeness API dependency EXISTS).
