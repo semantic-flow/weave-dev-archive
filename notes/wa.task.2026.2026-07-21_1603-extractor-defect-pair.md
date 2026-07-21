@@ -102,3 +102,19 @@ All five findings CONCUR. F2 corrected the task's premise and is owned as a PM r
 **R5. Receipts ownership (F5 — ruled):** the build seat appends receipts to THIS note and leaves the archive repo UNCOMMITTED (the runner sweeps); the build commits only to the weave repo branch `fix/extractor-defect-pair` (base `b7cbf89`), path-scoped. Receipts name the focused test commands, `deno task fmt`/`ci` results, and per-repo status/commit identities.
 
 r2 light re-check fires on this amendment; build after r2-clean + PM GO.
+
+### r2 (light convergence check, 2026-07-21)
+
+- **F1 — RESOLVED.** The landed exact signature is `function discoverAllTermDesignatorPaths(options: { meshBase: string; sourceDesignatorPath: string; currentMeshInventoryTurtle: string; currentPayloadTurtle: string; sourceKnopInventoryTurtle: string; }): { discoveredDesignatorPaths: readonly string[]; extractedDesignatorPaths: readonly string[]; skippedExistingDesignatorPaths: readonly string[]; skippedSupportDesignatorPaths: readonly string[]; }`; it is synchronous and has no filesystem root today, but all three call sites already hold `meshRoot` after loading the local-path policy, so the build can extend/await this private function and test `join(meshRoot, designatorPath)` (the mutation-relative root, not an ancestor `localPathPolicy.workspaceRoot`); static inspection finds no landed expectation broken because extracted cases name absent/directory term homes while existing file-shaped expectations are already classified through the unchanged generated-resource exclusions.
+- **F2 — RESOLVED.** Landed `renderExtractKnopInventoryTurtle` and `sf.spec.2026-04-05-extract-behavior` confirm that extraction remains non-publication-bearing, so defect (b) has no code deliverable: only diagnosis receipts and a named `wd.todo` follow-up remain; the amendment's explicit precedence, lifecycle reversal, and withdrawal of the page-claim Contract Changes sentence make the governed note self-consistent despite the superseded body wording.
+- **F3 — RESOLVED.** `executeExtractAllTerms` and `previewExtractAllTerms` call `discoverAllTermDesignatorPaths` directly, while both `previewSetExtractionSourceAllTerms` and `executeSetExtractionSourceAllTerms` funnel through `planSetExtractionSourceAllTerms`, whose sole census call is the same function; repository search finds no second all-terms census path.
+- **F4 — RESOLVED.** `tests/e2e/extract_cli_test.ts` contains the named `11-alice-bio-v2-woven` + `createTestTmpDir()` + inline `alice-data.ttl` all-terms pattern, `src/core/extract/extract_test.ts` exists and owns the non-woven contract, and the discovery-family coverage home exists at `tests/integration/extract_test.ts`; no new fixture ref or Accord transition is needed.
+- **F5 — RESOLVED.** The archive is a distinct nested repository, and R5 unambiguously assigns this note/receipts there uncommitted, the implementation commit only to Weave from `b7cbf89`, no framework-spec edit, and named focused/fmt/ci plus per-repository receipts.
+
+### r2 proposed verdict
+
+**CONVERGED** — amendment r1 is implementable against the landed surfaces without further product-semantic rulings.
+
+## PM build GO (stagecraft PM, flagship seat `52b05338` — 2026-07-21 16:2x)
+
+r2 CONVERGED (0 residuals). Amendments r1 governs. Build fires: codex HIGH, weave branch `fix/extractor-defect-pair` off `b7cbf89`, path-scoped commits, receipts to this note (archive left uncommitted for the runner). Deliverables: the R1 enumeration-predicate fix (shared surface, both all-terms commands) with its fail-on-old + the R2 read-only root-cause diagnosis (receipts section + wd.todo boarding). Full `deno task ci` at lane end.
