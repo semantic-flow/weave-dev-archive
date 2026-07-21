@@ -204,3 +204,75 @@ All findings and the verdict in this check are PROPOSED. The PM adjudicates them
    - [ ] **The builder's critique gate:** explicit pushback (or explicit none) on the whole governing stack, appended to this note.
 
 **Status: CONVERGED. The before-code seat fires now; implementation remains STOP-gated on PM GO over the checklist.**
+
+## Before-code deliverables (2026-07-21)
+
+Prepared by the build seat at 2026-07-21 13:55:48 PDT (-0700). Note files only; no implementation was started.
+
+### Portable behavior spec
+
+- [x] [[sf.spec.2026-07-21-programmatic-version-api]] written in `semantic-flow-framework/notes/`.
+- [x] It specifies exact admitted-byte recording, cardinality-one and multi-item batch coherence, semantic refusal before any working/version mutation, working/current/historical transitions, full behavioral precedence, the authoritative-copy capture boundary, applied/alreadyCurrent retry behavior, and portable refusal families.
+- [x] It excludes Deno symbols, host filesystem mechanics, and Weave error class names.
+
+### Weave API contract
+
+- [x] [[wd.programmatic-version-api]] written in Weave's durable documentation vault.
+- [x] It pins `versionPayloads`, `VersionPayloadsRequest`, `VersionPayloadsResult`, `PayloadVersionOutcome`, and the exact `WeaveApiError` base with exact `code` and `stage` fields.
+- [x] It pins final lower-kebab error values: `invalid-request`, `unknown-target`, `not-a-payload`, `malformed-mesh`, `inconsistent-policy`, `unsupported-source`, `unsupported-content`, `snapshot-conflict`, `plan-conflict`, and `io-failure`.
+- [x] It carries the revised ADMIT/LOAD/PLAN/WRITE/RESULT table, the amendment-r2 overlay seam verbatim, full precedence, root representation `/`, repository-root public import `./src/mod.ts`, single-item-only overwrite, and a compiling normative call example.
+
+### Two-gate cardinality-one confirmation
+
+Both landed gates are confirmed:
+
+1. Runtime gate: `src/runtime/weave/version_execution.ts::shouldAttemptExplicitPayloadBatch` returns true only for `!overwriteExistingState && targets.length > 1` with exact targets. A one-member request therefore does not load the settled candidate through the explicit payload-batch route.
+2. Core gate: `src/core/weave/weave.ts::planWeave` sends `weaveableKnops.length === 1` through ordinary single-candidate planning. That bypasses `planExplicitPayloadBatchWeave` and its `payloadTargetIsAlreadyCurrent` skip.
+
+The implementation strategy is an API-owned coherent-batch entry, not a change to either gate:
+
+1. `versionPayloads` ADMIT rejects an empty request, normalized duplicates, recursive targets, and `overwriteExistingState === true` with more than one item. Multi-item overwrite throws `WeaveApiError` with `stage === "admit"` and `code === "invalid-request"`.
+2. The API LOAD path resolves mesh-local working paths, seeds one caller-owned `TextFileOverlay` with every admitted payload, and loads explicit settled payload candidates with `includeSettledPayloadTargets: true` for all non-overwrite cardinalities.
+3. A new core batch-specific entry, `planCoherentPayloadBatchVersion`, calls the existing explicit payload-batch planner for one or more candidates. It therefore uses the same canonical ordering, shared-support merge, and `payloadTargetIsAlreadyCurrent` logic at cardinality one. It bypasses `planWeave`'s cardinality dispatch without altering it.
+4. The API derives an outcome for every requested target: membership in the returned versioned set produces `applied`; a settled target skipped by the batch planner produces `alreadyCurrent`. A zero-versioned-target plan is a successful whole-request no-op.
+5. Single-item overwrite uses the existing ordinary overwrite planner after the same overlay and combined-preflight boundary and is adapted to the same result algebra. Multi-item overwrite never reaches LOAD or PLAN.
+
+Implementation files/functions that will be added or touched after PM GO:
+
+- new `src/api/mod.ts` and `src/api/version_payloads.ts`: public types, `WeaveApiError`, `versionPayloads`, admission, orchestration, result/error adaptation
+- `src/mod.ts`: explicit root re-export of the stable API surface
+- `src/runtime/weave/version_execution.ts`: add an API-only prepared coherent-batch entry that accepts the caller-owned overlay and reuses candidate/config/preflight machinery
+- `src/core/weave/weave.ts`: add/export `planCoherentPayloadBatchVersion` as a batch-specific wrapper over the existing explicit payload-batch planner; do not alter `planWeave`
+- new focused API unit tests beside `src/api/version_payloads.ts` and a real-filesystem integration family under `tests/integration/`
+
+Implementation files/functions that must not change for cardinality adaptation:
+
+- `src/runtime/weave/version_execution.ts::shouldAttemptExplicitPayloadBatch` and its predicate
+- `src/core/weave/weave.ts::planWeave` and its existing single-candidate dispatch
+- `src/runtime/weave/weave.ts::executeVersion`
+- `src/cli/run.ts` and all CLI option/target routing
+- the default settled-candidate behavior in `src/runtime/weave/candidate_loader.ts`; only the API-specific call opts in
+
+This gives cardinality-one requests identical coherent-batch and no-op semantics while leaving every CLI predicate and CLI-visible path untouched.
+
+### Critique gate
+
+Explicit pushback:
+
+1. **The stable import vehicle is still underspecified for the actual downstream consumer.** `src/mod.ts` is a clear repository source root, so [[wd.programmatic-version-api]] pins `./src/mod.ts` for a repository-root call and the example will compile in-tree. However, the published `@semantic-flow/weave` npm package is currently a native CLI wrapper with no library exports, JSR delivery is not defined, and Node packaging was fenced out. Calling the API “stable” is therefore stronger than its distribution contract. PM should either explicitly rule that v1 consumers import a pinned Weave checkout/source module, or add a separate packaging task before describing 0.4.0 as generally consumable.
+2. **`snapshot-conflict` is required but has no honest admitted-bytes trigger in v1.** The admitted copies are authoritative; requested working paths are shadowed by the overlay; config/support files are expressly excluded from capture hashing. The wd note keeps the exact value as reserved at LOAD rather than inventing a false guarantee. PM should confirm the reserved value or remove it from the v1 public union until a real covered file-backed snapshot set exists.
+3. **Idempotent retry must not be read as recovery from every partial WRITE failure.** `applied`/`alreadyCurrent` makes completed-request retry deterministic, but the governed sequential write phase can leave working, snapshot, and support outputs partially advanced. Some partial layouts may conflict on retry. The implementation tests should prove each required write-failure recovery case before user-facing guidance claims blanket partial-write retry safety; otherwise the API must return enough path detail for explicit repair and limit the retry promise to completed or pre-write-refused calls.
+
+No other pushback. The composed operation, caller-owned concurrency boundary, UTF-8-only scope, exact-target identity, coherent preflight, and API-only cardinality adapter are well supported by the landed seams.
+
+STOPPED for PM GO
+
+## PM GO (2026-07-21 14:04 — before-code RATIFIED; the three critique items RULED; implementation fires)
+
+Both spec notes and the two-gate confirmation are ACCEPTED as the governing contract ([[sf.spec.2026-07-21-programmatic-version-api]] + [[wd.programmatic-version-api]] join the amendment stack). Critique rulings:
+
+1. **Import vehicle → RULED (a): v1 consumers import the repository source root (`./src/mod.ts`) from a PINNED WEAVE CHECKOUT** — the dependency-PIN idiom (full-commit pin + out-of-gate build + contract check) IS the v1 distribution contract, exactly as the consumer relay ruled for Stagecraft. Library packaging (npm/JSR exports) is a SEPARATE future task recorded in [[wd.todo]]; 0.4.0's "stable" claim scopes to the source surface + pinned-checkout consumption, and the release note says so.
+2. **`snapshot-conflict` → RULED: KEEP as a RESERVED code**, documented "not raised in v1" in the wd note (already so written). Removing it would churn the public union when file-backed snapshot coverage arrives; a documented reserved value is honest.
+3. **Retry promise → CONCUR with the narrowing:** idempotent-retry guidance covers COMPLETED or PRE-WRITE-REFUSED calls only; partial-WRITE failures surface `io-failure` with stage + completed-path detail for explicit repair; each governed write-failure recovery case gets its own implementation test BEFORE any broader user-facing claim. The wd note's wording stands.
+
+**GO: the implementation seat fires now** on a working branch in the weave clone — scope per the confirmed file/function list (new `src/api/`, root re-export, the API-only prepared coherent-batch entry, `planCoherentPayloadBatchVersion` wrapper, unit + integration test families per the adopted r1/r2 matrix), fences: no CLI predicate/dispatch changes, no binary, no locking, no packaging. Verification: `deno task test`/`check`/`lint` targeted during the build, `deno task fmt` + `deno task ci` before "complete". Also record the later-binary defect + the packaging task in [[wd.todo]]. End state "Complete (awaiting close review)".
