@@ -363,3 +363,49 @@ All five findings CONCUR; the verdict is accepted as CHANGES-REQUIRED with fix r
 5. **LOW-5 — refuse at ADMIT:** the code aligns to the pinned sentence, not the sentence to the code. `overwriteExistingState: true` with segments supplied only via `defaults` refuses `invalid-request`/`admit`; the deliberate-overwrite signal stays fully explicit on the item. Fail-on-old probe rides. wd note untouched on this point (it was already right).
 
 G1 executes on `api/version-payloads` in the weave clone (build seat, path-scoped commits), each fix with its fail-on-old probe, focused families re-run, and one full `deno task ci` at round end. A light independent re-check follows (substantial round — two HIGHs); then the landing.
+
+### G1 receipts (2026-07-21)
+
+Build seat completed the five adjudicated fixes on `api/version-payloads` from `2544b90`. No push was performed.
+
+#### Commit and files
+
+| Commit | Summary | Files |
+| --- | --- | --- |
+| `0c910bc` | `fix(api): complete version payload review round G1` | `documentation/notes/wd.programmatic-version-api.md`, `src/api/version_payloads.ts`, `src/api/version_payloads_test.ts`, `src/core/weave/version_plan.ts`, `src/core/weave/weave.ts`, `src/runtime/weave/version_execution.ts`, `tests/integration/version_payloads_test.ts` |
+
+The archive task note was updated only as an uncommitted runner receipt and was not included in the weave commit.
+
+#### Per-fix implementation and fail-on-old evidence
+
+1. **HIGH-1 classification — done.** `mapPreparationError` now uses the exported `EffectiveConfigError` discriminant for the config family and maps the settled-shape diagnostics emitted by the current runtime to `malformed-mesh`/`load`. In a detached `2544b90` worktree with only the new tests applied:
+   - `versionPayloads maps typed invalid mesh config to malformed-mesh at LOAD` failed 0 passed/1 failed because the retired `sfcfg:hasDefaultHistoryTrackingPolicy` config returned actual `plan-conflict`/`plan` instead of expected `malformed-mesh`/`load`.
+   - `versionPayloads maps missing settled Knop designator metadata to malformed-mesh at LOAD` failed 0 passed/1 failed because the missing `sflo:designatorPath` returned actual `plan-conflict`/`plan` instead of expected `malformed-mesh`/`load`.
+2. **HIGH-2 snapshot attribution — done with the adjudicated stronger arm.** The coherent payload planner emits explicit `{designatorPath, snapshotPath}` entries for applied and already-current candidates; preparation threads them to the API outcome builder, and the cross-member prefix/basename scan was deleted. In the detached `2544b90` worktree:
+   - `versionPayloads attributes nested same-basename snapshots per candidate` failed 0 passed/1 failed with the review's wrong parent outcome: `historySegment: "beta"`, `stateSegment: "_history001"`, `manifestationSegment: "_s0002"`, and descendant snapshot `alpha/beta/_history001/_s0002/ttl/beta.ttl`.
+   - `versionPayloads attributes root snapshots per candidate in a batch` failed 0 passed/1 failed with root identity taken from `nested/root/_history001/_s0002/ttl/root.ttl` instead of `_history001/_s0001/ttl/root.ttl`.
+3. **MEDIUM-3 equivalence symmetry — done.** Both real CLI/API equivalence tests enumerate both workspace trees recursively, exclude `.version-api-inputs/`, assert equal path sets, and compare the union byte-for-byte. The two strengthened tests passed 2 passed/0 failed on `2544b90`, exactly as the close review's fresh symmetric probe did. This is the named exception to the otherwise requested fail-on-old evidence: the finding was a proof-strength gap with no live output divergence, so an honest behavioral failure on the old implementation does not exist.
+4. **MEDIUM-4 repair-evidence split — done.** `WeaveApiError` additively exposes `completedCreatedPaths` and `completedUpdatedPaths` while retaining ordered `completedPaths` unchanged; [[wd.programmatic-version-api]] documents the split as repair evidence. `versionPayloads write failure splits completed creates from updates` failed 0 passed/1 failed on `2544b90`: `completedPaths` had the expected three completed writes, but the new created/updated properties were `undefined`.
+5. **LOW-5 overwrite explicitness — done.** ADMIT now checks `historySegment` and `stateSegment` directly on the sole item rather than on the defaults-resolved target. `admission refuses overwrite segments supplied only by defaults` failed 0 passed/1 failed on `2544b90` because the old admission path did not throw.
+
+#### Verification
+
+- Focused API unit + integration families: 31 passed, 0 failed.
+- Focused core planner family: 69 passed, 0 failed.
+- Focused total: 100 passed, 0 failed.
+- Standalone lint after significant changes: 227 files checked, 0 findings.
+- One round-end `deno task ci`: green — format check 228 files, lint 227 files, type check green, coverage test 701 passed/0 failed, LCOV generated.
+- Protected boundaries: no changes to `src/cli/run.ts` or `src/runtime/weave/weave.ts`; no hunk in `src/core/weave/weave.ts::planWeave`; `shouldAttemptExplicitPayloadBatch` remains unchanged. G1 behavior is confined to the API-only coherent preparation/planning path.
+
+#### Honest residuals and least-certain calls
+
+- Effective-config classification is now typed. Settled-shape classification remains a diagnostic-text adapter because the runtime exposes only the broad `WeaveInputError` across both malformed-input and plan-conflict families. The mapping covers the current read-model and settled-shape missing/conflicting/invalid/progression diagnostics, but this remains the least-certain maintenance seam if those internal texts change.
+- WRITE remains deliberately sequential and non-transactional. The new split tells repair tooling which completed paths were creates versus updates, but it cannot restore the prior bytes of completed updates.
+- Single-item overwrite outcome attribution uses the candidate's validated current snapshot, while non-overwrite coherent batches use planner-emitted per-candidate snapshot evidence. The cross-member scan is gone in all cases.
+
+#### Named skips and reasons
+
+- No synthetic fail-on-old was manufactured for MEDIUM-3 because both strengthened comparisons genuinely pass on `2544b90`; the review already classified this as test-strength only.
+- No CLI implementation changes, broad concurrency matrix, binary payload expansion, packaging work, archive commit, or push; all remain outside the declared five-fix G1 fence.
+
+G1 complete (awaiting light re-check)
