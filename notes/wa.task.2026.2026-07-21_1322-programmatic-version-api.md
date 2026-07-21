@@ -276,3 +276,54 @@ Both spec notes and the two-gate confirmation are ACCEPTED as the governing cont
 3. **Retry promise → CONCUR with the narrowing:** idempotent-retry guidance covers COMPLETED or PRE-WRITE-REFUSED calls only; partial-WRITE failures surface `io-failure` with stage + completed-path detail for explicit repair; each governed write-failure recovery case gets its own implementation test BEFORE any broader user-facing claim. The wd note's wording stands.
 
 **GO: the implementation seat fires now** on a working branch in the weave clone — scope per the confirmed file/function list (new `src/api/`, root re-export, the API-only prepared coherent-batch entry, `planCoherentPayloadBatchVersion` wrapper, unit + integration test families per the adopted r1/r2 matrix), fences: no CLI predicate/dispatch changes, no binary, no locking, no packaging. Verification: `deno task test`/`check`/`lint` targeted during the build, `deno task fmt` + `deno task ci` before "complete". Also record the later-binary defect + the packaging task in [[wd.todo]]. End state "Complete (awaiting close review)".
+
+## Implementation receipts (2026-07-21 14:31 PDT)
+
+Implementation base: `861c4b7 docs: programmatic version API contract (wd.programmatic-version-api)` on `api/version-payloads`.
+
+| Commit | Subject | Files |
+| --- | --- | --- |
+| `bb30298` | `feat(core): add coherent payload batch planner entry` | `src/core/weave/weave.ts`, `src/core/weave/weave_test.ts` |
+| `e3b64b2` | `feat(runtime): prepare API coherent payload batches` | `src/runtime/weave/version_execution.ts` |
+| `47403c0` | `feat(api): add stable programmatic payload version surface` | `src/api/mod.ts`, `src/api/version_payloads.ts`, `src/api/version_payloads_test.ts`, `src/mod.ts` |
+| `306e8e9` | `test(api): prove payload version behavior end to end` | `src/api/version_payloads.ts`, `tests/integration/version_payloads_test.ts` |
+| `c9b45ea` | `docs: prepare v0.4.0 programmatic API release` | `deno.json`, `documentation/notes/release-notes.v0.4.0.md`, `documentation/notes/wd.codebase-overview.md`, `documentation/notes/wd.programmatic-version-api.md`, `documentation/notes/wd.todo.md` |
+| `2544b90` | `test(api): cover the public root payload designator` | `tests/integration/version_payloads_test.ts` |
+
+### Verification
+
+- Focused core adapter: 1 passed, 0 failed.
+- Focused API unit family: 10 passed, 0 failed.
+- Focused API integration family: 15 passed, 0 failed.
+- Final `deno task test`: 695 passed, 0 failed.
+- Final `deno task check`: green across 227 task entrypoints.
+- Final `deno task lint`: 227 files checked, 0 findings.
+- Final `deno task fmt`: 228 files formatted; final CI `fmt:check` checked the same 228 files.
+- Final `deno task ci`: green — format 228 files, lint 227 files, check green, coverage test 695 passed/0 failed, LCOV generated.
+- Protected-boundary diff from `861c4b7`: no changes to `src/cli/run.ts`, `src/runtime/weave/weave.ts::executeVersion`, `src/runtime/weave/version_execution.ts::shouldAttemptExplicitPayloadBatch`, or `src/core/weave/weave.ts::planWeave`.
+
+### Equivalence proof
+
+- `planCoherentPayloadBatchVersion defeats the old cardinality-one dispatch by returning an already-current no-op` proves the new core entry keeps explicit-batch already-current semantics at cardinality one.
+- `versionPayloads cardinality-one adapter is byte-equivalent to the same member in a coherent batch` proves the API adapter produces the same working and version bytes through both cardinalities.
+- `versionPayloads single-item output is byte-identical to the CLI update-plus-version path` and `versionPayloads multi-item output is byte-identical to the CLI update-plus-version batch` invoke the real CLI two-step in subprocesses and compare every API-created or API-updated output path byte-for-byte against the corresponding CLI mesh.
+- The post-plan overlay boundary probe mutates the disk working file after plan-green and proves the admitted copy remains authoritative without inventing a snapshot conflict.
+- Governed write-phase injection covers working update, text creation, binary creation, and support update. Errors expose `code === "io-failure"`, `stage === "write"`, completed paths, and the possibly touched path. Pre-output failures permit explicit retry; the support-update partial state refuses retry with `plan-conflict`, proving the PM-narrowed repair contract.
+
+### Named skips and reasons
+
+- No functional binary payload round trip: amendment r1 F3 excludes binary from v1. The unreachable binary-create writer boundary is still covered with a synthetic prepared plan, and the later-binary progression defect is recorded in [[wd.todo]].
+- No broad concurrent API/API or API/CLI matrix: caller-owned serialization is governing. The retained post-plan disk-mutation probe covers the single ruled snapshot boundary.
+- No trigger for `snapshot-conflict`: PM GO ruling 2 keeps it reserved and documents that v1 does not raise it.
+- No package publication, npm/JSR library export, or push: PM GO ruling 1 makes pinned-checkout source import the v1 vehicle and sends packaging to [[wd.todo]].
+- No separate Accord transition: the governing portable behavior is exercised against real fixture meshes in the adopted integration stratum; no manifest rung was added by the ratified stack.
+
+### Honest residuals and least-certain calls
+
+- `malformed-mesh` and `inconsistent-policy` currently adapt internal diagnostic messages because the reused runtime preparation errors do not expose typed discriminants. The public mapping and stages are covered, but this message-classification seam is the least-certain maintenance point.
+- WRITE remains deliberately non-transactional. A support-update failure can leave working and snapshot files advanced; returned path detail is the repair evidence, and retry is not promised for that state.
+- The v1 implementation is intentionally concentrated in `src/api/version_payloads.ts` to match the ratified file plan. Splitting admission, load, write, and error adapters is a post-review maintainability opportunity, not a contract change.
+
+No governing-stack/landed-code conflict was found. No push was performed.
+
+Complete (awaiting close review)
