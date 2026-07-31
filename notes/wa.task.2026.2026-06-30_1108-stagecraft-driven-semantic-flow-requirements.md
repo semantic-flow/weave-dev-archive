@@ -69,6 +69,22 @@ Stagecraft should not automatically force broad new ontology layers. First check
 - Do not let paper-draft terminology override live ontology/framework wording.
 - Do not prioritize RDFa/JSON-LD embedding or polished publication features over persistence correctness unless Stagecraft directly needs them.
 
+## Accord Sequencing (2026-07-04)
+
+Stagecraft's fixture-ladder work surfaced a concrete Accord backlog before it surfaced a Weave blocker. The Accord work is sequenced in the `accord` repo notes as follows:
+
+1. `ac.completed.2026.2026-07-04-real-sparql-ask` — natural absence proofs (`FILTER NOT EXISTS`) and boolean/numeric literal ergonomics; may expose an ASK syntax preflight for step 2.
+2. `ac.task.2026.2026-04-03-shacl-validation` — separate `accord validate` command executing the shipped SHACL-SPARQL shapes; gates the vocabulary added in later steps. The `shacl-engine` Deno spike can start in parallel with step 1.
+3. `ac.completed.2026.2026-07-04-scenario-runner` — `accord check-scenario` with per-step evidence grouping; the biggest Stagecraft workflow win. Parallelizable with step 4 (disjoint modules).
+4. `ac.completed.2026.2026-07-04-json-assertions` — JSON assertion vocabulary including first-class absence proofs; wants `accord validate` in place so its new shapes are enforced from day one.
+5. `ac.completed.2026.2026-07-04-draft-manifest` — conservative manifest scaffolding from git diff; pure ergonomics, lowest risk, last.
+
+Deferred ideas (profile packs, immutability assertion packs, drift checks, the runner-neutral HTTP Testing Vocab) remain in `ac.product-ideas.runner-neutral-test-spec` with an ownership map. This note stays the Stagecraft-side driver: as rungs land, feed new blockers here and re-check whether any are Weave-general rather than Accord-local.
+
+Status 2026-07-05: Accord steps 1 and 2 have landed (parser-backed ASK profile; standalone `accord validate`). The first Weave-general blocker predicted by this note now exists and is owned by [[wa.task.2026.2026-07-03_1332-stagecraft-weave-planner-generalization]]: the settled second-payload weave shape assertion blocks later-ordinal payload advancement for Stagecraft's temporal rung. That epic runs as its own Weave-side track, parallel to Accord steps 3-5, and takes priority over them when effort is serial because it gates the rung itself rather than ergonomics.
+
+Update later 2026-07-05: Accord steps 3 and 4 and the planner epic's single-target slices have landed, with the real temporal-rung replay verified. A second application workload is now planned: a game+session history mesh, where the application service serializes game and session state to the mesh together at service/user request and requests the weave for the batch. That workload drives [[wa.task.2026.2026-07-05-multi-target-payload-advancement]], with the boundary decision that atomicity belongs to the application: Weave owes fail-closed whole-plan validation, deterministic merged rendering of shared support artifacts, and safe re-runnability, not transactions or locking.
+
 ## Implementation Plan
 
 - [ ] Inventory the first Stagecraft persisted-data workflows and identify which ones are mesh, artifact, history, reference, source, or page problems.
