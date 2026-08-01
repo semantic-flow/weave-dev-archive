@@ -140,12 +140,12 @@ If nothing is do-able AND `wake` reported no unmet floors, say so in one line an
 
 ## Implementation Plan
 
-- [ ] Spec review r1: Codex (read-only) refutes this note; corrections folded with a disposition section; PM GO (D2/D3/D7 already ruled by Dave 2026-07-31)
-- [ ] Slice 1 — the gate: `scripts/queue-gate.ts` (library-first + thin CLI: init/add/pop/check/wake/groomed) + hermetic `tests/scripts/queue_gate_test.ts` + the `queue` task in `deno.json` + the `.gitignore` line + the one-line [[wd.codebase-overview]] touch; `deno task fmt` + `deno task ci` green
-- [ ] Slice 2 — the surfaces: `deno task queue init` mints [[wd.queues]]; seed it from wd.todo "Current Work And Next Pick" via `deno task queue add`, FILTERED: only items whose owning task note exists enter; note-less items stay in wd.todo until a task note is cut. Mint [[wd.read-in.jimbo]] (sections per Discussion, active arc seeded with the 0.6.0/validateMesh state) and [[wa.dave-court]] (charter + currently open Dave decisions, e.g. the weave-lib@0.5.0 deprecation run and the Stagecraft reply)
-- [ ] Slice 3 — the prompt: finalize the loop-prompt paste-source section against D3/D4/D7 as ratified; pointer paragraph in [[wd.general-guidance]]; [[wd.decision-log]] entry recording D1–D8
+- [x] Spec review r1: performed 2026-08-01 (Claude in-session verification against the live repo + Codex read-only refutation via `codex exec`); corrections folded — see the r1 disposition section; PM GO given by Dave's direct "review and then execute" instruction 2026-08-01 (D2/D3/D7 already ruled by Dave 2026-07-31)
+- [x] Slice 1 — the gate: `scripts/queue-gate.ts` (library-first + thin CLI: init/add/pop/check/wake/groomed) + hermetic `tests/scripts/queue_gate_test.ts` (28 tests) + the `queue` task in `deno.json` + the `.gitignore` line + the one-line [[wd.codebase-overview]] touch; `deno task fmt` + `deno task ci` green
+- [x] Slice 2 — the surfaces: `deno task queue init` minted [[wd.queues]]; seeded from wd.todo "Current Work And Next Pick" via `deno task queue add`, FILTERED (r1 F7 records what stayed out). Minted [[wd.read-in.jimbo]] (sections per Discussion, active arc seeded with the post-0.6.0 state) and [[wa.dave-court]] (charter + the open Dave decisions; the weave-lib@0.5.0 deprecation was already DONE 2026-07-30, so no card — r1 F2)
+- [x] Slice 3 — the prompt: loop-prompt paste-source section finalized against D3/D4/D7 as ruled; pointer paragraph in [[wd.general-guidance]]; [[wd.decision-log]] entry recording D1–D8
 - [ ] Dry run: one supervised wake (`/loop 10m`, one cycle) with Dave watching; adjust prompt/read-in from what the wake actually needed rather than what was predicted
-- [ ] Board in [[wd.todo]] Current Work with a wikilink here; report follow-ups discovered in the dry run rather than implementing them
+- [x] Board in [[wd.todo]] Current Work with a wikilink here; report follow-ups discovered in the dry run rather than implementing them
 
 ## Adversarial review r0 — disposition (Claude, 3 lenses, 2026-07-31)
 
@@ -157,6 +157,27 @@ Pre-Codex internal pass; Codex spec review r1 remains owed. Verdicts: source-fid
 - **Major, weave-fit:** the gate's tests are CI-wired automatically (test/check globs) in a checkout missing three vaults. → hermetic-fixture constraint in Testing; D5 rewritten.
 - **Major, design:** bootstrap (`add` before the queue exists), seeding note-less wd.todo items, per-file duplicate check vs the validateMesh arc's real shape, and heading identity pinned before the Kim/Codex name is ratified. → `init` subcommand + refusal-not-crash; filtered seeding; per-section duplicates; D7 cut and sequenced before slice 1.
 - **Minor, design (restored port):** the READ-IN OWED return line was dropped without acknowledgment. → bite-return delta line in D3 and read-in Conventions.
+
+## Spec review r1 — disposition (2026-08-01)
+
+Executor note: the note assigned r1 to Codex alone; Dave's direct "review and then execute" instruction (2026-08-01) seated Claude as reviewer-then-executor, with a Codex read-only refutation (`codex exec --sandbox read-only`) run alongside as the independent pass. Findings, all folded:
+
+- **F1, minor, fixed:** the wikilink spelled `wd.consumer-feedback-0.5.1` (dashed) resolves nowhere — the note is `wd.consumer-feedback.0.5.1`. Corrected at both wd.todo occurrences; the minted notes use the dotted name.
+- **F2, minor, folded:** slice 2's example court card "the weave-lib@0.5.0 deprecation run" was already DONE 2026-07-30 (verified in [[wd.consumer-feedback.0.5.1]] Open Issues), so the court seeds without it. Open cards: send the Stagecraft reply; rename the two 07-29 notes; arm the supervised dry run; ratify D1/D4/D5/D6/D8.
+- **F3, design tightening:** `check` refuses ANY unrecognised `## ` heading inside wd.queues rather than passively not scanning it — an entry under a novel heading would otherwise be invisible to every future check, which is the vacuous pass wearing a new hat. The heading refusal is the tested proof.
+- **F4, design gap:** `pop <task-note>` is ambiguous when a task legitimately holds entries in both sections (which the contract allows). The gate takes `pop <note> [kim|jimbo]` and refuses the ambiguous bare form with "pop the slice, not the task."
+- **F5, design detail:** the SHA scan requires a digit in the hex token — 7-char English words drawn from the hex alphabet ("defaced") are not SHAs — while 40-char all-letter hex is still refused.
+- **F6, contract addition:** `@std/yaml` (jsr) joined `deno.json` imports for dendron.yml parsing; Deno-native and consistent with the existing `@std/*` usage, but it was absent from Contract Changes as drafted.
+- **F7, seeding record:** entered the queue — extractor-defect-pair, planner-generalization residual, append-onlyish inventory (Kim); Stagecraft requirements collection and this task's dry-run slice (Jimbo). Stayed out per the admission law: binary payload advancement (no owning task note yet) and every checked/parked item.
+- **F8, Codex refutation** (`codex exec --sandbox read-only`, second r1 pass over spec + built implementation): CHANGES-REQUIRED, 8 findings — dispositions:
+  - **C1 blocker** (wake rotation can orphan the printed interval on interruption or re-seating): accepted as a property of D8's print-then-rotate design; mitigation folded into the read-in seating order — the seating session surveys since the stamp its wake printed, owning that interval. The suggested two-phase acknowledge cursor is deferred until a real loss is observed.
+  - **C2 blocker** (archive half uncommitted while committed weave notes reference it): a sequencing artifact of the review running mid-flight; resolved by the archive commit that carries this disposition.
+  - **C3 major** (any resolvable note was admissible, and a path-shaped name could resolve outside the vault roots): FIXED — entries must be plain `<vault>.task.…` note names; path-shaped and non-task names refuse, in `add` and `check` both; tests added.
+  - **C4 major** (empty or multiline comment admitted, leaving malformed queue text the next parse refuses): FIXED — refused before writing; tests added, including proof the queue stays green after the refusal.
+  - **C5 major** (admission-scan bypasses): mechanical holes FIXED — all-letter hex ≥8 chars ("deadbeef") and hex runs past 40 chars now refuse; "N percent" refuses alongside "N%"; 7-char hex-alphabet English words ("defaced") stay admissible by design. The residual point — a comment can still phrase external truth in words no lexical scan catches — is ACCEPTED: the mechanised test is the named markers, the rest stays writer judgment (the live queue's extractor line was reworded under this standard anyway).
+  - **C6 minor** (`wake`/`groomed` succeeded without the queue, against the "any other subcommand" refusal sentence): FIXED — every subcommand except `init` refuses a missing queue; existence-only for `wake`/`groomed`, so a drifted-but-present queue cannot block the wake that would surface the drift.
+  - **C7 major** (decision-log recorded D1–D8 with no ratification status while the court keeps five open): FIXED — the entry now carries the ruled/proposed split and points at the court card.
+  - **C8 minor** (general-guidance misattributed the queue's writers): FIXED — init/add/pop write the queue, check validates, reordering is a hand edit, wake/groomed stamp only `.jimbo-state.json`.
 
 ## Rulings — Dave, 2026-07-31 11:45
 
