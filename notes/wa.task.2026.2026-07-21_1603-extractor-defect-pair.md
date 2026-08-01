@@ -215,3 +215,25 @@ Verdict accepted: CHANGES-REQUIRED on exactly G1 (MEDIUM) — CONCUR. The `set e
 ## LANDED (2026-07-21 17:0x — flagship seat `52b05338`)
 
 G1 closed on the honest-pin arm (builder-verified trivial round per the adjudication). Landed on weave `main`: merge of `fix/extractor-defect-pair` (`698b644` R1 fix + `b46d5c8` diagnosis/boarding + `b71276f` G1) — full `deno task ci` re-earned green on the merged tip; origin verified. The stagecraft-side follow-up (drop the srd-extraction workarounds once regeneration re-runs) boards on the stagecraft lab's sc.todo. The extract→weave scale defect (nested source-root Knop requirement + MeshInventory reprocessing) is boarded in wd.todo with the diagnosis evidence.
+
+## Kim brief — bite 1: nested extraction sources without root Knops (cut 2026-08-01, wake 2)
+
+Carved by codex read-only analysis from a planning wake; the first farmable slice of the extract→weave scale work. Rationale: the corpus diagnosis isolated the source-root Knop requirement as the immediate blocker (targeted validation failed at the shape assertion; adding only fictional root-Knop facts made it pass — see R2 above); the defect is localized; targeted behavior must work before targeted/untargeted agreement, batching, or the 1,700-term workload can provide meaningful evidence.
+
+### Task: allow extracted-term weave from a nested payload without an ancestor Knop
+
+Read before changing code: `AGENTS.md`; `documentation/notes/product-vision.md`; [[wd.general-guidance]]; [[wd.testing]]; `ont.summary.core` (sflo vault); this note whole, especially the R2 diagnosis; `sf.spec.2026-04-05-extract-behavior` and the extracted-term lifecycle in `sf.spec.2026-04-03-weave-behavior` (framework vault).
+
+Goal: a targeted `firstExtractedKnopWeave` succeeds when its woven source payload is nested (e.g. `alice/data`) but the namespace-like first segment (`alice`) has no `alice/_knop`. The planner must continue requiring: the actual source payload and `alice/data/_knop` (working inventory locator + woven page); the extracted target Knop with valid non-woven extraction support files/source registry; valid MeshInventory progression and source locator facts; absence of already-woven target page claims. It must NOT create or infer `alice/_knop` — a grouping path is not automatically a managed Semantic Flow identifier.
+
+Implementation: in `src/core/weave/shape_assertions.ts`, remove only the derived source-root Knop requirements from `assertCurrentMeshInventoryShapeForFirstExtractedKnopWeave` (~line 253); remove the now-unused private `toRootDesignatorPath` helper if no callers remain; do not weaken the actual source-Knop or target-Knop assertions. `src/core/weave/weave.ts` and the MeshInventory renderers are reference surfaces, not expected edit targets unless the regression exposes a separate concrete failure.
+
+Regression test: focused test in `src/core/weave/weave_test.ts`, preferably via `createExtractedBobWeaveInput()`; keep `alice/data` as the actual source payload and source Knop but remove the `alice/_knop` subject facts from the test MeshInventory; current-only support-history policies (matching the SRD failure arm). Add the test BEFORE the fix and record the fail-on-old `settled extracted-knop pre-weave mesh inventory shape` error; after the fix assert the target is woven, its identifier and Knop page claims render, the nested source payload/Knop facts remain intact, and no `alice/_knop` facts or files are synthesized.
+
+Validation: `deno test -A --filter "nested source" src/core/weave/weave_test.ts`; `deno test -A src/core/weave/weave_test.ts`; `deno fmt`; `deno task check`. (Full `deno task ci` runs before push, on the reviewer side.)
+
+Non-goals (must not touch): extraction's non-publication-bearing lifecycle or any `hasResourcePage` emission in `src/core/extract`; legacy extraction rendering or ancestor-Knop synthesis; batch planning, candidate caches, overlays, runtime version execution, memory instrumentation; targeted/untargeted agreement or generation orchestration; MeshInventory history-index rendering; `scripts/generate-pending-heavy-mesh.ts` or the 1,700-term workload; fixture repos, Accord manifests, framework specs, Stagecraft code or consumer workarounds; queue/read-in/backlog notes.
+
+Report rather than implement: any further failure in candidate loading or MeshInventory rendering after the assertion is corrected; any current-only vs versioned behavior difference; untargeted/multi-target failures, repeated MeshInventory work, or memory measurements; the fixed history-index state list; whether the heavy-mesh generator needs a nested-source mode for the later regression bite. Do not claim full extract→weave→generate viability or recommend removing the Stagecraft workaround yet.
+
+Suggested commit summary: `fix(weave): allow nested extraction sources without root knops`. Branch: `lane/extractor-nested-source` off main. Do not push — pushes are the planning seat's. End your return with `READ-IN/QUEUE DELTA: none | <what belongs where>`.

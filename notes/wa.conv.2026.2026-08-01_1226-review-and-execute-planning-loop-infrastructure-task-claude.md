@@ -20,7 +20,7 @@ conversationEventKinds: [message.assistant, message.user, tool.call, tool.result
 
 weave 8/1
 
-please review wa.task.2026.2026-07-31_1014-planning-loop-infrastructure and then execute it
+please review wa.completed.2026.2026-07-31_1014-planning-loop-infrastructure and then execute it
 
 # claude-fable-5_2026-08-01_0835_22
 
@@ -298,3 +298,39 @@ If nothing is do-able AND `wake` reported no unmet floors, say so in one line an
 # claude-fable-5_2026-08-01_1337_51
 
 Classifier balked at the compound loop — running the survey as plain per-repo commands:
+
+# claude-fable-5_2026-08-01_1340_28
+
+**2026-08-01 13:36 PDT — Wake 1 (dry run) report:**
+
+- **Wake:** last stamp `17:45:49Z`, all groom floors met today, stamp rotated.
+- **Survey:** all commits since the stamp across the five repos are this session's own landed work; sflo/accord quiet; no lanes in flight. Nothing unexpected.
+- **Fired:** the top Kim item ([[extractor-defect-pair]]) is epic-shaped, not yet a farmable bite — so per your codex-first ruling I fired a *carving* analysis via `codex exec --sandbox read-only` (running in background; harvest next wake, then the implementation bite fires on a `lane/*` branch under the standing grant).
+- **Groomed:** D3 amended to codex-first in the read-in, loop prompt, decision-log, and task note; the task note's stale draft loop prompt marked SUPERSEDED (wake 1 caught you pasting it — the dry run earning its keep); active arc refreshed; both remaining process cards resolved — the arm-the-dry-run card was ruled by your arming act and is swept. Queue checks green (5 entries; the one blocker report is the dry-run entry itself, which pops at closure).
+- **Pushed:** weave main `9edc6f1`, archive main `56414b3`.
+
+Court is down to **one card**: send the Stagecraft reply (yours, after your nap). Next wakes: harvest the carve → write the Kim brief into the extractor note → fire implementation → close the planning-loop task (tick, pop, flip, rename — the closure duty). The loop continues on its 10-minute cron.
+
+# djradon_2026-08-01_1344_44
+
+— one planning wake (Jimbo). You are already seated; do NOT re-read the read-in.
+
+TIMESTAMP FIRST: run `date '+%Y-%m-%d %H:%M %Z'` from the shell as this turn's first command and lead your reply with it. Command-driven, never typed from memory.
+
+COMPACTION: do not quiz yourself. Detection is mechanical — if a compaction summary appears above this turn, apply wd.read-in.jimbo § Session mechanics: re-derive before you publish (no figure that reached you through a summary is republished without re-reading its file), re-read whole the surfaces you write (wd.queues, wa.dave-court, wd.todo, wd.read-in.jimbo), re-check lanes and running work from disk (git branch/status across the repos, the harness task list), and treat every recited constant as recall, not truth.
+
+READ ONLY WHAT CHANGED: run `deno task queue wake` — it prints the last wake stamp and any groom floor unmet today, then rotates the stamp. git log --oneline --since='<the printed stamp>' across weave, weave-dev-archive, semantic-flow-framework, sflo, and accord, plus any lane/* branch with work in flight. Dave and Kim also commit here — read the diffs of anything you did not expect.
+
+FIRE BEFORE YOU REPORT. If wd.queues holds a do-able item, ensure it is a farmable bite and fire it THIS wake — analysis and review bites as subagents; implementation per the standing grant recorded in wd.read-in.jimbo § Conventions. Running work is a slot busy, not a reason to wait. Items in the Jimbo section you do yourself or delegate. Only defer if genuinely overwhelmed — returns arriving faster than you can dispose of them — never "I'd rather finish writing this first".
+
+GROOM per wd.read-in.jimbo — read-in currency first, then wd.queues (run `deno task queue check`), wa.dave-court (open cards only; sweep ruled ones), wd.todo sync, task-note closure flags, wd.decision-log. Each fires on its trigger AND has a once-per-day floor; `wake` reports unmet floors and `deno task queue groomed <duty>` stamps them, so the floors are a file read, not a memory.
+
+If nothing is do-able AND `wake` reported no unmet floors, say so in one line and stop the loop rather than idling. If floors are unmet, satisfy them before stopping. Same prompt continues.
+
+# claude-fable-5_2026-08-01_1345_55
+
+The extractor carve returned mid-wake — harvesting before closure:
+
+# claude-fable-5_2026-08-01_1347_34
+
+Kim returned fast. Reading her report:
