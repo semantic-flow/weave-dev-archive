@@ -414,3 +414,55 @@ PR #31 is open: https://github.com/semantic-flow/weave/pull/31. Back to main for
 # claude-fable-5_2026-08-01_1358_40
 
 Same cwd trap as before — the mv landed, the seds didn't. Re-running with absolute paths (and noting the lesson):
+
+# claude-fable-5_2026-08-01_1400_30
+
+**Wake 3 report (13:55–14:10 PDT)** — the loop's biggest wake yet:
+
+- **Kim's bite 1 LANDED.** Diff reviewed against the brief (exact scope, fail-on-old recorded: `settled extracted-knop pre-weave mesh inventory shape`), full `ci` + `build:npm-lib` green, committed with Codex credit, pushed, **PR #31 opened**. Merge GO is yours — court card added with lean *merge on green*.
+- **Requirements slice delivered and popped**: eleven cited requirements + ownership map folded into the 06-30_1108 note; `wd.todo` checkbox flipped; the note stays open only for the evidence-gated topology decision.
+- **Closure duty exercised again**: `wa.task.2026.2026-07-05-multi-target-payload-advancement` → `wa.completed.*` (all boxes checked, shipped in July — found by the requirements analysis), refs updated in six files.
+- **Fired two fresh codex read-only bites**: the extractor bite-2 carve, and a draft of the missing binary-payload task note (requirement 4's ownership gap).
+- **Pushed**: weave `73a26cc`, archive `f147aed`. Queue: 3 Kim entries, 0 reports; Jimbo section empty. Court: 2 cards, both yours (merge PR #31, send the Stagecraft reply).
+
+Loop continues on cron; wake 4 harvests the two running bites.
+
+# djradon_2026-08-01_1404_44
+
+— one planning wake (Jimbo). You are already seated; do NOT re-read the read-in.
+
+TIMESTAMP FIRST: run `date '+%Y-%m-%d %H:%M %Z'` from the shell as this turn's first command and lead your reply with it. Command-driven, never typed from memory.
+
+COMPACTION: do not quiz yourself. Detection is mechanical — if a compaction summary appears above this turn, apply wd.read-in.jimbo § Session mechanics: re-derive before you publish (no figure that reached you through a summary is republished without re-reading its file), re-read whole the surfaces you write (wd.queues, wa.dave-court, wd.todo, wd.read-in.jimbo), re-check lanes and running work from disk (git branch/status across the repos, the harness task list), and treat every recited constant as recall, not truth.
+
+READ ONLY WHAT CHANGED: run `deno task queue wake` — it prints the last wake stamp and any groom floor unmet today, then rotates the stamp. git log --oneline --since='<the printed stamp>' across weave, weave-dev-archive, semantic-flow-framework, sflo, and accord, plus any lane/* branch with work in flight. Dave and Kim also commit here — read the diffs of anything you did not expect.
+
+FIRE BEFORE YOU REPORT. If wd.queues holds a do-able item, ensure it is a farmable bite and fire it THIS wake — analysis and review bites as subagents; implementation per the standing grant recorded in wd.read-in.jimbo § Conventions. Running work is a slot busy, not a reason to wait. Items in the Jimbo section you do yourself or delegate. Only defer if genuinely overwhelmed — returns arriving faster than you can dispose of them — never "I'd rather finish writing this first".
+
+GROOM per wd.read-in.jimbo — read-in currency first, then wd.queues (run `deno task queue check`), wa.dave-court (open cards only; sweep ruled ones), wd.todo sync, task-note closure flags, wd.decision-log. Each fires on its trigger AND has a once-per-day floor; `wake` reports unmet floors and `deno task queue groomed <duty>` stamps them, so the floors are a file read, not a memory.
+
+If nothing is do-able AND `wake` reported no unmet floors, say so in one line and stop the loop rather than idling. If floors are unmet, satisfy them before stopping. Same prompt continues.
+
+# claude-fable-5_2026-08-01_1405_36
+
+**2026-08-01 14:04 PDT — Wake 4 (consolidation).** Survey clean across all five repos (own commits only — and this time weave was surveyed with an absolute path; the cwd trap from wake 3 tried to recur). **PR #31 is fully green: all seven checks pass — including `codecov/patch` this time — and CodeRabbit completed with zero findings.** It awaits only your merge GO (court card standing, lean unchanged: merge).
+
+Both fired bites (extractor bite-2 carve, binary-payload task-note draft) are still running — slots busy. The planner-generalization carve stays deliberately sequenced behind the extractor bite-2 return, since both touch adjacent first-payload planner surface and concurrent carves risk conflicting briefs. Jimbo section is empty, all groom floors met, queue checks green. Nothing else do-able this wake; the loop continues — wake 5 harvests whichever bite lands first.
+
+# djradon_2026-08-01_1410_26
+
+<task-notification>
+<task-id>bgjwvu09o</task-id>
+<tool-use-id>toolu_015Divm3zL8rTSJE3ceaEPeb</tool-use-id>
+<output-file>/tmp/claude-1000/-home-djradon-hub-semantic-flow-weave/cdec3e72-8793-4459-a030-19a9f2737f92/tasks/bgjwvu09o.output</output-file>
+<status>completed</status>
+<summary>Background command "Fire codex analysis: draft binary-payload task note" completed (exit code 0)</summary>
+</task-notification>
+
+# claude-fable-5_2026-08-01_1410_36
+
+The binary-payload draft returned — harvesting:
+
+# claude-fable-5_2026-08-01_1411_37
+
+Now the bite-2 brief into the extractor note, maintenance lines, and both commits:

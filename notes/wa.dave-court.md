@@ -13,6 +13,11 @@ This note is Dave's court: open decision cards only, one card per decision, each
 - Decision: merge https://github.com/semantic-flow/weave/pull/31 (extractor bite 1: assertion fix + fail-on-old regression; full ci + build:npm-lib green locally; implemented by Kim/codex under the standing grant, reviewed and landed by the planning seat). Merge GO stays yours.
 - Lean: merge on green checks — the change is exactly the carved bite, and the extractor queue entry keeps its place for the remaining slices.
 
+## Adjudicate the binary-payload API rulings
+
+- Decision: five spec-level choices gate [[wa.task.2026.2026-08-01_1411-binary-payload-advancement]] (cut today; code-verified draft). Leans, per the note's Open Issues: (1) standalone `payload update` INCLUDED for binary; (2) single-item binary `overwriteExistingState` INCLUDED, else refuse-with-code; (3) ONE shared content classifier (inventory `sflo:RdfDocument` status + established text-like extension set, no MIME sniffing); (4) plan shape = explicit `createdBinaryFiles`/`updatedBinaryFiles` fields; (5) release vehicle = next minor after 0.6.0. Spec amendments to [[sf.spec.2026-07-21-programmatic-version-api]] and [[wd.programmatic-validate-api]]'s sibling [[wd.programmatic-version-api]] precede code.
+- Lean: accept all five as proposed; the task then becomes queue-eligible.
+
 ## Send the Stagecraft reply
 
 - Decision: send [[wd.consumer-feedback.0.5.1.reply]] — the canonical draft covering both feedback rounds (2026-07-28 and 2026-07-29); it tells them to skip 0.5.1 and pin 0.6.0.

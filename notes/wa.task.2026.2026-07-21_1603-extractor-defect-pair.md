@@ -237,3 +237,25 @@ Non-goals (must not touch): extraction's non-publication-bearing lifecycle or an
 Report rather than implement: any further failure in candidate loading or MeshInventory rendering after the assertion is corrected; any current-only vs versioned behavior difference; untargeted/multi-target failures, repeated MeshInventory work, or memory measurements; the fixed history-index state list; whether the heavy-mesh generator needs a nested-source mode for the later regression bite. Do not claim full extract→weave→generate viability or recommend removing the Stagecraft workaround yet.
 
 Suggested commit summary: `fix(weave): allow nested extraction sources without root knops`. Branch: `lane/extractor-nested-source` off main. Do not push — pushes are the planning seat's. End your return with `READ-IN/QUEUE DELTA: none | <what belongs where>`.
+
+## Kim brief — bite 2: nested-source mode for the pending-heavy mesh generator (cut 2026-08-01, wake 4)
+
+Carved by codex read-only analysis. Independent of PR #31 (bite 1 touched only shape_assertions/weave_test; this bite stays in the generator and its script tests). Rationale: the generator hardcodes the flat top-level `source` designator, so it cannot reproduce the diagnosed `srd-5-2-1/spells`-without-`srd-5-2-1/_knop` topology; a faithful nested-source workload is the substrate the later agreement, batching, and ~1,700-term regression bites all need. The dynamic history-index fix is the runner-up (deferred: no workload-fidelity gain, natural regression home collides with PR #31's weave_test edit).
+
+### Task: generate pending-heavy meshes from a nested source with no ancestor Knop
+
+Read before changing code: `AGENTS.md`; `documentation/notes/product-vision.md`; [[wd.general-guidance]]; [[wd.testing]]; `ont.summary.core` (sflo vault); this note's R2 diagnosis; the generator receipts in [[wa.completed.2026.2026-07-29_1220-whole-mesh-validate-bounded-memory]]; the bite 1 brief above.
+
+Goal: parameterize `generatePendingHeavyMesh` with optional `sourceDesignatorPath` (default: current `"source"` behavior), exposed as `--source-designator-path <path>` in the script CLI, with `catalog/source` as the focused nested regression shape. In that mode the generator creates and weaves `catalog/source` as the actual payload with `catalog/source/_knop` as its Knop; leaves `catalog` an unmanaged grouping path with no `catalog/_knop`; extracts exactly the requested N root-level synthetic terms, each left pending and bound to `catalog/source` through its extraction source; returns `sourceDesignatorPath: "catalog/source"`. Flat-source behavior stays the default.
+
+Likely files: `scripts/generate-pending-heavy-mesh.ts` (options/result + hardcoded source ~lines 9–26; integrate/weave/extract flow ~28–87; CLI parsing/usage ~173–245); `tests/scripts/pending_heavy_mesh_test.ts` (small-count honesty test ~24–85; candidate-loading seam to reuse ~87–163). Reference only, do not change: `planIntegrate` already supports nested designators.
+
+Regression: focused small-count test (N=2 or 3, current-only MeshInventory history). Record fail-on-old (old CLI rejects the flag / old function produces flat topology). After implementation assert: returned source path `catalog/source`; `catalog/source/_knop/_inventory/inventory.ttl` exists; `catalog/_knop` does not exist and MeshInventory carries no `catalog/_knop` facts; exactly N terms extracted; candidate loading returns exactly those N pending terms; every candidate's `referenceTargetSourcePayloadArtifact.designatorPath` is `catalog/source`. Do NOT call pending-term planVersion/validate/weave/generate in this regression — that would couple the bite to PR #31.
+
+Validation: `deno test -A --filter "nested source" tests/scripts/pending_heavy_mesh_test.ts`; `deno test -A tests/scripts/pending_heavy_mesh_test.ts`; `deno fmt scripts/generate-pending-heavy-mesh.ts tests/scripts/pending_heavy_mesh_test.ts`; `deno task check`; `deno task lint`. Full ci at landing, reviewer-side.
+
+Non-goals: no planner/batching/caching/overlay/memory/page changes; no targeted/untargeted agreement test; no history-index correction; no ~1,700-term run or performance claim; no extraction-lifecycle change; no workaround removal or viability claim; no fixture-repo/Accord/framework/Stagecraft/backlog/queue/read-in edits. Must not touch: shape_assertions.ts, weave.ts, weave_test.ts, version_execution.ts, planning_context.ts, memory_stats.ts, runtime extract, page orchestration, PR #31's branch, or candidate_loader.ts except as a read-only test dependency.
+
+Report rather than implement: nested integration/weave unexpectedly requiring an ancestor Knop; candidate loading unable to resolve `catalog/source` without production changes; pending-term planning failures from the pre-PR-31 assertion; current-only vs versioned differences; memory/wall-time observations; any production-code need for the generator mode.
+
+Suggested commit: `test(weave): generate nested-source pending-heavy meshes`. Branch: `lane/heavy-mesh-nested-source` off main (pre-created; do not run git). End your return with `READ-IN/QUEUE DELTA: none | <what belongs where>`.
