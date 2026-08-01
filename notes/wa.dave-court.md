@@ -19,7 +19,3 @@ This note is Dave's court: open decision cards only, one card per decision, each
 - Decision: schedule the dry run — one `/loop 10m` cycle with Dave watching, the last open implementation-plan item on [[wa.task.2026.2026-07-31_1014-planning-loop-infrastructure]]. Seating order is in [[wd.read-in.jimbo]] § Loop prompt.
 - Lean: next working session; adjust prompt/read-in from what the wake actually needed rather than what was predicted.
 
-## Ratify D1, D4, D5, D6
-
-- Decision: the remaining proposed decisions on [[wa.task.2026.2026-07-31_1014-planning-loop-infrastructure]] (queue name/sections; 10m cadence; no CI wiring for the gate itself; the named SURVEY repo set) are implemented as specified — D2/D3/D7 were ruled 2026-07-31; D8 was RULED AS AMENDED 2026-08-01 (stamps stay mechanical in `.jimbo-state.json`; the human-auditable maintenance log lives in monthly [[wd.maintenance.2026-08]]-style notes); D3's (a)/(b) wording was clarified the same day (dispatch by bite type, not a preference order).
-- Lean: ratify as built; the deviations found in review r1 are recorded in the task note's disposition section.

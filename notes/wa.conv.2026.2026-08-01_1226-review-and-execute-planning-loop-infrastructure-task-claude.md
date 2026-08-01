@@ -123,3 +123,55 @@ Now the test for the maintenance log, then run the suite:
 # claude-fable-5_2026-08-01_1229_05
 
 32 green. Exercising the real repo — the closure groom genuinely just happened (the renames), which also mints the maintenance note:
+
+# claude-fable-5_2026-08-01_1231_12
+
+All three rulings are executed, pushed, and propagated. Summary:
+
+**Renames — done, and now a standing closure duty.** The two 07-29 notes are renamed to `wa.completed.2026.2026-07-29_1219-programmatic-validate-mesh-api` and `…_1220-whole-mesh-validate-bounded-memory`, with every reference updated across all three vaults that held one (`wd.todo`, `wd.programmatic-validate-api`, the archived 07-29 feedback note, the checkout-seam note, and the framework `sf.spec` note — that framework repo is committed and pushed too). The duty itself is now codified in `AGENTS.md`, the read-in, the decision-log, and the gate's `pop` output ("do the rename now" instead of "stays Dave's act"). The ruled card is swept from the court; the gate never renames — it still only reports.
+
+**D8 amended — monthly maintenance log.** `wd.maintenance.2026-08` now exists: `deno task queue groomed <duty>` appends its timestamped line there mechanically (creating each month's note on first use), while the `.jimbo-state.json` stamps stay git-ignored machine state for floors and wake bounds. Hand maintenance — today's renames, the court sweep, the queue hand-edit — is hand-logged in the same note, and that convention is written into the read-in and both prompts. Test coverage added (32 tests, full CI green).
+
+**Your D4 question — you're right, and it's fixed.** The lettered list is D3's, and "(in order of preference)" was the wrong frame: (a) subagent bites and (b) codex-exec bites are a *dispatch by bite type*, not ranked alternatives — a wake fires every do-able bite, (a) and (b) together when both are ready. The loop prompt's FIRE paragraph now says exactly that ("fire EVERY do-able queue item THIS wake… the kinds are not alternatives"), matching the Conventions section. Recorded as a clarification ruling in the task note.
+
+**State of play:** archive pushed (`d07dcc1`), framework pushed (`e155635`), weave lane pushed (`710bc1b` on PR #30 — previous round was all green with CodeRabbit's one minor fixed, `codecov/patch` informational-fail only, same non-required status as PR #25; a watcher is on the new round). The court is down to three cards: send the Stagecraft reply, arm the supervised dry run, and ratify D1/D4/D5/D6.
+
+# djradon_2026-08-01_1248_23
+
+<task-notification>
+<task-id>bpzoz6yol</task-id>
+<summary>Monitor event: "PR #30 checks (weave planning-loop)"</summary>
+<event>[Monitor timed out — re-arm if needed.]</event>
+</task-notification>
+
+# claude-fable-5_2026-08-01_1248_27
+
+That's the stale watcher from before the latest push timing out — the fresh one (armed on the `710bc1b` round) is still active and will report when PR #30's new checks finish. Nothing else changes: the three rulings are executed and pushed, and the court holds three open cards (send the Stagecraft reply, arm the dry run, ratify D1/D4/D5/D6).
+
+# djradon_2026-08-01_1255_50
+
+<task-notification>
+<task-id>bv3wxx5p6</task-id>
+<summary>Monitor event: "PR #30 checks after 710bc1b push"</summary>
+<event>[Monitor timed out — re-arm if needed.]</event>
+</task-notification>
+
+# claude-fable-5_2026-08-01_1255_54
+
+The watcher timed out without a verdict — checking PR #30 directly:
+
+# claude-fable-5_2026-08-01_1256_11
+
+PR #30 is done and mergeable: on the final `710bc1b` round every check passes — `ci`, `npm-lib`, CodeQL, both Analyze legs, CodeRabbit — with only `codecov/patch` informational-failing, the same non-required patch-coverage status PR #25 merged with (the gate's refusal branches and CLI dispatch drag patch percentage; the suite itself is 32/32 inside a green 771-test run). GitHub reports the branch `MERGEABLE`.
+
+(The watcher stayed silent due to my own monitor bug — `gh pr checks` exits non-zero when any check fails, so the codecov informational-fail made my loop treat every poll as a transient error. Noted for next time; the direct check above is the authoritative state.)
+
+Everything on my side is complete: three repos pushed, renames done, maintenance log live, prompts in place. Yours: merge PR #30, and the three court cards — send the Stagecraft reply, arm the supervised dry-run wake, ratify D1/D4/D5/D6.
+
+# djradon_2026-08-01_1332_10
+
+You can do the merge
+
+# claude-fable-5_2026-08-01_1333_52
+
+Committing and pushing both repos (scoped adds, since `wd.todo` had outside changes on disk):
