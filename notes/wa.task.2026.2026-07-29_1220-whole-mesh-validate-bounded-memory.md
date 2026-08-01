@@ -149,3 +149,39 @@ Measurements (current-only, `--expose-gc`, `/usr/bin/time -v`):
 **Evidence-ratified fix direction for spec review r1:** primary — eliminate per-candidate full-source duplication in validate-mode candidate loading (share/dedupe or lazy-load-and-drop); secondary — parse-reuse to cut the churn term (1.96 GiB at N=1700 from churn alone is still uncomfortable headroom); versioned-policy snapshot arm keeps plan-and-drop/skip-staging as previously recorded.
 
 **Landing:** this lane lands SECOND, rebased onto main after `lane/validate-mesh-api` merges — the two lanes collide on `weave.ts`/`version_execution.ts` and this one's overlap is the small additive side. The full landing plan (D1–D4) is framed in [[wa.task.2026.2026-07-29_1219-programmatic-validate-mesh-api]]; the fix slice cuts only after both lanes are on main.
+
+**LANDED (2026-07-31):** rebased onto post-#25 main (conflicts exactly the two predicted files; `memoryStats` wiring re-threaded through the classified `executeValidate` signature), one dnt-shim fix rode the lane (`929d5e8`: `TextEncoder` used as a type annotation — dnt's Node type-checking has only the shimmed value), full ci 737/737 + npm-lib build/smoke green, merged as PR #26 (`c0b25b3`).
+
+## Fix-slice design (amendment r2 — ruled 2026-07-31 under the PM's blanket GO; build is evidence-gated on R4)
+
+**Primary lever — share, don't copy (the content term).** R4 hypothesis to be PROVEN before any implementation: `readPayloadFileWithOverlay` (`src/runtime/weave/artifact_loaders.ts:166-183`) reads and decodes a FRESH text string per call — it consults only the overlay's staged map (`overlay?.get`), not the command-scoped text read cache — so every pending extracted candidate mints its own copy of the same source payload text (`currentPayloadTurtle`) and snapshot text (`latestHistoricalSnapshotTurtle`): N × 2 × sourceSize live across the loop. Ruled fix, contingent on that proof: route payload text reads through the command-scoped read cache so all candidates hold references to ONE immutable string per distinct path (≈ 2 shared strings at the srd shape instead of ~3,400 copies), registering the path as a candidate-cache dependency (which also closes the earlier dependency-capture gap for payload paths). Binary-payload bytes handling unchanged. Sharing immutable strings is behavior-neutral for validate AND the write paths — byte-out tests protect.
+
+**Instrumentation rider (R5):** a candidate live-set retained-bytes counter, so the fixed shape is CI-guardable: shared-source retention must be O(sourceSize), not O(N × sourceSize).
+
+**Deliberately deferred, boarded:** the parse-churn term (a true fix is an incrementally-updated parsed MeshInventory model — owned jointly with the RDF parse/render boundary cleanup and TODO 23, not this slice; churn alone completes at srd scale, 1.96 GiB peak, and collapses post-GC) and the versioned-policy snapshot arm (plan-and-drop/skip-staging; policy-conditional, not the consumer shape).
+
+**Acceptance (revised from the earlier <1 GiB aspiration, which belongs to the deferred churn work):**
+- N=1700 @ 1024 B/term, current-only: completes rc 0 (no OOM — today it dies at 14 s) with peak RSS ≤ ~1.25× the same-N content-0 run (content-size independence), post-GC used heap on the counted-retention order.
+- N=500 @ 1024 B/term: peak drops from the 2.42 GiB class to the content-0 class (~450 MiB).
+- Findings parity (settled / pending-heavy / defect-seeded), full `deno task ci`, and `build:npm-lib` + off-tree smoke run LOCALLY before push (the dnt-shim lesson, twice learned).
+- New live-set counter proportionality: retained candidate source bytes stay flat as N grows.
+
+### FIX LANDED (2026-07-31, PR #27 merged `0852de0`)
+
+R4 gate PASSED before implementation: copies were minted by fresh `Deno.readFile` + per-call `TextDecoder` in `loadPayloadWorkingArtifact` (`artifact_loaders.ts:193-209` pre-fix) and the resolver's selected-history read (`resolver.ts:686-713`), both bypassing the command cache; N=200 proof showed payload sizes growing while read-cache bytes stayed byte-identical. Implementation (commits `df4587e` + `61b9e53`): text-like payload and historical-snapshot reads intern through the staged-first command cache (`readTextFileWithOverlay` gains `contentsIfUncached`; digest verification on bytes precedes interning; binary bytes path unchanged); payload paths now register as candidate dependencies; identity-deduplicated `candidateLiveSet` role added to `WEAVE_MEMORY_STATS`; shared-identity + proportionality tests added.
+
+**Acceptance, measured (implementer) and independently reproduced (reviewer):** N=1700 @ 1 KB/term: V8 OOM at 14 s / 4.14 GiB → **rc 0, 3m27s, 514 MiB peak** (1.035× the content-0 run; ruled ceiling 1.25×). N=500 @ 1 KB: 2.42 GiB → 369–378 MiB. N=1700 @ 0 B: 1.96 GiB → 496 MiB. At N=1700 the 3,400 source-text references collapse to 2 cache identities / 3.8 MB. Gates: full ci 739/739 (re-earned by reviewer), `build:npm-lib` + off-tree Node smoke green locally before push (both seats). **The whole-mesh validation green Stagecraft never had now exists at their scale.** Remaining on this note: the deferred parse-churn term and versioned-arm plan-and-drop (boarded above); the ~10⁴ acceptance bench through both CLI and API surfaces rides ordinary regression use of the generator.
+
+### FIX LANDED (2026-07-31, PR #27 → main `0852de0`)
+
+R4 gate PASSED before implementation (N=200: +210 KB source/snapshot text left the read cache byte-identical while peak RSS rose 292 → 665 MiB — the cache-bypass signature; both fresh-decode sites traced). Implementation per the ruled arm: payload/snapshot text reads route through the command-scoped overlay read cache (seeded variant for the resolver's already-decoded text); payload paths register as candidate dependencies; identity-deduplicated candidate live-set counter added (commits `df4587e` + `61b9e53`; seat: Codex-as-Kim, interrupted mid-acceptance by a session restart — the reviewing seat verified the installed commits byte-matched the gated worktree, re-earned every gate, and ran the acceptance matrix itself).
+
+**Acceptance results (all criteria EXCEEDED):**
+
+| Run (current-only) | Before | After |
+|---|---|---|
+| N=500 @ 1 KB/term | 2.42 GiB peak RSS | **373 MiB** |
+| N=1700 @ 1 KB/term (srd scale) | **V8 OOM at 14 s** (4.14 GiB) | **rc 0, 3m23s, 554 MiB** |
+| N=1700 @ 0 B | 3m16s, 1.96 GiB | 3m26s, **485 MiB** |
+
+Live-set at N=1700: 3,400 source-text references → **2 distinct identities** (~3.8 MB). Bonus beyond the ruled scope: sharing also eliminated the per-iteration re-read/decode churn, so the content-0 peak fell ~4× with no wall-time regression. Gates: full ci 739/739, `build:npm-lib` + off-tree smoke green locally before push. **The consumer's §3 report is now: reproduced, attributed, fixed, and regression-guarded.** Remaining on this note: the deferred parse-churn term (incremental MeshInventory model — RDF-boundary/TODO-23 coordination) and the versioned-policy snapshot arm, both boarded, neither urgent at current evidence.
