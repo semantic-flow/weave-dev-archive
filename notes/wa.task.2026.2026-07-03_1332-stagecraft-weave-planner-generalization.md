@@ -210,5 +210,5 @@ Evidence: `accord validate` reported conformant with `results=0 errors=0`; `acco
 - [x] Add integration coverage for the accepted Stagecraft-shaped transition.
 - [x] Add Accord coverage for the accepted Stagecraft-shaped transition after the scenario-runner lands.
 - [x] Decide whether the next slice should tackle multi-candidate planning, append-onlyish inventory writes, or another shape-specific assertion exposed by the same ladder.
-- [x] Land the explicit multi-target payload advancement follow-up from [[wa.task.2026.2026-07-05-multi-target-payload-advancement]].
+- [x] Land the explicit multi-target payload advancement follow-up from [[wa.completed.2026.2026-07-05-multi-target-payload-advancement]].
 - [x] Update [[wd.todo]], [[wd.decision-log]], and [[wd.codebase-overview]] when the implementation lands if the public or developer contract changes.

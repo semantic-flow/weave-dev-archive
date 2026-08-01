@@ -388,7 +388,7 @@ I left the unrelated dirty archive files untouched.
 
 # djradon_2026-07-05_1927_57
 
-Kim — next Weave task: the multi-target advancement slice of the planner epic. Working repo: /home/djradon/hub/semantic-flow/weave. Read dependencies/github.com/semantic-flow/weave-dev-archive/notes/wa.task.2026.2026-07-05-multi-target-payload-advancement.md fully before writing code — its Decisions section is settled, don't reopen it. Context: dependencies/github.com/semantic-flow/weave-dev-archive/notes/wa.task.2026.2026-07-03_1332-stagecraft-weave-planner-generalization.md (the parent epic; single-target later-ordinal advancement already works via src/core/weave/payload_weave_read_model.ts).
+Kim — next Weave task: the multi-target advancement slice of the planner epic. Working repo: /home/djradon/hub/semantic-flow/weave. Read dependencies/github.com/semantic-flow/weave-dev-archive/notes/wa.completed.2026.2026-07-05-multi-target-payload-advancement.md fully before writing code — its Decisions section is settled, don't reopen it. Context: dependencies/github.com/semantic-flow/weave-dev-archive/notes/wa.task.2026.2026-07-03_1332-stagecraft-weave-planner-generalization.md (the parent epic; single-target later-ordinal advancement already works via src/core/weave/payload_weave_read_model.ts).
 
 The boundary decision is already made: atomicity belongs to the application. The requesting service serializes coherent game+session state to the mesh and requests the weave. Do NOT build locking, rollback, journaling, or transactional writes. What you are building:
 
@@ -584,7 +584,7 @@ I’m going to fold the clock override into the already-open multi-target work, 
 
 # djradon_2026-07-05_1957_05
 
-And also, this: "Kim — small follow-up increment on the completed multi-target batch work. Working repo: /home/djradon/hub/semantic-flow/weave. Read the "Input snapshot verification" section, its Decisions bullet, the open issue on hash scope, and the three new Implementation Plan checkboxes in dependencies/github.com/semantic-flow/weave-dev-archive/notes/wa.task.2026.2026-07-05-multi-target-payload-advancement.md — the design is settled there.
+And also, this: "Kim — small follow-up increment on the completed multi-target batch work. Working repo: /home/djradon/hub/semantic-flow/weave. Read the "Input snapshot verification" section, its Decisions bullet, the open issue on hash scope, and the three new Implementation Plan checkboxes in dependencies/github.com/semantic-flow/weave-dev-archive/notes/wa.completed.2026.2026-07-05-multi-target-payload-advancement.md — the design is settled there.
 
 Build: before batch content capture begins, sha256-hash the plan's input files; after capture completes, verify the hashes still hold. Any mismatch refuses the WHOLE plan before anything is written, with a condition-specific diagnostic naming the changed file — same fail-closed posture as the existing whole-plan fact validation. This guards the torn-read window where one target's file is read, another's is read later, and an input changed in between.
 
@@ -752,7 +752,7 @@ One note: the archive repo still has unrelated pre-existing dirty/untracked Kato
 
 # djradon_2026-07-05_2034_55
 
-And also, this: "Kim — small follow-up increment on the completed multi-target batch work. Working repo: /home/djradon/hub/semantic-flow/weave. Read the "Input snapshot verification" section, its Decisions bullet, the open issue on hash scope, and the three new Implementation Plan checkboxes in dependencies/github.com/semantic-flow/weave-dev-archive/notes/wa.task.2026.2026-07-05-multi-target-payload-advancement.md — the design is settled there.
+And also, this: "Kim — small follow-up increment on the completed multi-target batch work. Working repo: /home/djradon/hub/semantic-flow/weave. Read the "Input snapshot verification" section, its Decisions bullet, the open issue on hash scope, and the three new Implementation Plan checkboxes in dependencies/github.com/semantic-flow/weave-dev-archive/notes/wa.completed.2026.2026-07-05-multi-target-payload-advancement.md — the design is settled there.
 
 Build: before batch content capture begins, sha256-hash the plan's input files; after capture completes, verify the hashes still hold. Any mismatch refuses the WHOLE plan before anything is written, with a condition-specific diagnostic naming the changed file — same fail-closed posture as the existing whole-plan fact validation. This guards the torn-read window where one target's file is read, another's is read later, and an input changed in between.
 

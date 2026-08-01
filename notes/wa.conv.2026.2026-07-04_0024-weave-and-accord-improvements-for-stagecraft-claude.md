@@ -527,7 +527,7 @@ That's a much better boundary — and it dissolves most of the hand-wringing. If
 
 Agreed on all counts — decision captured, old notes left unread and marked do-not-mine. Here's what I did with it:
 
-**Created [wa.task.2026.2026-07-05-multi-target-payload-advancement](dependencies/github.com/semantic-flow/weave-dev-archive/notes/wa.task.2026.2026-07-05-multi-target-payload-advancement.md)** with your atomicity boundary as a settled Decision rather than an open issue, designed against both consumers (the temporal rung's three-designator shape, and the game+session mesh). The umbrella requirements note now records the game+session mesh as the second application workload driving this.
+**Created [wa.completed.2026.2026-07-05-multi-target-payload-advancement](dependencies/github.com/semantic-flow/weave-dev-archive/notes/wa.completed.2026.2026-07-05-multi-target-payload-advancement.md)** with your atomicity boundary as a settled Decision rather than an open issue, designed against both consumers (the temporal rung's three-designator shape, and the game+session mesh). The umbrella requirements note now records the game+session mesh as the second application workload driving this.
 
 With atomicity off Weave's plate, the slice reshapes into three things Weave still genuinely owes, ranked by difficulty:
 
@@ -548,7 +548,7 @@ cut the prompt!
 Here it is:
 
 ```
-Kim — next Weave task: the multi-target advancement slice of the planner epic. Working repo: /home/djradon/hub/semantic-flow/weave. Read dependencies/github.com/semantic-flow/weave-dev-archive/notes/wa.task.2026.2026-07-05-multi-target-payload-advancement.md fully before writing code — its Decisions section is settled, don't reopen it. Context: dependencies/github.com/semantic-flow/weave-dev-archive/notes/wa.task.2026.2026-07-03_1332-stagecraft-weave-planner-generalization.md (the parent epic; single-target later-ordinal advancement already works via src/core/weave/payload_weave_read_model.ts).
+Kim — next Weave task: the multi-target advancement slice of the planner epic. Working repo: /home/djradon/hub/semantic-flow/weave. Read dependencies/github.com/semantic-flow/weave-dev-archive/notes/wa.completed.2026.2026-07-05-multi-target-payload-advancement.md fully before writing code — its Decisions section is settled, don't reopen it. Context: dependencies/github.com/semantic-flow/weave-dev-archive/notes/wa.task.2026.2026-07-03_1332-stagecraft-weave-planner-generalization.md (the parent epic; single-target later-ordinal advancement already works via src/core/weave/payload_weave_read_model.ts).
 
 The boundary decision is already made: atomicity belongs to the application. The requesting service serializes coherent game+session state to the mesh and requests the weave. Do NOT build locking, rollback, journaling, or transactional writes. What you are building:
 
@@ -600,7 +600,7 @@ On the `--atomic-only` temptation: you're right to resist it, and there's a chea
 The increment is specced in the task note — Discussion rationale, warn-only Decision (with the no-revert strict ladder), two open issues for Kim to settle (hash scope, warning surface), tests, and three fresh checkboxes. Here's the prompt:
 
 ```
-Kim — small follow-up increment on the just-completed multi-target batch work. Working repo: /home/djradon/hub/semantic-flow/weave. Re-read the "Working-file staleness detection" section, the staleness Decisions/Open Issues, and the new Implementation Plan checkboxes in dependencies/github.com/semantic-flow/weave-dev-archive/notes/wa.task.2026.2026-07-05-multi-target-payload-advancement.md — the design is settled there.
+Kim — small follow-up increment on the just-completed multi-target batch work. Working repo: /home/djradon/hub/semantic-flow/weave. Re-read the "Working-file staleness detection" section, the staleness Decisions/Open Issues, and the new Implementation Plan checkboxes in dependencies/github.com/semantic-flow/weave-dev-archive/notes/wa.completed.2026.2026-07-05-multi-target-payload-advancement.md — the design is settled there.
 
 Build: when a batch plan is generated, record sha256 hashes of each target's captured working payload files; after each target is woven, re-check that target's hashes. On mismatch, emit a warn-only staleness notice naming the designator path and continue — the batch renders from plan-time content, so this is a lost-update warning ("the mesh has newer content; weave again"), not a failure. Exit code and woven output are unchanged by a staleness warning.
 
@@ -631,7 +631,7 @@ And the failure response gets simpler too: since verification happens **before a
 Note rewritten end-to-end for the snapshot-verification framing. **Discard the previous staleness prompt** — here's the replacement:
 
 ```
-Kim — small follow-up increment on the completed multi-target batch work. Working repo: /home/djradon/hub/semantic-flow/weave. Read the "Input snapshot verification" section, its Decisions bullet, the open issue on hash scope, and the three new Implementation Plan checkboxes in dependencies/github.com/semantic-flow/weave-dev-archive/notes/wa.task.2026.2026-07-05-multi-target-payload-advancement.md — the design is settled there.
+Kim — small follow-up increment on the completed multi-target batch work. Working repo: /home/djradon/hub/semantic-flow/weave. Read the "Input snapshot verification" section, its Decisions bullet, the open issue on hash scope, and the three new Implementation Plan checkboxes in dependencies/github.com/semantic-flow/weave-dev-archive/notes/wa.completed.2026.2026-07-05-multi-target-payload-advancement.md — the design is settled there.
 
 Build: before batch content capture begins, sha256-hash the plan's input files; after capture completes, verify the hashes still hold. Any mismatch refuses the WHOLE plan before anything is written, with a condition-specific diagnostic naming the changed file — same fail-closed posture as the existing whole-plan fact validation. This guards the torn-read window where one target's file is read, another's is read later, and an input changed in between.
 

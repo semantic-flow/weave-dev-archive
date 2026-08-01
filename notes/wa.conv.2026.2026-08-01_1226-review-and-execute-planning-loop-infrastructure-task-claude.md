@@ -362,3 +362,55 @@ The worktree sits on the lane branch while Kim edits — wake 3 must not switch 
 # claude-fable-5_2026-08-01_1354_02
 
 The requirements analysis returned — harvesting:
+
+# claude-fable-5_2026-08-01_1355_26
+
+**Wake 2 addendum — requirements harvest landed** (archive `9dce5d0`): eleven evidence-backed Stagecraft persistence requirements with citations, an ownership map showing most are already landed or queued, an explicit "still unevidenced — do not promote" guard list, and four of the note's five plan items ticked as delivered (topology stays open, evidence-gated).
+
+Queued for the next main-branch window once Kim returns: pop the delivered requirements slice from `wd.queues`, rename the fully-checked `wa.completed.2026.2026-07-05-multi-target-payload-advancement` note (closure duty — the collection's own find), and cut the missing binary-payload task note. Kim is still implementing on the lane branch; the loop's next wake or her return — whichever lands first — picks up from here.
+
+# djradon_2026-08-01_1355_26
+
+— one planning wake (Jimbo). You are already seated; do NOT re-read the read-in.
+
+TIMESTAMP FIRST: run `date '+%Y-%m-%d %H:%M %Z'` from the shell as this turn's first command and lead your reply with it. Command-driven, never typed from memory.
+
+COMPACTION: do not quiz yourself. Detection is mechanical — if a compaction summary appears above this turn, apply wd.read-in.jimbo § Session mechanics: re-derive before you publish (no figure that reached you through a summary is republished without re-reading its file), re-read whole the surfaces you write (wd.queues, wa.dave-court, wd.todo, wd.read-in.jimbo), re-check lanes and running work from disk (git branch/status across the repos, the harness task list), and treat every recited constant as recall, not truth.
+
+READ ONLY WHAT CHANGED: run `deno task queue wake` — it prints the last wake stamp and any groom floor unmet today, then rotates the stamp. git log --oneline --since='<the printed stamp>' across weave, weave-dev-archive, semantic-flow-framework, sflo, and accord, plus any lane/* branch with work in flight. Dave and Kim also commit here — read the diffs of anything you did not expect.
+
+FIRE BEFORE YOU REPORT. If wd.queues holds a do-able item, ensure it is a farmable bite and fire it THIS wake — analysis and review bites as subagents; implementation per the standing grant recorded in wd.read-in.jimbo § Conventions. Running work is a slot busy, not a reason to wait. Items in the Jimbo section you do yourself or delegate. Only defer if genuinely overwhelmed — returns arriving faster than you can dispose of them — never "I'd rather finish writing this first".
+
+GROOM per wd.read-in.jimbo — read-in currency first, then wd.queues (run `deno task queue check`), wa.dave-court (open cards only; sweep ruled ones), wd.todo sync, task-note closure flags, wd.decision-log. Each fires on its trigger AND has a once-per-day floor; `wake` reports unmet floors and `deno task queue groomed <duty>` stamps them, so the floors are a file read, not a memory.
+
+If nothing is do-able AND `wake` reported no unmet floors, say so in one line and stop the loop rather than idling. If floors are unmet, satisfy them before stopping. Same prompt continues.
+
+# claude-fable-5_2026-08-01_1355_57
+
+Kim reports a clean scoped fix — fail-on-old recorded, 70/70 green. Reviewing her diff before committing:
+
+# claude-fable-5_2026-08-01_1356_19
+
+**Wake 3 status (mid-wake, gates running):** Kim's bite 1 passed review — the diff is exactly the briefed scope (derived root-Knop requirements removed from `assertCurrentMeshInventoryShapeForFirstExtractedKnopWeave`, source/target assertions untouched, dead helper gone, fail-on-old regression test with negative assertions against synthesized `alice/_knop` artifacts). Full `deno task ci` plus `build:npm-lib` are running in the background — the working tree must stay on the lane branch until they finish, so the deferred main-window items (pop the delivered requirements slice, rename the fully-checked 07-05 note with refs, maintenance lines) queue behind the gate result. On green: commit with Codex credit, push, open the PR, then swing back to main and clear that list.
+
+# djradon_2026-08-01_1357_25
+
+<task-notification>
+<task-id>baa4r4ts9</task-id>
+<tool-use-id>toolu_01S1k6X2MnGC7T4kc5yfzwRD</tool-use-id>
+<output-file>/tmp/claude-1000/-home-djradon-hub-semantic-flow-weave/cdec3e72-8793-4459-a030-19a9f2737f92/tasks/baa4r4ts9.output</output-file>
+<status>completed</status>
+<summary>Background command "Run full CI gate and dnt lib build on Kim's change" completed (exit code 0)</summary>
+</task-notification>
+
+# claude-fable-5_2026-08-01_1357_34
+
+Both gates green. Committing Kim's work with Codex credit, pushing, and opening the PR:
+
+# claude-fable-5_2026-08-01_1358_15
+
+PR #31 is open: https://github.com/semantic-flow/weave/pull/31. Back to main for the deferred work:
+
+# claude-fable-5_2026-08-01_1358_40
+
+Same cwd trap as before — the mv landed, the seds didn't. Re-running with absolute paths (and noting the lesson):
