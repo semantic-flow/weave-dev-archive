@@ -87,8 +87,55 @@ Update later 2026-07-05: Accord steps 3 and 4 and the planner epic's single-targ
 
 ## Implementation Plan
 
-- [ ] Inventory the first Stagecraft persisted-data workflows and identify which ones are mesh, artifact, history, reference, source, or page problems.
+- [x] Inventory the first Stagecraft persisted-data workflows and identify which ones are mesh, artifact, history, reference, source, or page problems. DONE 2026-08-01: the eleven evidence-backed requirements below classify the exercised workflows (checkpoint batches, later-ordinal advancement, in-process recording, validation, extracted-term lifecycle, transition evidence, domain invariants).
 - [ ] Decide the initial Stagecraft mesh topology: whole-repo, sidecar, branch-published, or application-managed local mesh.
-- [ ] Map a few representative resources to existing Semantic Flow concepts before proposing vocabulary changes.
-- [ ] Identify the first Weave blocker that prevents Stagecraft from persisting or inspecting useful roleplaying data.
-- [ ] If a blocker is general, create a focused Weave task note and implementation slice.
+- [x] Map a few representative resources to existing Semantic Flow concepts before proposing vocabulary changes. DONE 2026-08-01: the ownership map below ties every evidenced requirement to existing tasks/concepts; no vocabulary change is authorized by current evidence.
+- [x] Identify the first Weave blocker that prevents Stagecraft from persisting or inspecting useful roleplaying data. DONE: the extracted-term lifecycle at ~1,700-term nested-source scale ([[wa.task.2026.2026-07-21_1603-extractor-defect-pair]]) — first implementation bite in flight.
+- [x] If a blocker is general, create a focused Weave task note and implementation slice. DONE: the blocker was already noted; bite 1 (nested extraction sources without root Knops) carved and fired 2026-08-01. Residual: the binary-payload item in wd.todo still needs its own task note cut.
+
+## Evidence-Backed Stagecraft Persistence Requirements (2026-08-01)
+
+Classification rule: “stated” means directly reported by the Stagecraft consumer or recorded from an exercised Stagecraft fixture. “Inferred” means a Weave generalization from that evidence. Neither category authorizes Stagecraft-specific vocabulary without another concrete workflow.
+
+### Stated Or Directly Evidenced
+
+1. **Checkpoint batch persistence.** A Stagecraft service serializes game and session payloads together at a service/user checkpoint and requests one explicit multi-target weave. Weave must validate the entire plan and captured payload snapshot before writes, order targets deterministically, merge shared support artifacts once, and converge safely on rerun. The application owns single-writer serialization and transactional business semantics; Weave does not promise filesystem transactions. Evidence: this note’s Accord Sequencing update and [[wa.task.2026.2026-07-05-multi-target-payload-advancement]]. Status: landed for the evidenced shape.
+
+2. **Later-ordinal history advancement with current-only support.** Existing payload histories must advance beyond `_s0002` while coherent current-only KnopInventory/KnopMetadata support remains valid. Prior historical payload files remain byte-identical; the operation adds the requested new state and advances only the owned inventory/progression/page outputs. Evidence: [[wa.task.2026.2026-07-03_1332-stagecraft-weave-planner-generalization]] and [[ac.product-ideas.runner-neutral-test-spec]] temporal addition 4. Status: the Stagecraft temporal-rung case landed; broader inventory semantics remain with [[wa.task.2026.2026-05-17-append-onlyish-inventory]].
+
+3. **In-process payload persistence for product paths.** Product code must be able to record caller-supplied payload bytes through a stable API without spawning the CLI or requiring caller-managed temporary files. The mesh remains file-backed. Evidence: [[wa.task.2026.2026-07-21_1322-programmatic-version-api]]. Status: landed for UTF-8 text/RDF payloads.
+
+4. **Exact-byte binary persistence.** Stagecraft’s press workload includes non-text artifacts. Binary working update, first/later HistoricalState creation, no-op comparison, and snapshots must preserve exact bytes. Evidence: [[wa.task.2026.2026-07-21_1322-programmatic-version-api]] r1 F3. Status: explicit `wd.todo` item; no dedicated task note yet.
+
+5. **Non-mutating plan inspection.** A caller must be able to forecast payload outcomes and created/updated paths through the normal admit/load/plan checks while writing nothing. Evidence: [[wd.consumer-feedback.0.5.1.2026-07-28_0849]] §2. Status: delivered as `versionPayloads({ dryRun: true })` under [[wd.consumer-feedback.0.5.1]].
+
+6. **Actionable writer-coordination and recovery contract.** Callers need a usable means to satisfy the single-writer precondition and a defined recovery path after partial writes. Stagecraft explicitly accepted documented advisory locking; the later game/session service design centralizes writing in the application. Conservative recovery is restore from VCS/snapshot, verify, validate, and retry; programmatic errors distinguish completed creates from completed updates. Evidence: [[wd.consumer-feedback.0.5.1.2026-07-28_0849]] §§3–4, [[wd.consumer-feedback.0.5.1]], and [[wa.task.2026.2026-07-05-multi-target-payload-advancement]]. Status: documented; no Weave lock/transaction mechanism is currently required.
+
+7. **Structured read-only validation.** Stagecraft needs non-mutating mesh validation through both the supported CLI path and a stable programmatic result carrying severity, code, message, and path/designator attribution. V1 coverage is planner/preflight plus publication readiness, not exhaustive per-file integrity. Evidence: [[wd.consumer-feedback.0.5.1.2026-07-28_0849]] §8 and [[wa.completed.2026.2026-07-29_1219-programmatic-validate-mesh-api]]. Status: released in v0.6.0.
+
+8. **Whole-mesh validation at the observed pending-heavy scale.** Untargeted validation must complete for the reported roughly 6,900-file / 1,700-pending-term corpus; targeted-only validation is not the intended pattern. The broader product intent is the roughly `10^4`-file range. Evidence: [[wd.consumer-feedback.0.5.1.2026-07-29_1213]] §3 and [[wa.completed.2026.2026-07-29_1220-whole-mesh-validate-bounded-memory]]. Status: the reported OOM was reproduced and fixed at roughly 554 MiB peak; the exact broader `10^4` and versioned-policy residuals are not yet separately accepted.
+
+9. **Viable extracted-term publication lifecycle at corpus scale.** Extraction remains non-publication-bearing. The supported extract→weave→generate sequence must work for Stagecraft’s roughly 1,700-term nested-source mesh so weave owns governed `sflo:hasResourcePage` materialization and the downstream synthesis workaround can retire. Evidence: [[wd.consumer-feedback.0.5.1.2026-07-29_1213]] §2, [[wa.task.2026.2026-07-21_1603-extractor-defect-pair]], and [[wd.consumer-feedback.0.5.1.reply]]. Status: active as the first Kim queue item.
+
+10. **Reproducible transition evidence.** Each persistence rung needs grouped path expectations and semantic assertions, explicit proof that old `_history*/_s*/...` payloads remain unchanged, and clear reporting of unexpected drift. Evidence: [[ac.product-ideas.runner-neutral-test-spec]] temporal additions 1, 2, 4, and 5. Status: the triggering rung is covered; broader Weave adoption maps to the Accord-integration `wd.todo` item and [[wa.task.2026.2026-05-16_1625-manifest-completeness-check]].
+
+11. **Application-domain persisted-artifact invariants.** Exercised Stagecraft contracts include resolvable evidence pointers, absence of participant-aim leakage, conditional `recommendedActantIntent`, and negative branches with no committed events, state mutations, or authority-produced resources. Evidence: [[ac.product-ideas.runner-neutral-test-spec]] and [[ac.completed.2026.2026-07-04-json-assertions]]. Ownership: Stagecraft behavior and fixtures, with Accord as proof tooling; no Weave vocabulary/runtime task should be created unless one of these exposes a reusable substrate gap.
+
+### Inferred Shared Requirements
+
+- Stagecraft payloads require stable designator identity and addressable HistoricalState segments because the exercised workflows target exact designators and exact later ordinals. This does not prove that all roleplaying resources need public identifiers.
+- The exercised byte-stability and rerun requirements support the general append/no-op/fail-on-conflict inventory rule in [[wa.task.2026.2026-05-17-append-onlyish-inventory]].
+- Stagecraft must be able to persist and validate locally without publishing. Its current refusal to run `weave publish` supports that operation boundary, but does not yet settle privacy classes, mesh topology, public-ID policy, or later publication mechanics.
+
+### Still Unevidenced — Do Not Promote To Requirements
+
+- A campaign/world/character/scene ontology or any other Stagecraft-specific vocabulary.
+- Which application structures should be RDF-native versus serialized payloads.
+- A whole-repo, sidecar, branch-published, or application-managed mesh topology decision.
+- Fast local query/index support beyond current validation and file-backed operation.
+- A detailed privacy/publication classification for campaign, session, player, generated-text, and note data.
+- Grouped-provenance or citable-batch vocabulary.
+- Weave-level cross-target semantic validation; the application currently owns referential coherence.
+- A requirement that extraction itself emit ResourcePage claims.
+
+Release tags, machine-readable executable version information, changelog quality, and package-version relationships are real consumer asks, but they are delivery/packaging requirements rather than Stagecraft persistence requirements.

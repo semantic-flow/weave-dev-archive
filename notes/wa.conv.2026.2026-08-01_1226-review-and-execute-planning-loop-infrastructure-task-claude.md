@@ -334,3 +334,31 @@ The extractor carve returned mid-wake — harvesting before closure:
 # claude-fable-5_2026-08-01_1347_34
 
 Kim returned fast. Reading her report:
+
+# claude-fable-5_2026-08-01_1348_49
+
+Closure landed on both mains. Now refiring Kim on a pre-created branch per the lesson:
+
+# claude-fable-5_2026-08-01_1349_14
+
+**Wake 2 complete (13:44–13:55 PDT).** Both codex seats are busy and the planning-loop task is closed:
+
+- **Harvested** the extractor carve: bite 1 is the source-root Knop assertion in `shape_assertions.ts` — evidence-backed, one assertion correction plus a fail-on-old regression test. Kim brief written into the extractor task note (archive `5c7b0b6`).
+- **Fired** Kim on it — first attempt surfaced a new lesson (codex workspace-write mounts `.git` read-only; Jimbo owns branch/commit around Kim's edits — recorded in the read-in), refired on pre-created `lane/extractor-nested-source`. Also fired the Jimbo requirements-collection analysis (codex read-only), still running.
+- **Closed** the planning-loop task per the pop obligations: dry-run slice popped (queue: 4 entries, 0 reports), `wd.todo` boarding flipped, note renamed to `wa.completed.*` with all six referencing files updated. Weave main `0722742`, archive main `5c7b0b6`, both pushed.
+
+The worktree sits on the lane branch while Kim edits — wake 3 must not switch branches until her return is harvested. Loop continues on cron.
+
+# djradon_2026-08-01_1353_55
+
+<task-notification>
+<task-id>bh6jfthoi</task-id>
+<tool-use-id>toolu_01CiB13SDkh23Jk6TQ3VDkrw</tool-use-id>
+<output-file>/tmp/claude-1000/-home-djradon-hub-semantic-flow-weave/cdec3e72-8793-4459-a030-19a9f2737f92/tasks/bh6jfthoi.output</output-file>
+<status>completed</status>
+<summary>Background command "Fire codex analysis bite: Stagecraft requirements collection" completed (exit code 0)</summary>
+</task-notification>
+
+# claude-fable-5_2026-08-01_1354_02
+
+The requirements analysis returned — harvesting:
