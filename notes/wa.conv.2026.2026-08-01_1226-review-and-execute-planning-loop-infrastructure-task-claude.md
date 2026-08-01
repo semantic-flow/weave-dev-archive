@@ -466,3 +466,78 @@ The binary-payload draft returned — harvesting:
 # claude-fable-5_2026-08-01_1411_37
 
 Now the bite-2 brief into the extractor note, maintenance lines, and both commits:
+
+# claude-fable-5_2026-08-01_1412_19
+
+Both pushed. Creating Kim's branch and firing bite 2:
+
+# claude-fable-5_2026-08-01_1412_56
+
+**Wake 4/5 harvest report (14:04–14:20 PDT):**
+
+- **Binary-payload task note MINTED**: `wa.task.2026.2026-08-01_1411-binary-payload-advancement` — the codex draft was code-verified (r1 F3's decode path confirmed at `73a26cc`, plus a newly found adjacent defect: both later payload renderer branches hard-code `sflo:RdfDocument` onto binary payloads). It's queue-blocked per the needs-ruling-first rule: a **court card** carries the five spec adjudications with leans (include standalone `payload update` + binary overwrite, one shared classifier, explicit binary plan fields, next-minor release). `wd.todo` now points at the note.
+- **Extractor bite 2 FIRED**: generator nested-source mode (`--source-designator-path`, `catalog/source` shape) — independent of PR #31 by design; Kim is implementing on pre-created `lane/heavy-mesh-nested-source`.
+- **Planner-generalization carve FIRED** (its overlap deferral expired — bite 2 turned out generator-scoped): codex is auditing which first-payload blocker is the smallest landable bite, PR #31-aware.
+- **Pushed**: weave `e4caf3a`, archive `058b437`.
+
+Standing for you, Dave (court, three cards): merge the fully-green PR #31, adjudicate the five binary rulings, send the Stagecraft reply. The loop keeps cycling; next wakes harvest Kim's bite 2 and the planner carve.
+
+# djradon_2026-08-01_1414_44
+
+— one planning wake (Jimbo). You are already seated; do NOT re-read the read-in.
+
+TIMESTAMP FIRST: run `date '+%Y-%m-%d %H:%M %Z'` from the shell as this turn's first command and lead your reply with it. Command-driven, never typed from memory.
+
+COMPACTION: do not quiz yourself. Detection is mechanical — if a compaction summary appears above this turn, apply wd.read-in.jimbo § Session mechanics: re-derive before you publish (no figure that reached you through a summary is republished without re-reading its file), re-read whole the surfaces you write (wd.queues, wa.dave-court, wd.todo, wd.read-in.jimbo), re-check lanes and running work from disk (git branch/status across the repos, the harness task list), and treat every recited constant as recall, not truth.
+
+READ ONLY WHAT CHANGED: run `deno task queue wake` — it prints the last wake stamp and any groom floor unmet today, then rotates the stamp. git log --oneline --since='<the printed stamp>' across weave, weave-dev-archive, semantic-flow-framework, sflo, and accord, plus any lane/* branch with work in flight. Dave and Kim also commit here — read the diffs of anything you did not expect.
+
+FIRE BEFORE YOU REPORT. If wd.queues holds a do-able item, ensure it is a farmable bite and fire it THIS wake — analysis and review bites as subagents; implementation per the standing grant recorded in wd.read-in.jimbo § Conventions. Running work is a slot busy, not a reason to wait. Items in the Jimbo section you do yourself or delegate. Only defer if genuinely overwhelmed — returns arriving faster than you can dispose of them — never "I'd rather finish writing this first".
+
+GROOM per wd.read-in.jimbo — read-in currency first, then wd.queues (run `deno task queue check`), wa.dave-court (open cards only; sweep ruled ones), wd.todo sync, task-note closure flags, wd.decision-log. Each fires on its trigger AND has a once-per-day floor; `wake` reports unmet floors and `deno task queue groomed <duty>` stamps them, so the floors are a file read, not a memory.
+
+If nothing is do-able AND `wake` reported no unmet floors, say so in one line and stop the loop rather than idling. If floors are unmet, satisfy them before stopping. Same prompt continues.
+
+# claude-fable-5_2026-08-01_1415_11
+
+**2026-08-01 14:14 PDT — Wake 6 (consolidation).** Survey clean: all five repos show only my own wake-4/5 commits. Both fired bites are still running — Kim on the generator nested-source mode (still in her read-before phase, working tree untouched) and the planner-generalization carve. Slots busy; the append-onlyish carve stays deferred on the prompt's own harvest-capacity ground (two lanes plus an undisposed carve would out-pace disposal). Floors all met, queue checks green at 3 entries, court unchanged — three cards, all yours (merge PR #31, five binary adjudications, Stagecraft reply). Nothing further do-able this wake; the loop continues.
+
+# djradon_2026-08-01_1416_57
+
+<task-notification>
+<task-id>bwbodl5z5</task-id>
+<tool-use-id>toolu_01HfMTLsaPCmYNYPKpe3MnsG</tool-use-id>
+<output-file>/tmp/claude-1000/-home-djradon-hub-semantic-flow-weave/cdec3e72-8793-4459-a030-19a9f2737f92/tasks/bwbodl5z5.output</output-file>
+<status>completed</status>
+<summary>Background command "Create lane branch and fire Kim on bite 2" completed (exit code 0)</summary>
+</task-notification>
+
+# claude-fable-5_2026-08-01_1417_01
+
+Kim's bite 2 returned — harvesting:
+
+# claude-fable-5_2026-08-01_1417_33
+
+Refired with `--cd` pinning the workspace root, and the third codex gotcha is recorded in the read-in (that edit stays uncommitted until I'm back on main — Kim's lane commit will add only her two files). Waiting on Kim's bite 2 and the planner carve; the loop's next wake or their returns pick up from here.
+
+# djradon_2026-08-01_1421_47
+
+<task-notification>
+<task-id>bni8rfi0b</task-id>
+<tool-use-id>toolu_01BSmjDJRLHtU8yX4rCD1Ykx</tool-use-id>
+<output-file>/tmp/claude-1000/-home-djradon-hub-semantic-flow-weave/cdec3e72-8793-4459-a030-19a9f2737f92/tasks/bni8rfi0b.output</output-file>
+<status>completed</status>
+<summary>Background command "Refire Kim bite 2 with workspace root pinned to weave" completed (exit code 0)</summary>
+</task-notification>
+
+# claude-fable-5_2026-08-01_1421_56
+
+Clean delivery — fail-on-old proven, suite green, and she even ran a CLI smoke. Reviewing the diff and running the landing gates:
+
+# claude-fable-5_2026-08-01_1422_03
+
+The planner carve landed too. Launching Kim's landing gates in background, reading the carve meanwhile:
+
+# claude-fable-5_2026-08-01_1422_18
+
+The carve targets untargeted multi-pending first-payload batching — mostly a dispatch gap over tested machinery. Reading the rest of the brief before folding it in:

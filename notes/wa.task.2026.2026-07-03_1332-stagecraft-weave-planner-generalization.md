@@ -212,3 +212,41 @@ Evidence: `accord validate` reported conformant with `results=0 errors=0`; `acco
 - [x] Decide whether the next slice should tackle multi-candidate planning, append-onlyish inventory writes, or another shape-specific assertion exposed by the same ladder.
 - [x] Land the explicit multi-target payload advancement follow-up from [[wa.completed.2026.2026-07-05-multi-target-payload-advancement]].
 - [x] Update [[wd.todo]], [[wd.decision-log]], and [[wd.codebase-overview]] when the implementation lands if the public or developer contract changes.
+
+## Kim brief — first-payload bite 1: untargeted multi-pending first-payload batch (cut 2026-08-01, wake 6)
+
+Carved by codex read-only analysis. The later-payload single- and multi-target slices are landed; the remaining first-payload work lives in [[wa.task.2026.2026-05-04-refactor-planFirstPayloadWeave]]. This bite is the smallest independently landable blocker: untargeted `weave` over two-plus pending first payloads currently hits the single-candidate cardinality error (`src/core/weave/weave.ts` ~line 229) although the explicit-target batch planner, batched MeshInventory renderer, and two-payload batch test all exist. Dependency order ruled by the carve: (1) this dispatch bite; (2) current-mode extracted-term preservation AFTER PR #31 lands (the loader's latest-state conversion and the planner's exact-state rewrite are the real remaining work there); (3) condition-specific diagnostics alongside each semantic seam, not before.
+
+### Exact goal
+
+When untargeted `weave` discovers ≥2 pending candidates and EVERY candidate classifies as `firstPayloadWeave`: plan them as one coherent batch, sorted by canonical designator path, producing both payload histories and their configured Knop support histories, ONE working MeshInventory update, and (when MeshInventory history is versioned) exactly one next MeshInventory HistoricalState for the command; fully plan and validate before writing. Preserve: current single-target behavior, exact-target narrowing, and the existing sequential path for untargeted mixed-slice, recursive, and later-payload sets. "Transaction" means one validated `VersionPlan` and one shared progression — not filesystem atomicity, locking, or rollback (application-owned per the requirements ownership map).
+
+### Likely files
+
+- `src/core/weave/weave.ts`: widen the multi-candidate dispatch (~line 229) only for an untargeted all-first-payload set; reuse the batch planner (~line 596); do not alter per-candidate `planFirstPayloadWeave` (~line 1169).
+- `src/runtime/weave/version_execution.ts`: recognize the untargeted all-first-payload set after candidate discovery and route it through the existing batch-plan branch (~line 414), leaving mixed sets in the sequential loop (~line 500); do not weaken explicit batch policy-consistency checks.
+- `src/core/weave/weave_test.ts`: untargeted sibling of the explicit two-payload batch test (~line 966).
+- `tests/integration/weave_test.ts`: docs-rooted sidecar flow — initially woven mesh, integrate `ontology` and `shacl`, untargeted `executeWeave`, verify both histories and pages; under versioned MeshInventory policy assert the ordinal advances ONCE (configure versioned history explicitly rather than changing defaults).
+
+No renderer or progression-resolver change is expected — if one appears needed, report and stop.
+
+### Fail-on-old sequence
+
+1. Core test with the existing two-payload batch fixture, `request: {}`, candidates supplied in reverse lexical order — must fail on old code with `supports exactly one weave candidate; found 2`; after implementation assert canonical `wovenDesignatorPaths`, exactly one created MeshInventory state file plus one working update, merged inventory carrying both payloads and Knops, and per-payload initial snapshots with configured support histories.
+2. Exact-target regression with the same candidates targeting one designator — no created/updated path belongs to the unselected payload.
+3. Runtime/integration test per above; the one-state assertion must fail on the old sequential loop.
+4. Implement the narrow dispatch changes; rerun new tests plus existing first-payload, explicit batch, mixed/recursive, and later-payload regressions.
+
+### Validation
+
+`deno test --preload=tests/support/test_tmp_harness.ts --allow-read --allow-write --allow-run=git,deno --allow-env --filter "untargeted first payload" src/core/weave/weave_test.ts`; same harness with `--filter "multi-pending first payload" tests/integration/weave_test.ts`; `deno task check`; `deno task lint`. Full `deno task test` + `deno task ci` reviewer-side at landing.
+
+### Non-goals and must-not-touch
+
+No extracted-term preservation/scale work, no diagnostic-family conversion, no later-payload/recursive/mixed batching, no locking/rollback/transactions, no append-onlyish generalization, no progress-output or CLI parsing changes, no integrate/SFLO changes. Do not touch or inspect `scripts/generate-pending-heavy-mesh.ts` or `tests/scripts/pending_heavy_mesh_test.ts` (concurrent lane), nor `shape_assertions.ts`, `artifact_loaders.ts`, `extraction_source_blocks.ts`, `knop_inventory_renderers.ts`, `progression_resolvers.ts`, later-payload read models/renderers, binary behavior, fixtures, manifests, queue/read-in notes.
+
+### Report rather than implement
+
+Renderer/progression-resolver changes seeming necessary; differing target-scoped policies (retain fail-closed conflict); mixed candidate sets; recursive untargeted batching demand; any need for the explicit checkpoint batch's double-hash capture guarantee (separate contract decision); page-ordering changes beyond deterministic candidate order; conflicts with PR #31 or the pending-heavy lane.
+
+Suggested commit: `feat(weave): batch untargeted multi-pending first-payload weave`. Branch: `lane/untargeted-first-payload-batch` off main (pre-created; do not run git). End your return with `READ-IN/QUEUE DELTA: none | <what belongs where>`.
