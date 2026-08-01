@@ -6,7 +6,7 @@ desc: 'Task sketch (parked, future): make repository-source checkout identificat
 
 ## Status
 
-**Sketch only — parked.** Cut 2026-07-30 by Jimbo at PM direction: the v1 `validateMesh` F1 ruling chose typed refusal for floating-repository sources ([[wa.task.2026.2026-07-29_1219-programmatic-validate-mesh-api]] ruling record), and the PM required the fullest version of the necessary/convenience split be captured as its own task. Activate when a Node/lib consumer actually needs floating-source validation, or when CLI/lib code-path unification pays for itself.
+**Sketch only — parked.** Cut 2026-07-30 by Jimbo at PM direction: the v1 `validateMesh` F1 ruling chose typed refusal for floating-repository sources ([[wa.completed.2026.2026-07-29_1219-programmatic-validate-mesh-api]] ruling record), and the PM required the fullest version of the necessary/convenience split be captured as its own task. Activate when a Node/lib consumer actually needs floating-source validation, or when CLI/lib code-path unification pays for itself.
 
 ## Goals
 

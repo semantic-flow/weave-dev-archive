@@ -12,7 +12,7 @@ desc: 'Deliver the API surface Stagecraft needs: a stable validateMesh export in
 
 ## Summary
 
-Stagecraft consumes Weave as a CLI-only validation consumer (`weave validate mesh --mesh-root …` from a package script) moving from `0.3.0` to `0.5.1`, and their 2026-07-29 follow-up asks what the intended consumption model is before they commit. The obliging answer has two parts: settle the packaging questions now (cheap — most of it already shipped as documented fact in v0.5.1), and deliver the programmatic validation surface as the v0.6.0 headline so their CI gate can consume structured findings rather than exit codes and formatted text. This note owns both. The bounded-memory engine work that whole-mesh validation needs at their scale is deliberately NOT here — it is the sibling note [[wa.task.2026.2026-07-29_1220-whole-mesh-validate-bounded-memory]]; neither slice blocks the other, but the scale acceptance bench there must run through both the CLI and `validateMesh`.
+Stagecraft consumes Weave as a CLI-only validation consumer (`weave validate mesh --mesh-root …` from a package script) moving from `0.3.0` to `0.5.1`, and their 2026-07-29 follow-up asks what the intended consumption model is before they commit. The obliging answer has two parts: settle the packaging questions now (cheap — most of it already shipped as documented fact in v0.5.1), and deliver the programmatic validation surface as the v0.6.0 headline so their CI gate can consume structured findings rather than exit codes and formatted text. This note owns both. The bounded-memory engine work that whole-mesh validation needs at their scale is deliberately NOT here — it is the sibling note [[wa.completed.2026.2026-07-29_1220-whole-mesh-validate-bounded-memory]]; neither slice blocks the other, but the scale acceptance bench there must run through both the CLI and `validateMesh`.
 
 This note was adversarially reviewed by Codex on 2026-07-29 (r1 below); its corrections are folded into the body, and its three blockers are now named deliverables of the spec review this note schedules as its first implementation item.
 
@@ -111,7 +111,7 @@ CLI parity law (as narrowed above): `weave validate` and `validateMesh` consume 
 
 ## Non-Goals
 
-- Bounded-memory whole-mesh validation (sibling note [[wa.task.2026.2026-07-29_1220-whole-mesh-validate-bounded-memory]] owns the engine).
+- Bounded-memory whole-mesh validation (sibling note [[wa.completed.2026.2026-07-29_1220-whole-mesh-validate-bounded-memory]] owns the engine).
 - Expanding validation coverage beyond today's planner/preflight + publication-readiness semantics (documented as-is in v1; growth is future additive work).
 - A CLI `--json` output flag (may become a cheap follow-up once the findings model exists; not this slice).
 - JSR publishing; SHACL/semantic validation expansion; locking mechanisms; changes to publication-readiness semantics; extraction behavior changes (§2 is dispositioned above, owned by TODO 23).

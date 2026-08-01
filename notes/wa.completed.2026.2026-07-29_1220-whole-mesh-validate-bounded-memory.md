@@ -63,7 +63,7 @@ Verified accumulation pathologies, with their conditions:
 ## Non-Goals
 
 - Extracted-term weave/extract batch viability — `wd.todo` TODO 23 owns the write path; shared infrastructure is coordinated explicitly, not silently co-owned.
-- The `validateMesh` API contract (sibling note [[wa.task.2026.2026-07-29_1219-programmatic-validate-mesh-api]]); the acceptance bench here runs through both surfaces once both land.
+- The `validateMesh` API contract (sibling note [[wa.completed.2026.2026-07-29_1219-programmatic-validate-mesh-api]]); the acceptance bench here runs through both surfaces once both land.
 - Oxigraph adoption; raising the heap via `--v8-flags` as a fix (documenting the observed default ceiling in `wu.*` docs may ride the lane); write-path streaming; publication-preset changes (already streaming); CLI output/format changes.
 
 ## Implementation Plan
@@ -148,7 +148,7 @@ Measurements (current-only, `--expose-gc`, `/usr/bin/time -v`):
 
 **Evidence-ratified fix direction for spec review r1:** primary — eliminate per-candidate full-source duplication in validate-mode candidate loading (share/dedupe or lazy-load-and-drop); secondary — parse-reuse to cut the churn term (1.96 GiB at N=1700 from churn alone is still uncomfortable headroom); versioned-policy snapshot arm keeps plan-and-drop/skip-staging as previously recorded.
 
-**Landing:** this lane lands SECOND, rebased onto main after `lane/validate-mesh-api` merges — the two lanes collide on `weave.ts`/`version_execution.ts` and this one's overlap is the small additive side. The full landing plan (D1–D4) is framed in [[wa.task.2026.2026-07-29_1219-programmatic-validate-mesh-api]]; the fix slice cuts only after both lanes are on main.
+**Landing:** this lane lands SECOND, rebased onto main after `lane/validate-mesh-api` merges — the two lanes collide on `weave.ts`/`version_execution.ts` and this one's overlap is the small additive side. The full landing plan (D1–D4) is framed in [[wa.completed.2026.2026-07-29_1219-programmatic-validate-mesh-api]]; the fix slice cuts only after both lanes are on main.
 
 **LANDED (2026-07-31):** rebased onto post-#25 main (conflicts exactly the two predicted files; `memoryStats` wiring re-threaded through the classified `executeValidate` signature), one dnt-shim fix rode the lane (`929d5e8`: `TextEncoder` used as a type annotation — dnt's Node type-checking has only the shimmed value), full ci 737/737 + npm-lib build/smoke green, merged as PR #26 (`c0b25b3`).
 
