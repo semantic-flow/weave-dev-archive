@@ -184,3 +184,8 @@ Executor note: the note assigned r1 to Codex alone; Dave's direct "review and th
 - **D3(b) is a STANDING GRANT:** `codex exec` implementation bites on `lane/*` branches may fire from loop wakes without a per-session ask. Pushes, releases, and consumer replies remain Dave's.
 - **D7 CONFIRMED:** Kim is the implementation-seat persona regardless of vendor; the `## Kim — implementation` heading is pinned.
 - **D2 REPLACED:** Dave's court is a separate note, [[wa.dave-court]] in the archive vault, not a section of wd.queues — restoring Stagecraft's ungated-court shape and dissolving r0 blocker F1's workaround. D1 shrinks the gated queue to two sections; propagated through the queue contract, gate design, read-in, loop prompt, Testing, Contract Changes, and slices 2–3 in this note.
+
+## Ruling — Dave, 2026-08-01
+
+- **Pushes move to Jimbo:** branch pushes and PR opening for weave and weave-dev-archive are the planning seat's responsibility from now on ("You should take responsibility for pushes"). Releases, merge/landing GO, and consumer replies remain Dave's. Supersedes the push clauses in D3(b) and "What deliberately does not port"; propagated to [[wd.read-in.jimbo]] § Conventions and [[wd.decision-log]].
+- **Seating prompt minted:** the opening prompt joins the loop prompt as a second paste-source section in [[wd.read-in.jimbo]], closing the gap where the seating act existed only as prose.
