@@ -75,7 +75,7 @@ Sections, adapted from `sc.read-in.jimbo` + the parts of `sc.read-in` that survi
 
 Load cadence (ported): load at seating; reload after a compaction — that is the real trigger; never on an ordinary wake, because re-reading per wake fills the window, forces compaction, and compaction is precisely what destroys the read-in.
 
-### Loop prompt (draft — finalized in slice 3)
+### Loop prompt (draft — SUPERSEDED: the canonical copy lives in [[wd.read-in.jimbo]] § Loop prompt — paste source; do not paste from here — the dry run's first wake caught exactly this)
 
 ```
 /loop 10m — one planning wake (Jimbo). You are already seated; do NOT re-read the read-in.
@@ -193,3 +193,5 @@ Executor note: the note assigned r1 to Codex alone; Dave's direct "review and th
 - **D8 RULED AS AMENDED:** wake/groom stamps stay mechanical in git-ignored `.jimbo-state.json`, and the human-auditable maintenance log lives in a monthly note (`wd.maintenance.2026-08` style): `deno task queue groomed` appends its line there mechanically; hand maintenance (renames, queue hand-edits, closure sweeps) is logged there by hand.
 - **D3 (a)/(b) clarified** (raised as "regarding D4 — don't we need a) AND b)?"): the fire rule is a dispatch by bite type, not a preference order — a wake fires as many do-able bites as it holds, analysis (a) and implementation (b) together when both are ready.
 - **D1/D4/D5/D6 RATIFIED as built** ("I accept your leans", after PR #30 merged at `4926b1e`): queue name and pinned sections, the 10m cadence, the gate's CI posture, and the named SURVEY repo set are final. Every decision in this note is now ruled; the court's ratify card is swept.
+- **D3 amended — delegation defaults to codex whenever possible** (raised during the dry run: "do we adequately capture 'use codex for delegation whenever possible'" — it did not): analysis, review, and survey bites go to `codex exec --sandbox read-only` by default, not Claude subagents; subagents only when a bite needs the harness's tools or in-session context. Implementation stays `codex exec` on `lane/*`. Propagated to [[wd.read-in.jimbo]] § Conventions and its loop prompt.
+- **Dry run STARTED 2026-08-01 13:36 PDT** (Dave armed `/loop 10m`, which itself ruled the court's arm-the-dry-run card — swept). First wake surfaced a real defect: Dave pasted this note's draft loop prompt, which predates the a-AND-b and codex-first amendments — the draft below is now marked superseded.

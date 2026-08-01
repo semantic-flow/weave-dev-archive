@@ -175,3 +175,126 @@ You can do the merge
 # claude-fable-5_2026-08-01_1333_52
 
 Committing and pushing both repos (scoped adds, since `wd.todo` had outside changes on disk):
+
+# claude-fable-5_2026-08-01_1334_14
+
+All pushed and the queue still checks green. Updating memory and wrapping up:
+
+# claude-fable-5_2026-08-01_1334_36
+
+Merged and fully ruled. Final state:
+
+- **PR #30 is merged** to main at `4926b1e` with a merge commit (matching #25–#27 house style); the lane branch is deleted locally and on origin.
+- **D1/D4/D5/D6 ratified** per your acceptance of the leans — every decision in the task note (D1–D8) is now ruled. The ratify card is swept; the decision-log entry reads FULLY RULED; the ruling is recorded in the task note.
+- **Post-merge sync pushed**: weave main `11b5488` (decision-log status, `wd.todo` boarding line, maintenance-log lines for the merge and the sweep) and archive main `7bf762d` (court sweep + final ruling). Queue check is green.
+
+The court is down to its last two cards: **send the Stagecraft reply** (draft ready at `wd.consumer-feedback.0.5.1.reply` — verify v0.6.0 on npm, then it's a paste; that one stays yours) and **arm the supervised dry run**. Whenever you're ready for the dry run: fresh session → paste `wd.read-in.jimbo` § Seating prompt → after its SEATED report, paste § Loop prompt. The task note's last checkbox — and its own rename to `wa.completed.*`, now my duty — waits on that wake.
+
+# djradon_2026-08-01_1334_36
+
+<command-message>loop</command-message>
+<command-name>/loop</command-name>
+<command-args>10m — one planning wake (Jimbo). You are already seated; do NOT re-read the read-in.
+
+TIMESTAMP FIRST: run `date '+%Y-%m-%d %H:%M %Z'` from the shell as this turn's first command and lead your reply with it. Command-driven, never typed from memory.
+
+COMPACTION: do not quiz yourself. Detection is mechanical — if a compaction summary appears above this turn, apply wd.read-in.jimbo § Session mechanics: re-derive before you publish (no figure that reached you through a summary is republished without re-reading its file), re-read whole the surfaces you write (wd.queues, wa.dave-court, wd.todo, wd.read-in.jimbo), re-check lanes and running work from disk (git branch/status across the repos, the harness task list), and treat every recited constant as recall, not truth.
+
+READ ONLY WHAT CHANGED: run `deno task queue wake` — it prints the last wake stamp and any groom floor unmet today, then rotates the stamp. git log --oneline --since='<the printed stamp>' across weave, weave-dev-archive, semantic-flow-framework, sflo, and accord, plus any lane/* branch with work in flight. Dave and Kim also commit here — read the diffs of anything you did not expect.
+
+FIRE BEFORE YOU REPORT. If wd.queues holds a do-able item, ensure it is a farmable bite and fire it THIS wake — analysis and review bites as subagents; implementation per the standing grant recorded in wd.read-in.jimbo § Conventions. Running work is a slot busy, not a reason to wait. Items in the Jimbo section you do yourself or delegate. Only defer if genuinely overwhelmed — returns arriving faster than you can dispose of them — never "I'd rather finish writing this first".
+
+GROOM per wd.read-in.jimbo — read-in currency first, then wd.queues (run `deno task queue check`), wa.dave-court (open cards only; sweep ruled ones), wd.todo sync, task-note closure flags, wd.decision-log. Each fires on its trigger AND has a once-per-day floor; `wake` reports unmet floors and `deno task queue groomed <duty>` stamps them, so the floors are a file read, not a memory.
+
+If nothing is do-able AND `wake` reported no unmet floors, say so in one line and stop the loop rather than idling. If floors are unmet, satisfy them before stopping. Same prompt continues.</command-args>
+
+# /loop — schedule a recurring or self-paced prompt
+
+Parse the input below into `[interval] <prompt…>` and schedule it.
+
+## Parsing (in priority order)
+
+1. **Leading token**: if the first whitespace-delimited token matches `^\d+[smhd]$` (e.g. `5m`, `2h`), that's the interval; the rest is the prompt.
+2. **Trailing "every" clause**: otherwise, if the input ends with `every <N><unit>` or `every <N> <unit-word>` (e.g. `every 20m`, `every 5 minutes`, `every 2 hours`), extract that as the interval and strip it from the prompt. Only match when what follows "every" is a time expression — `check every PR` has no interval.
+3. **No interval**: otherwise, the entire input is the prompt and you'll self-pace dynamically (see "Dynamic mode" below).
+
+If the resulting prompt is empty, show usage `/loop [interval] <prompt>` and stop.
+
+Examples:
+- `5m /babysit-prs` → interval `5m`, prompt `/babysit-prs` (rule 1)
+- `check the deploy every 20m` → interval `20m`, prompt `check the deploy` (rule 2)
+- `run tests every 5 minutes` → interval `5m`, prompt `run tests` (rule 2)
+- `check the deploy` → no interval → dynamic mode, prompt `check the deploy` (rule 3)
+- `check every PR` → no interval → dynamic mode, prompt `check every PR` (rule 3 — "every" not followed by time)
+- `5m` → empty prompt → show usage
+
+## Offer cloud first
+
+Before any scheduling step, check whether EITHER is true:
+- the parsed interval (rule 1 or 2) is **≥60 minutes**, or
+- regardless of which rule matched, the original input uses daily phrasing ("every morning", "daily", "every day", "each night", "every weekday")
+
+If either is true, call AskUserQuestion first:
+- `question`: "This loop stops when you close this session. Set it up as a cloud schedule instead so it keeps running?"
+- `header`: "Schedule"
+- `options`: `[{label: "Cloud schedule (recommended)", description: "Runs in Anthropic's cloud even after you close this session"}, {label: "This session only", description: "Runs in this terminal until you exit"}]`
+
+If they pick **Cloud schedule**: do NOT call CronCreate. Invoke the `schedule` skill directly via the Skill tool with `args` set to their original input verbatim (e.g. `Skill({skill: "schedule", args: "every morning tell me a joke"})`), then follow that skill's instructions to completion. Do NOT tell the user to run /schedule themselves. **Then stop — do not continue to any section below** (no CronCreate, no ScheduleWakeup, no "execute the prompt now").
+If they pick **This session only**:
+- If the trigger was a parsed ≥60-minute interval (rule 1 or 2): continue below with that interval.
+- If the trigger was daily phrasing only (rule 3, no parsed interval): do NOT call CronCreate. Explain that a daily-cadence loop won't fire before this session closes, so there's nothing useful to schedule locally — suggest they either pick Cloud schedule, or re-run `/loop` with an explicit shorter interval (e.g. `/loop 1h <prompt>`) if they want a session loop. Then stop.
+If neither trigger condition was met: continue below.
+
+## Fixed-interval mode (rules 1 and 2)
+
+Convert the interval to a cron expression:
+
+| Interval pattern      | Cron expression     | Notes                                    |
+|-----------------------|---------------------|------------------------------------------|
+| `Nm` where N ≤ 59   | `*/N * * * *`     | every N minutes                          |
+| `Nm` where N ≥ 60   | `0 */H * * *`     | round to hours (H = N/60, must divide 24)|
+| `Nh` where N ≤ 23   | `0 */N * * *`     | every N hours                            |
+| `Nd`                | `0 0 */N * *`     | every N days at midnight local           |
+| `Ns`                | treat as `ceil(N/60)m` | cron minimum granularity is 1 minute  |
+
+**If the interval doesn't cleanly divide its unit** (e.g. `7m` → `*/7 * * * *` gives uneven gaps at :56→:00; `90m` → 1.5h which cron can't express), pick the nearest clean interval and tell the user what you rounded to before scheduling.
+
+Then:
+1. Call CronCreate with: `cron` (the expression above), `prompt` (the parsed prompt verbatim), `recurring: true`.
+2. Briefly confirm: what's scheduled, the cron expression, the human-readable cadence, that recurring tasks auto-expire after 7 days, and that the user can cancel sooner with CronDelete (include the job ID). Only if you did NOT show the cloud-offer AskUserQuestion above (i.e., neither trigger condition applied), end the confirmation with this exact line on its own, italicized: `_Runs until you close this session · For durable cloud-based loops, use /schedule_`. If the user already answered that question, omit this line.
+3. **Then immediately execute the parsed prompt now** — don't wait for the first cron fire. If it's a slash command, invoke it via the Skill tool; otherwise act on it directly.
+
+## Dynamic mode (rule 3 — no interval)
+
+The user wants you to self-pace. Decide what makes the next iteration worth running — a passage of time, or an observable event.
+
+1. **Run the parsed prompt now.** If it's a slash command, invoke it via the Skill tool; otherwise act on it directly.
+2. **If the next run is gated on an event** (CI finishing, a log line matching, a file changing, a PR comment) and no Monitor is already running for it: arm one now with `persistent: true`. Its events arrive as `<task-notification>` messages and wake this loop immediately — you do not wait for the ScheduleWakeup deadline. Arm once; on later iterations call TaskList first and skip this step if a monitor is already running.
+3. **Briefly confirm**: that you're self-pacing, whether a Monitor is the primary wake signal, that you ran the task now, and what fallback delay you're about to pick. Write this as text *before* calling ScheduleWakeup — the turn ends as soon as that tool returns.
+4. **Then, as the last action of this turn, decide whether the loop continues.** If the task needs another iteration, call ScheduleWakeup with:
+   - `delaySeconds`: with a Monitor armed this is the **fallback heartbeat** — how long to wait if no event fires (lean 1200–1800s; idle ticks more frequent than the task needs are pure overhead). Without a Monitor this is the cadence — pick based on what you observed. Read the tool's own description for cache-aware delay guidance.
+   - `reason`: one short sentence on why you picked that delay.
+   - `prompt`: the full original /loop input verbatim, prefixed with `/loop ` so the next firing re-enters this skill and continues the loop. For example, if the user typed `/loop check the deploy`, pass `/loop check the deploy` as the prompt.
+   If it doesn't need another iteration, stop instead (step 6) — re-arming is a per-turn choice, not a default.
+5. **If you were woken by a `<task-notification>`** rather than this prompt: handle the event in the context of the loop task, then make the same decision. If the loop should continue, call ScheduleWakeup again with the same `prompt` and the same 1200–1800s `delaySeconds` from step 4 (the Monitor remains the wake signal; the new wakeup is only the fallback heartbeat). If the event means the work is finished, stop (step 6).
+6. **To stop the loop** — the task is complete, further iterations can't make progress, or the user asked you to stop — call ScheduleWakeup with `stop: true` (no other fields) and TaskStop any Monitor you armed (use TaskList to find the task ID if it is no longer in context). Stopping is the loop's normal ending — the user can restart it anytime with /loop. Before you stop, send a one-line outcome via PushNotification — the user may be away and waiting to hear it's done. Skip this if you're stopping because the user just told you to; they're already here.
+
+## Input
+
+10m — one planning wake (Jimbo). You are already seated; do NOT re-read the read-in.
+
+TIMESTAMP FIRST: run `date '+%Y-%m-%d %H:%M %Z'` from the shell as this turn's first command and lead your reply with it. Command-driven, never typed from memory.
+
+COMPACTION: do not quiz yourself. Detection is mechanical — if a compaction summary appears above this turn, apply wd.read-in.jimbo § Session mechanics: re-derive before you publish (no figure that reached you through a summary is republished without re-reading its file), re-read whole the surfaces you write (wd.queues, wa.dave-court, wd.todo, wd.read-in.jimbo), re-check lanes and running work from disk (git branch/status across the repos, the harness task list), and treat every recited constant as recall, not truth.
+
+READ ONLY WHAT CHANGED: run `deno task queue wake` — it prints the last wake stamp and any groom floor unmet today, then rotates the stamp. git log --oneline --since='<the printed stamp>' across weave, weave-dev-archive, semantic-flow-framework, sflo, and accord, plus any lane/* branch with work in flight. Dave and Kim also commit here — read the diffs of anything you did not expect.
+
+FIRE BEFORE YOU REPORT. If wd.queues holds a do-able item, ensure it is a farmable bite and fire it THIS wake — analysis and review bites as subagents; implementation per the standing grant recorded in wd.read-in.jimbo § Conventions. Running work is a slot busy, not a reason to wait. Items in the Jimbo section you do yourself or delegate. Only defer if genuinely overwhelmed — returns arriving faster than you can dispose of them — never "I'd rather finish writing this first".
+
+GROOM per wd.read-in.jimbo — read-in currency first, then wd.queues (run `deno task queue check`), wa.dave-court (open cards only; sweep ruled ones), wd.todo sync, task-note closure flags, wd.decision-log. Each fires on its trigger AND has a once-per-day floor; `wake` reports unmet floors and `deno task queue groomed <duty>` stamps them, so the floors are a file read, not a memory.
+
+If nothing is do-able AND `wake` reported no unmet floors, say so in one line and stop the loop rather than idling. If floors are unmet, satisfy them before stopping. Same prompt continues.
+
+# claude-fable-5_2026-08-01_1337_51
+
+Classifier balked at the compound loop — running the survey as plain per-repo commands:

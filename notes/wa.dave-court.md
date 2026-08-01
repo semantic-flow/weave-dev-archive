@@ -14,8 +14,4 @@ This note is Dave's court: open decision cards only, one card per decision, each
 - Waits on: verifying v0.6.0 is live on npm.
 - Lean: verify and send as-is; the draft was written for exactly this moment.
 
-## Arm the first supervised loop wake
-
-- Decision: schedule the dry run — one `/loop 10m` cycle with Dave watching, the last open implementation-plan item on [[wa.task.2026.2026-07-31_1014-planning-loop-infrastructure]]. Seating order is in [[wd.read-in.jimbo]] § Loop prompt.
-- Lean: next working session; adjust prompt/read-in from what the wake actually needed rather than what was predicted.
 
