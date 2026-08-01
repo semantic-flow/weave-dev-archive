@@ -250,3 +250,11 @@ No extracted-term preservation/scale work, no diagnostic-family conversion, no l
 Renderer/progression-resolver changes seeming necessary; differing target-scoped policies (retain fail-closed conflict); mixed candidate sets; recursive untargeted batching demand; any need for the explicit checkpoint batch's double-hash capture guarantee (separate contract decision); page-ordering changes beyond deterministic candidate order; conflicts with PR #31 or the pending-heavy lane.
 
 Suggested commit: `feat(weave): batch untargeted multi-pending first-payload weave`. Branch: `lane/untargeted-first-payload-batch` off main (pre-created; do not run git). End your return with `READ-IN/QUEUE DELTA: none | <what belongs where>`.
+
+### Residual from PR #33 review (CodeRabbit, 2026-08-01) — untargeted capture guard
+
+CodeRabbit asked that the untargeted first-payload batch path create and verify a working-file snapshot over `initialWeaveableKnops` before batch planning, mirroring the explicit-batch double-hash guard. **Deliberately skipped in the bite; boarded here as a contract question.**
+
+Why skipped: the explicit guard's scope is a ruled decision ([[wd.decision-log]] 2026-07-06, "Payload Batch Snapshot Hash Scope") covering *the requested targets' current working payload files* — the evidenced Stagecraft checkpoint flow, where a service supplies the target set and owns single-writer serialization. The untargeted path has no requested set; candidates are discovered by traversal, so "which files does the capture window cover" is a new contract question (whole discovered set? re-discovery after capture? interaction with candidate loading?), not a defect fix. The bite's own brief pre-identified this as report-rather-than-implement. It is also not a regression: the sequential loop this dispatch replaced never captured on the untargeted path either.
+
+Revive if: a service ever drives untargeted `weave` as a checkpoint (today it is an operator/pipeline command), or concurrent-writer corruption is actually observed. Then rule the window scope first, implement second.

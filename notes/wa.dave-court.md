@@ -13,10 +13,11 @@ This note is Dave's court: open decision cards only, one card per decision, each
 - Decision: merge https://github.com/semantic-flow/weave/pull/31 (extractor bite 1: assertion fix + fail-on-old regression; full ci + build:npm-lib green locally; implemented by Kim/codex under the standing grant, reviewed and landed by the planning seat). Merge GO stays yours.
 - Lean: merge on green checks — the change is exactly the carved bite, and the extractor queue entry keeps its place for the remaining slices.
 
-## Adjudicate the binary-payload API rulings
+## Binary-payload task: park or schedule?
 
-- Decision: five spec-level choices gate [[wa.task.2026.2026-08-01_1411-binary-payload-advancement]] (cut today; code-verified draft). Leans, per the note's Open Issues: (1) standalone `payload update` INCLUDED for binary; (2) single-item binary `overwriteExistingState` INCLUDED, else refuse-with-code; (3) ONE shared content classifier (inventory `sflo:RdfDocument` status + established text-like extension set, no MIME sniffing); (4) plan shape = explicit `createdBinaryFiles`/`updatedBinaryFiles` fields; (5) release vehicle = next minor after 0.6.0. Spec amendments to [[sf.spec.2026-07-21-programmatic-version-api]] and [[wd.programmatic-validate-api]]'s sibling [[wd.programmatic-version-api]] precede code.
-- Lean: accept all five as proposed; the task then becomes queue-eligible.
+- Decision: whether [[wa.task.2026.2026-08-01_1411-binary-payload-advancement]] is worth doing at all right now. Dave challenged the premise 2026-08-01 ("why would we do binary payload advancement now? was there a stagecraft use I missed?") — audit answer: **no consumer ask exists.** Neither feedback round mentions binary payloads; the "press includes non-text artifacts" line is a Stagecraft PM-seat Open Issue in the 07-21 note that also deferred press consumption to their own lane. Requirement 4 in [[wa.task.2026.2026-06-30_1108-stagecraft-driven-semantic-flow-requirements]] has been reclassified accordingly.
+- Lean: **PARK the task, do not schedule it** — but keep the note, because the underlying code defect is real and now documented (later advancement decodes bytes; later renderers mistype binary payloads as `sflo:RdfDocument`). Trigger to revive: a real binary payload hitting later advancement through CLI `version`, or the Stagecraft press lane landing. The five spec adjudications inside the note wait for that trigger; nothing is owed now.
+- If instead you want it scheduled, the five leans are in the note's Open Issues (include standalone update + binary overwrite, one shared classifier, explicit binary plan fields, next-minor release).
 
 ## Send the Stagecraft reply
 
