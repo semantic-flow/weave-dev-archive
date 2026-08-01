@@ -155,3 +155,23 @@ For CI/CD, rerunning publication should be safe because the command either sees 
 - [ ] Correct singular `release` examples/tests to `releases`.
 - [ ] Update developer/user documentation and decision log.
 - [ ] Run targeted tests, then `deno task fmt`, `deno task lint`, and the relevant CI gate before closing.
+
+## Evidence audit + Kim brief — bite 1 (cut 2026-08-01, post-loop harvest)
+
+Codex read-only audit against current code found this note partly stale: `planInventoryAppend` already exists with semantic `unchanged`/`append`/`conflict` plans, byte-stable no-op, and contract tests (`src/core/weave/inventory_append_planner.ts`, `_test.ts`); import's existing-payload `_sources` insertion already uses it; carried `_sources`/`_references` preservation consults it but applies facts to a freshly rendered inventory. The real remaining gap: normal inventory writers are still whole-document producers — MeshInventory growth splits/replaces subject blocks (`mesh_inventory_renderers.ts` ~28/179/428), KnopInventory and payload renderers emit mutable progression facts directly, later `knop create`/`add-reference`/extract/integrate render whole documents, and ResourcePage policy actively deletes disallowed page facts (`resource_page_policy.ts` ~141 — needs its own later slice).
+
+### Bite 1: migrate current-only ReferenceCatalog weave to the append planner
+
+File-disjoint from PRs #31/#32/#33 (touches only `knop_inventory_renderers.ts` + a NEW `knop_inventory_renderers_test.ts`); if work serializes, merge those PRs first and rebase. Change only `renderCurrentOnlyReferenceCatalogWovenKnopInventoryTurtle` (~line 304, currently `replaceSubjectBlock`/`upsertSubjectBlockAfter`) so a current-only ReferenceCatalog weave: preserves the entire existing KnopInventory byte-for-byte as a prefix; appends only missing settled facts (catalog types, its `sflo:hasWorkingLocatedFile`, `sflo:hasResourcePage <…/index.html>`, page types `sflo:ResourcePage` + `sflo:LocatedFile`); returns exact input bytes when all requested facts exist; fails with `WeaveInputError` naming requested and existing facts when the settled working-locator conflicts; keeps compact `sflo:` Turtle for the appended suffix; preserves semantic preconditions and full-plan behavior. Treat only `hasWorkingLocatedFile` as single-valued — `hasResourcePage` is not functional in the ontology.
+
+Fail-on-old sequence: (1) append test whose input carries a comment and an unrelated `ex:` predicate — result must start with the exact input bytes (old code edits the block in place and rejoins); (2) exact no-op test requiring byte equality; (3) conflict test with expected + different carried locator requiring the named-facts diagnostic (old string-inclusion guard accepts it); (4) record failures against unmodified code; (5) implement via `planInventoryAppend` (planner is evidence — do not modify it); (6) rerun focused tests + the existing current-only ReferenceCatalog plan test WITHOUT editing `weave_test.ts`.
+
+Validation: `deno task test --filter='planInventoryAppend|current-only ReferenceCatalog inventory'`; `deno fmt` on the two files; `deno task lint`; `deno task check`; `deno task build:npm-lib`; `deno task ci` (reviewer-side at landing).
+
+Non-goals: no versioned-catalog history changes, no PageDefinition twin yet, no MeshInventory/payload/batch/metadata/progression refactor, no ResourcePage policy fix, no planner API redesign, no fixture regeneration or shims. Must not touch: `shape_assertions.ts`, `weave.ts`, `weave_test.ts`, `version_execution.ts`, `tests/integration/weave_test.ts`, the pending-heavy generator, MeshInventory/payload renderers, ResourcePage policy, import's migrated path, archive notes.
+
+Report rather than implement: any evidence `hasResourcePage` needs single-valued treatment; any need to relax full-plan shape assertions; any exact-output fixture forcing active-lane edits; any global planner-serialization need; mutable progression facts in this current-only path; the generate-policy deletion defect (cite, separate bite).
+
+Branch when fired: `lane/reference-catalog-append` off main (pre-created by the planning seat). Suggested commit: `fix(weave): append-only current-only ReferenceCatalog inventory weave`. End the return with `READ-IN/QUEUE DELTA: none | <what belongs where>`.
+
+STATUS: brief READY; fire held until PRs #31–#33 merge or the loop re-arms (serialization per the carve's own lane-overlap analysis).
