@@ -102,7 +102,7 @@ The better long-term model is to converge default and customized pages onto the 
 
 That also makes the current generated panels reusable instead of hard-coded page branches. Panels such as children, properties, references, history, raw source, source/provenance, and Semantic Flow metadata should become named structured panel models whose data is still computed by runtime code. Presentation config can then suppress, order, restyle, or replace panel rendering without making templates responsible for RDF discovery, source resolution, or graph navigation.
 
-The detailed default/custom presentation unification has been split into [[wa.task.2026.2026-05-22_2253-resourcepage-config-and-templating]]. Keep this note focused on page-definition source semantics, page-source resolution, import boundaries, and the existing carried fixture ladder.
+The detailed default/custom presentation unification has been split into [[wa.completed.2026.2026-05-22_2253-resourcepage-config-and-templating]]. Keep this note focused on page-definition source semantics, page-source resolution, import boundaries, and the existing carried fixture ladder.
 
 ## First-Pass Alignment
 
@@ -152,10 +152,10 @@ Minimal shape:
 - Whether first-pass import metadata for outside-the-tree content should be limited to explicitly described distributions.
 - Whether first-pass fallback should stop at `AcceptLatestInRequestedHistory` or also allow an explicit current-history fallback policy later.
 - Whether local `targetLocalRelativePath` helper sources should also carry media-type hints, or whether extension-driven/runtime inference is sufficient initially.
-- Which operational config vocabulary should carry allowed-directory rules for `targetLocalRelativePath` and `workingLocalRelativePath`; see [[wa.task.2026.2026-04-11_1723-operational-config-for-runtime-resolution]].
-- The current operational-config direction is to keep that vocabulary in the config ontology line under a broad `OperationalConfig`, with a repo-traveling access layer kept distinct from machine-local trust policy and a first-pass `LocalPathAccessRule` / `RemoteAccessRule` allowlist model for boundary checks; see [[wa.task.2026.2026-04-11_1723-operational-config-for-runtime-resolution]].
-- Which operational config vocabulary should carry remote target-access policy for `targetAccessUrl`; see [[wa.task.2026.2026-04-11_1723-operational-config-for-runtime-resolution]].
-- Which operational config vocabulary should carry remote-current-byte policy for `workingAccessUrl`; see [[wa.task.2026.2026-04-11_1723-operational-config-for-runtime-resolution]].
+- Which operational config vocabulary should carry allowed-directory rules for `targetLocalRelativePath` and `workingLocalRelativePath`; see [[wa.completed.2026.2026-04-11_1723-operational-config-for-runtime-resolution]].
+- The current operational-config direction is to keep that vocabulary in the config ontology line under a broad `OperationalConfig`, with a repo-traveling access layer kept distinct from machine-local trust policy and a first-pass `LocalPathAccessRule` / `RemoteAccessRule` allowlist model for boundary checks; see [[wa.completed.2026.2026-04-11_1723-operational-config-for-runtime-resolution]].
+- Which operational config vocabulary should carry remote target-access policy for `targetAccessUrl`; see [[wa.completed.2026.2026-04-11_1723-operational-config-for-runtime-resolution]].
+- Which operational config vocabulary should carry remote-current-byte policy for `workingAccessUrl`; see [[wa.completed.2026.2026-04-11_1723-operational-config-for-runtime-resolution]].
 
 ## Decisions
 
@@ -579,25 +579,25 @@ Current `19-alice-page-artifact-source-woven` manifest shape:
 
 - [x] Keep generic generation authoritative for `_mesh`, Knop support-artifact, history, state, and manifestation pages unless a later spec explicitly expands `_knop/_page` to those surfaces.
 - [ ] Refactor the current identifier-page planning seam so `core/weave` can choose between a generic identifier-page model and a page-definition-driven model without hard-coding special cases in one large branch.
-- [d] Keep page-content composition separate from template/chrome policy, so `ResourcePagePresentationConfig` stays adjacent and optional rather than becoming a prerequisite for first-pass page-definition support. Deferred to [[wa.task.2026.2026-05-22_2253-resourcepage-config-and-templating]].
-- [d] Preserve the current default ResourcePage presentation as a built-in theme/presentation baseline before introducing configurable template artifacts; do not make `_knop/_page` composition the mechanism for merely keeping the Semantic Site look and feel. Deferred to [[wa.task.2026.2026-05-22_2253-resourcepage-config-and-templating]].
-- [d] Define how generic default pages map into the same `ResourcePageDefinition` / `ResourcePagePresentationConfig` pipeline as customized pages, including which defaults are synthesized at runtime and which may be persisted as mesh/config artifacts. Deferred to [[wa.task.2026.2026-05-22_2253-resourcepage-config-and-templating]].
-- [d] Extract the current hard-coded generated sections into reusable panel models before making template overrides powerful enough to reorder, suppress, or replace them. Deferred to [[wa.task.2026.2026-05-22_2253-resourcepage-config-and-templating]].
+- [d] Keep page-content composition separate from template/chrome policy, so `ResourcePagePresentationConfig` stays adjacent and optional rather than becoming a prerequisite for first-pass page-definition support. Deferred to [[wa.completed.2026.2026-05-22_2253-resourcepage-config-and-templating]].
+- [d] Preserve the current default ResourcePage presentation as a built-in theme/presentation baseline before introducing configurable template artifacts; do not make `_knop/_page` composition the mechanism for merely keeping the Semantic Site look and feel. Deferred to [[wa.completed.2026.2026-05-22_2253-resourcepage-config-and-templating]].
+- [d] Define how generic default pages map into the same `ResourcePageDefinition` / `ResourcePagePresentationConfig` pipeline as customized pages, including which defaults are synthesized at runtime and which may be persisted as mesh/config artifacts. Deferred to [[wa.completed.2026.2026-05-22_2253-resourcepage-config-and-templating]].
+- [d] Extract the current hard-coded generated sections into reusable panel models before making template overrides powerful enough to reorder, suppress, or replace them. Deferred to [[wa.completed.2026.2026-05-22_2253-resourcepage-config-and-templating]].
 - [x] Preserve root behavior: `_mesh/index.html` remains mesh support, while root `index.html` is the identifier page customized by root `_knop/_page` when present.
 
 ### Phase 5: Artifact Resolution And Import-Oriented Source Support
 
 - [x] Add first-pass in-mesh artifact source resolution through `hasTargetArtifact` directly on `ResourcePageSource`, with default/`Current` current-byte loading from the governed artifact's current working surface and fail-closed rejection of `Pinned`, requested history/state, fallback policy, direct located-file/distribution, and remote target forms until later slices land.
-- [ ] Add `targetAccessUrl` handling to `ArtifactResolutionTarget` only behind explicit operational policy, with fail-closed behavior when remote target access is disallowed. See [[wa.task.2026.2026-04-11_1723-operational-config-for-runtime-resolution]].
+- [ ] Add `targetAccessUrl` handling to `ArtifactResolutionTarget` only behind explicit operational policy, with fail-closed behavior when remote target access is disallowed. See [[wa.completed.2026.2026-04-11_1723-operational-config-for-runtime-resolution]].
 - [ ] Decide whether first-pass page generation should ever follow `targetAccessUrl` directly, or continue requiring import or governed-artifact indirection for remote-origin content even if the broader artifact-resolution model permits direct external targets.
 - [x] Add `workingLocalRelativePath` support to governed-artifact current resolution, with fail-closed mismatch handling against `hasWorkingLocatedFile`.
-- [ ] Add `workingAccessUrl` handling to governed-artifact current resolution only behind explicit operational policy, with fail-closed behavior when remote current-byte access is disallowed. See [[wa.task.2026.2026-04-11_1723-operational-config-for-runtime-resolution]].
+- [ ] Add `workingAccessUrl` handling to governed-artifact current resolution only behind explicit operational policy, with fail-closed behavior when remote current-byte access is disallowed. See [[wa.completed.2026.2026-04-11_1723-operational-config-for-runtime-resolution]].
 - [x] Decide whether first-pass page generation should ever follow `workingAccessUrl` directly, or continue requiring imported in-tree artifacts for remote-origin content even if the broader artifact model permits external current-byte locators. Decision: direct `workingAccessUrl` rendering is allowed only as a narrow, explicitly policy-enabled, digest-checked path. The fetched bytes must match an expected fingerprint/digest before rendering, and the renderer must still treat the bytes as untrusted page content: no raw script execution, no event-handler attributes, no `javascript:`/active URL surfaces, and no unsafe embedded HTML. A fingerprint without rendering safety can still faithfully render dangerous content; script filtering without a fingerprint can still silently follow mutable remote drift. Unfingerprinted or unsafe remote page content should cross an import/governed in-tree boundary or render from a settled historical state instead.
 - [ ] Implement `Pinned` versus `Current` as separate source-mode behavior rather than collapsing them into fallback or “prefer” booleans.
 - [ ] Implement first-pass fallback policy behavior for `ExactOnly` and `AcceptLatestInRequestedHistory`, with explicit rejection of cross-history, cross-artifact, or unrelated-working-file fallback.
 - [ ] Add import-oriented source handling for outside-the-tree or extra-mesh content only after it crosses an explicit in-tree governed-artifact boundary.
 - [ ] Fail closed on direct live outside-source usage instead of letting `weave` fetch or follow arbitrary current external content; best to import outside content and pin a state by default, with plenty of warnings for floating/current targets. 
-- [x] Broaden local path handling so `targetLocalRelativePath` and `workingLocalRelativePath` may use `../` only within host/runtime-configured allowed directories rather than the current mesh-root-only boundary. See [[wa.task.2026.2026-04-11_1723-operational-config-for-runtime-resolution]].
+- [x] Broaden local path handling so `targetLocalRelativePath` and `workingLocalRelativePath` may use `../` only within host/runtime-configured allowed directories rather than the current mesh-root-only boundary. See [[wa.completed.2026.2026-04-11_1723-operational-config-for-runtime-resolution]].
 
 ### Phase 6: Tests, Follow-On Fixtures, And Documentation
 

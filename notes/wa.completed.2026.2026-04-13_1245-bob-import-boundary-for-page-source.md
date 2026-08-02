@@ -82,7 +82,7 @@ This does introduce one deliberate semantic asymmetry: the imported page content
 - The first carried Bob import slice should use authored text that the current page renderer can consume directly.
 - The first carried Bob import slice should avoid RDF dataset content and HTTP content negotiation.
 - Direct live remote page-source resolution remains out of scope; import must establish the governed in-tree boundary first.
-- This task should stay distinct from [[wa.task.2026.2026-04-11_1723-operational-config-for-runtime-resolution]]. Operational policy may later govern remote fetch, but that task is not a substitute for an import boundary.
+- This task should stay distinct from [[wa.completed.2026.2026-04-11_1723-operational-config-for-runtime-resolution]]. Operational policy may later govern remote fetch, but that task is not a substitute for an import boundary.
 - The first carried Bob import slice should use `https://raw.githubusercontent.com/djradon/public-notes/refs/heads/main/user.bob-newhart.md` as the outside-origin Markdown source.
 - The first carried Bob import slice should introduce governed artifact `bob/page-main` with local working file `bob-page-main.md`.
 - The first carried Bob import slice should record the chosen outside-origin URL on the governed artifact through `core:workingAccessUrl` while page generation still follows the local `hasWorkingLocatedFile` boundary rather than the remote URL directly.
@@ -121,7 +121,7 @@ This does introduce one deliberate semantic asymmetry: the imported page content
 
 ### Phase 1: Align Specs And Acceptance Drafts
 
-- [x] Update [[wa.task.2026.2026-04-08_1545-resource-page-definition-and-sources]] so `20/21` are described as the first true import-boundary pair now that `16-19` are real.
+- [x] Update [[wa.cancelled.2026.2026-04-08_1545-resource-page-definition-and-sources]] so `20/21` are described as the first true import-boundary pair now that `16-19` are real.
 - [x] Update [[sf.spec.2026-04-11-identifier-page-customization-and-root-lifecycle]] with the first concrete Bob import-boundary shape.
 - [x] Draft `20-bob-page-imported-source.jsonld` and `21-bob-page-imported-source-woven.jsonld`.
 

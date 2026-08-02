@@ -97,7 +97,7 @@ Boundary notes:
 Record performance optimization opportunities, bugs, and suspicious behavior found while implementing this task here. Do not fix them in this slice unless they block the behavior-preserving extraction.
 
 - No new performance issues or bugs surfaced in this slice.
-- After this move, the remaining `weave.ts` helpers are mostly branch orchestration plus tiny guards. The next highest-value work is likely the already-tracked [[wa.task.2026.2026-05-22_2253-resourcepage-config-and-templating]] work and a follow-up for legacy fixture-renderer generalization, not another micro extraction.
+- After this move, the remaining `weave.ts` helpers are mostly branch orchestration plus tiny guards. The next highest-value work is likely the already-tracked [[wa.completed.2026.2026-05-22_2253-resourcepage-config-and-templating]] work and a follow-up for legacy fixture-renderer generalization, not another micro extraction.
 
 ## Implementation Results
 

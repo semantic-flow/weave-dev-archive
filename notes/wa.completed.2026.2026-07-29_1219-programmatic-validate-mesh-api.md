@@ -30,7 +30,7 @@ Documentation deliverable: a short "which package do I consume?" section in [[wu
 
 The consumer's §2 (`sflo:hasResourcePage` on extracted-term Knops) is already settled by landed contract and boarded work; it belongs in the reply, not in either new task note:
 
-- Extraction is deliberately non-publication-bearing: it emits no page claims; the following weave owns page materialization (`sf.spec.2026-04-05-extract-behavior`, reaffirmed by the r1/r2 adjudication in [[wa.task.2026.2026-07-21_1603-extractor-defect-pair]], archive `origin/main`).
+- Extraction is deliberately non-publication-bearing: it emits no page claims; the following weave owns page materialization (`sf.spec.2026-04-05-extract-behavior`, reaffirmed by the r1/r2 adjudication in [[wa.completed.2026.2026-07-21_1603-extractor-defect-pair]], archive `origin/main`).
 - No, extraction did not gain those claims in `0.4.0`/`0.5.1`, and it will not — downstream synthesis is not the intended long-term pattern either. The intended pattern is extract→weave→generate, which was not viable for their ~1,700-term mesh (nested-source root-Knop planner defect + scale cost, per the extractor R2 diagnosis).
 - Their workaround remains necessary until `wd.todo` item "Make extracted-term weave viable for thousand-term nested-source meshes" (TODO 23) proves the supported sequence viable. No extraction behavior change rides this note or its sibling.
 

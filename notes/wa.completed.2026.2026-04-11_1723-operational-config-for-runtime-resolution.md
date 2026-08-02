@@ -265,7 +265,7 @@ Machine-local access policy:
 
 ### Relationship to `1545`
 
-This task is now the natural home for the operational-config questions that [[wa.task.2026.2026-04-08_1545-resource-page-definition-and-sources]] should not have to carry by itself:
+This task is now the natural home for the operational-config questions that [[wa.cancelled.2026.2026-04-08_1545-resource-page-definition-and-sources]] should not have to carry by itself:
 
 - allowed-directory rules for `targetLocalRelativePath` and `workingLocalRelativePath`
 - remote-use policy for `targetAccessUrl`
@@ -298,7 +298,7 @@ That lets `1545` stay focused on page-definition behavior instead of turning int
 - Allowed-directory rules for `workingLocalRelativePath` and `targetLocalRelativePath` should live in operational config, not in persisted mesh RDF.
 - Remote-use rules for `workingAccessUrl` and `targetAccessUrl` should also live in operational config, not in persisted mesh RDF.
 - The first widening target should be controlled extra-mesh local path resolution through configured allowed directories, not remote fetching.
-- Active remote fetch behavior is deferred from this task. `workingAccessUrl` dereferencing belongs to [[wa.task.2026.2026-05-20_2152-workingAccessUrl]], and direct page-source remote access belongs with page-source policy work such as [[wa.task.2026.2026-04-08_1545-resource-page-definition-and-sources]] if it ever becomes desirable.
+- Active remote fetch behavior is deferred from this task. `workingAccessUrl` dereferencing belongs to [[wa.task.2026.2026-05-20_2152-workingAccessUrl]], and direct page-source remote access belongs with page-source policy work such as [[wa.cancelled.2026.2026-04-08_1545-resource-page-definition-and-sources]] if it ever becomes desirable.
 - Remote-origin acquisition should stay centered on explicit import/localization flows for now. A separate remote-integrate task should only be created if import plus localize-from-integrated workflows turn out not to cover real use cases.
 - `integrate` can still broaden carefully for workspace-local, sidecar-local, and repository-floating local source association, but it should not silently become a policy-gated remote fetch command in this task.
 - Repo-traveling operational policy and machine-local operational policy should be modeled as distinct layers, even if they share vocabulary.
@@ -343,7 +343,7 @@ That lets `1545` stay focused on page-definition behavior instead of turning int
 
 - [x] Review `dependencies/github.com/semantic-flow/sflo/old/sflo-host-ontology.jsonld` and explicitly separate reusable ideas from daemon-service baggage.
 - [x] Review the current config ontology line and decide whether operational/runtime-resolution config belongs there or in a narrow companion ontology.
-- [x] Cross-link this task from [[wa.task.2026.2026-04-08_1545-resource-page-definition-and-sources]] and roadmap items that currently point at operational-config questions without a dedicated home.
+- [x] Cross-link this task from [[wa.cancelled.2026.2026-04-08_1545-resource-page-definition-and-sources]] and roadmap items that currently point at operational-config questions without a dedicated home.
 
 ### Phase 1: Define The Config Contract
 
@@ -364,7 +364,7 @@ That lets `1545` stay focused on page-definition behavior instead of turning int
 ### Phase 3: Defer Or Gate Remote Policy Carefully
 
 - [d] Keep `workingAccessUrl` active dereferencing out of this task. The runtime-fetch question belongs to [[wa.task.2026.2026-05-20_2152-workingAccessUrl]], and that task should consume `RemoteAccessRule` policy before any network fetch behavior lands.
-- [d] Keep `targetAccessUrl` active dereferencing out of this task. Direct remote page-source access belongs with page-source policy work such as [[wa.task.2026.2026-04-08_1545-resource-page-definition-and-sources]] if it ever becomes desirable.
+- [d] Keep `targetAccessUrl` active dereferencing out of this task. Direct remote page-source access belongs with page-source policy work such as [[wa.cancelled.2026.2026-04-08_1545-resource-page-definition-and-sources]] if it ever becomes desirable.
 - [d] Defer remote-locator fail-closed tests until one of those active dereferencing tasks lands; the requirement remains that operational allow rules must be checked before any network access.
 - [x] Decide the integrate/import split: remote-origin association should stay centered on explicit import/localization flows for now, while `integrate` remains the local-byte-binding and local/repository-floating source association surface.
 

@@ -18,7 +18,7 @@ created: 1779509580000
 
 ## Summary
 
-[[wa.task.2026.2026-04-08_1545-resource-page-definition-and-sources]] has become the historical home for both page-source semantics and later presentation/template ideas. The page-source parts are still useful, but the default/custom ResourcePage presentation direction is now distinct enough to deserve its own task.
+[[wa.cancelled.2026.2026-04-08_1545-resource-page-definition-and-sources]] has become the historical home for both page-source semantics and later presentation/template ideas. The page-source parts are still useful, but the default/custom ResourcePage presentation direction is now distinct enough to deserve its own task.
 
 Current default ResourcePages are rendered by TypeScript functions in `src/runtime/weave/pages.ts` with inline CSS behind an internal `ResourcePageTheme` seam. Custom identifier pages use `ResourcePageDefinition` / `ResourcePageRegion` / `ResourcePageSource` for content composition plus optional `_knop/_assets` stylesheets. They do not yet share the same presentation model as generic default pages.
 
@@ -182,7 +182,7 @@ The exact property names should be refined with the ontology open, but this show
 - Do not promote `ResourcePageRenderInput` wholesale to core; it mixes renderer-adapter details with document data.
 - Do not make templates responsible for RDF graph discovery, history resolution, source lookup, or local/remote access policy.
 - Do not add a client-side app framework for ResourcePages.
-- Do not replace page-source resolution work from [[wa.task.2026.2026-04-08_1545-resource-page-definition-and-sources]].
+- Do not replace page-source resolution work from [[wa.cancelled.2026.2026-04-08_1545-resource-page-definition-and-sources]].
 - Do not implement remote `targetAccessUrl` or `workingAccessUrl` fetching as part of presentation templating.
 - Do not implement a general third-party panel/plugin system in the first slice.
 - Do not allow arbitrary authored HTML execution or raw injection without an explicit safety model.

@@ -1,7 +1,7 @@
 ---
 id: 9p65fo83rc0xds4dr542ss0
 title: Exact-Byte Binary Payload Advancement
-desc: 'Cut 2026-08-01 14:11 by Jimbo from the wd.todo binary item, wa.task.2026.2026-07-21_1322 r1 F3, and requirement 4 of the Stagecraft requirements collection. Drafted by codex read-only analysis (code-verified at 73a26cc); awaiting spec adjudication (wa.dave-court card) before implementation.'
+desc: 'Cut 2026-08-01 14:11 by Jimbo from the wd.todo binary item, wa.completed.2026.2026-07-21_1322 r1 F3, and requirement 4 of the Stagecraft requirements collection. Drafted by codex read-only analysis (code-verified at 73a26cc); awaiting spec adjudication (wa.dave-court card) before implementation.'
 updated: 1785618665282
 created: 1785618665282
 ---
@@ -16,7 +16,7 @@ created: 1785618665282
 
 ## Summary
 
-This task is the dedicated follow-up required by [[wa.task.2026.2026-07-21_1322-programmatic-version-api]] r1 F3, the Current Work item in [[wd.todo#current-work-and-next-pick]], and requirement 4 in [[wa.task.2026.2026-06-30_1108-stagecraft-driven-semantic-flow-requirements#evidence-backed-stagecraft-persistence-requirements-2026-08-01]]. The current `versionPayloads` release deliberately supports only UTF-8 text/RDF payloads; binary admission was deferred until working update, first/later history creation, no-op comparison, and snapshots could be owned as one exact-byte slice.
+This task is the dedicated follow-up required by [[wa.completed.2026.2026-07-21_1322-programmatic-version-api]] r1 F3, the Current Work item in [[wd.todo#current-work-and-next-pick]], and requirement 4 in [[wa.task.2026.2026-06-30_1108-stagecraft-driven-semantic-flow-requirements#evidence-backed-stagecraft-persistence-requirements-2026-08-01]]. The current `versionPayloads` release deliberately supports only UTF-8 text/RDF payloads; binary admission was deferred until working update, first/later history creation, no-op comparison, and snapshots could be owned as one exact-byte slice.
 
 The r1 F3 code claim remains correct at repository commit `73a26cc`: the runtime loader retains `currentPayloadBytes`, the no-op comparator already compares binary bytes, and first payload versioning already emits a `PlannedBinaryFile`, but later advancement emits decoded `currentPayloadTurtle` through `createdFiles`. The current code audit also exposes an adjacent semantic defect not named in F3: both later-payload renderer branches reconstruct binary payload, manifestation, and located-file facts with `sflo:RdfDocument`.
 

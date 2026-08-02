@@ -144,7 +144,7 @@ For `ReferenceSource`, that means a future reference can identify an RDF source 
   sflo:sourceRepositoryPath "rdf/thing.ttl" .
 ```
 
-This remains resolution metadata. It does not authorize ambient network access. Runtime access policy still belongs to the operational config line described in [[wa.task.2026.2026-04-11_1723-operational-config-for-runtime-resolution]].
+This remains resolution metadata. It does not authorize ambient network access. Runtime access policy still belongs to the operational config line described in [[wa.completed.2026.2026-04-11_1723-operational-config-for-runtime-resolution]].
 
 ### Where `ReferenceSource` should live
 

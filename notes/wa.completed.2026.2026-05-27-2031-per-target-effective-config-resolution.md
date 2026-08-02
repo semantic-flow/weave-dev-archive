@@ -161,7 +161,7 @@ This is the place where the user-visible effect will be easiest to prove: two si
 
 ### Relationship To Later Resolver Work
 
-This task should land before the next broader resolver cleanup consumer. Page-source exact/fallback semantics from [[wa.task.2026.2026-04-08_1545-resource-page-definition-and-sources]] are probably the best follow-on if we stay in source/resolver land, because page-source resolution has visible output and duplicated working/latest-state logic. If we shift to correctness debt instead, [[wa.task.2026.2026-05-17-append-onlyish-inventory]] is the stronger next slice. If the goal is reducing conceptual confusion, finish the ReferenceLink/source terminology work in [[wa.task.2026.2026-05-22_1128-referencelink-clarification]].
+This task should land before the next broader resolver cleanup consumer. Page-source exact/fallback semantics from [[wa.cancelled.2026.2026-04-08_1545-resource-page-definition-and-sources]] are probably the best follow-on if we stay in source/resolver land, because page-source resolution has visible output and duplicated working/latest-state logic. If we shift to correctness debt instead, [[wa.task.2026.2026-05-17-append-onlyish-inventory]] is the stronger next slice. If the goal is reducing conceptual confusion, finish the ReferenceLink/source terminology work in [[wa.task.2026.2026-05-22_1128-referencelink-clarification]].
 
 ## Open Issues
 
@@ -231,7 +231,7 @@ This task should land before the next broader resolver cleanup consumer. Page-so
 - Do not make planned writes update effective config mid-operation.
 - Do not introduce Oxigraph or a durable config graph store for this slice.
 - Do not solve historical "effective config at state/time" behavior.
-- Do not broaden page-source exact/fallback semantics here; use [[wa.task.2026.2026-04-08_1545-resource-page-definition-and-sources]] for that follow-on.
+- Do not broaden page-source exact/fallback semantics here; use [[wa.cancelled.2026.2026-04-08_1545-resource-page-definition-and-sources]] for that follow-on.
 
 ## Implementation Plan
 

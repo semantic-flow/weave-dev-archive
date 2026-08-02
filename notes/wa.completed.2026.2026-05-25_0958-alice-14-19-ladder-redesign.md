@@ -158,7 +158,7 @@ This task should not add the references panel or all generated panels page-by-pa
 - [x] Regenerate local Alice Bio fixture branches `a.14` through at least `a.27` so later rungs build on the corrected chain.
 - [x] Update Weave fixture-backed tests that read `14` through `19`.
 - [x] Run focused core/runtime tests for integrate, weave, ResourcePage rendering, and fixture ladder validation.
-- [x] Update [[wa.task.2026.2026-05-23_2230-custom-resourcepage-shared-shell-fixture]] once this task supersedes its remaining Alice `14` through `19` checkbox.
+- [x] Update [[wa.completed.2026.2026-05-23_2230-custom-resourcepage-shared-shell-fixture]] once this task supersedes its remaining Alice `14` through `19` checkbox.
 
 ## Implementation Notes
 

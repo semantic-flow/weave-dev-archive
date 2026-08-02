@@ -10,7 +10,7 @@ created: 1779945357157
 
 ## Goals
 
-- Turn the remaining page-source resolution work from [[wa.task.2026.2026-04-08_1545-resource-page-definition-and-sources]] into a small implementation task.
+- Turn the remaining page-source resolution work from [[wa.cancelled.2026.2026-04-08_1545-resource-page-definition-and-sources]] into a small implementation task.
 - Align Weave's `ResourcePageSource` runtime behavior with [[sf.spec.2026-04-11-identifier-page-customization-and-root-lifecycle]] and the shared `ArtifactResolutionSpec` vocabulary.
 - Replace the remaining custom page-source resolution branches with the shared artifact-resolution service where that reduces duplicated working/latest-state logic.
 - Support exact in-mesh state resolution for `ResourcePageSource` instead of rejecting `targetHistoricalState`.
@@ -93,7 +93,7 @@ It should not re-implement artifact-state traversal if the shared resolver can d
 
 ### Remote And Import Boundaries
 
-Do not turn page generation into a live fetcher in this task. `targetAccessUrl`, remote `workingAccessUrl`, repository source locators, and floating repository locators may remain modeled but unsupported by ResourcePage generation until [[wa.task.2026.2026-04-11_1723-operational-config-for-runtime-resolution]] and [[wa.task.2026.2026-05-20_2152-workingAccessUrl]] are deliberately broadened.
+Do not turn page generation into a live fetcher in this task. `targetAccessUrl`, remote `workingAccessUrl`, repository source locators, and floating repository locators may remain modeled but unsupported by ResourcePage generation until [[wa.completed.2026.2026-04-11_1723-operational-config-for-runtime-resolution]] and [[wa.task.2026.2026-05-20_2152-workingAccessUrl]] are deliberately broadened.
 
 Outside-the-tree or extra-mesh content should still enter page generation through import: the imported in-tree governed artifact becomes the page source, and its working or settled state is resolved locally.
 
@@ -145,11 +145,11 @@ Outside-the-tree or extra-mesh content should still enter page generation throug
 - Do not add media-type/content-kind negotiation.
 - Do not redesign ResourcePage presentation, generated panels, or template selection.
 - Do not change import provenance or source-registry vocabulary.
-- Do not close or rename [[wa.task.2026.2026-04-08_1545-resource-page-definition-and-sources]]; leave it as the historical umbrella until the remaining slices have explicit homes.
+- Do not close or rename [[wa.cancelled.2026.2026-04-08_1545-resource-page-definition-and-sources]]; leave it as the historical umbrella until the remaining slices have explicit homes.
 
 ## Implementation Plan
 
-- [x] Re-read [[wd.general-guidance]], [[sf.spec.2026-04-11-identifier-page-customization-and-root-lifecycle]], [[wa.task.2026.2026-04-08_1545-resource-page-definition-and-sources]], and [[wa.completed.2026.2026-05-24_1748-shared-artifact-resolution-runtime-service]].
+- [x] Re-read [[wd.general-guidance]], [[sf.spec.2026-04-11-identifier-page-customization-and-root-lifecycle]], [[wa.cancelled.2026.2026-04-08_1545-resource-page-definition-and-sources]], and [[wa.completed.2026.2026-05-24_1748-shared-artifact-resolution-runtime-service]].
 - [x] Inventory current custom page-source resolution in `src/runtime/weave/page_definition.ts` and the shared artifact resolver behavior in `src/runtime/artifact_resolution`.
 - [x] Decide the smallest shared resolver API shape for resolving a `ResourcePageSource` node into text bytes and resolved coordinates.
 - [x] Add exact `targetHistoricalState` support in the shared resolver or page-source adapter.

@@ -11,7 +11,7 @@ created: 1778082622196
 - we should be able to turn history on and off manually for any DigitalArtifact, including supporting digital artifacts like meta and config
   - I think by default, support artifacts don't need history?
   - ideally we can specify whether history is on or off at the mesh level, any submesh level (via inheritable knop config, which I think needs to be re-introduced), per-knop, and per supporting artifact. Possibly in operational config too.
-  - my sense is that config isn't really built out yet, [[ont.task.2026.2026-03-23-config-modernization]], [[wa.completed.2026.2026-04-08_1735-page-definition-ontology-and-config]], and [[wa.task.2026.2026-04-11_1723-operational-config-for-runtime-resolution]], so maybe we have to address that first
+  - my sense is that config isn't really built out yet, [[ont.task.2026.2026-03-23-config-modernization]], [[wa.completed.2026.2026-04-08_1735-page-definition-ontology-and-config]], and [[wa.completed.2026.2026-04-11_1723-operational-config-for-runtime-resolution]], so maybe we have to address that first
   - in the meantime, can we just turn off history generation for support artifacts, keeping in mind that we'll need it configurable later?
 
 - Keep payload artifacts historical by default. Payload history is a core user-facing value of Weave, not support-artifact noise.

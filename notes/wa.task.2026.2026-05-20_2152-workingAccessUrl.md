@@ -12,7 +12,7 @@ created: 1779339180859
 - Support the common public-repository workflow where a source artifact is available through a raw HTTP(S) URL, especially mutable branch URLs such as GitHub `raw.githubusercontent.com/.../main/...`.
 - Keep remote access explicit and fail-closed: mesh RDF may name a `workingAccessUrl`, but commands should only fetch it when the active operational policy permits that locator kind, scheme, and origin.
 - Preserve the distinction between mutable working-source locators and immutable historical evidence. A branch raw URL can mean "usually latest"; a historical state should still capture the bytes and digest observed at weave/version time.
-- Document how `workingAccessUrl` relates to local working files and the repo-floating source locator covered in [[wa.task.2026.2026-05-19_2349-branch-based-workingfile-fix]].
+- Document how `workingAccessUrl` relates to local working files and the repo-floating source locator covered in [[wa.completed.2026.2026-05-19_2349-branch-based-workingfile-fix]].
 
 ## Summary
 

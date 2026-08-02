@@ -46,7 +46,7 @@ Boundary notes:
 - `weave.ts` remains the planner dispatcher and public compatibility façade.
 - The new module must not depend on `src/core/weave/weave.ts` or `src/runtime/**`.
 - Keep `escapeTurtleString`, `renderExactExtractionSourceBlock`, and source-registry patching in `weave.ts`; they are source-registry/RDF helpers, not HTML page renderers.
-- Do not begin the broader [[wa.task.2026.2026-05-22_2253-resourcepage-config-and-templating]] design/behavior task in this slice.
+- Do not begin the broader [[wa.completed.2026.2026-05-22_2253-resourcepage-config-and-templating]] design/behavior task in this slice.
 - Do not replace Alice Bio-specific or fixture-ladder HTML with generalized renderers in this slice.
 
 ## Open Issues

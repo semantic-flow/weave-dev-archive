@@ -89,7 +89,7 @@ For source-seed rungs, use the same `FileOperation` shape to copy source files f
 - [x] Add `--branch-prefix` to fixture ladder planning and execution.
 - [x] Add a source-seed path for carrying committed `.assets/**` into the next generated ladder when the scenario asks for harness assets in the fixture repo.
 - [x] Reduce or remove hard-coded file-operation source declarations from `scripts/fixture-ladder.ts`.
-- [x] Update [[wa.task.2026.2026-05-23_2230-custom-resourcepage-shared-shell-fixture]] once Alice `14` through `19` can be regenerated from manifest-declared file operations.
+- [x] Update [[wa.completed.2026.2026-05-23_2230-custom-resourcepage-shared-shell-fixture]] once Alice `14` through `19` can be regenerated from manifest-declared file operations.
 
 ## Implementation Notes
 
