@@ -980,3 +980,29 @@ Ruled — regenerating from scratch. Sweeping the card and scouting what the rec
 # claude-opus-5_2026-08-01_2018_52
 
 gh-pages has only two commits — `Publish initial SFLO semantic mesh` and `lovely manual re-creation` (the manual step that likely introduced the vocabulary drift). Sweeping the ruled card and firing the recipe analysis:
+
+# claude-opus-5_2026-08-01_2019_38
+
+Ruling recorded and the card is swept — your court is down to the Stagecraft reply alone.
+
+I've fired a read-only analysis to reconstruct the exact regeneration recipe before anything runs. It's reading the original creation recipe (`wa.completed.2026.2026-05-16_1707-create-sflo-branch-mesh`), the branch-published deployment support note, the current gh-pages tree, and weave's branch-publication surface — and will come back with a full task note draft.
+
+The reason I'm routing this through a note rather than just running commands: "from scratch as the first published version" implies several decisions that shouldn't be made implicitly. The mesh base URL, which of the five root `.ttl` files get integrated and under what designators, the `extract --all-terms` source selection (the old mesh has both `config/` and `ontology/` grouping Knops, which someone chose), the history policy, and — most consequentially — whether gh-pages becomes an orphan branch with a single commit or a force-push over the existing two, and whether anything on the current branch must be preserved (CNAME, assets). Getting the recipe wrong on a published ontology site is expensive to unwind.
+
+One thing I noticed that's probably the whole story: gh-pages' second commit is literally *"lovely manual re-creation."* A hand-built mesh is exactly how it ended up on vocabulary the current resolver doesn't recognize — which is a good argument for the regenerated version being fully command-reproducible, so the next vocabulary change is a re-run rather than another manual rebuild.
+
+When the draft lands I'll cut the task note and bring you the decisions that need ruling. The regeneration work itself I can drive; the actual publish to gh-pages I'll stage and hold for you, since that's an outward act on a live site.
+
+# djradon_2026-08-01_2051_48
+
+<task-notification>
+<task-id>bg49mbyir</task-id>
+<tool-use-id>toolu_01Xe8U27pY5XPtDo3hFEe3nv</tool-use-id>
+<output-file>/tmp/claude-1000/-home-djradon-hub-semantic-flow-weave/cdec3e72-8793-4459-a030-19a9f2737f92/tasks/bg49mbyir.output</output-file>
+<status>completed</status>
+<summary>Background command "Fire codex analysis: reconstruct sflo regeneration recipe and draft task note" completed (exit code 0)</summary>
+</task-notification>
+
+# claude-opus-5_2026-08-01_2052_02
+
+This turned up a hard blocker you need to know about before anything else. Minting the task note first:
