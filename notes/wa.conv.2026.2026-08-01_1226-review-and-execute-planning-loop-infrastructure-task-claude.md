@@ -892,3 +892,33 @@ Kim delivered — and her conflict test caught a real bug in the old guard. Revi
 # claude-opus-5_2026-08-01_1727_18
 
 All cheap gates green (fmt, type-check, 11 tests). Committing on the lane, but holding the heavy gates — running full CI now would skew the probe's wall-time and RSS evidence, which is its whole deliverable:
+
+# claude-opus-5_2026-08-01_1728_00
+
+Kim's append migration is committed on `lane/reference-catalog-append` and its receipt is boarded (archive `3e73220`). Two things worth your attention from it:
+
+**Her conflict test found a real bug in the code she replaced.** The old substring guard accepted the requested working-locator string appearing in an *unrelated* `ex:` predicate while a genuinely different working locator was carried — so a real conflict passed silently. That's not just a refactor to append-only; it closed a false-negative.
+
+**She also confirmed a worse offender, unowned.** `resource_page_policy.ts` collects disallowed settled page paths and *deletes* them. That's a sharper violation of the append-onlyish contract than the block-rewriting we just fixed, because it removes settled facts rather than reordering them. Boarded as its own bite; I didn't fold it into this one.
+
+**Gates are deliberately held.** I ran the cheap ones (fmt, type-check, 11 tests green including the existing ReferenceCatalog plan test), but I'm not running full `deno task ci` or `build:npm-lib` right now — the probe is measuring wall time and peak RSS as its actual deliverable, and CPU contention from a full test suite would corrupt those numbers. So the lane sits committed-but-unpushed until the probe finishes, then gets the full treatment before its PR. (Kim's own `build:npm-lib` attempt stalled on restricted networking in her sandbox, so that one needs my run regardless — and it matters here, since this file is on the lib graph where dnt catches type errors plain CI misses.)
+
+The probe is still walking its cardinality ladder.
+
+# djradon_2026-08-01_1755_51
+
+<task-notification>
+<task-id>btyz1urp7</task-id>
+<tool-use-id>toolu_01FcoVbmzRwhTaHrUWM1Rq4n</tool-use-id>
+<output-file>/tmp/claude-1000/-home-djradon-hub-semantic-flow-weave/cdec3e72-8793-4459-a030-19a9f2737f92/tasks/btyz1urp7.output</output-file>
+<status>completed</status>
+<summary>Background command "Fire the viability probe in the clean worktree" completed (exit code 0)</summary>
+</task-notification>
+
+# claude-opus-5_2026-08-01_1755_53
+
+The probe finished — this is the Stagecraft answer:
+
+# claude-opus-5_2026-08-01_1756_10
+
+This is the answer we needed — and it's genuinely mixed. Running the deferred gates now that contention is gone, while I board the findings:
