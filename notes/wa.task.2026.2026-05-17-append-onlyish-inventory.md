@@ -187,3 +187,7 @@ Residuals carried forward as later-bite evidence (per the return's delta line):
 - **`hasResourcePage` is not single-valued.** Verified against the core ontology (`owl:ObjectProperty`, no functional/max-cardinality constraint). Future append consumers must not assume otherwise.
 
 Next consumers in the natural order: the PageDefinition twin renderer, then the whole-document writers (`knop create` later-path, `add-reference`, extract, integrate), then MeshInventory growth, with the ResourcePage policy deletion defect as its own correctness bite.
+
+### Nit boarded 2026-08-01 (from the sflo publication)
+
+The append path leaves a trailing blank line at EOF: in the regenerated sflo mesh exactly one file (`_knop/_inventory/inventory.ttl`, the root Knop whose inventory received a carried-source-registry append) ends with `\n\n` where the pre-append renderer emitted a single `\n`. Cosmetic and valid Turtle — it shipped in the published mesh — but `git diff --check` flags it, and Kim's bite-1 fail-on-old evidence already noted the old renderer "removed the trailing blank line". Whoever next touches the append planner should normalize the trailing newline.

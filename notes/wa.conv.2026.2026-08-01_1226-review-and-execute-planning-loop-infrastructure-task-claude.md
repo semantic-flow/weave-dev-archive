@@ -1336,3 +1336,71 @@ Publish current-only (Recommended)
 # claude-opus-5_2026-08-01_2155_07
 
 Recorded. Let me capture both rulings in the task note and check what's left:
+
+# claude-opus-5_2026-08-01_2155_46
+
+The regeneration works end to end — rehearsal is green on every check, and one thing stands between it and the live site.
+
+**Dogfooding paid for itself immediately.** The regeneration couldn't weave a single payload, and the root cause is that sflo is the one mesh that self-hosts the vocabulary it's published under: its resources have IRIs starting with `SFLO_NAMESPACE`, so Weave compacted them to `sflo:_knop/_sources`, which isn't legal Turtle. Weave then failed to re-parse its own output. I'd wager that's exactly why the current `gh-pages` tip is a hand-built commit called *"lovely manual re-creation"* — someone hit this and worked around it by hand. Fixed in **PR #35** (green, CodeRabbit clean, mergeable) with a fail-on-old regression, scoped so no other mesh's bytes change.
+
+**Rehearsal results:** the census matched the projection *exactly* — 379 → 362 Knops, 60 retired, 43 added. All 319 surviving Knops keep their `index.html` (zero missing). All three release payloads are byte-identical to the `v0.3.0` source. `generate` is idempotent on re-run. Both validators report zero issues. All 1,452 Turtle files parse under `riot`. No legacy predicates, no host-path leaks, favicon byte-identical, `CNAME`/`assets` absent, `job`/`prov` correctly excluded.
+
+**Your current-only ruling is recorded** — file count lands at 2,922 versus the old 7,234, and notably the published `_mesh/_config/config.ttl` stays byte-identical to the old one, since the difference comes from Weave's defaults rather than any config change.
+
+**One gate left: merge PR #35.** Then I'll re-run the recipe from merged `main` — about three minutes — so the published bytes come from an audited commit rather than a lane branch, which doubles as the byte-reproducibility check the task's Testing section asks for. Then I do the archive tag and the force-with-lease push as you authorized.
+
+If you'd rather not wait on the merge, say so and I'll publish the rehearsal bytes — they'd be identical to what a merged-main run produces, since nothing else differs.
+
+# djradon_2026-08-01_2214_19
+
+merged. how did we come down on the full IRI vs relative choice?
+
+# claude-opus-5_2026-08-01_2214_38
+
+Merged — thanks. Let me answer that precisely from what the rehearsal actually emitted:
+
+# claude-opus-5_2026-08-01_2215_18
+
+Here's exactly where it landed, measured from the rehearsal output rather than from intent.
+
+**Relative won — but by falling through, not by a new decision.** `renderNamedNodeTerm` tries three things in order: compact to the `sflo:` vocabulary prefix, else render mesh-base-relative, else absolute. My fix only disqualifies the *first* branch when the local name would contain a separator; the mesh-relative branch was already there and now catches those IRIs. So mesh resources come out as `<ontology/_knop/_sources>`, `<config/AnyGovernedArtifactPolicyTarget/_knop>`, and so on. I didn't add an absolute-IRI path, and deliberately didn't reorder the branches.
+
+**One residual inconsistency, and I left it deliberately.** `sflo:_knop` appears exactly once — `ontology/_knop/_inventory/inventory.ttl:72` — because `_knop` has no separator, so it still takes the prefix branch. That file therefore spells one subject two ways: `<ontology/_knop>` earlier, `sflo:_knop` in the appended carried-facts block. Both resolve to the identical IRI and both parse.
+
+I considered making it consistent by preferring mesh-relative whenever an IRI is under the mesh base, and rejected it: for the sflo mesh, `meshBase` is `.../sflo/` and the vocabulary namespace is `.../sflo/ontology/`, so *predicates* like `sflo:hasKnopInventory` are under both. Reordering would render vocabulary predicates as `<ontology/hasKnopInventory>` — technically the same IRI, but genuinely worse to read in a published ontology. One cosmetic duplicate beats relativizing the vocabulary.
+
+Worth flagging separately: 61 absolute mesh-base IRIs remain, in `welcome.ttl` (the intentional slashless root subject) and in integrate-rendered source bindings like `sflo:targetArtifact <https://semantic-flow.github.io/sflo/ontology>`. Those come from a different renderer, are pre-existing, and my change didn't touch them.
+
+Now re-running from merged main so the published bytes come from an audited commit:
+
+# claude-opus-5_2026-08-01_2216_30
+
+Audited run reproduced identically. Verifying byte-reproducibility against the rehearsal, then the full battery:
+
+# claude-opus-5_2026-08-01_2217_03
+
+The reproducibility diff failed because I'd already removed the rehearsal worktree — my error, so that check is unproven rather than passed. The aggregates match exactly (362 Knops, 2,922 files, 60 retired, 43 added, 1,452 Turtle). Let me commit, then prove reproducibility properly against the committed tree:
+
+# claude-opus-5_2026-08-01_2217_21
+
+Commit made (one root, no parents, 2,921 files) — but `--check` flagged a trailing blank line at EOF in the root inventory. Assessing before I publish:
+
+# claude-opus-5_2026-08-01_2217_43
+
+One file, one extra newline — the append path leaves it where the old renderer didn't. Cosmetic, valid Turtle, not worth blocking a publication; I'll board it. Creating the archive tag:
+
+# claude-opus-5_2026-08-01_2217_54
+
+Old publication is preserved and pushed. Verifying the lease target hasn't moved, then publishing:
+
+# claude-opus-5_2026-08-01_2218_16
+
+**Published.** `gh-pages` is now a single root commit `46b87d7`. Verifying the live site and proving reproducibility:
+
+# claude-opus-5_2026-08-01_2220_15
+
+**Byte-reproducible** — a third independent run produced a tree identical to what's published. Recording receipts and closing out:
+
+# claude-opus-5_2026-08-01_2221_04
+
+The gate caught my own mistake — my rename sweep rewrote the queue entry to a `completed.*` name, which the admission rule forbids. The queue should be *popped* at closure, not renamed:

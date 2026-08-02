@@ -696,20 +696,39 @@ A full rehearsal ran end to end on `lane/sflo-namespace-collision` (PR #35) with
 
 ## Implementation Plan
 
-- [ ] Slice 1 — Resolve every Open Issue and move the accepted rulings into Decisions.
-- [ ] Slice 2 — Complete the separate SFLO source-release prerequisite, push the source tag, and record its exact commit and SHA-256 payload receipts.
-- [ ] Slice 3 — Pin the audited Weave commit, create job-local settings/log directories, create a detached source worktree, and create an empty orphan publication worktree.
-- [ ] Slice 4 — Capture old path/blob/Knop/asset receipts and verify the expected old branch tip before generation.
-- [ ] Slice 5 — Create the Pages mesh, install the ruled mesh-local policy, and initialize support history before adding payload candidates.
-- [ ] Slice 6 — Recreate, integrate, and weave the root welcome payload; preserve only the explicitly ruled host asset.
-- [ ] Slice 7 — Integrate core, config, and core SHACL using portable repository bindings; verify no host-local path or accidental pinning leakage.
-- [ ] Slice 8 — Set `releases/v0.2.1`, weave the three payloads in one batch with `ttl` manifestations, and prove source/output byte identity.
-- [ ] Slice 9 — Extract all terms from exact release snapshots in core, config, SHACL order with canonical references.
-- [ ] Slice 10 — Weave all pending terms, explicitly regenerate pages, validate the mesh/publication, and parse all generated Turtle.
-- [ ] Slice 11 — Freeze and review the Knop census, added/retired designators, vocabulary migration, generated path changes, payload topology, controls, and no-leak checks.
-- [ ] Slice 12 — Create and inspect the one-root publication commit and confirm the source worktree remains unchanged.
-- [ ] Slice 13 — Preserve or retire the old two-commit chain exactly as ruled.
-- [ ] Slice 14 — Recheck the remote lease and replace `gh-pages` using the exact `--force-with-lease` form.
-- [ ] Slice 15 — Verify GitHub Pages settings, deployed payload byte identity, representative old/new pages, root page, favicon, and absence of unruled host controls.
-- [ ] Slice 16 — Update [[wu.cli-reference.examples.sflo]] and [[ont.dev.release-runbook]] with the final proven recipe and receipts.
-- [ ] Slice 17 — Jimbo closes the task by renaming the task note to its completed form, updating affected wikilinks, and logging the rename in the applicable monthly `wd.maintenance.*` note.
+- [x] Slice 1 — Resolve every Open Issue and move the accepted rulings into Decisions.
+- [x] Slice 2 — Complete the separate SFLO source-release prerequisite, push the source tag, and record its exact commit and SHA-256 payload receipts.
+- [x] Slice 3 — Pin the audited Weave commit, create job-local settings/log directories, create a detached source worktree, and create an empty orphan publication worktree.
+- [x] Slice 4 — Capture old path/blob/Knop/asset receipts and verify the expected old branch tip before generation.
+- [x] Slice 5 — Create the Pages mesh, install the ruled mesh-local policy, and initialize support history before adding payload candidates.
+- [x] Slice 6 — Recreate, integrate, and weave the root welcome payload; preserve only the explicitly ruled host asset.
+- [x] Slice 7 — Integrate core, config, and core SHACL using portable repository bindings; verify no host-local path or accidental pinning leakage.
+- [x] Slice 8 — Set `releases/v0.2.1`, weave the three payloads in one batch with `ttl` manifestations, and prove source/output byte identity.
+- [x] Slice 9 — Extract all terms from exact release snapshots in core, config, SHACL order with canonical references.
+- [x] Slice 10 — Weave all pending terms, explicitly regenerate pages, validate the mesh/publication, and parse all generated Turtle.
+- [x] Slice 11 — Freeze and review the Knop census, added/retired designators, vocabulary migration, generated path changes, payload topology, controls, and no-leak checks.
+- [x] Slice 12 — Create and inspect the one-root publication commit and confirm the source worktree remains unchanged.
+- [x] Slice 13 — Preserve or retire the old two-commit chain exactly as ruled.
+- [x] Slice 14 — Recheck the remote lease and replace `gh-pages` using the exact `--force-with-lease` form.
+- [x] Slice 15 — Verify GitHub Pages settings, deployed payload byte identity, representative old/new pages, root page, favicon, and absence of unruled host controls.
+- [x] Slice 16 — Update [[wu.cli-reference.examples.sflo]] and [[ont.dev.release-runbook]] with the final proven recipe and receipts.
+- [x] Slice 17 — Jimbo closes the task by renaming the task note to its completed form, updating affected wikilinks, and logging the rename in the applicable monthly `wd.maintenance.*` note.
+
+## PUBLISHED — 2026-08-01
+
+`gh-pages` is now a single root commit `46b87d7edbafbe4fce32c2ee03f9efe1e3135376`, "Publish SFLO semantic mesh", built from SFLO `v0.3.0` (`ee3a21d`) with Weave `2f04b71` (merged `main`, including the PR #35 namespace fix this task uncovered).
+
+**Publication receipts**
+
+- Force-with-lease against `a7e7626…` succeeded; the lease target was re-verified unchanged immediately before the push.
+- Old publication preserved as annotated tag `archive/gh-pages-before-regeneration-2026-08-01` at `a7e7626`, which retains parent `aed218c` — both pre-regeneration commits remain reachable.
+- Branch topology: one commit, no parents, 2,921 tracked files.
+- **Byte-reproducible**: a third independent run from the same inputs produced a tree identical to the published one (`diff -rq` clean).
+- Census: 379 → 362 Knops, 60 retired, 43 added — matching the pre-run projection exactly. All 319 surviving Knops kept their `index.html`.
+- Deployed and verified live: `/sflo/`, `/sflo/ontology/Knop/`, `/sflo/config/MeshConfig/`, `/sflo/ontology/ArtifactHistory/` all 200; the three release payloads fetch 200 and are **byte-identical to the tagged source**; deployed payloads parse under `riot`; deployed `favicon.ico` is byte-identical to the preserved original.
+- Host controls: `.nojekyll` present, `CNAME` and `assets/` absent, `job`/`prov` excluded.
+- Vocabulary migration complete: no `hasTargetArtifact` / `hasRequestedTargetState` anywhere; no host paths leaked into any `.ttl` or `.html`.
+
+**Residual, boarded not fixed:** one generated file (`_knop/_inventory/inventory.ttl`) ends with a trailing blank line where the old renderer emitted a single newline — the append path's output hygiene. Cosmetic, valid Turtle, one file; boarded on [[wa.task.2026.2026-05-17-append-onlyish-inventory]] as a nit for whoever next touches the append planner.
+
+**Deviation from the drafted recipe, recorded honestly:** the draft proposed replacing `_mesh/_config/config.ttl` with an invented policy-binding config. The published config had no such bindings, so the regenerated mesh uses the config `mesh create` emits — which is byte-identical to the one that was published. No invented policy was introduced.
