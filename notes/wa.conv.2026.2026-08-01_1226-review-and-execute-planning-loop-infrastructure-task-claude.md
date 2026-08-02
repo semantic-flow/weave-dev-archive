@@ -862,3 +862,33 @@ Strong carve — and it exposes a contamination risk I need to handle: the probe
 # claude-opus-5_2026-08-01_1724_04
 
 Clean probe worktree at main works (CLI reports 0.6.0). Boarding the brief with your two additions, then firing it there:
+
+# claude-opus-5_2026-08-01_1725_12
+
+The probe is running, and it's the answer to your Stagecraft question — here's where things stand.
+
+**What's next, concretely:** two things are in flight. Kim is finishing the ReferenceCatalog append migration on `lane/reference-catalog-append`, and the **viability probe** just started — the first time anything has composed extract→weave→generate end to end. Its deliverable is evidence, not a fix: it walks N = 3 → 50 → 200 → 500 (and higher only if each rung stays fast), records where the sequence breaks if it does, and stops the ladder at the first failure to bisect rather than grinding upward.
+
+**Your sflo suggestion is in as the second arm**, with one finding that changes how we use it. sflo's `gh-pages` is a genuine woven mesh — 7,234 files, 379 Knops, roughly 100× alice and comparable in file count to Stagecraft's ~6,900. But 376 of those Knops sit under `config/` and `ontology/`, and both of those grouping paths **have their own Knops**. That's exactly the ancestor-Knop condition whose *absence* caused the Stagecraft failure — so sflo can prove correctness and scale on real content, but it can never reproduce the defect shape. Only the synthetic generator can. Hence the split: synthetic for defect shape and cardinality, sflo for real-corpus correctness, alice for fast iteration.
+
+One thing I caught before firing: the probe runs `src/main.ts` from the worktree, which right now carries Kim's uncommitted renderer edits — that would have silently contaminated every measurement. It's running from a dedicated clean `main` worktree instead.
+
+And the honesty clause is written into the brief: even a clean pass through N=1,700 on the synthetic shape only means "no break observed at the required cardinality." It would **not** authorize telling Stagecraft their workaround can retire — that still needs a real-corpus replay or their own confirmation. Which keeps the reply draft in your court accurate exactly as written.
+
+# djradon_2026-08-01_1726_43
+
+<task-notification>
+<task-id>bvkpa1aje</task-id>
+<tool-use-id>toolu_01PMHbw4WWnyHMmKNWN99Bnp</tool-use-id>
+<output-file>/tmp/claude-1000/-home-djradon-hub-semantic-flow-weave/cdec3e72-8793-4459-a030-19a9f2737f92/tasks/bvkpa1aje.output</output-file>
+<status>completed</status>
+<summary>Background command "Fire Kim on the append-onlyish ReferenceCatalog bite" completed (exit code 0)</summary>
+</task-notification>
+
+# claude-opus-5_2026-08-01_1726_57
+
+Kim delivered — and her conflict test caught a real bug in the old guard. Reviewing:
+
+# claude-opus-5_2026-08-01_1727_18
+
+All cheap gates green (fmt, type-check, 11 tests). Committing on the lane, but holding the heavy gates — running full CI now would skew the probe's wall-time and RSS evidence, which is its whole deliverable:

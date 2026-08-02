@@ -175,3 +175,15 @@ Report rather than implement: any evidence `hasResourcePage` needs single-valued
 Branch when fired: `lane/reference-catalog-append` off main (pre-created by the planning seat). Suggested commit: `fix(weave): append-only current-only ReferenceCatalog inventory weave`. End the return with `READ-IN/QUEUE DELTA: none | <what belongs where>`.
 
 STATUS: brief READY; fire held until PRs #31–#33 merge or the loop re-arms (serialization per the carve's own lane-overlap analysis).
+
+### Bite 1 receipt + residuals (2026-08-01)
+
+DELIVERED on `lane/reference-catalog-append` (commit pending full gates): the current-only ReferenceCatalog weave now routes through `planInventoryAppend`. Fail-on-old recorded for all three tests, and the conflict probe found a real defect in the replaced code — the old substring guard accepted the requested locator appearing in an unrelated `ex:` predicate while a *different* working locator was carried, so a genuine conflict passed silently. New `knop_inventory_renderers_test.ts` deliberately kept out of `weave_test.ts`.
+
+Residuals carried forward as later-bite evidence (per the return's delta line):
+
+- **Compact planner serialization pressure.** `planInventoryAppend`'s append text expands RDF IRIs, so this slice locally compacts its own bounded suffix. If more append writers hit this, a shared compact serializer is warranted rather than per-consumer compaction — decide when the second or third consumer migrates, not now.
+- **ResourcePage policy deletion defect (confirmed, unowned).** `resource_page_policy.ts` collects disallowed settled page paths (~line 141) and removes them (~line 197) — a direct violation of the append-onlyish contract, and a more serious one than block-rewriting because it *deletes settled facts*. Needs its own bite; it was also flagged independently in the evidence audit above.
+- **`hasResourcePage` is not single-valued.** Verified against the core ontology (`owl:ObjectProperty`, no functional/max-cardinality constraint). Future append consumers must not assume otherwise.
+
+Next consumers in the natural order: the PageDefinition twin renderer, then the whole-document writers (`knop create` later-path, `add-reference`, extract, integrate), then MeshInventory growth, with the ResourcePage policy deletion defect as its own correctness bite.
