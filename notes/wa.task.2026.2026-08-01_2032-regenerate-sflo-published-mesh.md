@@ -616,6 +616,16 @@ cmp "$SFLO_RUN_ROOT/old-favicon.ico" "$SFLO_RUN_ROOT/fetched/favicon.ico"
 
 ## Decisions
 
+### Rulings — Dave, 2026-08-01 (evening)
+
+- **Source release: cut as `v0.3.0`, DONE.** Dave chose a minor bump over the branch's original `0.2.1` after review showed the content is breaking (dcterms→dcat predicate migration, artifact-resolution targets renamed to specs, `owl:versionInfo` off version-independent IRIs, narrowed config policy). Tagged `v0.3.0` at commit `ee3a21dfeab1c96a6442ed0679c903896535b69d`, pushed to `origin/main` with the annotated tag; `release:validate --require-tag`, `deno task ci` (27/27), and `riot --validate` over all five files all pass. **Every `$SFLO_RELEASE_VERSION='0.2.1'` / `releases/v0.2.1` in the recipe below becomes `0.3.0` / `releases/v0.3.0`.**
+- **A validator fix rode along**, recorded here because it changes a release gate: `scripts/release_validate.ts` required `owl:versionInfo` on the version-independent ontology IRI, which this line deliberately removed (a version-independent resource must not claim a single version). It now derives each file's declared version from `dcat:hasVersion` and still requires `owl:versionInfo` on the release resource. Two tests that asserted the retired message were updated.
+- **`favicon.ico`: preserve byte-for-byte** (RULED). It is the only at-risk host asset; `.nojekyll` stays Weave-managed, `CNAME` and `assets/` stay absent.
+- **Old commits: keep the archive tag** (RULED) — annotated `archive/gh-pages-before-regeneration-2026-08-01` at `a7e7626`, preserving parent `aed218c`, before `gh-pages` is replaced by the single root commit.
+- **Turtle validation: `riot` is usable** (RESOLVED, not a ruling). Java is present via sdkman; it is simply absent from non-interactive `PATH`. Every recipe step invoking `riot` must first `source "$HOME/.sdkman/bin/sdkman-init.sh"`. Verified against the core ontology.
+
+### Prior
+
 - Dave ruled on 2026-08-01 that the SFLO published mesh will be regenerated from scratch with current code and made to appear as the first published version.
 - Regeneration is a clean replay, not an incremental mutation or another manual recreation of the existing `gh-pages` tree.
 - The v0.2.0 source payload is not a valid input to current Weave because its published vocabulary is incompatible with the artifact-resolution vocabulary current Weave generates.

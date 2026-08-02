@@ -5,7 +5,7 @@ desc: ''
 created: 1785612415437
 updated: 1785612415437
 participants: [djradon, claude.claude-fable-5, claude.claude-opus-5]
-conversationEventKinds: [message.assistant, message.user, tool.call, tool.result]
+conversationEventKinds: [message.assistant, message.user, tool.call, tool.result, decision]
 ---
 
 # djradon_2026-08-01_0834_38
@@ -1006,3 +1006,125 @@ When the draft lands I'll cut the task note and bring you the decisions that nee
 # claude-opus-5_2026-08-01_2052_02
 
 This turned up a hard blocker you need to know about before anything else. Minting the task note first:
+
+# claude-opus-5_2026-08-01_2053_04
+
+PR #34 merged too — cleaning up and reporting:
+
+# claude-opus-5_2026-08-01_2053_26
+
+The regeneration recipe is reconstructed and cut as a task note — but it can't run yet, and the reason is worth your attention.
+
+**The blocker: SFLO v0.2.0's own payload defines the legacy vocabulary.** It's not just that the *published mesh* uses `sflo:hasTargetArtifact`/`hasRequestedTargetState` — the released ontology source **defines** those predicates, while current Weave emits and resolves the renamed `sflo:targetArtifact`/`sflo:targetHistoricalState`. So regenerating from v0.2.0 would publish a mesh whose ontology declares one vocabulary while its own generated support artifacts speak another. `next/v0.2.1` has the compatible vocabulary, but it still carries v0.2.0 release identities, so publishing those bytes at `releases/v0.2.0` would break immutable release identity.
+
+**So an SFLO v0.2.1 source release has to be cut and tagged first**, and the regeneration replays from that tag. That turns "let's regenerate" into two tasks. sflo has its own `release:set-version`/`release:validate` tasks and a runbook, so I can prepare it if you approve — that's the top court card.
+
+**One consequence you'll want to expect:** the vocabulary rename genuinely changes the term census — projected **379 → 362 Knops, 60 retired and 43 added**. That's correct behavior, not drift, but it means surviving-term IRIs deserve spot-checks after publication.
+
+Three smaller rulings are carded with defaults, and I'll proceed on the leans if you don't object: preserve `favicon.ico` byte-for-byte (it came from that "lovely manual re-creation" commit and is the only at-risk host asset), keep an `archive/gh-pages-before-regeneration` tag so the old two commits stay auditable even though `gh-pages` becomes a single root commit, and fix the Turtle validator — `riot` is installed but unusable because there's no JDK on this box.
+
+Also: **PR #34 merged**, lane cleaned up. The append-onlyish task keeps its queue entry, since that was bite 1 of several — the slice popped, not the task.
+
+# djradon_2026-08-01_2119_34
+
+Yes, please release sflo. preserve favicon, keep archive.
+
+I see sdkman is installed here, ("sdk" is the command) and java is on the path.
+
+# claude-opus-5_2026-08-01_2119_41
+
+Approved — recording the rulings and checking the Java claim first, since the last report said no JDK:
+
+# claude-opus-5_2026-08-01_2119_54
+
+Java is there — it just needs sdkman sourced (not on PATH in non-interactive shells). That resolves the validator ruling. Reading sflo's release runbook:
+
+# claude-opus-5_2026-08-01_2120_07
+
+Runbook understood. Checking what v0.2.1 actually contains before cutting it:
+
+# claude-opus-5_2026-08-01_2120_28
+
+Twelve commits ahead of main with 1,328 insertions — and one of them is `refactor: rename artifact resolution targets to specs`. Let me check how breaking this actually is before picking a version:
+
+# claude-opus-5_2026-08-01_2121_11
+
+Before I cut the tag, one thing needs your call — and it's irreversible once published.
+
+The branch is named `next/v0.2.1`, but its content isn't patch-shaped. Across those twelve commits: `dcterms:hasVersion` → `dcat:hasVersion` and `dcterms:isVersionOf` → `dcat:isVersionOf`, `owl:versionInfo` removed from the base ontology identifier, artifact-resolution targets renamed to specs, config policy vocabulary narrowed, plus the `hasTargetArtifact` → `targetArtifact` rename that started this whole thread. Those break consumers reading the old predicates.
+
+For comparison, Weave itself just went 0.5.1 → **0.6.0** for a purely *additive* API. Renames and removals asking for a patch bump is inconsistent with that, and the version is baked permanently into the release URLs the regenerated mesh will publish (`releases/v0.2.1/ttl/...` vs `releases/v0.3.0/ttl/...`).
+
+# claude-opus-5_2026-08-01_2121_18_Tool-decision-which-version-should-the-sflo-source-release-be-cut-as
+
+## Prompt
+
+Which version should the sflo source release be cut as?
+
+## Options
+
+- v0.3.0 (Recommended): Minor bump, matching the breaking content: predicate migrations (dcterms→dcat), removed owl:versionInfo, renamed artifact-resolution specs, narrowed config policy. Consistent with Weave's own 0.5.1→0.6.0 for a smaller (additive) change. Release URLs become releases/v0.3.0/.
+- v0.2.1 as planned: Keep the branch's original intent. Simpler, matches the branch name and the analysis's assumption, but labels breaking vocabulary changes as a patch — permanently, since release identity is immutable.
+
+# Assistant_2026-08-01_2127_22_Tool-decision-which-version-should-the-sflo-source-release-be-cut-as
+
+## Prompt
+
+Which version should the sflo source release be cut as?
+
+## Options
+
+- v0.3.0 (Recommended): Minor bump, matching the breaking content: predicate migrations (dcterms→dcat), removed owl:versionInfo, renamed artifact-resolution specs, narrowed config policy. Consistent with Weave's own 0.5.1→0.6.0 for a smaller (additive) change. Release URLs become releases/v0.3.0/.
+- v0.2.1 as planned: Keep the branch's original intent. Simpler, matches the branch name and the analysis's assumption, but labels breaking vocabulary changes as a patch — permanently, since release identity is immutable.
+
+## User Selection
+
+v0.3.0 (Recommended)
+
+# claude-opus-5_2026-08-01_2127_29
+
+v0.3.0 it is. Cutting the release — merging to main and setting version metadata:
+
+# claude-opus-5_2026-08-01_2128_09
+
+Two findings — the validator disagrees with the ontology's new modeling. Let me see all failures:
+
+# claude-opus-5_2026-08-01_2128_21
+
+The validator requires `owl:versionInfo` on the *version-independent* ontology IRI, but the branch deliberately removed it. Checking that commit's intent:
+
+# claude-opus-5_2026-08-01_2128_39
+
+The commit message and its diff disagree — it says "removed `owl:versionIRI`" but actually removed `owl:versionInfo`, leaving `versionIRI` in place. Checking how widespread this is:
+
+# claude-opus-5_2026-08-01_2128_55
+
+Systematic across all four files — `owl:versionInfo` moved off the version-independent IRI onto the release resource in every one. That's deliberate DCAT-aligned modeling; the validator is stale. Reading it before I fix it:
+
+# claude-opus-5_2026-08-01_2129_16
+
+The validator reads the file's version from `owl:versionInfo` on the base IRI — the triple that deliberately moved. The fix is to read it from `dcat:hasVersion`, which points at the release IRI and is still there:
+
+# claude-opus-5_2026-08-01_2129_48
+
+The test asserts on a message the release-resource check still produces, so this is a clean swap. Reading the exact region to edit:
+
+# claude-opus-5_2026-08-01_2130_23
+
+All eight vocabulary errors cleared — only the release notes remain. Writing them per the runbook's checklist:
+
+# claude-opus-5_2026-08-01_2130_59
+
+The validator wants the published payload URLs enumerated. Adding them:
+
+# claude-opus-5_2026-08-01_2131_50
+
+Both tests assert on the old message. Updating them to the message the new modeling produces:
+
+# claude-opus-5_2026-08-01_2132_22
+
+All green — 27/27 tests, release validation passes, riot clean. Committing and tagging:
+
+# claude-opus-5_2026-08-01_2132_56
+
+Release is out. Recording the rulings and unblocking the regeneration task:
