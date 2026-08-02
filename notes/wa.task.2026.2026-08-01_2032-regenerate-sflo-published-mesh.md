@@ -624,6 +624,27 @@ cmp "$SFLO_RUN_ROOT/old-favicon.ico" "$SFLO_RUN_ROOT/fetched/favicon.ico"
 - **Old commits: keep the archive tag** (RULED) — annotated `archive/gh-pages-before-regeneration-2026-08-01` at `a7e7626`, preserving parent `aed218c`, before `gh-pages` is replaced by the single root commit.
 - **Turtle validation: `riot` is usable** (RESOLVED, not a ruling). Java is present via sdkman; it is simply absent from non-interactive `PATH`. Every recipe step invoking `riot` must first `source "$HOME/.sdkman/bin/sdkman-init.sh"`. Verified against the core ontology.
 
+### Rehearsal receipts and further rulings — 2026-08-01 (night)
+
+A full rehearsal ran end to end on `lane/sflo-namespace-collision` (PR #35) with sflo `v0.3.0` at `ee3a21d`, frozen `--generated-at 2026-08-01T21:45:00Z`.
+
+**A blocking Weave defect was found and fixed by this dogfooding.** Every payload weave of the sflo mesh refused with "Could not parse carried Knop support facts Turtle." Root cause: the sflo mesh is published at `https://semantic-flow.github.io/sflo/` with its ontology payload at the `ontology/` designator, so its own mesh resources have IRIs beginning with `SFLO_NAMESPACE`. `renderNamedNodeTerm` compacted them to `sflo:_knop/_sources`, and `/` is illegal in a Turtle prefixed name's local part, so Weave could not re-parse the facts it had just rendered. sflo is plausibly the only mesh affected, being the one that self-hosts the vocabulary it is published under — and very likely the reason the current `gh-pages` tip is a hand-built commit titled "lovely manual re-creation". Fixed in PR #35 (compact only when the local name has no separator; no other mesh's bytes change), with a fail-on-old regression.
+
+**Rehearsal results, all green:**
+
+- Census matched the projection **exactly**: 379 → 362 Knops, 60 retired, 43 added.
+- All 319 surviving Knops keep their `index.html`; zero missing.
+- The three release payloads are byte-identical to the `v0.3.0` tagged source.
+- `generate` re-run is idempotent: 362 designators, 0 files created, 0 pages updated.
+- `validate mesh` 358 designators / 0 issues; `validate publication` 0 issues.
+- All 1,452 generated Turtle files parse under `riot`.
+- No legacy `hasTargetArtifact` / `hasRequestedTargetState` anywhere; no host paths leaked.
+- `.nojekyll` present; `favicon.ico` byte-identical (`55799672…`); `CNAME` and `assets/` absent; `job`/`prov` excluded.
+
+**RULED (Dave, 2026-08-01 night): publish current-only support artifacts.** The regenerated mesh has no versioned support-artifact histories, where the old one had 3,032 such files — a consequence of Weave's current defaults under the *same* config bytes the old mesh published. Accepted: the mesh is self-consistent as a first publication (the old `_history001/_s0001` support states were just each artifact's initial snapshot), the loss is internal inspection surfaces only, and every term page and release payload is unaffected. File count therefore drops 7,234 → 2,922. This resolves the Open Issue that asked whether the all-governed-artifact `versioned` policy had to be retained — it does not, and no policy binding is added, so the published `_mesh/_config/config.ttl` stays byte-identical to the old one.
+
+**Remaining before publication:** PR #35 must merge, then the recipe re-runs from merged `main` so the published bytes come from an audited commit rather than a lane branch. That re-run also serves as the byte-reproducibility check the Testing section asks for.
+
 ### Prior
 
 - Dave ruled on 2026-08-01 that the SFLO published mesh will be regenerated from scratch with current code and made to appear as the first published version.

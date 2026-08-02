@@ -1128,3 +1128,211 @@ All green — 27/27 tests, release validation passes, riot clean. Committing and
 # claude-opus-5_2026-08-01_2132_56
 
 Release is out. Recording the rulings and unblocking the regeneration task:
+
+# claude-opus-5_2026-08-01_2133_46
+
+**SFLO v0.3.0 is released.** Tag `ee3a21d` pushed with main, `release:validate --require-tag` confirms the tag points at HEAD, sflo CI is 27/27, and `riot` validates all five Turtle files cleanly.
+
+You were right about Java — it's installed via sdkman, just absent from non-interactive `PATH`. Sourcing `sdkman-init.sh` makes `riot` work, and that requirement is now written into the regeneration recipe.
+
+**Two things came up that I decided rather than deferred:**
+
+The **version** was the one I brought back to you, and v0.3.0 was the right call — the release notes now document the migration path for each breaking change (`hasTargetArtifact` → `targetArtifact`, `dcterms:` → `dcat:` versioning predicates, and reading `owl:versionInfo` from the release resource instead of the ontology IRI).
+
+The **validator was wrong and I fixed it.** `release_validate.ts` required `owl:versionInfo` on the version-independent ontology IRI — exactly the triple your branch deliberately removed across all four ontologies, because a version-independent resource shouldn't claim a single version. Rather than revert good modeling to satisfy a stale check, it now derives each file's declared version from `dcat:hasVersion` (which points at the release resource) and still requires `owl:versionInfo` on that release resource, so version verification is preserved, not weakened. Two tests asserting the retired message were updated.
+
+Worth flagging: commit `d765a52`'s message says *"removed owl:versionIRI from the base ontology identifier,"* but its diff removed `owl:versionInfo` and left `versionIRI` in place. The removal is consistent across all four files so I treated it as intentional — but if you actually meant to drop `versionIRI`, that's still present and would need a follow-up release.
+
+**Regeneration is now unblocked.** Rulings are recorded in the task note (favicon preserved byte-for-byte, archive tag kept, riot resolved), the blocker card is swept, and every `releases/v0.2.1` in the 17-slice recipe becomes `releases/v0.3.0`. Your court is back to just the Stagecraft reply. Say the word and I'll start the regeneration — I'll drive slices 3 through 12 and stage the publication commit, holding the force-with-lease push to the live site for you.
+
+# djradon_2026-08-01_2135_46
+
+yes, verionIRI has come to mean "the URL where exact bites should be downloaded". I think. I sent the stagecraft reply, you can start the regeneration and do the force-withlease yourself.
+
+# claude-opus-5_2026-08-01_2135_59
+
+Court's empty then — and that clarification resolves the loose end: `versionIRI` pointing at the raw tag URL *is* the exact-bytes download location, so keeping it is right and the commit message was just mislabeled. Verifying it advanced to v0.3.0, then starting:
+
+# claude-opus-5_2026-08-01_2136_17
+
+versionIRI correctly advanced to the pushed `v0.3.0` tag, so those exact-bytes URLs resolve. Starting the regeneration — setup and receipts first:
+
+# claude-opus-5_2026-08-01_2136_45
+
+zsh ate the `:fa` as a parameter modifier — bracing fixes it (a trap for the rest of the recipe):
+
+# claude-opus-5_2026-08-01_2136_54
+
+All receipts captured (7,234 paths, 379 Knops, favicon `5579967`). Creating the worktrees:
+
+# claude-opus-5_2026-08-01_2137_11
+
+Worktrees clean. Checking the old mesh's config so the new one matches the ruled policy:
+
+# claude-opus-5_2026-08-01_2137_27
+
+The old config is **minimal** — just the publication profile, no policy bindings. The drafted recipe would have invented policy bindings that never existed; I'll let defaults apply and compare. Creating the mesh:
+
+# claude-opus-5_2026-08-01_2137_38
+
+Generated config matches the old one exactly. Now the root welcome payload — recovering the published content rather than inventing it:
+
+# claude-opus-5_2026-08-01_2137_58
+
+Old welcome matches; root payload uses the default `_history001`. Writing it and initializing support history:
+
+# claude-opus-5_2026-08-01_2138_16
+
+Root woven. Restoring the ruled favicon and integrating the three tagged ontology payloads:
+
+# claude-opus-5_2026-08-01_2138_35
+
+Portable binding with the **new** `sflo:targetArtifact` vocabulary — exactly the fix. Setting release states and weaving the three payloads as one batch:
+
+# claude-opus-5_2026-08-01_2138_45
+
+A real failure — let me get the full error:
+
+# claude-opus-5_2026-08-01_2139_07
+
+All three files parse cleanly with riot — so the unparseable Turtle is something Weave builds internally. Tracing it:
+
+# claude-opus-5_2026-08-01_2139_30
+
+This is a real Weave defect, surfaced by dogfooding — exactly what regeneration is for. Diagnosing:
+
+# claude-opus-5_2026-08-01_2139_40
+
+`supportFactParseDirectives()` emits only the `sflo:` prefix. Let me see what the facts actually contain:
+
+# claude-opus-5_2026-08-01_2140_09
+
+`renderNamedNodeTerm` compacts IRIs to prefixes, but the parse directives only declare `sflo:`. Checking which prefixes it can emit:
+
+# claude-opus-5_2026-08-01_2140_29
+
+Parser gets the base, so that's not it. Reading the collection function fully:
+
+# claude-opus-5_2026-08-01_2140_44
+
+Let me look at the actual inventory that's being carried:
+
+# claude-opus-5_2026-08-01_2141_03
+
+The KnopInventory itself carries a **blank node** (`hasRepositorySourceFloatingLocator [...]`). Probing the exported function directly to get the real error:
+
+# claude-opus-5_2026-08-01_2141_20
+
+Reproduced deterministically. Let me capture the malformed Turtle it builds:
+
+# claude-opus-5_2026-08-01_2141_57
+
+Root cause found, and it's a genuinely elegant dogfooding catch.
+
+The sflo mesh is published at `https://semantic-flow.github.io/sflo/`, and its ontology payload lives at designator `ontology/` — so mesh resources have IRIs like `https://semantic-flow.github.io/sflo/ontology/_knop/_sources`. But that prefix is *also* the SFLO vocabulary namespace. So `renderNamedNodeTerm` compacts the mesh resource to `sflo:_knop/_sources`, which is **not a valid Turtle prefixed name** — local parts can't contain `/`. Weave then fails to re-parse the Turtle it just wrote.
+
+# claude-opus-5_2026-08-01_2142_16
+
+Fixed. Now the fail-on-old regression test:
+
+# claude-opus-5_2026-08-01_2142_43
+
+Fail-on-old recorded (fails without the fix, passes with it). Running the full gate:
+
+# claude-opus-5_2026-08-01_2142_59
+
+The regeneration hit a real Weave bug, which is exactly what dogfooding is for. Here's what I found and did.
+
+**The defect:** the sflo mesh is published at `https://semantic-flow.github.io/sflo/` with its ontology payload at designator `ontology/` — so its own mesh resources have IRIs like `.../sflo/ontology/_knop/_sources`. That prefix is *simultaneously* the SFLO vocabulary namespace. Weave's carried-support-fact renderer compacted those mesh resources to `sflo:_knop/_sources`, but `/` is illegal in a Turtle prefixed name's local part — so Weave couldn't re-parse the Turtle it had just generated, and **every weave of that mesh refused** with "Could not parse carried Knop support facts Turtle."
+
+sflo is plausibly the only mesh in existence that trips this, because it's the one that self-hosts the vocabulary it's published under. That's also why the old mesh was a *"lovely manual re-creation"* — I suspect this is what forced the hand-building in the first place.
+
+**The fix** is surgical: only compact to `sflo:` when the remaining local name contains no `/`, otherwise fall through to the mesh-relative or absolute form. Three lines, no change to any other mesh's output (so no fixture churn), on `lane/sflo-namespace-collision` with a fail-on-old regression test — I verified it fails without the fix and passes with it. Full CI and the dnt build are running.
+
+I did this one myself rather than briefing Kim, deviating from the codex-first default: I had the complete diagnosis and a deterministic repro in hand, and it was blocking an in-flight publication. Flagging it rather than burying it.
+
+**Regeneration progress so far:** worktrees created (source detached at `v0.3.0`, publication orphan), old receipts captured (7,234 paths / 379 Knops / favicon `5579967`), mesh created with config **byte-identical** to the published one, welcome payload restored byte-identical and woven at root, favicon preserved, and all three ontology payloads integrated with portable floating-repository bindings carrying the new `sflo:targetArtifact` vocabulary — the migration this whole exercise is for. Next after the fix lands: the release-state batch weave, all-terms extraction, then census comparison against the 379-Knop baseline.
+
+# djradon_2026-08-01_2144_00
+
+<task-notification>
+<task-id>b0lqc3a6c</task-id>
+<tool-use-id>toolu_01FDs4Da1zi54dtMppn74KLJ</tool-use-id>
+<output-file>/tmp/claude-1000/-home-djradon-hub-semantic-flow-weave/cdec3e72-8793-4459-a030-19a9f2737f92/tasks/b0lqc3a6c.output</output-file>
+<status>completed</status>
+<summary>Background command "Full CI and dnt build on the namespace fix" completed (exit code 0)</summary>
+</task-notification>
+
+# claude-opus-5_2026-08-01_2144_46
+
+PR #35 is open. Resuming the regeneration on the fixed code — treating this as a rehearsal that de-risks the real run:
+
+# claude-opus-5_2026-08-01_2145_08
+
+Batch weave succeeded. Let me validate the output and check byte-identity of the release payloads:
+
+# claude-opus-5_2026-08-01_2145_17
+
+All three release payloads are byte-identical to the tagged source. Now the all-terms extraction from exact release states:
+
+# claude-opus-5_2026-08-01_2145_38
+
+**362 Knops — exactly the projected count.** Weaving all extracted terms:
+
+# claude-opus-5_2026-08-01_2146_27
+
+Clean: regeneration is idempotent (0 files created on re-generate), and both validators report zero issues. Running the verification battery:
+
+# claude-opus-5_2026-08-01_2146_42
+
+My shell tests were wrong — `head` always exits 0, so both "bad" branches fired spuriously. Redoing properly with consistent sorting:
+
+# claude-opus-5_2026-08-01_2146_55
+
+Exact match with the projection: **379 → 362, 60 retired, 43 added**, no legacy predicates, no host-path leaks. Final validation battery:
+
+# claude-opus-5_2026-08-01_2147_28
+
+Everything validates. Checking PR #35 before deciding on the publish:
+
+# claude-opus-5_2026-08-01_2147_59
+
+Wait — file count dropped 7,234 → 2,922, far more than the 4.5% Knop change. That needs explaining before anything is published:
+
+# claude-opus-5_2026-08-01_2148_19
+
+Confirmed and material: the old mesh has 3,032 files of versioned support-artifact history (`_knop/_inventory/_history001/...` and `_meta/_history001/...`); the new one has **zero**. Checking what consumers actually dereference is intact:
+
+# claude-opus-5_2026-08-01_2148_38
+
+All 319 surviving Knops keep their `index.html` — zero missing. So every page a consumer dereferences is intact; the loss is purely internal inspection surfaces. But it's ~3,000 URLs, and the recipe flagged this as needing your ruling.
+
+# claude-opus-5_2026-08-01_2148_46_Tool-decision-the-regenerated-mesh-has-no-versioned-support-artifact-histories-weave-s-current-default-where-the-old-one-had-3-032-such-files-publish-as-is-or-configure-versioned-support-to-match-the-old-shape
+
+## Prompt
+
+The regenerated mesh has no versioned support-artifact histories (weave's current default), where the old one had 3,032 such files. Publish as-is, or configure versioned support to match the old shape?
+
+## Options
+
+- Publish current-only (Recommended): Matches current Weave defaults with the same config bytes the old mesh had. Self-consistent for a mesh presented as a first publication — the old _history001/_s0001 support states were just each artifact's initial snapshot. Loses ~3,000 internal inspection URLs; all 362 term pages and all 3 release payloads are unaffected.
+- Configure versioned support: Add an explicit policy binding so support artifacts get versioned histories, reproducing the old mesh's ~7,200-file shape. Preserves those inspection URLs, but means publishing a config the old mesh never had, and re-running the recipe to validate the alternate policy.
+
+# Assistant_2026-08-01_2154_54_Tool-decision-the-regenerated-mesh-has-no-versioned-support-artifact-histories-weave-s-current-default-where-the-old-one-had-3-032-such-files-publish-as-is-or-configure-versioned-support-to-match-the-old-shape
+
+## Prompt
+
+The regenerated mesh has no versioned support-artifact histories (weave's current default), where the old one had 3,032 such files. Publish as-is, or configure versioned support to match the old shape?
+
+## Options
+
+- Publish current-only (Recommended): Matches current Weave defaults with the same config bytes the old mesh had. Self-consistent for a mesh presented as a first publication — the old _history001/_s0001 support states were just each artifact's initial snapshot. Loses ~3,000 internal inspection URLs; all 362 term pages and all 3 release payloads are unaffected.
+- Configure versioned support: Add an explicit policy binding so support artifacts get versioned histories, reproducing the old mesh's ~7,200-file shape. Preserves those inspection URLs, but means publishing a config the old mesh never had, and re-running the recipe to validate the alternate policy.
+
+## User Selection
+
+Publish current-only (Recommended)
+
+# claude-opus-5_2026-08-01_2155_07
+
+Recorded. Let me capture both rulings in the task note and check what's left:
