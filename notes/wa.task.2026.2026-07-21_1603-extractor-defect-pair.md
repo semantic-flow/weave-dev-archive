@@ -259,3 +259,50 @@ Non-goals: no planner/batching/caching/overlay/memory/page changes; no targeted/
 Report rather than implement: nested integration/weave unexpectedly requiring an ancestor Knop; candidate loading unable to resolve `catalog/source` without production changes; pending-term planning failures from the pre-PR-31 assertion; current-only vs versioned differences; memory/wall-time observations; any production-code need for the generator mode.
 
 Suggested commit: `test(weave): generate nested-source pending-heavy meshes`. Branch: `lane/heavy-mesh-nested-source` off main (pre-created; do not run git). End your return with `READ-IN/QUEUE DELTA: none | <what belongs where>`.
+
+## Kim brief — bite 3: nested-source extracted lifecycle VIABILITY PROBE (cut 2026-08-01)
+
+Carved by codex read-only analysis; deliverable is EVIDENCE, not a fix. Requirement 9 keeps Stagecraft's claim-synthesis workaround until supported extract→weave→generate works at their ~1,700-term nested-source scale. #31 removed the fictional ancestor-Knop requirement; #32 added faithful `catalog/source` pending-heavy generation; **#33 does NOT batch extracted terms** — they classify as `firstExtractedKnopWeave` and stay on the per-candidate recursive path (`version_execution.ts` ~913 gates the batch on all-`firstPayloadWeave`). Nothing has ever composed the three steps end to end, so the break cardinality is honestly unknown.
+
+Sequenced FIRST among the remaining epic parts: targeted/untargeted agreement presumes the untargeted sequence works at all; actual-progression history rendering is versioned-only and would confound a current-only consumer probe; a batching design should be driven by the observed failure phase; and the durable ~1,700-term regression should encode a measured result rather than a guess.
+
+**Dave's guidance 2026-08-01: do not generate anything on the Stagecraft side.** The probe never touches their estate — it uses our synthetic generator plus checked-in fixtures.
+
+### Three-tier substrate (amended from the single-tier carve)
+
+1. **Synthetic generator arm — the defect shape and cardinality.** `scripts/generate-pending-heavy-mesh.ts --source-designator-path catalog/source`, current-only MeshInventory, 1,024-byte terms, fresh mesh per rung, fixed `--generated-at`. This is the ONLY substrate that can build the no-ancestor-Knop topology at arbitrary N.
+2. **sflo `gh-pages` arm — the real-corpus correctness check** (Dave's suggestion; measured 2026-08-01): a genuine woven mesh of **7,234 files / 5,687 under `_knop` / 379 Knops** — file count comparable to Stagecraft's reported ~6,900, term cardinality ~379 vs their ~1,700, and roughly 100× mesh-alice. **Caveat that shapes its use: it does NOT reproduce the defect shape.** 376 of its Knops sit at depth 2 under `config/` and `ontology/`, and BOTH `config/_knop` and `ontology/_knop` exist — precisely the ancestor-Knop condition whose absence caused the Stagecraft failure. So sflo proves correctness and scale on real content, never the nested-source defect. Copy to a temp workspace; never mutate the checkout (its working branch is unrelated to `gh-pages`).
+3. **mesh-alice arm — fast iteration** (Dave: "alice is kinda small"), for quick correctness signal only.
+
+### Execution requirement
+
+Run from a CLEAN checkout of `main`, never the shared worktree: a concurrent lane's uncommitted edits would silently contaminate the evidence. A dedicated `git worktree` at `main` with `dependencies/` symlinked is sufficient (verified working 2026-08-01 — `deno run -A src/main.ts --version` reports 0.6.0 there).
+
+### Exact goal
+
+Without changing production code, determine whether current `main` completes the supported sequence on a current-only nested-source pending mesh, and record the largest passing and (if applicable) smallest reproducible failing cardinality through N=1,700. **A failure is a valid completed result — do not fix it in this bite.**
+
+### Evidence sequence
+
+1. Reconfirm prerequisites: `deno test -A --filter "nested source" src/core/weave/weave_test.ts tests/scripts/pending_heavy_mesh_test.ts`.
+2. Generate N=3 into a disposable directory outside the repo (`--count 3 --mesh-inventory-history current-only --term-content-bytes 1024 --source-designator-path catalog/source`).
+3. Pre-weave proof: exactly three extracted designators; `catalog/source/_knop` exists; `catalog/_knop` absent from filesystem AND MeshInventory; each term pending and bound to `catalog/source`; no term page claims or `index.html` files yet.
+4. Run untargeted CLI `weave --mesh-root … --generated-at 2026-08-01T00:00:00Z`, capturing exit status, stdout/stderr, `WEAVE_TIMING=1` phases, wall time, and peak RSS (via `/usr/bin/time -v`) to files OUTSIDE the mesh.
+5. Post-weave proof: all terms reported woven; no candidates remain pending; every term and its Knop carry governed `sflo:hasResourcePage` claims; representative first/middle/last term pages exist with source-derived facts; `catalog/source` facts intact; no `catalog/_knop` synthesized.
+6. Run standalone untargeted `generate` at the same timestamp; prove pages remain and the same-timestamp rerun introduces no semantic or unexpected filesystem drift.
+7. If N=3 passes, repeat on fresh meshes at N = 50, 200, 500, 1000, 1700, recording per phase: exit status, wall time, max RSS, timing phases, woven/generated counts, page and claim counts, first unexpected error and its phase. Re-run a failing rung once; for a deterministic failure bisect between largest pass and first failure to the smallest reproducible failing N. Treat an external timeout as distinct from a program failure — do not report it as the break cardinality.
+8. Then the sflo arm: copy the `gh-pages` tree to a temp workspace and run standalone `generate` at a fixed timestamp against that settled real corpus, proving no semantic drift and recording time/RSS. (Correctness + scale on real content; the defect shape is not present there.)
+
+### Honesty clause
+
+A synthetic pass through N=1,700 means only "no break observed through the required cardinality on the faithful synthetic shape." **It does not authorize telling Stagecraft their workaround can retire** — that still gates on a real-corpus replay or their own confirmation.
+
+### Non-goals / must not touch
+
+No production change at all. Do not touch `src/core/weave/knop_inventory_renderers.ts` or `knop_inventory_renderers_test.ts` (concurrent append-onlyish lane), `shape_assertions.ts`, `weave.ts`, `version_execution.ts`, candidate/cache/overlay/memory code, MeshInventory or KnopInventory renderers, the pending-heavy generator or its tests, extraction's non-publication-bearing behavior, versioned history-index behavior, targeted/untargeted agreement, batching, fixture repos, Accord manifests, framework specs, Stagecraft code or its workaround, release/package surfaces, or any queue/read-in/backlog/archive note.
+
+### Report rather than implement
+
+Any semantic failure after the first candidate; disagreement between woven count, remaining candidates, claims, and generated pages; the first failing cardinality and phase; memory/wall-time growth curves; whether failure originates in recursive planning, writes, in-weave generation, or standalone generation; any need for extracted-term batching, incremental MeshInventory work, or generation changes; incidental current-only vs versioned differences.
+
+Return a paste-ready receipt. No commit expected. End with `READ-IN/QUEUE DELTA: none | <what belongs where>`.
