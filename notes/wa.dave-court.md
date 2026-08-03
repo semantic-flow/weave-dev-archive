@@ -52,3 +52,15 @@ The decision was already made and then lost: `sflo.conv.2025-11-29-rdf-storage-o
 Weave still ships the hand-rolled regex renderer in `src/runtime/weave/pages.ts`; footnotes and several syntaxes do not render.
 
 **To rule:** is this worth a slice now, and does it fold in [[wa.task.2026.2026-04-13_1715-page-renderer-refresh-and-html-regeneration]] and [[wa.task.2026.2026-05-24_2353-autolinking]], or stay narrow? The blocking constraint either way is byte-stable regeneration — swapping renderers changes every generated page's bytes, so the slice needs a deliberate regeneration story, not just a dependency swap. [[wa.task.2026.2026-05-25-markdown-it]] is an empty template and needs writing before any of it is fireable.
+
+**SUPERSEDED IN PART, 2026-08-02.** A blind codex evaluation — brief deliberately withheld the 2025-11-29 decision and Dave's lean — reached the **opposite** conclusion: `unified`/`remark`/`rehype` wins, `markdown-it` loses. Full writeup in [[wa.discussion.2026-08-08-markdown-renderer]].
+
+The two evaluations do not actually conflict; the scope does. 2025-11-29 asked "what renders Markdown to HTML?" and markdown-it is right for that — the new analysis says so unprompted. Dave's 2026-08-02 framing asked for a **static site generator** over mesh-held DigitalArtifacts with Dendron flavour, semantic extraction, and HTML/`.txt` inputs. Against that, markdown-it's token stream (not an AST) is the disqualifier: Weave would have to build the document-processing layer unified already provides.
+
+**Three things now need rulings, in this order:**
+
+1. **A live security defect, independent of the library choice.** `resolveMarkdownHref` (`src/runtime/weave/pages.ts:3734`) accepts ANY URI scheme — `[x](javascript:...)` reaches `href` verbatim. Verified in source. Latent today because the published site has no authored regions; rendering notes and conversation transcripts as pages is exactly what activates it. Small fix, should not wait.
+2. **May `weave-lib` become ESM-only for Node 20?** unified is ESM-only and will not survive the current CJS dnt build. This already silently affects Shiki (`require("shiki")` in the generated CJS), masked only because page generation is not exported. Blocks implementation either way.
+3. **Scope confirmation.** If the real goal is narrower than a site generator, the 2025 answer stands. If it is the site generator, the new answer does.
+
+Eleven further open questions (Dendron identity, wikilink forms, missing-target behavior, conversation-transcript publish state, byte-stability scope) are in the discussion note.
