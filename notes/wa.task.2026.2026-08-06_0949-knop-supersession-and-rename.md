@@ -1,7 +1,7 @@
 ---
 id: nh1izfge5mialx3b9godo22
 title: Knop supersession and rename
-desc: 'Renames are supersessions, not moves: the old Knop stays frozen and citable, dcterms:isReplacedBy links it forward, and the old page offers a cancellable redirect rather than vanishing'
+desc: 'Renames are supersessions, not moves: the old Knop keeps its payload history permanently citable, dcterms:isReplacedBy links it forward via weave supersede, and the old page offers a cancellable redirect rather than vanishing'
 updated: 1786034947000
 created: 1786034947000
 ---
@@ -70,7 +70,8 @@ A timed auto-redirect engages WCAG 2.2.1 (Timing Adjustable), which requires the
 ## Decisions
 
 - **2026-08-06 (Dave): a rename is a SUPERSESSION**, linked with `dcterms:isReplacedBy`. See Summary.
-- **2026-08-06 (Dave): `weave rename` is a new command.** A rename needs an explicit signal, because Weave cannot infer one. When an author renames a Dendron note in their editor, all Weave observes is that one designator's working file vanished and another appeared — indistinguishable from a delete plus an unrelated create. Nothing in the mesh distinguishes those cases, and guessing from content similarity would be a heuristic making identity claims, which is precisely what a mesh must not do. The command supplies the intent that the filesystem cannot.
+- **2026-08-06 (Dave): `weave supersede` is the primitive; `weave rename` is `mv` + `supersede`.** `repoint` was rejected as a name because it already means changing a `ResourcePageSource`'s target in this workspace.
+- **2026-08-06 (Dave): a rename needs an explicit command.** A rename needs an explicit signal, because Weave cannot infer one. When an author renames a Dendron note in their editor, all Weave observes is that one designator's working file vanished and another appeared — indistinguishable from a delete plus an unrelated create. Nothing in the mesh distinguishes those cases, and guessing from content similarity would be a heuristic making identity claims, which is precisely what a mesh must not do. The command supplies the intent that the filesystem cannot.
 - **2026-08-06 (Dave): store one hop.** If A is replaced by B and B by C, A records only `isReplacedBy B`. The chain resolves at render time, with cycle detection.
 
   **Corrected rationale (Dave, 2026-08-06):** I first justified this as avoiding a rewrite of settled facts. That was wrong. Recording a later hop would *mint a new state*, not rewrite an old one, and minting states is exactly how Weave records change — fully append-onlyish. The ruling stands, but on different grounds:
@@ -86,7 +87,11 @@ A timed auto-redirect engages WCAG 2.2.1 (Timing Adjustable), which requires the
 - Does the new Knop start with no history, or does it record a provenance pointer to the superseded history without copying states?
 - What does the command do when the target designator path is already occupied — refuse, or require an explicit overwrite-style flag? Refusing by default is consistent with the fail-closed direction elsewhere.
 
-### Command shape — two workflows, one primitive (proposed 2026-08-06)
+### Command shape — RULED 2026-08-06
+
+**`weave supersede <old> <new>`** is the semantic primitive: it records the supersession and touches no files. **`weave rename <old> <new>`** is the convenience wrapper — move the working file, then supersede. `rename` = `mv` + `supersede`.
+
+One semantic implementation, one set of tests against `supersede`; the filesystem step lives only in the wrapper.
 
 Dave proposed splitting by who moved the file: `weave rename` moves it, and a second command records metadata for an already-moved file. **The split is right** — the two workflows are genuinely distinct:
 
@@ -102,7 +107,7 @@ Dave proposed splitting by who moved the file: `weave rename` moves it, and a se
 
 This keeps one semantic implementation with one set of tests, adds a filesystem step in a thin wrapper, and leaves `repoint` meaning what it already means. It also reads correctly for non-note meshes, where "rename" is the natural word and the file move is wanted.
 
-To rule: accept `supersede`/`rename`, or keep two peer commands under different names.
+RULED 2026-08-06 (Dave): `supersede` accepted.
 - Re-run safety: a second `weave rename` with the same arguments should be a semantic no-op rather than minting a second supersession.
 - Should `weave validate` report a dangling `isReplacedBy` target, or a superseded Knop that also has pending work?
 - Auto-redirect default: on, off, or config per mesh? The refinement above assumes on-at-root; a publication that never wants redirects should be able to say so.
@@ -131,7 +136,8 @@ To rule: accept `supersede`/`rename`, or keep two peer commands under different 
 
 ## Implementation Plan
 
-- [ ] `weave rename <old> <new>`: refuse an occupied target, no-op on repeat, and record the supersession.
+- [ ] `weave supersede <old> <new>`: record the supersession, refuse an occupied target, no-op on repeat.
+- [ ] `weave rename <old> <new>`: move the working file, then delegate to `supersede`.
 - [ ] Emit `dcterms:isReplacedBy` and validate its target resolves.
 - [ ] Add the supersession region to the document model and render it from RDF.
 - [ ] Countdown and cancel control, root-only, with the no-JS path proven.
