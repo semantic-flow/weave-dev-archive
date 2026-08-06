@@ -1379,7 +1379,7 @@ I found the nearby tasks. The import task already captures “make Bob 20/21 hon
 
 # gpt-5.5_2026-05-24_1801_16
 
-There is a task close enough: `wa.task.2026.2026-05-23_2230-custom-resourcepage-shared-shell-fixture.md`. It was framed around Carol, but the thing you’re naming is the same product direction: custom ResourcePages should compose governed authored content as panels, not make identifier pages into loose Markdown pages. I’m going to update that task rather than spawn a second overlapping one.
+There is a task close enough: `wa.completed.2026.2026-05-23_2230-custom-resourcepage-shared-shell-fixture.md`. It was framed around Carol, but the thing you’re naming is the same product direction: custom ResourcePages should compose governed authored content as panels, not make identifier pages into loose Markdown pages. I’m going to update that task rather than spawn a second overlapping one.
 
 # gpt-5.5_2026-05-24_1801_51
 
@@ -1387,7 +1387,7 @@ I folded it into the shared-shell/custom ResourcePage fixture task, because that
 
 # gpt-5.5_2026-05-24_1802_04
 
-Yes, there was a close existing task: [wa.task.2026.2026-05-23_2230-custom-resourcepage-shared-shell-fixture.md](wa.task.2026.2026-05-23_2230-custom-resourcepage-shared-shell-fixture.md).
+Yes, there was a close existing task: [wa.completed.2026.2026-05-23_2230-custom-resourcepage-shared-shell-fixture.md](wa.completed.2026.2026-05-23_2230-custom-resourcepage-shared-shell-fixture.md).
 
 I updated it rather than creating a new overlapping task. It now explicitly says:
 
@@ -1429,7 +1429,7 @@ Verified after prune:
 - Sidecar remote now has only `a.*` + `main`
 - Branch-published remote already had only `a.*` + `main`/`gh-pages`
 
-Updated [wa.task.2026.2026-05-23_2230-custom-resourcepage-shared-shell-fixture.md](wa.task.2026.2026-05-23_2230-custom-resourcepage-shared-shell-fixture.md):
+Updated [wa.completed.2026.2026-05-23_2230-custom-resourcepage-shared-shell-fixture.md](wa.completed.2026.2026-05-23_2230-custom-resourcepage-shared-shell-fixture.md):
 - marked fixture-helper generalization complete
 - marked branch cleanup complete
 - marked enough `weave import` behavior landed

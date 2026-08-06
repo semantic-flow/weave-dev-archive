@@ -12,7 +12,7 @@ conversationEventKinds: [message.assistant, message.user, tool.call, tool.result
 
 weave shared shell fixture
 
-Please review [[wa.task.2026.2026-05-23_2230-custom-resourcepage-shared-shell-fixture]] 
+Please review [[wa.completed.2026.2026-05-23_2230-custom-resourcepage-shared-shell-fixture]] 
 
 Open Issues:
 - Regarding first generated panel, I think children is good.
@@ -35,7 +35,7 @@ I’m going to update the task note to capture these as decisions and scope boun
 
 I’ve captured the decisions in the task note, including the sidebar as governed/reusable and the Alice data rename. I’m checking the diff now for consistency and for any wording that over-promises current renderer behavior.
 
-Updated the task note: [[wa.task.2026.2026-05-23_2230-custom-resourcepage-shared-shell-fixture]].
+Updated the task note: [[wa.completed.2026.2026-05-23_2230-custom-resourcepage-shared-shell-fixture]].
 
 Captured your decisions:
 - `children` is the first explicit generated panel.
@@ -265,7 +265,7 @@ Next steps I’d do:
 
 1. Commit the task-note follow-up:
 ```sh
-git -C dependencies/github.com/semantic-flow/weave-dev-archive add notes/wa.task.2026.2026-05-23_2230-custom-resourcepage-shared-shell-fixture.md
+git -C dependencies/github.com/semantic-flow/weave-dev-archive add notes/wa.completed.2026.2026-05-23_2230-custom-resourcepage-shared-shell-fixture.md
 git -C dependencies/github.com/semantic-flow/weave-dev-archive commit -m "docs(archive): record b.00 asset seeding follow-up"
 ```
 

@@ -181,7 +181,7 @@ Official dates I found:
 - Camera-ready: **August 20, 2026**
 - Conference: **November 16-18, 2026**
 
-I added [wa.task.2026.2026-06-30_1159-kgswc-2026-paper-target.md](wa.task.2026.2026-06-30_1159-kgswc-2026-paper-target.md:1), and linked it from the old FOIS/FOMI sprint note plus [wd.todo.md](../../../../../documentation/notes/wd.todo.md:18).
+I added [wa.cancelled.2026.2026-06-30_1159-kgswc-2026-paper-target.md](wa.cancelled.2026.2026-06-30_1159-kgswc-2026-paper-target.md:1), and linked it from the old FOIS/FOMI sprint note plus [wd.todo.md](../../../../../documentation/notes/wd.todo.md:18).
 
 KGSWC looks plausible: Springer LNCS, double-blind, full papers 12-15 pages, short papers 6-8 pages. Topics include Linked Data, Vocabularies/Schemas/Ontologies, Services/APIs, and Knowledge Graphs into LLMs. Source pages: [Important Dates](https://kgsw.org/important_date.php), [Call for Papers](https://kgsw.org/call_for_paper.php).
 

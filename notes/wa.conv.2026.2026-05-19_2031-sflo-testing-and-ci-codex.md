@@ -1179,7 +1179,7 @@ So yes, my previous “repository-backed” framing was too narrow. The feature 
 
 # User_2026-05-19_2349_26
 
-OK, fill out [wa.task.2026.2026-05-19_2349-branch-based-workingfile-fix.md](wa.task.2026.2026-05-19_2349-branch-based-workingfile-fix.md)
+OK, fill out [wa.completed.2026.2026-05-19_2349-branch-based-workingfile-fix.md](wa.completed.2026.2026-05-19_2349-branch-based-workingfile-fix.md)
 
 # gpt-5.5_2026-05-19_2349_40
 
@@ -1195,7 +1195,7 @@ I filled the note with the branch-mesh framing and kept the workaround explicitl
 
 # gpt-5.5_2026-05-19_2352_34
 
-Filled out [wa.task.2026.2026-05-19_2349-branch-based-workingfile-fix.md](wa.task.2026.2026-05-19_2349-branch-based-workingfile-fix.md) with the branch-based mesh framing.
+Filled out [wa.completed.2026.2026-05-19_2349-branch-based-workingfile-fix.md](wa.completed.2026.2026-05-19_2349-branch-based-workingfile-fix.md) with the branch-based mesh framing.
 
 I made the note explicit that `/tmp/sflo-source` is only a diagnostic workaround, not the durable model. The task now covers portable repo/branch/path source intent, local command-profile resolution, floating sources without forced commit/digest pinning, validation coverage, and updating the SFLO CLI example after the real fix lands.
 
@@ -1448,7 +1448,7 @@ I’ve pulled the note back to the repo-specific design. I’m doing one more sc
 
 I agree: no compelling second case. A repo gives us durable identity, root discovery, and a normal local checkout mapping. A generic filesystem root is just local path policy with a fancier hat, and a URL root mostly collapses into “just use the URL.”
 
-I reverted the task note back to repo-specific floating sources in [wa.task.2026.2026-05-19_2349-branch-based-workingfile-fix.md](wa.task.2026.2026-05-19_2349-branch-based-workingfile-fix.md). It now keeps:
+I reverted the task note back to repo-specific floating sources in [wa.completed.2026.2026-05-19_2349-branch-based-workingfile-fix.md](wa.completed.2026.2026-05-19_2349-branch-based-workingfile-fix.md). It now keeps:
 
 - `sflo:RepositorySourceFloatingLocator`
 - `sflo:hasRepositorySourceFloatingLocator`

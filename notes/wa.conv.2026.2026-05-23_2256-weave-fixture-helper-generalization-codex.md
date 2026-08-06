@@ -12,7 +12,7 @@ conversationEventKinds: [message.assistant, message.user, tool.call, tool.result
 
 weave Fixture Helper Generalization
 
-Please review [[wa.task.2026.2026-05-22_2308-fixture-helper-generalization]] and suggest any refinements and resolve open issues if you're confident. Let me know if you're prepared to implement.
+Please review [[wa.completed.2026.2026-05-22_2308-fixture-helper-generalization]] and suggest any refinements and resolve open issues if you're confident. Let me know if you're prepared to implement.
 
 # gpt-5.5_2026-05-23_2256_46
 
@@ -34,7 +34,7 @@ I’ve resolved the note’s open questions into explicit decisions and left two
 
 # gpt-5.5_2026-05-23_2258_52
 
-Updated the task note here: [wa.task…fixture-helper-generalization.md](wa.task.2026.2026-05-22_2308-fixture-helper-generalization.md).
+Updated the task note here: [wa.task…fixture-helper-generalization.md](wa.completed.2026.2026-05-22_2308-fixture-helper-generalization.md).
 
 Key refinements I made:
 

@@ -822,7 +822,7 @@ My suggested next slice:
    - A test or shape assertion that new source-registry bindings are concrete subclasses (`ExtractionSource`, `IntegrationSource`, `ImportSource`) rather than bare `ArtifactResolutionTarget`.
 
 3. Then pick the next real product/runtime task:
-   - If staying in source/resolver land: page-source exact/fallback semantics from [[wa.task.2026.2026-04-08_1545-resource-page-definition-and-sources]].
+   - If staying in source/resolver land: page-source exact/fallback semantics from [[wa.cancelled.2026.2026-04-08_1545-resource-page-definition-and-sources]].
    - If doing correctness debt: append-onlyish inventory.
    - If reducing confusion: ReferenceLink/source terminology cleanup.
 

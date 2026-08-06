@@ -64,7 +64,7 @@ I’ll update that task note directly and keep it to the checkbox/status line on
 
 The shell tried to interpret the backticks in that sentence, so I’m rerunning the search with the pattern quoted properly. The actual archive repo is under `dependencies/github.com/semantic-flow/weave-dev-archive` from this workspace.
 
-Done. Marked that Bob `20`/`21` regeneration item complete in [the task note](wa.task.2026.2026-05-23_2230-custom-resourcepage-shared-shell-fixture.md:171).
+Done. Marked that Bob `20`/`21` regeneration item complete in [the task note](wa.completed.2026.2026-05-23_2230-custom-resourcepage-shared-shell-fixture.md:171).
 
 # User_2026-05-25_0852_07
 
@@ -148,7 +148,7 @@ I’ll verify the Alice `14`/`18` page definitions once before marking it comple
 
 I found the snag: `14-alice-page-customized` still uses `targetLocalRelativePath "alice/alice.md"`, while `18` is where `alice/page-main` becomes artifact-backed. So I’m not going to mark that exact “from the start” wording complete; I’ll mark it as superseded by the accepted carried shape, then defer the remaining Carol items to the new Carol task so the note is ready to move.
 
-Updated [the task note](wa.task.2026.2026-05-23_2230-custom-resourcepage-shared-shell-fixture.md:22).
+Updated [the task note](wa.completed.2026.2026-05-23_2230-custom-resourcepage-shared-shell-fixture.md:22).
 
 One bit of pushback: I did **not** mark the Alice `14`-`19` item complete as written, because `14` still uses `targetLocalRelativePath "alice/alice.md"` and `18` is where `alice/page-main` becomes artifact-backed. I marked it `[c]` as superseded by the carried review decision, which keeps the completed note honest.
 
@@ -256,7 +256,7 @@ Current state:
 - `17` explicitly expects that direct path and expects no `hasTargetArtifact`: [17 manifest](../../semantic-flow-framework/examples/alice-bio/conformance/17-alice-page-main-integrated-woven.jsonld:172)
 - `18` is where it finally switches to governed `hasTargetArtifact <alice/page-main>` and asserts the old direct path is gone: [18 manifest](../../semantic-flow-framework/examples/alice-bio/conformance/18-alice-page-artifact-source.jsonld:129)
 
-So no, Alice `14`-`19` are not legitimately “complete” if we mean the stricter desired fixture. I changed the task note back to open and spelled out the current state: [task note](wa.task.2026.2026-05-23_2230-custom-resourcepage-shared-shell-fixture.md:171).
+So no, Alice `14`-`19` are not legitimately “complete” if we mean the stricter desired fixture. I changed the task note back to open and spelled out the current state: [task note](wa.completed.2026.2026-05-23_2230-custom-resourcepage-shared-shell-fixture.md:171).
 
 My take: we should still do work there, probably by regenerating or adding replacement rungs where `14` starts with governed `alice/page-main`, unless we intentionally keep a separately named legacy/direct-source fixture.
 
@@ -347,7 +347,7 @@ I’m going to ground this in the ontology/code shape so I’m not just vibes-si
 
 The quick search confirms the current fixtures are mixed: Alice 14/15/17 still assert loose path-backed page sources, while 18/19 assert artifact-backed sources. I’m going to peek at the ontology wording now, because that’s the crispest way to answer the “why.”
 
-Yes, I’d make a separate focused task **if you want to close the shared-shell task now**. Otherwise the existing checkbox at [wa.task...custom-resourcepage-shared-shell-fixture.md](wa.task.2026.2026-05-23_2230-custom-resourcepage-shared-shell-fixture.md:171) is already the right home.
+Yes, I’d make a separate focused task **if you want to close the shared-shell task now**. Otherwise the existing checkbox at [wa.task...custom-resourcepage-shared-shell-fixture.md](wa.completed.2026.2026-05-23_2230-custom-resourcepage-shared-shell-fixture.md:171) is already the right home.
 
 I would **not** try to get rid of `targetLocalRelativePath` generally. It is useful, but it means “resolve this unmanaged local file path directly,” per the ontology at [semantic-flow-core-ontology.ttl](../../sflo/semantic-flow-core-ontology.ttl:574). That is good for import/integrate provenance, loose bootstrapping files, support assets, or cases where the source is intentionally not a governed artifact.
 

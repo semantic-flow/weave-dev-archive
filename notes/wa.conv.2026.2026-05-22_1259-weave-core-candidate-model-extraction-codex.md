@@ -1138,7 +1138,7 @@ Keep out of scope:
 
 After that, the next big slice is probably **mesh inventory renderers**, but I’d do it second. It touches more shared block helpers and fixture-sensitive legacy output, so the smaller preservation extraction will make that one less tangled.
 
-The `wa.task.2026.2026-05-22_2253-resourcepage-config-and-templating` task looks like a feature/design track, not a continuation of the move-only core weave extraction. My vote: finish one more conservative core cleanup slice before switching back to ResourcePage config behavior.
+The `wa.completed.2026.2026-05-22_2253-resourcepage-config-and-templating` task looks like a feature/design track, not a continuation of the move-only core weave extraction. My vote: finish one more conservative core cleanup slice before switching back to ResourcePage config behavior.
 
 # gpt-5.5_2026-05-22_2107_19
 
@@ -1167,7 +1167,7 @@ Keep out of scope:
 
 After that, the next big slice is probably **mesh inventory renderers**, but I’d do it second. It touches more shared block helpers and fixture-sensitive legacy output, so the smaller preservation extraction will make that one less tangled.
 
-The `wa.task.2026.2026-05-22_2253-resourcepage-config-and-templating` task looks like a feature/design track, not a continuation of the move-only core weave extraction. My vote: finish one more conservative core cleanup slice before switching back to ResourcePage config behavior.
+The `wa.completed.2026.2026-05-22_2253-resourcepage-config-and-templating` task looks like a feature/design track, not a continuation of the move-only core weave extraction. My vote: finish one more conservative core cleanup slice before switching back to ResourcePage config behavior.
 
 # User_2026-05-22_2108_14
 
@@ -1682,7 +1682,7 @@ Move these out of [weave.ts](../../../../../src/core/weave/weave.ts):
 
 Suggested module: `src/core/weave/legacy_page_renderers.ts` or `src/core/weave/identifier_page_renderers.ts`.
 
-Why this one: it’s low-risk, output-sensitive but well covered by the weave integration tests, and it gets the remaining legacy fixture HTML out of the planner before we touch the bigger `ResourcePage Config And Templating` task. I would **not** start `wa.task.2026.2026-05-22_2253-resourcepage-config-and-templating` yet; that is a design/behavior task, not a boring extraction.
+Why this one: it’s low-risk, output-sensitive but well covered by the weave integration tests, and it gets the remaining legacy fixture HTML out of the planner before we touch the bigger `ResourcePage Config And Templating` task. I would **not** start `wa.completed.2026.2026-05-22_2253-resourcepage-config-and-templating` yet; that is a design/behavior task, not a boring extraction.
 
 After that, the next candidates are:
 
@@ -1964,7 +1964,7 @@ Verification passed:
 - focused integration tests: 72 passed
 - import audits: 0 core-to-runtime edges, 0 cycles
 
-I did not rename the new progression task to completed, per the task’s non-goal. The next best slice is probably `[[wa.task.2026.2026-05-22_2253-resourcepage-config-and-templating]]`; after that, I’d create/fill the legacy fixture-renderer generalization task so those ideas don’t leak out of the system.
+I did not rename the new progression task to completed, per the task’s non-goal. The next best slice is probably `[[wa.completed.2026.2026-05-22_2253-resourcepage-config-and-templating]]`; after that, I’d create/fill the legacy fixture-renderer generalization task so those ideas don’t leak out of the system.
 
 Suggested commit messages:
 
@@ -2177,7 +2177,7 @@ So my default vote: **patch now, minor later when the config/templating or gener
 
 # User_2026-05-23_0037_00
 
-the work we've done is already released, 0.1.3. The work to do is at least [wa.task.2026.2026-05-22_2253-resourcepage-config-and-templating.md](wa.task.2026.2026-05-22_2253-resourcepage-config-and-templating.md) , probably [wa.task.2026.2026-05-21_0907-import.md](wa.task.2026.2026-05-21_0907-import.md) and [wa.task.2026.2026-05-22_2308-fixture-helper-generalization.md](wa.task.2026.2026-05-22_2308-fixture-helper-generalization.md)
+the work we've done is already released, 0.1.3. The work to do is at least [wa.completed.2026.2026-05-22_2253-resourcepage-config-and-templating.md](wa.completed.2026.2026-05-22_2253-resourcepage-config-and-templating.md) , probably [wa.task.2026.2026-05-21_0907-import.md](wa.task.2026.2026-05-21_0907-import.md) and [wa.completed.2026.2026-05-22_2308-fixture-helper-generalization.md](wa.completed.2026.2026-05-22_2308-fixture-helper-generalization.md)
 
 # gpt-5.5_2026-05-23_0037_14
 
@@ -2422,7 +2422,7 @@ I’ve added the defaults/vocabulary thread into the task as provisional design 
 
 # gpt-5.5_2026-05-23_0751_22
 
-Updated [wa.task.2026.2026-05-22_2253-resourcepage-config-and-templating.md](wa.task.2026.2026-05-22_2253-resourcepage-config-and-templating.md:1).
+Updated [wa.completed.2026.2026-05-22_2253-resourcepage-config-and-templating.md](wa.completed.2026.2026-05-22_2253-resourcepage-config-and-templating.md:1).
 
 I added the `/defaults/application.ttl` angle, the likely need for `sfcfg:hasDefaultResourcePagePresentationConfig`, panel selection with targeting, the “is panel the right term?” question, Markdown/HTML panel concerns, and the preference for hash-identified selection nodes over blank nodes. I framed the RDF shape as “possible default shape to evaluate,” not a locked spec.
 

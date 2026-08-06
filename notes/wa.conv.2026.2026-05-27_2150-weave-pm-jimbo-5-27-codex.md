@@ -52,7 +52,7 @@ So you can fill out @wa.task.2026.2026-05-27-2031-per-target-effective-config-re
 
 After that, suggestions:
 
-If staying in source/resolver land: page-source exact/fallback semantics from [[wa.task.2026.2026-04-08_1545-resource-page-definition-and-sources]].
+If staying in source/resolver land: page-source exact/fallback semantics from [[wa.cancelled.2026.2026-04-08_1545-resource-page-definition-and-sources]].
 If doing correctness debt: append-onlyish inventory.
 If reducing confusion: ReferenceLink/source terminology cleanup.
 

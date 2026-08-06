@@ -33,7 +33,7 @@ I audited the 29 `wa.task.*` notes dated before 2026-05-20, using 2026-05-20 as 
 I made a few obvious cleanup edits:
 - Marked the extraction behavior spec update complete in [[wa.task.2026.2026-05-04-extraction-improvements]].
 - Deferred Bob import/runtime items to `[[wa.task.2026.2026-05-21_0907-import]]` and remote access to `[[wa.task.2026.2026-05-20_2152-workingAccessUrl]]`.
-- Added an audit note to [[wa.task.2026.2026-04-14_0018-configurable-test-tmp]].
+- Added an audit note to [[wa.cancelled.2026.2026-04-14_0018-configurable-test-tmp]].
 - Updated stale roadmap wording in [roadmap.md](../../../../../documentation/notes/roadmap.md) and added the optional `WEAVE_TEST_TMP_ROOT` follow-up to [wd.todo.md](../../../../../documentation/notes/wd.todo.md).
 
 **Audit Summary**
@@ -134,7 +134,7 @@ It’s reflected in three places:
 
 - [wd.todo.md](../../../../../documentation/notes/wd.todo.md:21) has the direct follow-up: audit/document the support-artifact history exceptions, including `config` and the legacy versioned `ResourcePageDefinition` progression.
 - [wa.task.2026.2026-05-05-optional-history-and-slim-support-artifacts-by-default.md](wa.task.2026.2026-05-05-optional-history-and-slim-support-artifacts-by-default.md:159) already captures the policy question: `ResourcePageDefinition` and `ReferenceCatalog` may need history unless page-output durability/render manifests replace it.
-- [wa.task.2026.2026-04-08_1545-resource-page-definition-and-sources.md](wa.task.2026.2026-04-08_1545-resource-page-definition-and-sources.md:556) reflects the current implemented behavior: `_knop/_page` versions like a normal support artifact.
+- [wa.cancelled.2026.2026-04-08_1545-resource-page-definition-and-sources.md](wa.cancelled.2026.2026-04-08_1545-resource-page-definition-and-sources.md:556) reflects the current implemented behavior: `_knop/_page` versions like a normal support artifact.
 
 I also added a guardrail to the active core extraction task: [wa.task.2026.2026-05-21_1037-core-weave-first-extraction-slice.md](wa.task.2026.2026-05-21_1037-core-weave-first-extraction-slice.md:72). It says not to change this behavior during the type/model extraction and points back to `[[wd.todo]]`.
 
@@ -188,7 +188,7 @@ My recommendation: finish the current behavior-preserving refactor slice before 
 
 in [[wa.task.2026.2026-05-16_1707-create-sflo-branch-mesh]] mark everything a x
 
-Do either of @wa.task.2026.2026-05-20_2152-workingAccessUrl or wa.task.2026.2026-04-08_1545-resource-page-definition-and-sources inform each other?
+Do either of @wa.task.2026.2026-05-20_2152-workingAccessUrl or wa.cancelled.2026.2026-04-08_1545-resource-page-definition-and-sources inform each other?
 
 # gpt-5.5_2026-05-22_1444_55
 
@@ -212,7 +212,7 @@ So: `workingAccessUrl` can eventually support page-definition artifact-backed so
 
 # User_2026-05-22_2032_48
 
-let's working on refining [[wa.task.2026.2026-04-08_1545-resource-page-definition-and-sources]] . Keep in mind, a major refactor is partially completed and continuing, see [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]] .
+let's working on refining [[wa.cancelled.2026.2026-04-08_1545-resource-page-definition-and-sources]] . Keep in mind, a major refactor is partially completed and continuing, see [[wa.completed.2026.2026-05-21_0849_careful-extraction-refactor]] .
 
 One thing I want to do is be able to keep/re-use the existing Semantic Site's look and feel, even if that's just the default. Is the current default using the page template-based approach?
 
@@ -266,13 +266,13 @@ I’m going to make the new note own the default/custom presentation unification
 
 Yes. I split that direction into a new focused task note:
 
-[[wa.task.2026.2026-05-22_2253-resourcepage-config-and-templating]]
+[[wa.completed.2026.2026-05-22_2253-resourcepage-config-and-templating]]
 
 It now owns the “ResourcePage config and templating for default pages” thread: shared default/custom presentation pipeline, synthesized default page definitions, reusable panel models, `ResourcePagePresentationConfig`, outer/inner templates, stylesheets, and preserving the Semantic Site look as the default baseline.
 
 I also updated the old page-definition/source task to point to the new task and marked the overlapping Phase 4 presentation/template items as `[d]` deferred to it:
 
-[[wa.task.2026.2026-04-08_1545-resource-page-definition-and-sources]]
+[[wa.cancelled.2026.2026-04-08_1545-resource-page-definition-and-sources]]
 
 No tests run; docs-only. Suggested archive commit message: `docs(tasks): split ResourcePage presentation config work`
 
@@ -333,7 +333,7 @@ Docs-only change. Suggested archive commit message: `docs(tasks): constrain remo
 
 # User_2026-05-22_2134_52
 
-OK, I think you can update [wa.task.2026.2026-04-11_1723-operational-config-for-runtime-resolution.md](wa.task.2026.2026-04-11_1723-operational-config-for-runtime-resolution.md) . Integrate has broadened, and I think we will allow it to broaden further, carefully. I think we can resolve those phase 3 items and create a new task for remote integrate. Or maybe we just defer remote integrate, perhaps import is adequate for now. 
+OK, I think you can update [wa.completed.2026.2026-04-11_1723-operational-config-for-runtime-resolution.md](wa.completed.2026.2026-04-11_1723-operational-config-for-runtime-resolution.md) . Integrate has broadened, and I think we will allow it to broaden further, carefully. I think we can resolve those phase 3 items and create a new task for remote integrate. Or maybe we just defer remote integrate, perhaps import is adequate for now. 
 
 One new API surface we should have is, after something has been integrated, being able to convert it to a regular in-mesh (or sidecar or other-local-branch) workinig file. I think [wa.task.2026.2026-05-21_0907-import.md](wa.task.2026.2026-05-21_0907-import.md)  needs refinement: importing is going to be very different for whole-mesh-repos, sidecar repos, and branch-based meshes, right?. 
 
@@ -371,7 +371,7 @@ I also fixed one stale wikilink prefix in the operational-config note while I wa
 
 Updated both notes.
 
-In [wa.task.2026.2026-04-11_1723-operational-config-for-runtime-resolution.md](wa.task.2026.2026-04-11_1723-operational-config-for-runtime-resolution.md:40), I resolved Phase 3 toward: no remote integrate task yet, keep active remote fetching deferred, and center remote-origin acquisition on explicit import/localize workflows. I also marked the remote locator items deferred and the integrate/import split decided at [line 366](wa.task.2026.2026-04-11_1723-operational-config-for-runtime-resolution.md:366).
+In [wa.completed.2026.2026-04-11_1723-operational-config-for-runtime-resolution.md](wa.completed.2026.2026-04-11_1723-operational-config-for-runtime-resolution.md:40), I resolved Phase 3 toward: no remote integrate task yet, keep active remote fetching deferred, and center remote-origin acquisition on explicit import/localize workflows. I also marked the remote locator items deferred and the integrate/import split decided at [line 366](wa.completed.2026.2026-04-11_1723-operational-config-for-runtime-resolution.md:366).
 
 In [wa.task.2026.2026-05-21_0907-import.md](wa.task.2026.2026-05-21_0907-import.md:11), I refined import as a topology-aware acquisition/localization surface:
 - whole-mesh, sidecar, and branch-based meshes are now explicitly covered

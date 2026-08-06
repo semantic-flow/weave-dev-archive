@@ -12,7 +12,7 @@ conversationEventKinds: [message.assistant, message.user, tool.call, tool.result
 
 jimbo: weave picking up the trail
 
-It's been about two weeks. I could use a re-orientation. Also, I think we should considering submitting a demonstration paper [[wa.task.2026.2026-05-29-0954-fois-demonstration-paper]]
+It's been about two weeks. I could use a re-orientation. Also, I think we should considering submitting a demonstration paper [[wa.cancelled.2026.2026-05-29-0954-fois-demonstration-paper]]
 
 # gpt-5.5_2026-06-11_1241_27
 
@@ -44,7 +44,7 @@ The task note is now a usable decision note rather than a placeholder. I’m doi
 
 Jimbo take: we’re not lost, but we are at a fork with a calendar strapped to it.
 
-I updated the FOIS/SEMANTiCS/FOMI task note into a real triage plan: [wa.task.2026.2026-05-29-0954-fois-demonstration-paper.md](wa.task.2026.2026-05-29-0954-fois-demonstration-paper.md:1).
+I updated the FOIS/SEMANTiCS/FOMI task note into a real triage plan: [wa.cancelled.2026.2026-05-29-0954-fois-demonstration-paper.md](wa.cancelled.2026.2026-05-29-0954-fois-demonstration-paper.md:1).
 
 Key reorientation:
 
@@ -98,7 +98,7 @@ Yes: use `Spectacular Voyage LLC` as the affiliation if that’s the publication
 
 I tightened the task note around the vacation hard stop and scaffolded the paper sprint workspace:
 
-- [task note](wa.task.2026.2026-05-29-0954-fois-demonstration-paper.md:1)
+- [task note](wa.cancelled.2026.2026-05-29-0954-fois-demonstration-paper.md:1)
 - [paper draft](../papers/2026-fois-weave-demo/paper-draft.md:1)
 - [demo script](../papers/2026-fois-weave-demo/demo-script.md:1)
 
@@ -136,7 +136,7 @@ I updated the workspace to reflect the rename and format plan:
 
 - [README.md](../papers/2026-fois-weave-demo/README.md:1)
 - [paper-planning-codex.md](../papers/2026-fois-weave-demo/paper-planning-codex.md:1)
-- [task note](wa.task.2026.2026-05-29-0954-fois-demonstration-paper.md:1)
+- [task note](wa.cancelled.2026.2026-05-29-0954-fois-demonstration-paper.md:1)
 
 Local status: LibreOffice exists at `/usr/bin/libreoffice`; Libertinus fonts are not installed yet, and CEUR says those matter for the ODT template. Also: `Spectacular Voyage LLC` is fine as affiliation, but CEUR metadata wants authors to be natural persons, so don’t list the LLC as an author.
 
@@ -612,7 +612,7 @@ I agree. I’d make the split.
 
 FOMI is the better home for the `DigitalArtifact` model because its call explicitly names ontology governance, maintenance/update, evolution/versioning/change management, LLMs, and collaborative ontology tooling as topics. It also accepts 5-9 page short papers aimed at practical experiences with ontologies or ontology-based software. That is very much our “formal ontology in practice” story.
 
-I updated the task note accordingly: [wa.task.2026.2026-05-29-0954-fois-demonstration-paper.md](wa.task.2026.2026-05-29-0954-fois-demonstration-paper.md:20). It now recommends FOMI-first for the DigitalArtifact/model paper, with a separate Weave demo paper for FOIS Demonstrations or a later demo venue.
+I updated the task note accordingly: [wa.cancelled.2026.2026-05-29-0954-fois-demonstration-paper.md](wa.cancelled.2026.2026-05-29-0954-fois-demonstration-paper.md:20). It now recommends FOMI-first for the DigitalArtifact/model paper, with a separate Weave demo paper for FOIS Demonstrations or a later demo venue.
 
 I also updated [paper-planning-codex.md](../papers/2026-fois-weave-demo/paper-planning-codex.md:3) with the split: FOMI gets “Semantic Flow: Byte-Grounded Digital Artifact Histories for Static RDF Publication”; Weave demo gets the implementation workflow.
 
@@ -679,7 +679,7 @@ Agreed. I updated the sprint plan to target both papers as distinct submissions.
 Venue sanity check: JOWO is co-located with FOIS, with workshop days listed as September 21-22, 2026 and the extended workshop deadline as June 17, 2026; FOIS open calls including Demonstrations are also extended to June 17. FOMI is explicitly co-located with FOIS, and its short papers are 5-9 pages, aimed at practical ontology/ontology-based software experience. Sources: 
 
 What changed:
-- Updated the task note to target both papers, with non-duplicate boundaries: [task note](wa.task.2026.2026-05-29-0954-fois-demonstration-paper.md:11)
+- Updated the task note to target both papers, with non-duplicate boundaries: [task note](wa.cancelled.2026.2026-05-29-0954-fois-demonstration-paper.md:11)
 - Added a new FOMI workspace and outline: [README](../papers/2026-fomi-digitalartifact/README.md:1), [outline](../papers/2026-fomi-digitalartifact/outline.md:1)
 - Reframed the existing FOIS folder as the Weave demo paper: [README](../papers/2026-fois-weave-demo/README.md:3), [planning](../papers/2026-fois-weave-demo/paper-planning-codex.md:3)
 - Relabeled references as the shared FOMI/FOIS citation pool: [potential-references.md](../papers/2026-fois-weave-demo/potential-references.md:1)
@@ -727,7 +727,7 @@ Local status: LibreOffice is installed at `/usr/bin/libreoffice`, but there’s 
 I updated:
 - [FOMI README](../papers/2026-fomi-digitalartifact/README.md:26)
 - [FOIS README](../papers/2026-fois-weave-demo/README.md:27)
-- [task note](wa.task.2026.2026-05-29-0954-fois-demonstration-paper.md:162)
+- [task note](wa.cancelled.2026.2026-05-29-0954-fois-demonstration-paper.md:162)
 - [FOIS planning](../papers/2026-fois-weave-demo/paper-planning-codex.md:11)
 
 Practical recommendation: draft in Markdown or straight `.tex`, then compile via Overleaf unless we install TeX Live locally. LibreOffice remains useful only as emergency escape hatch.

@@ -17,7 +17,7 @@ conversationEventKinds:
 
 ResourcePage config and templating
 
-Please review the usual stuff including our newly-updated (after recent refactoring) [wd.codebase-overview.md](../../../../../documentation/notes/wd.codebase-overview.md) and then give me your analysis of [[wa.task.2026.2026-05-22_2253-resourcepage-config-and-templating]] . I'd appreciate any suggestions for improvement, and we have several open issues I want to provide my opinion on before we make those decisions.
+Please review the usual stuff including our newly-updated (after recent refactoring) [wd.codebase-overview.md](../../../../../documentation/notes/wd.codebase-overview.md) and then give me your analysis of [[wa.completed.2026.2026-05-22_2253-resourcepage-config-and-templating]] . I'd appreciate any suggestions for improvement, and we have several open issues I want to provide my opinion on before we make those decisions.
 
 # gpt-5.5_2026-05-23_0758_27
 
@@ -91,7 +91,7 @@ I’ve got the note shape. I’m going to make the task more decisive: first-sli
 
 The task note has been patched. I’m doing a quick diff pass now to catch wording problems and make sure I edited the archive copy the repo guidance points at.
 
-Updated [[wa.task.2026.2026-05-22_2253-resourcepage-config-and-templating]].
+Updated [[wa.completed.2026.2026-05-22_2253-resourcepage-config-and-templating]].
 
 I tightened it around the agreed path: zero-drift internal panel extraction first, RDF/config selection second, custom-page shared chrome third. I also resolved the open issues into decisions where we agreed, changed “synthesized definitions” to “synthesized document/panel inputs,” added the `sfcfg:hasDefaultResourcePagePresentationConfig` direction, and made the HTML/Markdown and targeting boundaries explicit.
 
@@ -257,7 +257,7 @@ I’m going to add these as task guardrails rather than expanding the first codi
 
 The guardrails are in. I’ll do a quick read-through of the changed sections so I can tell you whether the task is implementation-ready or still has ambiguity.
 
-Updated [[wa.task.2026.2026-05-22_2253-resourcepage-config-and-templating]] with the Claude-review guardrails we agreed on.
+Updated [[wa.completed.2026.2026-05-22_2253-resourcepage-config-and-templating]] with the Claude-review guardrails we agreed on.
 
 Yes on `defaults/stylesheet.css`: I changed the note to say the built-in Semantic Site stylesheet should appear as a real defaults asset, likely `defaults/stylesheet.css`, with an RDF identity like `<stylesheet.css>` under the defaults base once the default presentation profile is parsed and honored.
 
@@ -973,7 +973,7 @@ No separate task note needed. I added the contract slice directly:
 - Added core contract types in [resource_page_template_contract.ts](../../../../../src/core/weave/resource_page_template_contract.ts:1): resolved `ResourcePageDocumentModel` + template descriptor in, `pageHtml` or named `fragments` out.
 - Exported those types from [weave.ts](../../../../../src/core/weave/weave.ts:161).
 - Added focused tests in [resource_page_template_contract_test.ts](../../../../../src/core/weave/resource_page_template_contract_test.ts:36).
-- Updated the task note with the external template contract section and checklist completion in [wa.task...](wa.task.2026.2026-05-22_2253-resourcepage-config-and-templating.md:51).
+- Updated the task note with the external template contract section and checklist completion in [wa.task...](wa.completed.2026.2026-05-22_2253-resourcepage-config-and-templating.md:51).
 - Updated the codebase overview inventory in [wd.codebase-overview.md](../../../../../documentation/notes/wd.codebase-overview.md:36).
 
 I intentionally did not add a renderer function type; this keeps the boundary declarative/serializable rather than quietly making executable template code the default path. No ontology changes in this slice; `sflo` is clean.
@@ -1083,7 +1083,7 @@ Doesn't have to be a complete task, but let's capture  the design backlog and ot
 
 Then let me know you recommended next steps. Fixture ladders around custom config or identifier pages that keep the rest of the look and feel. We could get creative.
 
-Then eventually [[wa.task.2026.2026-05-22_2308-fixture-helper-generalization]] and [[wa.completed.2026.2026-05-21_0907-import]]
+Then eventually [[wa.completed.2026.2026-05-22_2308-fixture-helper-generalization]] and [[wa.completed.2026.2026-05-21_0907-import]]
 
 # gpt-5.5_2026-05-23_2201_21
 
@@ -1183,7 +1183,7 @@ Title:
 
 Slightly more descriptive option:
 
-`wa.task.2026.2026-05-23_2230-custom-resourcepage-shared-shell-fixture.md`
+`wa.completed.2026.2026-05-23_2230-custom-resourcepage-shared-shell-fixture.md`
 
 My pick is the second one if we want the filename to carry the point of the slice: this is not generic customization, it is proving a custom page can keep the shared shell/look and explicitly stack generated panels.
 
@@ -1261,7 +1261,7 @@ That keeps the work ambitious without turning it into a surprise whole-ladder ce
 
 # User_2026-05-23_2245_24
 
-OK, update the tasks if necessary, then we will start on [[wa.task.2026.2026-05-22_2308-fixture-helper-generalization]] . New conversation?
+OK, update the tasks if necessary, then we will start on [[wa.completed.2026.2026-05-22_2308-fixture-helper-generalization]] . New conversation?
 
 # gpt-5.5_2026-05-23_2245_37
 
@@ -1287,7 +1287,7 @@ Yes, I’d start a new conversation for the fixture-helper implementation. We’
 Suggested opener:
 
 ```text
-Start wa.task.2026.2026-05-22_2308-fixture-helper-generalization.md. Please read the usual guidance and the task note, then do the behavior-preserving fixture-ladder helper refactor. No fixture regeneration unless you find a real blocker.
+Start wa.completed.2026.2026-05-22_2308-fixture-helper-generalization.md. Please read the usual guidance and the task note, then do the behavior-preserving fixture-ladder helper refactor. No fixture regeneration unless you find a real blocker.
 ```
 
 Current archive status has the updated/new notes uncommitted:
@@ -1314,8 +1314,8 @@ Now the import task says the Carol fixture may intentionally depend on GitHub vi
 Updated:
 
 - `wa.task.2026.2026-05-21_0907-import.md`
-- `wa.task.2026.2026-05-23_2230-custom-resourcepage-shared-shell-fixture.md`
-- `wa.task.2026.2026-05-22_2308-fixture-helper-generalization.md`
+- `wa.completed.2026.2026-05-23_2230-custom-resourcepage-shared-shell-fixture.md`
+- `wa.completed.2026.2026-05-22_2308-fixture-helper-generalization.md`
 
 The import note now leans toward first-slice HTTP(S) support, GitHub-backed Carol e2e/import fixture, and Deno permission docs likely around `--allow-net=raw.githubusercontent.com`.
 

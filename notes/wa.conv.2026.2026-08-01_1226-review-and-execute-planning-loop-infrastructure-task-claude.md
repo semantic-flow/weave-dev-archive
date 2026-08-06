@@ -1404,3 +1404,43 @@ Old publication is preserved and pushed. Verifying the lease target hasn't moved
 # claude-opus-5_2026-08-01_2221_04
 
 The gate caught my own mistake — my rename sweep rewrote the queue entry to a `completed.*` name, which the admission rule forbids. The queue should be *popped* at closure, not renamed:
+
+# claude-opus-5_2026-08-01_2221_44
+
+One thing you'll want to know — you have a local publication worktree that's now stale:
+
+# claude-opus-5_2026-08-01_2222_56
+
+**The SFLO ontology site is republished.** `https://semantic-flow.github.io/sflo/` now serves a mesh regenerated from scratch, and `gh-pages` is a single root commit `46b87d7` — it reads as a first publication, as you asked.
+
+**On your IRI question**, measured from the actual output: relative won, but by *falling through* rather than by a new decision. The existing branch order is vocabulary-prefix → mesh-relative → absolute; my fix only disqualifies the first branch when the local name would contain a separator, so mesh resources land in the pre-existing relative branch. Exactly one prefixed case survives — `sflo:_knop`, once, in the root inventory — and I left it deliberately: making it consistent would require preferring relative whenever an IRI is under the mesh base, and for sflo that would relativize *vocabulary predicates* like `sflo:hasKnopInventory` into `<ontology/hasKnopInventory>`. One cosmetic duplicate spelling beats that.
+
+**Verification that matters:**
+- **Byte-reproducible across three independent runs** — the third run's tree is `diff -rq` identical to what's published.
+- All three release payloads fetch **200 and are byte-identical to the v0.3.0 tagged source**; they parse under `riot`; the favicon is byte-identical to the one I preserved.
+- Census landed exactly on the projection: **379 → 362 Knops, 60 retired, 43 added**, with all 319 surviving Knops keeping their pages.
+- Old publication preserved as `archive/gh-pages-before-regeneration-2026-08-01`, retaining both prior commits.
+
+**One thing needs your hands:** your local worktree at `/home/djradon/sites/sflo-gh-pages` is clean but stale at the old tip, so it'll report "ahead 2, behind 1" after the force-push. Resync with `git -C /home/djradon/sites/sflo-gh-pages fetch origin && git -C /home/djradon/sites/sflo-gh-pages reset --hard origin/gh-pages`.
+
+Two smaller things I deviated on and recorded rather than buried: the drafted recipe wanted to install an invented policy-binding config, but the published config never had one — so the regenerated mesh uses what `mesh create` emits, byte-identical to what was there. And one generated file ships with a trailing blank line the old renderer didn't emit; cosmetic and valid, boarded on the append-onlyish task for whoever next touches that planner.
+
+# djradon_2026-08-01_2240_23
+
+done
+
+# claude-opus-5_2026-08-01_2240_27
+
+Let me do a final check that nothing's left dangling:
+
+# claude-opus-5_2026-08-01_2240_44
+
+All clean. Final state:
+
+- **Four repos in sync with origin**, nothing unpushed. The one modified file in the archive is the live Kato recording of this conversation, which the runner sweeps — correctly left alone.
+- **No open PRs** — #31 through #35 all merged.
+- **Queue green**: 3 Kim items, 0 reports, Jimbo section empty. Court empty.
+
+Today's arc, briefly: the planning loop went from a task note to running infrastructure and closed itself; five PRs landed (three extractor/planner slices, the append-onlyish migration, and the namespace fix); Stagecraft's requirements got an evidence-backed collection and the reply went out; the extract→weave→generate viability question got a real answer with numbers; and SFLO shipped v0.3.0 with its published mesh regenerated from scratch and verified byte-reproducible.
+
+The one thing still on you is that stale `sflo-gh-pages` worktree — `fetch` then `reset --hard origin/gh-pages` whenever you next touch it.

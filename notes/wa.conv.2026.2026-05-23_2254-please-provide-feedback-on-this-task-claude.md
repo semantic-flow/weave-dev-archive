@@ -26,7 +26,7 @@ API Error: Usage credits required for 1M context · turn on usage credits at cla
 
 <local-command-stdout>Set model to claude-opus-4-7</local-command-stdout>
 
-wa.task.2026.2026-05-22_2253-resourcepage-config-and-templating.md
+wa.completed.2026.2026-05-22_2253-resourcepage-config-and-templating.md
 Please provide feedback on this task.
 
 # claude-opus-4.7_2026-05-23_0839_15
