@@ -18,7 +18,9 @@ Cut 2026-08-06 from the identity ruling on [[wa.task.2026.2026-08-06_0854-markdo
 
 **RULED 2026-08-06 (Dave): a rename is a SUPERSESSION, not a move.**
 
-Nothing relocates. The old Knop stays exactly where it is — frozen, with its full ArtifactHistory intact and permanently resolvable. A new Knop begins at the new designator path. The two are linked by `dcterms:isReplacedBy`.
+Nothing relocates. The old Knop stays exactly where it is, with its full ArtifactHistory intact and permanently resolvable. A new Knop begins at the new designator path. The two are linked by `dcterms:isReplacedBy`.
+
+**Precision, corrected 2026-08-06:** "frozen" overstated it. The old Knop's **payload states are immutable and permanently resolvable** — that is what preserves citations — but the Knop itself **mints a new state** to carry the `isReplacedBy` fact. Recording a supersession is a change to the old Knop, and Weave records changes by minting states. A superseded Knop is therefore still-growing metadata over never-changing payload history, not a sealed object.
 
 The rejected alternative was a MOVE: relocating the whole history tree under the new path. That is a rewrite (against the append-onlyish direction), and its decisive flaw is that it changes **every historical state's IRI** — a citation of `…/wd/todo/_history001/_s0003`, an exact state, dangles. Exact-state citability is the thing a mesh exists to provide; the move model would have bought tidiness by breaking it.
 
@@ -69,15 +71,38 @@ A timed auto-redirect engages WCAG 2.2.1 (Timing Adjustable), which requires the
 
 - **2026-08-06 (Dave): a rename is a SUPERSESSION**, linked with `dcterms:isReplacedBy`. See Summary.
 - **2026-08-06 (Dave): `weave rename` is a new command.** A rename needs an explicit signal, because Weave cannot infer one. When an author renames a Dendron note in their editor, all Weave observes is that one designator's working file vanished and another appeared — indistinguishable from a delete plus an unrelated create. Nothing in the mesh distinguishes those cases, and guessing from content similarity would be a heuristic making identity claims, which is precisely what a mesh must not do. The command supplies the intent that the filesystem cannot.
-- **2026-08-06 (Dave): store one hop.** If A is replaced by B and B by C, A records only `isReplacedBy B`. The chain resolves at render time, with cycle detection. Storing the transitive closure would mean rewriting settled facts on already-superseded Knops every time a later rename happens — an append-onlyish violation, and it would make each rename's cost grow with history length.
+- **2026-08-06 (Dave): store one hop.** If A is replaced by B and B by C, A records only `isReplacedBy B`. The chain resolves at render time, with cycle detection.
+
+  **Corrected rationale (Dave, 2026-08-06):** I first justified this as avoiding a rewrite of settled facts. That was wrong. Recording a later hop would *mint a new state*, not rewrite an old one, and minting states is exactly how Weave records change — fully append-onlyish. The ruling stands, but on different grounds:
+
+  - **Truth locality.** "A was replaced by B" is an observed fact about A. "A is superseded by C" is derived from a later event involving only B and C. A's record should carry what happened to A.
+  - **Cost.** Full-closure means every rename mints a state on every ancestor — O(chain length) states per rename, each carrying downstream news rather than news about itself.
+  - **It saves nothing operationally.** Under static publication, A's page must be regenerated for its notice to point at C whether the traversal happens at write time or render time. Storing the closure moves work rather than removing it.
 - **2026-08-06 (Dave): SHACL updates are routine.** Constraining supersession in `semantic-flow-core-shacl.ttl` is not a cost to design around; SFLO SHACL is expected to change often. Sequence the shape with whatever SFLO release is convenient rather than deferring the work to avoid one.
 
 ## Open Issues
 
 - Is the supersession link one-way (`isReplacedBy` on the old Knop) or paired with `dcterms:replaces` on the new one? Paired is more queryable but writes a fact to a resource that did not exist at rename time. The one-hop ruling leans this toward one-way — a paired link would need writing to the *old* Knop as well, which is the settled-fact rewrite the ruling avoids.
 - Does the new Knop start with no history, or does it record a provenance pointer to the superseded history without copying states?
-- What does `weave rename` do when the target designator path is already occupied — refuse, or require an explicit overwrite-style flag? Refusing by default is consistent with the fail-closed direction elsewhere.
-- Is `weave rename` responsible for moving the working file on disk, or does it only record the supersession for a rename the author already performed? The Dendron case is the latter: the editor renames the file (and Dendron's own refactor updates wikilinks), then Weave is told what happened.
+- What does the command do when the target designator path is already occupied — refuse, or require an explicit overwrite-style flag? Refusing by default is consistent with the fail-closed direction elsewhere.
+
+### Command shape — two workflows, one primitive (proposed 2026-08-06)
+
+Dave proposed splitting by who moved the file: `weave rename` moves it, and a second command records metadata for an already-moved file. **The split is right** — the two workflows are genuinely distinct:
+
+- **Weave owns the file** — Weave performs the move and records the supersession.
+- **The editor owns the file** — the Dendron case, and the realistic one for notes. Dendron's own rename refactor moves the file *and* updates wikilinks across the vault, which Weave should not try to replicate. Weave is told after the fact.
+
+**But `repoint` is already taken.** It has an established meaning in this workspace: changing a `ResourcePageSource` or page region's target artifact. It appears in fixture-ladder rung descriptions (`wa.completed.2026.2026-05-25_0958-alice-14-19-ladder-redesign`, rungs 18–19 "repoint the page definition to the governed artifacts"), in the import task note, and in the maintenance log. Reusing it for supersession would collide with live vocabulary.
+
+**Proposed instead:**
+
+- **`weave supersede <old> <new>`** — the semantic primitive. Records the supersession; touches no files. Named for the act the ruling actually defines, and matching `dcterms:isReplacedBy`.
+- **`weave rename <old> <new>`** — convenience: move the working file, then supersede. `rename` = `mv` + `supersede`.
+
+This keeps one semantic implementation with one set of tests, adds a filesystem step in a thin wrapper, and leaves `repoint` meaning what it already means. It also reads correctly for non-note meshes, where "rename" is the natural word and the file move is wanted.
+
+To rule: accept `supersede`/`rename`, or keep two peer commands under different names.
 - Re-run safety: a second `weave rename` with the same arguments should be a semantic no-op rather than minting a second supersession.
 - Should `weave validate` report a dangling `isReplacedBy` target, or a superseded Knop that also has pending work?
 - Auto-redirect default: on, off, or config per mesh? The refinement above assumes on-at-root; a publication that never wants redirects should be able to say so.
