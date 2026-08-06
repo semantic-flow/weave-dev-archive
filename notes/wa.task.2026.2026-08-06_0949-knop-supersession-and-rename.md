@@ -63,14 +63,22 @@ A timed auto-redirect engages WCAG 2.2.1 (Timing Adjustable), which requires the
 
 `owl:sameAs` was rejected: it asserts the two IRIs denote the same individual, which is arguably false once the Knops have divergent histories, and it drags in reasoning consequences we do not want.
 
-**Dave 2026-08-06: SHACL can reference it.** Note the honest scope — using dcterms avoids minting a *predicate*, but adding a shape still edits `semantic-flow-core-shacl.ttl`, which is a released SFLO payload. So a SHACL constraint still needs an SFLO release; it is a smaller and less semantic change than new vocabulary, not a free one.
+**Dave 2026-08-06: SHACL can reference it, and SHACL updates are routine.** A shape editing `semantic-flow-core-shacl.ttl` does mean an SFLO release, but that is expected churn rather than a cost to design around — sequence the shape with whatever release is convenient. I had flagged the release as a caveat; Dave's ruling correctly removes it as a consideration.
+
+## Decisions
+
+- **2026-08-06 (Dave): a rename is a SUPERSESSION**, linked with `dcterms:isReplacedBy`. See Summary.
+- **2026-08-06 (Dave): `weave rename` is a new command.** A rename needs an explicit signal, because Weave cannot infer one. When an author renames a Dendron note in their editor, all Weave observes is that one designator's working file vanished and another appeared — indistinguishable from a delete plus an unrelated create. Nothing in the mesh distinguishes those cases, and guessing from content similarity would be a heuristic making identity claims, which is precisely what a mesh must not do. The command supplies the intent that the filesystem cannot.
+- **2026-08-06 (Dave): store one hop.** If A is replaced by B and B by C, A records only `isReplacedBy B`. The chain resolves at render time, with cycle detection. Storing the transitive closure would mean rewriting settled facts on already-superseded Knops every time a later rename happens — an append-onlyish violation, and it would make each rename's cost grow with history length.
+- **2026-08-06 (Dave): SHACL updates are routine.** Constraining supersession in `semantic-flow-core-shacl.ttl` is not a cost to design around; SFLO SHACL is expected to change often. Sequence the shape with whatever SFLO release is convenient rather than deferring the work to avoid one.
 
 ## Open Issues
 
-- Is the supersession link one-way (`isReplacedBy` on the old Knop) or paired with `dcterms:replaces` on the new one? Paired is more queryable but is a fact written to a resource that did not exist at rename time.
-- Should a chain of renames collapse? If A is replaced by B and B by C, does A's notice point at B or at C? Recommendation: store the single hop, resolve the chain at render time, and detect cycles.
-- What actually performs a rename? There is no `weave rename` today. Is this a new command, a flag on an existing one, or initially just a documented manual procedure plus the rendering support?
+- Is the supersession link one-way (`isReplacedBy` on the old Knop) or paired with `dcterms:replaces` on the new one? Paired is more queryable but writes a fact to a resource that did not exist at rename time. The one-hop ruling leans this toward one-way — a paired link would need writing to the *old* Knop as well, which is the settled-fact rewrite the ruling avoids.
 - Does the new Knop start with no history, or does it record a provenance pointer to the superseded history without copying states?
+- What does `weave rename` do when the target designator path is already occupied — refuse, or require an explicit overwrite-style flag? Refusing by default is consistent with the fail-closed direction elsewhere.
+- Is `weave rename` responsible for moving the working file on disk, or does it only record the supersession for a rename the author already performed? The Dendron case is the latter: the editor renames the file (and Dendron's own refactor updates wikilinks), then Weave is told what happened.
+- Re-run safety: a second `weave rename` with the same arguments should be a semantic no-op rather than minting a second supersession.
 - Should `weave validate` report a dangling `isReplacedBy` target, or a superseded Knop that also has pending work?
 - Auto-redirect default: on, off, or config per mesh? The refinement above assumes on-at-root; a publication that never wants redirects should be able to say so.
 
@@ -79,7 +87,7 @@ A timed auto-redirect engages WCAG 2.2.1 (Timing Adjustable), which requires the
 - New emitted RDF on superseded Knops (`dcterms:isReplacedBy`), and a `dcterms` prefix in generated output.
 - A new page region in the document model for the supersession notice.
 - Generated-page bytes change for superseded resources only. Unaffected resources must be byte-identical — this is testable and should be tested.
-- Any SHACL shape constraining supersession is an SFLO payload change requiring a versioned release.
+- A SHACL shape constraining supersession, sequenced with a convenient SFLO release (RULED 2026-08-06: SHACL churn is expected and is not a reason to defer).
 
 ## Testing
 
@@ -98,9 +106,10 @@ A timed auto-redirect engages WCAG 2.2.1 (Timing Adjustable), which requires the
 
 ## Implementation Plan
 
-- [ ] Rule the open issues above, particularly what performs a rename.
+- [ ] `weave rename <old> <new>`: refuse an occupied target, no-op on repeat, and record the supersession.
 - [ ] Emit `dcterms:isReplacedBy` and validate its target resolves.
 - [ ] Add the supersession region to the document model and render it from RDF.
 - [ ] Countdown and cancel control, root-only, with the no-JS path proven.
-- [ ] Chain resolution with cycle detection.
-- [ ] SHACL shape, sequenced with an SFLO release.
+- [ ] Chain resolution at render time with cycle detection (one hop stored).
+- [ ] SHACL shape constraining supersession, with the next convenient SFLO release.
+- [ ] Rule the remaining open issues, particularly whether the new Knop records a provenance pointer to the superseded history.
