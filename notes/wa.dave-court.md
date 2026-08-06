@@ -43,24 +43,17 @@ If BUILD-LATER is accepted, the analysis proposes `weave validate mesh --integri
 
 Note this cuts against the June intent recorded in the note — a page-identity graph distinguishing the presented resource from the page file was *your* idea, and the analysis calls that design rationale rather than consumer evidence. Ruling it normative is a legitimate way to revive this; it just needs to be an explicit product decision rather than drift.
 
-## Markdown renderer — schedule the `markdown-it` migration?
+## Markdown site pipeline — four contract rulings
 
-**Lean: yes, as a scoped slice** — Dave said 2026-08-02 he is "pretty sure we want a robust markdown solution."
+**Direction RULED 2026-08-06.** Dave accepted the unified/remark/rehype pipeline (by asking for the ESM change that unblocks it), named the endpoint as **building sites via the public API**, and ranked the work **below the existing three queue items**. Cut as [[wa.task.2026.2026-08-06_0854-markdown-site-pipeline]], queue item 4. The prior `markdown-it` lean is superseded — see [[wa.discussion.2026-08-08-markdown-renderer]] for the blind evaluation that reversed it, and note the two evaluations answered different questions, so neither was wrong.
 
-The decision was already made and then lost: `sflo.conv.2025-11-29-rdf-storage-options` recommends **`markdown-it`** (CommonMark-compliant, no global state unlike `marked`, TypeScript-clean) with `markdown-it-gfm`, `markdown-it-anchor`, `markdown-it-table-of-contents`, and shiki for code. It **explicitly rejected** the unified/remark/rehype pipeline as too heavy. `markdown-it-wikilinks` was added to the list 2026-04-06 but deliberately *not* as the contract — Dendron link resolution against the note index, `publicId`, and unpublished-target fallback stays Weave-owned.
+What remains open are four rulings that gate slice 1 (contract and fixtures). Nothing downstream can be specified without them.
 
-Weave still ships the hand-rolled regex renderer in `src/runtime/weave/pages.ts`; footnotes and several syntaxes do not render.
+1. **Dendron identity.** Is a note's canonical identity its dot-hierarchy filename, its frontmatter `id`, an RDF identifier, or a combination? This decides what happens on collision across vaults, and it is the one question everything else inherits from.
+2. **Which wikilink forms are contractual in v1?** Recommendation: naked target, alias, and heading anchor only — not note references, block references, or tags. Narrow now is easy to widen later; the reverse is not.
+3. **Missing or unpublished target behavior.** Build failure, warning plus plain text, disabled link, stub page, or link to another canonical location? Failing the build is the safest default for a publication pipeline but the harshest for authoring.
+4. **Default publish state for conversation transcripts.** This is a privacy decision, not a rendering one — transcripts carry model output and whatever was pasted into them. Recommendation: **unpublished by default, opt-in required.**
 
-**To rule:** is this worth a slice now, and does it fold in [[wa.task.2026.2026-04-13_1715-page-renderer-refresh-and-html-regeneration]] and [[wa.task.2026.2026-05-24_2353-autolinking]], or stay narrow? The blocking constraint either way is byte-stable regeneration — swapping renderers changes every generated page's bytes, so the slice needs a deliberate regeneration story, not just a dependency swap. [[wa.task.2026.2026-05-25-markdown-it]] is an empty template and needs writing before any of it is fireable.
+A fifth is sequenced later but worth knowing now: **page generation is not currently exported from `src/api/mod.ts`.** "Sites via the public API" requires that export, and both existing programmatic surfaces ([[wd.programmatic-validate-api]], [[wd.programmatic-version-api]]) were ratified as contract notes before implementation. This one should be too, rather than arriving as an incidental export.
 
-**SUPERSEDED IN PART, 2026-08-02.** A blind codex evaluation — brief deliberately withheld the 2025-11-29 decision and Dave's lean — reached the **opposite** conclusion: `unified`/`remark`/`rehype` wins, `markdown-it` loses. Full writeup in [[wa.discussion.2026-08-08-markdown-renderer]].
-
-The two evaluations do not actually conflict; the scope does. 2025-11-29 asked "what renders Markdown to HTML?" and markdown-it is right for that — the new analysis says so unprompted. Dave's 2026-08-02 framing asked for a **static site generator** over mesh-held DigitalArtifacts with Dendron flavour, semantic extraction, and HTML/`.txt` inputs. Against that, markdown-it's token stream (not an AST) is the disqualifier: Weave would have to build the document-processing layer unified already provides.
-
-**Three things now need rulings, in this order:**
-
-1. **A live security defect, independent of the library choice.** `resolveMarkdownHref` (`src/runtime/weave/pages.ts:3734`) accepts ANY URI scheme — `[x](javascript:...)` reaches `href` verbatim. Verified in source. Latent today because the published site has no authored regions; rendering notes and conversation transcripts as pages is exactly what activates it. Small fix, should not wait.
-2. **May `weave-lib` become ESM-only for Node 20?** unified is ESM-only and will not survive the current CJS dnt build. This already silently affects Shiki (`require("shiki")` in the generated CJS), masked only because page generation is not exported. Blocks implementation either way.
-3. **Scope confirmation.** If the real goal is narrower than a site generator, the 2025 answer stands. If it is the site generator, the new answer does.
-
-Eleven further open questions (Dendron identity, wikilink forms, missing-target behavior, conversation-transcript publish state, byte-stability scope) are in the discussion note.
+Also folded into that task rather than cut separately: `resolveMarkdownHref` accepts any URI scheme, so authored `[x](javascript:...)` reaches `href` verbatim. Not exploitable today (self-authored content, no authored regions published); `rehype-sanitize` fixes it as a side effect. **Take the three-line allowlist immediately if authored content starts publishing before the pipeline lands.**
