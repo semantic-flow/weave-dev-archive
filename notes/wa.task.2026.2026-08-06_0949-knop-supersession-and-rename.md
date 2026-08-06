@@ -18,7 +18,7 @@ Cut 2026-08-06 from the identity ruling on [[wa.task.2026.2026-08-06_0854-markdo
 
 **RULED 2026-08-06 (Dave): a rename is a SUPERSESSION, not a move.**
 
-Nothing relocates. The old Knop stays exactly where it is, with its full ArtifactHistory intact and permanently resolvable. A new Knop begins at the new designator path. The two are linked by `dcterms:isReplacedBy`.
+Nothing relocates. The old Knop stays exactly where it is, with its full ArtifactHistory intact and permanently resolvable. A new Knop begins at the new designator path. The two are linked by a paired `dcterms:isReplacedBy` / `dcterms:replaces`, and the new Knop records an exact-state provenance pointer to the history it continues from.
 
 **Precision, corrected 2026-08-06:** "frozen" overstated it. The old Knop's **payload states are immutable and permanently resolvable** — that is what preserves citations — but the Knop itself **mints a new state** to carry the `isReplacedBy` fact. Recording a supersession is a change to the old Knop, and Weave records changes by minting states. A superseded Knop is therefore still-growing metadata over never-changing payload history, not a sealed object.
 
@@ -80,12 +80,28 @@ A timed auto-redirect engages WCAG 2.2.1 (Timing Adjustable), which requires the
   - **Cost.** Full-closure means every rename mints a state on every ancestor — O(chain length) states per rename, each carrying downstream news rather than news about itself.
   - **It saves nothing operationally.** Under static publication, A's page must be regenerated for its notice to point at C whether the traversal happens at write time or render time. Storing the closure moves work rather than removing it.
 - **2026-08-06 (Dave): SHACL updates are routine.** Constraining supersession in `semantic-flow-core-shacl.ttl` is not a cost to design around; SFLO SHACL is expected to change often. Sequence the shape with whatever SFLO release is convenient rather than deferring the work to avoid one.
+- **2026-08-06 (Dave): the link is PAIRED.** The old Knop gets `dcterms:isReplacedBy <new>`; the new Knop gets `dcterms:replaces <old>`.
+
+  **My earlier objection was wrong and is withdrawn.** I argued one-way on the grounds that pairing "would need writing to the old Knop as well, which is the settled-fact rewrite the ruling avoids." That was confused: the write to the old Knop is `isReplacedBy` itself, which happens regardless. Pairing adds a fact to the *new* Knop, which is brand new — free, and no rewrite of anything.
+
+  The decisive argument for pairing is **locality under a file-per-resource model**. Weave publishes each resource's facts in its own file. A consumer reading the new Knop's inventory should be able to answer "what did this replace?" without scanning the mesh for an inbound `isReplacedBy`. An RDF reasoner could infer the inverse; Weave does not run one, and neither do its consumers. Denormalization is correct here.
+
+  Pairing stays compatible with one-hop: both facts are written in the same operation, at supersession time, and neither is ever revised. In a chain A→B→C, B carries `isReplacedBy C` and `replaces A`, each written when it was true.
+
+- **2026-08-06 (Dave): the new Knop records a provenance pointer to the superseded history.** It does not copy states.
+
+  **Refinement worth ruling: point at the exact state, not just the old Knop.** A superseded Knop is not frozen — it mints states for the supersession itself, and it must remain correctable (the PII retraction ruling requires it). "I continue from that Knop" therefore becomes ambiguous as soon as the old Knop changes again. "I continue from `…/_history001/_s0003`" is precise, permanently true, and is exactly the exact-state citation the mesh is built to support.
+
+- **2026-08-06 (Dave): an occupied target is refused, with no overwrite flag.** Refusal stands until a separate act removes the target Knop; `supersede` never deletes.
+
+  Worth encoding in the diagnostic: superseding into an occupied path is not a rename at all, it is a **merge** — two identity chains converging on one designator. Merge semantics are undefined here and should not be invented as a side effect of a rename flag. The error should say so rather than suggesting an override that does not exist.
 
 ## Open Issues
 
-- Is the supersession link one-way (`isReplacedBy` on the old Knop) or paired with `dcterms:replaces` on the new one? Paired is more queryable but writes a fact to a resource that did not exist at rename time. The one-hop ruling leans this toward one-way — a paired link would need writing to the *old* Knop as well, which is the settled-fact rewrite the ruling avoids.
-- Does the new Knop start with no history, or does it record a provenance pointer to the superseded history without copying states?
-- What does the command do when the target designator path is already occupied — refuse, or require an explicit overwrite-style flag? Refusing by default is consistent with the fail-closed direction elsewhere.
+
+- Auto-redirect default: on, off, or configurable per mesh? The exact-state refinement above assumes on-at-root.
+- Should `weave validate` report a dangling `isReplacedBy` target, or a superseded Knop that still has pending work?
+- Re-run safety: a second `supersede` with the same arguments should be a semantic no-op rather than minting a second supersession.
 
 ### Command shape — RULED 2026-08-06
 
@@ -108,9 +124,6 @@ Dave proposed splitting by who moved the file: `weave rename` moves it, and a se
 This keeps one semantic implementation with one set of tests, adds a filesystem step in a thin wrapper, and leaves `repoint` meaning what it already means. It also reads correctly for non-note meshes, where "rename" is the natural word and the file move is wanted.
 
 RULED 2026-08-06 (Dave): `supersede` accepted.
-- Re-run safety: a second `weave rename` with the same arguments should be a semantic no-op rather than minting a second supersession.
-- Should `weave validate` report a dangling `isReplacedBy` target, or a superseded Knop that also has pending work?
-- Auto-redirect default: on, off, or config per mesh? The refinement above assumes on-at-root; a publication that never wants redirects should be able to say so.
 
 ## Contract Changes
 
@@ -138,9 +151,8 @@ RULED 2026-08-06 (Dave): `supersede` accepted.
 
 - [ ] `weave supersede <old> <new>`: record the supersession, refuse an occupied target, no-op on repeat.
 - [ ] `weave rename <old> <new>`: move the working file, then delegate to `supersede`.
-- [ ] Emit `dcterms:isReplacedBy` and validate its target resolves.
+- [ ] Emit the paired `dcterms:isReplacedBy` / `dcterms:replaces` facts plus the exact-state provenance pointer; validate both targets resolve.
 - [ ] Add the supersession region to the document model and render it from RDF.
 - [ ] Countdown and cancel control, root-only, with the no-JS path proven.
 - [ ] Chain resolution at render time with cycle detection (one hop stored).
 - [ ] SHACL shape constraining supersession, with the next convenient SFLO release.
-- [ ] Rule the remaining open issues, particularly whether the new Knop records a provenance pointer to the superseded history.
