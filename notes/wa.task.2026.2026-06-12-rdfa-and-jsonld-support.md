@@ -116,3 +116,17 @@ created: 1781290935033
 ## Implementation Plan
 
 - [ ]
+
+## RULED 2026-08-06 (Dave) — PARKED
+
+No consumer has requested embedded RDF; Stagecraft's exercised use is validation and packaging, and its own requirements note says not to prioritize embedding absent direct need. Custom SFLO/RDFS assertions do not unlock a Google rich result, so search is not a justification.
+
+The deeper reason to wait: the page document model is lossy. It already drops literal datatypes and language tags, incoming triples, blank-node identity, inventory predicates and ordinals, and digest/manifestation evidence. A faithful graph cannot be reconstructed from rendered panels — it needs a new parsed-dataset seam at `sourcePanelsForFacts` first. Embedding a lossy projection and calling it the graph would be worse than embedding nothing.
+
+**If revived: JSON-LD** in one `<script type="application/ld+json">` block. RDFa is rejected because it couples graph correctness to presentation markup — hiding or restyling a panel would silently remove triples, and the custom-page renderer bypasses the shared document model. Microdata is dismissed outright.
+
+**Revival triggers:** Dave ruling the page-identity graph normative for every generated page, or a named consumer supplying an acceptance test of the form "extract these exact triples from the HTML."
+
+The cheap first slice remains available: the three-triple page-identity graph, ~547 bytes/page, ~0.77 MiB across SFLO's 1,467 pages, clean seam, no new dependency. Contrast full-payload embedding at 29.41 MiB on a 24.61 MiB publication.
+
+Full design space, markup sketches, determinism/escaping plan, and the seven rulings a revival would need are in the 2026-08-02 codex analysis.

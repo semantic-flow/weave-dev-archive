@@ -87,12 +87,22 @@ None of this is on `main`. A temporary npm export reaching a release would be a 
 
 ## Open Issues
 
-Four gate the contract slice:
+**RULED 2026-08-06 (Dave) — three of the four gating questions:**
 
-1. **Dendron identity** — is canonical identity the dot-hierarchy filename, frontmatter `id`, an RDF identifier, or a combination? Decides collision behavior across vaults.
-2. **Wikilink forms contractual in v1** — recommendation: target, alias, and heading only; not note refs, block refs, or tags.
-3. **Missing/unpublished target behavior** — build failure, warning plus plain text, disabled link, stub page, or link elsewhere?
-4. **Default publish state for conversation transcripts** — a privacy decision wearing a rendering costume. Recommendation: unpublished by default, opt-in required.
+2. **Wikilink forms: narrow now.** Target, alias, and heading anchor only. Note references, block references, and tags are out of v1 scope. Narrow is easy to widen; the reverse is not.
+3. **Missing or unpublished target: disabled link.** Not a build failure, not degraded plain text — the link renders disabled, keeping the authoring intent visible without shipping a broken href. Note this is a rendering *state*, so the sanitizer schema and the page CSS both need to express it; that is a slice-1 contract detail, not an afterthought.
+4. **Conversation transcripts: unpublished by default**, opt-in required.
+
+**Still open — 1. Dendron identity.** Dave asked whether this means the note's IRI. It was two conflated questions:
+
+- **(a) The wikilink lookup key** — what `[[wd.todo]]` matches in the note index. The dot-hierarchy filename is straightforwardly right; it is what authors type, and matching anything else would make wikilinks unwritable. Effectively settled.
+- **(b) The published identity** — the designator path and therefore the Knop's IRI. This is where the choice has a cost.
+
+**Per-vault namespacing works and dissolves the collision concern.** Mount each vault at its own designator path; the dot-hierarchy becomes the path beneath it, so `wd.todo` and `ac.todo` land at different IRIs by construction. The disjoint prefixes this workspace already uses (`wd.`, `wa.`, `ac.`, `ont.`, `sf.`) become a guarantee rather than a convention.
+
+**The unaddressed cost: filename-derived IRIs break on rename.** Renaming `wd.todo` to `wd.backlog` moves the Knop and dangles every prior citation of the old IRI. That matters more here than in ordinary Dendron publishing, because a mesh exists to provide stable citable identifiers — an IRI that changes when someone tidies a filename is not stable. Dendron itself keeps both: frontmatter `id` durable across renames, filename carrying hierarchy and URL shape.
+
+**Recommendation:** filename hierarchy determines the designator path and IRI (readable URLs, and the hierarchy is the site structure an SSG needs), **and** the frontmatter `id` is recorded on the Knop as a durable alias, so renames stay traceable instead of silently losing the prior identity. One extra triple per note; strictly more than either option alone.
 
 Plus one raised by the spike itself:
 
