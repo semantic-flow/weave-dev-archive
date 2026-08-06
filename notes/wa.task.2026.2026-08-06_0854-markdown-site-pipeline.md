@@ -102,7 +102,25 @@ None of this is on `main`. A temporary npm export reaching a release would be a 
 
 **The unaddressed cost: filename-derived IRIs break on rename.** Renaming `wd.todo` to `wd.backlog` moves the Knop and dangles every prior citation of the old IRI. That matters more here than in ordinary Dendron publishing, because a mesh exists to provide stable citable identifiers — an IRI that changes when someone tidies a filename is not stable. Dendron itself keeps both: frontmatter `id` durable across renames, filename carrying hierarchy and URL shape.
 
-**Recommendation:** filename hierarchy determines the designator path and IRI (readable URLs, and the hierarchy is the site structure an SSG needs), **and** the frontmatter `id` is recorded on the Knop as a durable alias, so renames stay traceable instead of silently losing the prior identity. One extra triple per note; strictly more than either option alone.
+**RULED 2026-08-06 (Dave):** filename hierarchy determines the designator path and IRI (readable URLs, and the hierarchy is the site structure an SSG needs), **and** the frontmatter `id` is recorded on the Knop as a durable alias, so renames stay traceable instead of silently losing the prior identity. Each vault mounts at its own designator path, so cross-vault collision cannot occur by construction. Wikilink lookup matches the dot-hierarchy filename.
+
+All four gating questions are now ruled; slice 1 is unblocked.
+
+### Rename consequences — carded, not settled
+
+Dave also asked to consider **optional alias or redirect pages when filenames change**. Pursuing that surfaced a prior question the identity ruling does not answer, now an open [[wa.dave-court]] card: **is a rename a MOVE or a SUPERSESSION?**
+
+- **Move** relocates the whole ArtifactHistory under the new path. That is a rewrite (against the append-onlyish direction), and it breaks *exact-state* citations — `…/wd/todo/_history001/_s0003` dangles, not just the resource root.
+- **Supersession** leaves the old Knop frozen and permanently resolvable, starts a new Knop at the new path, and links them. Nothing is rewritten; every prior citation stays valid. Cost: one authored note carries two identity chains.
+
+Lean is supersession, which also makes the `id` alias load-bearing rather than decorative.
+
+Two mechanism facts already established:
+
+- **Server-side redirects are unavailable on the primary publication target.** The GitHub Pages profile requires `.nojekyll` (`src/runtime/publication/presets.ts:53`), which disables Jekyll and therefore `jekyll-redirect-from`. Any redirect stub must be client-side: `<meta http-equiv="refresh">` plus `<link rel="canonical">` and `noindex`.
+- **SFLO has no supersession vocabulary** — only `referenceRole_deprecated`. `dcterms:isReplacedBy`/`replaces` would work with no SFLO release; minting an SFLO term needs a versioned ontology release first. `owl:sameAs` is wrong here once the two Knops have divergent histories.
+
+This does not block slices 1–9; it blocks whatever slice emits redirect artifacts.
 
 Plus one raised by the spike itself:
 
