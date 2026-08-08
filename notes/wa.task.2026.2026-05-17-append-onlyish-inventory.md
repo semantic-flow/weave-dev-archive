@@ -191,3 +191,44 @@ Next consumers in the natural order: the PageDefinition twin renderer, then the 
 ### Nit boarded 2026-08-01 (from the sflo publication)
 
 The append path leaves a trailing blank line at EOF: in the regenerated sflo mesh exactly one file (`_knop/_inventory/inventory.ttl`, the root Knop whose inventory received a carried-source-registry append) ends with `\n\n` where the pre-append renderer emitted a single `\n`. Cosmetic and valid Turtle — it shipped in the published mesh — but `git diff --check` flags it, and Kim's bite-1 fail-on-old evidence already noted the old renderer "removed the trailing blank line". Whoever next touches the append planner should normalize the trailing newline.
+
+### Bite 2 receipt — ResourcePage fact deletion (2026-08-07)
+
+DELIVERED on `lane/resource-page-fact-deletion`. The confirmed correctness defect is fixed:
+`filterResourcePageFactsFromInventoryTurtle` no longer deletes anything. `removeResourcePagePaths`
+and its string-splitting machinery are gone; inventory Turtle and planned files are preserved
+**byte-for-byte**, and HTML selection stays RDF-aware through `listGeneratedResourcePagePaths`.
+
+**Option (a) chosen — retain settled facts, stop generating the disallowed page** — with evidence
+rather than assumption. Kim checked that later planning treats retained page facts as settled state
+without testing HTML existence, that validation has no ResourcePage file-existence invariant, and
+that publication validation checks host readiness and path leakage rather than every
+`hasResourcePage` target.
+
+**Named cost of (a), accepted:** a retained fact whose page is no longer generated can leave a
+dangling published link. It breaks no Weave validation, planning, rendering, or publication check —
+but it is a real artifact of choosing append-onlyish over deletion, and the honest resolution is an
+explicit repair/retraction mode, not silent removal. This is the same shape as the 2026-08-07 ruling
+that states must be retractable *explicitly*.
+
+Fail-on-old: `0 passed | 1 failed | 824 filtered out`. The old code removed both page facts **and**
+both page subject blocks, **and** rewrote the surviving `ex:carried` predicate terminator — collateral
+damage to an unrelated carried fact, which is the sharpest argument that string-based inventory
+editing had to go.
+
+### Remaining deletion-capable inventory paths (found 2026-08-07, unowned)
+
+The audit asked for every other place that can destroy settled inventory facts. Three remain, in
+rough order of risk:
+
+1. **`knop add-reference`** (`src/core/knop/add_reference.ts:281`) — canonically rerenders the
+   KnopInventory and only specially preserves *known* support artifacts, so **unrelated carried facts
+   remain at risk**. This is live data-loss exposure, not merely a contract violation, and is the
+   sharpest of the three.
+2. **MeshInventory renderers** (`src/core/weave/mesh_inventory_renderers.ts:440`) — overwrite whole
+   subject blocks; the batched extracted-Knop path explicitly filters target blocks before
+   reconstruction.
+3. **Later `knop create`** (`src/core/knop/create.ts:780`) — replaces the `_mesh` block wholesale.
+
+Each wants the `planInventoryAppend` treatment. Sequence them by exposure: `add-reference` first.
+
