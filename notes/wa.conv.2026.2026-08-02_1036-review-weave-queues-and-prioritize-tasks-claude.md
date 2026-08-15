@@ -546,3 +546,207 @@ What makes it worth noting is the direction you just described. Three things wou
 And the counter-argument to my own recommendation: **`rehype-sanitize` fixes this as a side effect of the migration.** If the pipeline work starts soon, a standalone patch is redundant. The case for doing it separately is only if authored content starts flowing before the pipeline lands — in which case it's a scheme allowlist (`http`, `https`, `mailto`, plus relative and fragment forms), maybe three lines and a test.
 
 My actual recommendation: **fold it into the pipeline work, not a separate slice** — unless you expect to start publishing notes before that lands, in which case take the three lines. Not a reason to reorder anything.
+
+# claude-opus-5_2026-08-06_1042_52
+
+2026-08-06 10:42 PDT (using the command, since I've been drifting on this).
+
+## The constraint that shapes today
+
+**Actions is still `major_outage`.** That means no PR can go green and nothing can merge — [#40](https://github.com/semantic-flow/weave/pull/40) is `MERGEABLE` but `UNSTABLE` purely because its checks can't run. So implementation work can be *done* today but not *landed*, and every new branch adds review debt against an outage with no ETA.
+
+Also: **six groom floors are unmet** (read-in, queues, court, todo, closure, decision-log) — last wake was 2026-08-03. Those are mine, they're due, and they need no CI.
+
+## What I'd do
+
+**1. Clear the six floors.** Real housekeeping, entirely local, and it's what the seat is supposed to do before anything else. Some of it is already half-done by today's work (the court is empty, the decision log was just reworked), so it's mostly `todo` sync and a closure sweep.
+
+**2. Get one ruling from you** so queue item 1 is fireable the moment CI returns — see below.
+
+**3. Hold implementation** until Actions recovers. Firing a bite now means Kim's work sits unvalidated behind an outage while conflict risk accumulates against #40 and the spike branch. Not a good trade for an hour's head start.
+
+## The ruling that unblocks queue item 1
+
+`wa.task.2026.2026-08-02_1330-extracted-term-weave-batch-path` — the top queue item — has a plan whose **first step is a ruling from you**, deliberately, so the bite has a pass condition rather than a vibe:
+
+**What headroom is enough?** Today N=1,700 weave peaks at 3.79 GiB against a ~4.09 GiB ceiling. "Under the ceiling" is what we already have and it isn't comfortable. My recommendation: **peak RSS at N=1,700 under 1.5 GiB, and growth from N=500→1,700 no worse than linear.** That's ~2.5× headroom and a testable shape, not a feeling. For calibration, the markdown spike did 1,467 documents at 242 MB — different workload, but it shows what non-accumulating looks like.
+
+**Is `generate` in scope?** It peaks at 3.74 GiB, nearly as exposed as weave. Batching weave alone may leave the sequence still bounded by generation, so we could "fix" it and still not be able to claim extract→weave→generate is viable. I'd rule it a **separate carve** but state the dependency explicitly, so nobody declares victory prematurely.
+
+---
+
+Worth naming plainly: today has been almost entirely planning. That was the right call — the four markdown gates, supersession, and the retraction ruling were all genuinely blocking, and the convention fix will keep paying off. But the queue hasn't moved, and one of the three Stagecraft-facing items is blocked on a question only you can answer.
+
+Want me to start the floors, or would you rather I fire a queue item anyway and let it sit until CI comes back?
+
+# djradon_2026-08-06_1102_28
+
+I'll take your recommendation on headroom, and yes we should improve generate as well, if possible. It might be harder because I think the generate algorithm holds a bunch of stuff to calculate links or something.
+
+# claude-opus-5_2026-08-06_1102_47
+
+Your hypothesis is checkable — let me look before recording it as a guess.
+
+# claude-opus-5_2026-08-06_1103_02
+
+Found the mechanism — and it's more structural than a concurrency knob:
+
+# claude-opus-5_2026-08-06_1103_15
+
+Checked: **no cross-page link index exists.** The accumulation is simpler and dumber than you feared:
+
+# claude-opus-5_2026-08-06_1103_52
+
+Now the floors. Read-in arc first, since it's most stale:
+
+# claude-opus-5_2026-08-06_1104_26
+
+Queue shows 3, not 4 — checking which branch I'm on:
+
+# claude-opus-5_2026-08-06_1104_33
+
+That's the same `git checkout -- .` accident that wiped the packaging note — it also reverted the queue. Verifying:
+
+# claude-opus-5_2026-08-06_1104_39
+
+Confirmed — my packaging commit `077da48` silently carried the revert. Restoring:
+
+# claude-opus-5_2026-08-06_1105_46
+
+2026-08-06 — floors cleared, all six stamped. Landed: weave `eaea017`, archive `6267f09`.
+
+## I have to flag a mistake I made
+
+**I silently reverted the queue.** Commit `077da48` (the packaging-constraints note) carried a revert of `0b8ef89`, which had added the markdown pipeline as queue item 4. Cause: I'd run `git checkout main -- .` to reset the tree after a branch mix-up, then committed — which staged the revert alongside my intended edit.
+
+It only surfaced because `queue check` reported 3 entries when I expected 4. If I hadn't run the floors today, the top-ranked new work would have quietly vanished from the READY slice. Restored, gate green at 4, and logged as a lesson: never bare-`checkout -- .` on a branch carrying unmerged commits. The same pattern had already bitten me once earlier today on the packaging note — I caught that one and didn't generalize, which is the actual failure.
+
+## Your generate hypothesis — checked, and it's better news than you thought
+
+**There is no cross-page link index.** `page_model_assembly.ts` builds no backlink or link-graph structure at all. The accumulation is three full-corpus materializations in sequence:
+
+1. every `ResourcePageModel` built up front;
+2. `renderResourcePages` ([pages.ts:223](src/runtime/weave/pages.ts#L223)) rendering all of them through **one unbounded `Promise.all`** — every render in flight simultaneously;
+3. the result, a `PlannedFile[]` holding **every page's full rendered bytes**, returned before anything is written ([page_generation.ts:148](src/runtime/weave/page_generation.ts#L148)).
+
+That matters for the carve: no link graph means no ordering constraint forcing whole-corpus residency. The fix shape is **streaming — render, write, discard** — with bounded concurrency, rather than an algorithmic redesign. The unbounded `Promise.all` is the cheap half; the materialized return type is the structural half and will drive an interface change.
+
+Recorded, along with your headroom target (N=1,700 under 1.5 GiB, growth no worse than linear) and generate as its own carve with an explicit no-premature-victory clause.
+
+## Where things stand
+
+Queue is 4 deep and item 1 is now fully unblocked — headroom ruled, so its bite has a pass condition. Court is empty. `wd.todo` and the read-in arc are current.
+
+**v0.7.0 is still staged at `7915eae` behind the Actions outage**, and that's the only thing left from this morning's plan that hasn't moved.
+
+When you want to pick back up, the natural next step is firing queue item 1 — though I'd still hold until CI can validate it, unless you'd rather have the work waiting.
+
+# djradon_2026-08-06_1122_50
+
+Let's have the work waiting.
+
+# claude-opus-5_2026-08-06_1123_14
+
+Gate located precisely. Creating the lane and briefing Kim:
+
+# claude-opus-5_2026-08-06_1123_25
+
+Now the brief. Kim gets no read-in, so this has to be self-contained:
+
+# claude-opus-5_2026-08-06_1124_23
+
+Fired. Kim is working on `lane/extracted-term-batch-path`, branched off `main` at `7915eae`.
+
+## What she's building
+
+Queue item 1: make untargeted all-`firstExtractedKnopWeave` candidate sets eligible for the batch path that `v0.7.0` built for `firstPayloadWeave`. I pinned the exact gates in the brief so she doesn't have to rediscover them — `isUntargetedFirstPayloadBatch` at [version_execution.ts:912](src/runtime/weave/version_execution.ts#L912), the sibling `isExplicitPayloadBatch` just above it, and the classifier returning `"firstExtractedKnopWeave"` at [slice_classification.ts:226](src/core/weave/slice_classification.ts#L226).
+
+Your ruled target is the pass condition: **under 1.5 GiB at N=1,700, growth from N=500 no worse than linear** — with the note that the growth bound matters more than the number, since a single figure can be met by luck.
+
+Three things the brief guards against specifically:
+
+- **Widening the gate too far.** That's the real risk here. Mixed, recursive, and `overwrite` sets must all keep taking the sequential path, and she has to say how she convinced herself of it.
+- **Scope creep into generate.** Explicitly off-limits — it's separately carved, and she may not claim extract→weave→generate viability on this bite alone.
+- **Fabricated numbers.** She's told to report the curve she actually ran and to say so if she can't reach N=1,700, rather than inventing one. Codex has been good about this today — it reported BLOCKED on the packaging spike rather than making something up.
+
+She'll run `deno task ci` locally, since Actions is down and there's no point waiting on it.
+
+## What happens when she returns
+
+I'll review the diff, verify the fail-on-old evidence is real, run the gate myself, and commit on the lane — she can't commit, since the sandbox mounts `.git` read-only. Then the branch sits pushed and ready.
+
+**It won't be mergeable until Actions recovers** — that's the whole premise of doing it now. When GitHub comes back, the order is: v0.7.0 rehearsal and publish first (it's been staged longest and blocks nothing else), then PR #40, then this.
+
+I'll report what she found either way — including if the approach turns out to be wrong, which is a legitimate outcome for a bite this deep in the planner.
+
+# djradon_2026-08-06_1158_57
+
+<task-notification>
+<task-id>bv2l2i6yl</task-id>
+<tool-use-id>toolu_01KBg3UBF8s2WqAStVygy6HR</tool-use-id>
+<output-file>/tmp/claude-1000/-home-djradon-hub-semantic-flow-weave/a8fc4711-9436-474f-9043-75008d6911f4/tasks/bv2l2i6yl.output</output-file>
+<status>completed</status>
+<summary>Background command "Fire the batch-path implementation bite" completed (exit code 0)</summary>
+</task-notification>
+
+# claude-opus-5_2026-08-06_1159_28
+
+Strong numbers, but the measurement config differs from the baseline — verifying before I accept it. Running the gate myself:
+
+# claude-opus-5_2026-08-06_1200_03
+
+Gate is tightly scoped — homogeneous, untargeted, non-overwrite, >1 candidate. Mixed sets fail the `every(=== firstSlice)` check and fall through. But there's a measurement gap worth closing:
+
+# claude-opus-5_2026-08-06_1200_15
+
+Confirmed the gap: the 3.79 GiB baseline was **current-only**; Kim measured **versioned**. Closing it with a like-for-like run:
+
+# claude-opus-5_2026-08-06_1200_52
+
+CI green (exit 0). Now the like-for-like measurement:
+
+# claude-opus-5_2026-08-06_1202_15
+
+**376.6 MiB** — and that's like-for-like with the 3.79 GiB baseline. Confirming the growth shape on the same config:
+
+# claude-opus-5_2026-08-06_1202_43
+
+Independent like-for-like curve, same config as the baseline:
+
+# claude-opus-5_2026-08-06_1203_39
+
+2026-08-06 — Kim delivered, and it's a bigger win than the target asked for. [PR #41](https://github.com/semantic-flow/weave/pull/41) is up.
+
+## Verified like-for-like, because her numbers weren't
+
+Kim measured on **`versioned`** history. The 3.79 GiB baseline was **current-only**. Those aren't comparable, so I re-measured on the baseline's own configuration before accepting anything:
+
+| N | before | after | wall |
+|---:|---:|---:|---|
+| 500 | 1.45 GiB | **246 MiB** | 32.23s → 1.68s |
+| 1,000 | 2.79 GiB | **340 MiB** | 1m55.60s → 3.42s |
+| 1,700 | **3.79 GiB** | **377 MiB** | 5m09.98s → **5.36s** |
+
+Growth is **1.53× for 3.4× cardinality** — sublinear. Your target was under 1.5 GiB with growth no worse than linear; it lands with roughly **4× margin**, and the reduction *widens* with N, which is the signature of removing a quadratic rather than shaving a constant. Wall time at N=1,700 went from over five minutes to five seconds.
+
+## The interesting part: widening the gate wasn't enough
+
+Kim reported this unprompted, and it's the thing worth keeping. Her first attempt admitted extracted candidates to the batch path and still hit **1,078,900 KiB at N=500** — per-candidate full-MeshInventory plans. Fixing that got her to N=1,000 and **1,123,436 KiB**, because policy validation snapshotted every artifact for every candidate.
+
+**Two separate quadratic sources**, neither visible from the gate. Both had to go: a single-pass inventory renderer, and candidate-local policy equivalence for extracted batches. The eligibility fix was the easy third of the work.
+
+## Scope held
+
+The new gate admits a set only when untargeted, non-overwrite, >1 candidate, and **homogeneous** — every candidate the same slice. Mixed sets fail the homogeneity check outright. There's a regression proving mixed sets still take three sequential planning iterations and recursive extracted sets take two, with no batch phase at all.
+
+Both new tests have real fail-on-old evidence: `"supports exactly one weave candidate; found 2"`, and `payloadBatchCandidates` asserting 0 vs 3.
+
+Page generation stayed untouched — it's separately carved, still peaks near 3.7 GiB, and I've stated in the PR that no extract→weave→generate viability claim rests on this.
+
+## Where this leaves things
+
+`deno task ci` green locally (783 passed), verified by me rather than taken on report. **Not mergeable** — Actions is still out, so no checks can run. The PR says so explicitly.
+
+Merge order when GitHub returns: **v0.7.0 rehearsal and publish** (staged longest, blocks nothing else), then **#40** (planning), then **#41**.
+
+Queue item 1 is done pending review. Item 2 (planner generalization) is next and needs no ruling from you — say the word and I'll fire it the same way.
