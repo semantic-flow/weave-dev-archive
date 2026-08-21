@@ -24,6 +24,7 @@ Read before acting:
 - dependencies/github.com/semantic-flow/weave-dev-archive/notes/wa.review.2026-08-21_1022-content-digest-contract-claude.md
 - dependencies/github.com/semantic-flow/weave-dev-archive/notes/ont.task.2026.2026-08-21_1048-cross-engine-shacl-conformance.md
 - dependencies/github.com/semantic-flow/semantic-flow-framework/notes/sf.spec.2026-08-21-content-digest.md
+- dependencies/github.com/semantic-flow/sflo/notes/ont.disc.2026-08-21_0923-response-to-stagecraft-requirements.md
 - documentation/notes/release-notes.v0.7.0.md
 
 Current known state—verify rather than trusting blindly:
@@ -41,6 +42,8 @@ Current known state—verify rather than trusting blindly:
   - 3ae7b0f lifecycle clarification
 - The archive contains the task, review disposition, and cross-engine conformance plan.
 - SFLO source metadata still declares v0.3.0 and needs v0.4.0 preparation.
+- Stagecraft confirmed the digest design and asked that the changed Weave `integrate` behavior ship in a named release.
+- Stagecraft currently pins `@semantic-flow/weave` 0.6.0.
 - All digest implementation tests were green at handoff:
   - Weave `deno task ci`: 834 tests.
   - SFLO: 30 Deno guardrails, 11 PySHACL fixtures, release validation.
@@ -82,6 +85,7 @@ Requirements:
 - Run the same cases through:
   - PySHACL
   - `shacl-engine` over a minimal RDF/JS dataset
+  - Stagecraft's exact `shacl-engine`/Oxigraph adapter
   - pinned Apache Jena SHACL
 - Riot is syntax preflight only; it is not the Jena SHACL execution gate.
 - Do not adopt Oxigraph in Weave or SFLO runtime code.
@@ -90,6 +94,7 @@ Requirements:
 - Compare normalized semantic receipts, not serialized report bytes.
 - Record engine versions, commands, SFLO commit, fixture results, and any adjudicated differences in an `ont.report.*` note.
 - Any unexpected conformance/severity disagreement blocks SFLO publication.
+- If the private Stagecraft adapter cannot be called directly, produce the exact command/fixture handoff and obtain a returned receipt before continuing.
 
 Phase 3: prepare and release SFLO v0.4.0
 
@@ -158,13 +163,13 @@ Create `release-notes.v0.8.0` and explicitly describe the consumer-visible `inte
 
 Use a minor release, not v0.7.1. The post-v0.7 capability and consumer-visible diagnostic changes already justify v0.8.0.
 
-Phase 5: release-candidate integration smoke
+Phase 5: Stagecraft release-candidate smoke
 
 Before publishing Weave:
 
 1. Build/package the v0.8.0 candidate without publishing.
-2. Install the candidate into a disposable off-tree consumer project or temporary Weave fixture workspace.
-3. Exercise the packaged CLI through:
+2. Use a temporary Stagecraft worktree or disposable dependency override.
+3. Exercise the real press flow that shells out through `persistence.ts` to:
    - `weave mesh create`
    - `weave integrate`
 4. Verify:
@@ -172,15 +177,13 @@ Before publishing Weave:
    - expected created/updated paths
    - repository locator contains no digest property
    - computed digest appears on `ArtifactResolutionObservation`
-   - expectation appears only when the caller supplies one
+   - expectation appears only when Stagecraft supplies one
    - observed spec includes the concrete path
-   - SFLO validation accepts the resulting RDF
-5. Discard the temporary consumer project or workspace after preserving the receipt.
-6. Record the exact candidate artifact, command, and result as a release receipt.
+   - Stagecraft validation accepts the resulting RDF
+5. Restore/discard the temporary pin without committing Stagecraft changes unless separately requested.
+6. Record the exact Stagecraft commit, candidate artifact, command, and result as a release receipt.
 
-A failed candidate smoke blocks Weave publication.
-
-External consumers may verify the published releases independently; their private workflows, adapters, and receipts are not release gates for these repositories.
+A failed Stagecraft smoke blocks Weave publication.
 
 Phase 6: publish Weave v0.8.0
 
@@ -201,7 +204,7 @@ After the SFLO release and candidate smoke pass:
    - `@semantic-flow/weave-lib@0.8.0`
    - checksums and downloadable archives
    - installed CLI `weave --version --json`
-9. Confirm a clean disposable consumer project can install and invoke the published 0.8.0 package.
+9. Confirm Stagecraft can pin the published 0.8.0 package.
 
 Final documentation and closure:
 
@@ -229,7 +232,7 @@ Final report must include:
 - source commits and tags
 - GitHub/npm/Pages URLs or identifiers
 - CI and cross-engine results
-- release-candidate smoke receipt
+- Stagecraft smoke receipt
 - breaking/changed behavior summary
 - any deferred work
 - clean-worktree status for every repository
