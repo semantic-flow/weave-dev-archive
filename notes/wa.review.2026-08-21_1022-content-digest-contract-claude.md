@@ -103,3 +103,5 @@ The original Process Note was accurate at review time but is now historical: Wea
 
 - SFLO: format and lint clean; type checks pass; 30 Deno RDF/structural guardrails pass; 11 isolated fixtures execute through PySHACL; release validation passes for the current v0.3.0 metadata.
 - Weave: focused review suite passes 116 tests; full `deno task ci` passes 834 tests with format, lint, type checks, and coverage generation.
+
+The Weave disposition landed as `2ec7606` (`fix(provenance): address content-digest review findings`).

@@ -257,7 +257,7 @@ Across active repositories:
 - weave-dev-archive: `0d9e78d` — `docs(task): record content-digest contract delivery`
 - SFLO review follow-up: `e809c739` — `fix(shacl): execute and tighten digest constraints`
 - Semantic Flow Framework review follow-up: `3ae7b0f` — `docs(spec): clarify digest verification lifecycle`
-- Weave review follow-up: implementation and `deno task ci` are complete in the working tree; commit pending because the current session cannot write the root Git index
+- Weave review follow-up: `2ec7606` — `fix(provenance): address content-digest review findings`
 
 Stagecraft confirmed all four questions in [[ont.disc.2026-08-21_0923-response-to-stagecraft-requirements]] on 2026-08-21: the two-bearer scope, existing attestation property-path, separate DCAT media profile, and `v0.4.0` release-notice boundary are acceptable.
 
