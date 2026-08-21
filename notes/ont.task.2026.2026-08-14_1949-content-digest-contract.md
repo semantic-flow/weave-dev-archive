@@ -149,7 +149,7 @@ No modeling issues remain open for the first slice. Additional algorithms, tree/
 - Treat a `LocatedFile` digest as an independently checkable standing claim about retrievable bytes.
 - Require matching manifestation/file digest values when both assert the same supported method.
 - Reject multiple distinct standing or observed digest values for the same method on one subject.
-- Treat `RepositorySourceLocator` as a coordinate resource rather than a content-digest bearer.
+- Treat repository locator nodes as coordinate resources that carry none of the three digest properties.
 - Keep standing, expected, and observed digest assertions on `ContentDigestBearer`, `ArtifactResolutionSpec`, and `ArtifactResolutionObservation`, respectively.
 - Keep the `ArtifactResolutionSpec` name and clarify its byte-resolution semantics rather than renaming the family.
 - Do not promote computed observations into expectations.
@@ -180,7 +180,7 @@ No modeling issues remain open for the first slice. Additional algorithms, tree/
 - Do not add a closed subject-type constraint that rejects downstream `ContentDigestBearer` subclasses; the domain remains an extensible open-world boundary.
 - Add a violation when an `ArtifactManifestation` and one of its `locatedFileForManifestation` values declare different SHA-256 digests.
 - Add violations for multiple distinct standing or observed digest values using the same method on one subject.
-- Add or refine expected-versus-observed consistency validation where the requested spec and observation are linked.
+- Keep expected-versus-observed mismatch enforcement at runtime operation boundaries; do not encode a timeless SHACL comparison between mutable current expectations and appendable historical observations.
 
 ### Semantic Flow Framework
 
@@ -221,7 +221,7 @@ In `sflo`:
 - Assert the bearer domain, `ArtifactManifestation`/`LocatedFile` subclass edges, and updated class comments/relationships through RDF graph guardrails where appropriate.
 - Test that matching manifestation/file digest pairs conform and mismatched pairs violate the consistency constraint.
 - Test same-method uniqueness while leaving the properties open to future multi-method values.
-- Add structural guardrails for expected/observed consistency constraints.
+- Execute the shipped SHACL-SPARQL constraints against isolated positive and negative fixtures rather than testing only a parallel TypeScript interpretation.
 - Run `deno task ci`.
 
 In Weave:
@@ -242,11 +242,12 @@ Across active repositories:
 ## Implementation Progress
 
 - SFLO core now defines the method vocabulary, two-bearer domain, exact manifestation/replica invariant, canonical SHA-256 comments, and corrected resolution/locator lifecycle.
-- SFLO SHACL now enforces the exact grammar, same-method uniqueness, manifestation/file agreement, expected/observed agreement, and repository-locator prohibition.
+- SFLO SHACL now enforces the exact grammar, explicit-bearer guidance, same-method uniqueness, manifestation/file agreement, and repository-locator prohibition. Runtime operations enforce expected/observed agreement before successful use or persistence.
 - [[sf.spec.2026-08-21-content-digest]] now carries the portable behavior, mirror example, and attestation property-path query; integrate and publication-source-binding specs no longer describe retroactive expectations or locator digests.
 - Weave now shares one canonical digest validator, rejects noncanonical expected values, keeps caller expectations distinct from observations, stops rendering repository-locator digests, and fails closed when parsing them from active source registries.
 - Existing `LocatedFile` claims remain valid. The carried Weave fixture suites required no branch regeneration; focused expectations and parser fixtures were updated in place.
-- Validation completed with SFLO format/lint, type checks, 31 tests, and release validation; SFLO check/test used a temporary validation lock because the restricted environment could not fetch one uncached JSR manifest. Weave `deno task ci` passed with 829 tests.
+- Initial validation completed with SFLO format/lint, type checks, 31 tests, and release validation plus Weave `deno task ci` at 829 tests. After adversarial review, SFLO passes 30 Deno guardrails and 11 executed PySHACL fixtures plus release validation; Weave `deno task ci` passes 834 tests.
+- Adversarial review [[wa.review.2026-08-21_1022-content-digest-contract-claude]] exposed gaps in SHACL targeting/execution and Weave evidence fidelity. Follow-up makes observed-digest constraints property-targeted, runs the real SHACL-SPARQL through pinned PySHACL fixtures, removes the invalid timeless expected/observed SHACL comparison, adds explicit-bearer guidance, records concrete integrate paths, hashes exact extract bytes, types extraction timestamps, and reports locator migration errors specifically.
 
 ## Repository Commits
 
@@ -254,6 +255,9 @@ Across active repositories:
 - Semantic Flow Framework: `144db3d` — `docs(spec): define portable content-digest behavior`
 - Weave: `c0daa57e` — `fix(provenance): separate expected and observed digests`
 - weave-dev-archive: `0d9e78d` — `docs(task): record content-digest contract delivery`
+- SFLO review follow-up: `e809c739` — `fix(shacl): execute and tighten digest constraints`
+- Semantic Flow Framework review follow-up: `3ae7b0f` — `docs(spec): clarify digest verification lifecycle`
+- Weave review follow-up: implementation and `deno task ci` are complete in the working tree; commit pending because the current session cannot write the root Git index
 
 Stagecraft confirmed all four questions in [[ont.disc.2026-08-21_0923-response-to-stagecraft-requirements]] on 2026-08-21: the two-bearer scope, existing attestation property-path, separate DCAT media profile, and `v0.4.0` release-notice boundary are acceptable.
 
@@ -278,7 +282,7 @@ Stagecraft confirmed all four questions in [[ont.disc.2026-08-21_0923-response-t
 - [x] Record the digest representation, method vocabulary, manifestation byte-identity, resolution evidence, and compatibility decisions in [[ont.dev.decision-log]].
 - [x] Add the method vocabulary, `ContentDigestBearer`, bearer subclass edges, and digest domain to `semantic-flow-core-ontology.ttl`.
 - [x] Update `ArtifactManifestation`, `LocatedFile`, `RepositorySourceLocator`, `ArtifactResolutionSpec`, and digest-property comments.
-- [x] Tighten all three SHACL digest patterns and add manifestation/file and expected/observed mismatch constraints.
+- [x] Tighten all three SHACL digest patterns, add manifestation/file constraints, and keep event-time expected/observed mismatch enforcement in runtimes.
 - [x] Add SFLO graph, grammar, parity, positive, and negative tests.
 - [x] Update [[ont.summary.core]] and other live ontology guidance.
 - [x] Add or update the Semantic Flow content-digest behavior spec and correct affected integrate/publication-source-binding specs.
