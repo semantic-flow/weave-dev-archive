@@ -7,7 +7,7 @@ created: 1787332942941
 
 ## Scope
 
-Adversarial review of the content-digest contract as delivered in sflo `936bf8b6` (ontology, SHACL, guardrail tests), Semantic Flow Framework `144db3d` (specs), the uncommitted Weave working tree, and [[ont.task.2026.2026-08-14_1949-content-digest-contract]]. Focus areas: RDF/RDFS/OWL semantics, SHACL-versus-prose enforcement, future multi-method behavior, cross-document contradictions, digest-property placement, LocatedFile/ArtifactManifestation identity, repository-locator leakage, and missing negative tests. Weave's focused digest tests were run during review (60/60 pass). No files were edited.
+Adversarial review of the content-digest contract as delivered in sflo `936bf8b6` (ontology, SHACL, guardrail tests), Semantic Flow Framework `144db3d` (specs), the uncommitted Weave working tree, and [[ont.completed.2026.2026-08-14_1949-content-digest-contract]]. Focus areas: RDF/RDFS/OWL semantics, SHACL-versus-prose enforcement, future multi-method behavior, cross-document contradictions, digest-property placement, LocatedFile/ArtifactManifestation identity, repository-locator leakage, and missing negative tests. Weave's focused digest tests were run during review (60/60 pass). No files were edited.
 
 ## BLOCKING
 

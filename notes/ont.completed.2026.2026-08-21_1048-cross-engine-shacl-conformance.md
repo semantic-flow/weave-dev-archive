@@ -188,3 +188,7 @@ No SFLO release should proceed when engines disagree on conforming status or sev
 - [x] Create an `ont.report.*` release-candidate receipt naming SFLO commit, engine versions, commands, and case results.
 - [x] Run SFLO CI and cross-engine release gates from clean worktrees.
 - [x] Prepare separate semantic commit messages for SFLO and weave-dev-archive; external consumers own any private adapter commits.
+
+## Closure — 2026-08-21
+
+Delivered in SFLO `v0.4.0`. Final tag-commit receipts at `e9c03c2b4e903f9bc6a19018128f362da5a4f044` agreed across all four required engines and were followed by successful source, Pages, and live byte-identity verification. No engine disagreement or severity exception was deferred.

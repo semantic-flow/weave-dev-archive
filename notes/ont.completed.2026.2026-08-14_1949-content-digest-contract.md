@@ -293,3 +293,7 @@ Stagecraft confirmed all four questions in [[ont.disc.2026-08-21_0923-response-t
 - [x] Run `deno task ci` in SFLO and Weave, plus applicable framework documentation checks.
 - [x] Prepare detailed semantic commit messages separately for SFLO, Semantic Flow Framework, Weave, and weave-dev-archive.
 - [x] Leave release metadata and publication to the next release task.
+
+## Closure — 2026-08-21
+
+The coordinated contract is released. SFLO `v0.4.0` shipped at `e9c03c2b` with Pages `72d18379` and four-engine SHACL receipts. Weave `v0.8.0` shipped at `e33561d` with the changed `integrate` RDF behavior, exact-byte extraction, typed observations, active-registry migration diagnostics, npm/GitHub artifacts, and the private Stagecraft press-flow/repository-RDF receipt. Stagecraft's published-package pin test passed without committing downstream changes.

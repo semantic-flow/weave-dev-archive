@@ -20,9 +20,9 @@ Read before acting:
 - documentation/notes/wd.release-runbook.md
 - dependencies/github.com/semantic-flow/sflo/notes/ont.dev.guidance.md
 - dependencies/github.com/semantic-flow/sflo/notes/ont.dev.release-runbook.md
-- dependencies/github.com/semantic-flow/weave-dev-archive/notes/ont.task.2026.2026-08-14_1949-content-digest-contract.md
+- dependencies/github.com/semantic-flow/weave-dev-archive/notes/ont.completed.2026.2026-08-14_1949-content-digest-contract.md
 - dependencies/github.com/semantic-flow/weave-dev-archive/notes/wa.review.2026-08-21_1022-content-digest-contract-claude.md
-- dependencies/github.com/semantic-flow/weave-dev-archive/notes/ont.task.2026.2026-08-21_1048-cross-engine-shacl-conformance.md
+- dependencies/github.com/semantic-flow/weave-dev-archive/notes/ont.completed.2026.2026-08-21_1048-cross-engine-shacl-conformance.md
 - dependencies/github.com/semantic-flow/semantic-flow-framework/notes/sf.spec.2026-08-21-content-digest.md
 - dependencies/github.com/semantic-flow/sflo/notes/ont.disc.2026-08-21_0923-response-to-stagecraft-requirements.md
 - documentation/notes/release-notes.v0.7.0.md
@@ -77,7 +77,7 @@ Phase 2: complete cross-engine SFLO conformance
 
 Implement and complete:
 
-dependencies/github.com/semantic-flow/weave-dev-archive/notes/ont.task.2026.2026-08-21_1048-cross-engine-shacl-conformance.md
+dependencies/github.com/semantic-flow/weave-dev-archive/notes/ont.completed.2026.2026-08-21_1048-cross-engine-shacl-conformance.md
 
 Requirements:
 
@@ -236,3 +236,15 @@ Final report must include:
 - breaking/changed behavior summary
 - any deferred work
 - clean-worktree status for every repository
+
+## Completion — 2026-08-21
+
+- SFLO `v0.4.0` published at source/tag commit `e9c03c2b`; immutable raw-tag bytes verified for all five Turtle files.
+- SFLO Pages published at `72d18379`; deployment run `32525587690` green; 371 Knops and 1,491 Turtle files; core/config/SHACL release payloads byte-identical to the source tag.
+- Four-engine SHACL receipts agreed across 11 cases under PySHACL 0.40.0, public `shacl-engine` 1.1.2, Stagecraft's `shacl-engine` 1.1.2/Oxigraph 0.5.9 adapter, and Apache Jena SHACL 6.2.0. [[ont.report.2026-08-21-v0.4.0-shacl-conformance]] and [[ont.report.2026-08-21-v0.4.0-release]] carry the details.
+- Weave `v0.8.0` published at source/tag commit `e33561d`; Release Manual rehearsal `32527933066` and publication `32528319429` green.
+- `@semantic-flow/weave`, four platform packages, and `@semantic-flow/weave-lib` published at `0.8.0` with `latest`; all four archive checksums verified; installed CLI reported the exact release commit/build timestamp.
+- Stagecraft candidate receipt `sha256:bc1670e885ebdf2cd084733ac90f5d6381ea930759724dcb41a4d4c91c485e02` passed the real `persistence.ts` press flow and exact repository-backed digest RDF checks at Stagecraft `b83fcf6e`. A fresh registry pin then passed the same real persistence test on published `0.8.0`.
+- [[release-receipt.v0.8.0]] records package, workflow, GitHub, npm, checksum, installed-consumer, and Stagecraft receipts.
+- Two release-blocking Weave defects found by SFLO Pages dogfooding landed with fail-on-old tests: late `sfcfg:` prefix placement (`8e29b3e`) and repeated support-subject preservation (`55b4f00`).
+- No unrelated Stagecraft or user-authored Weave documentation changes were included by this release session.
