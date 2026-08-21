@@ -141,6 +141,7 @@ Inventory all behavior since v0.7.0. Expected release content includes at least:
 - condition-specific planner diagnostics
 - `malformed-knop-metadata` finding code
 - batch and sequential MeshInventory history-index correction
+- bounded ResourcePage render→write→discard generation, command-shared extracted source contents, and the corrected candidate-retention estimator; name the faithful N=1,700 improvement (weave 3.79 GiB → 802 MiB, standalone generate 3.74 GiB → 674 MiB) and retire the v0.7.0 near-ceiling Known Limitation rather than carrying it forward
 - digest/provenance behavior:
   - repository locators no longer receive `hasContentDigest`
   - computed integration digests remain observations

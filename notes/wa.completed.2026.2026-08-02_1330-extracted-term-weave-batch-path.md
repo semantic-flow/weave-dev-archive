@@ -22,6 +22,8 @@ Three of that epic's bites shipped: PR #31 removed the fictional ancestor-Knop r
 
 So the batch path already exists and is already proven; extracted candidates simply are not eligible for it.
 
+Completed 2026-08-21. PR #41 admitted homogeneous untargeted extracted candidates to a sibling coherent batch planner; PRs #43/#44 repaired the batch and sequential MeshInventory history-index paths. The dedicated generate carve [[wa.completed.2026.2026-08-21_1111-generate-streaming-memory]] then replaced corpus-wide rendered-byte retention with command-shared source contents and four-page render→write→discard batches. The final faithful current-only N=1,700 probe at Weave `5fd9dd1` measured 802 MiB for composed weave and 674 MiB for same-timestamp standalone generate. Both are below 1.5 GiB, and both N=500→1,700 RSS curves are sublinear.
+
 ## Discussion
 
 The measured curve, from the probe receipt (current-only history, faithful `catalog/source` nested shape, no ancestor Knop):
@@ -33,17 +35,27 @@ The measured curve, from the probe receipt (current-only history, faithful `cata
 | 1,000 | 1m55.60s / 2.79 GiB | 50.44s / 2.76 GiB |
 | 1,700 | 5m09.98s / **3.79 GiB** | 2m29.63s / **3.74 GiB** |
 
-Memory and wall time are both super-linear. Recursive planning (135.3s) and page generation (129.6s) dominate at N=1,700, while RDF validation (128.5ms) and writes (118.1ms) are noise — so this is a planning-shape problem, not an I/O or parsing problem.
+Final curve on 2026-08-21 from a clean detached worktree at `5fd9dd1`, using fresh meshes with current-only history, 1,024-byte terms, nested source `catalog/source`, fixed timestamp `2026-08-21T00:00:00.000Z`, `WEAVE_MEMORY_STATS=1`, `WEAVE_TIMING=1`, and external `/usr/bin/time -v`:
+
+| N | weave wall / max RSS | generate wall / max RSS |
+|---:|---|---|
+| 500 | 10.81s / 408 MiB | 10.61s / 357 MiB |
+| 1,000 | 39.90s / 542 MiB | 32.86s / 524 MiB |
+| 1,700 | 1m18.54s / **802 MiB** | 1m34.12s / **674 MiB** |
+
+For 3.4× cardinality, weave RSS grew 1.97× and generate RSS grew 1.89×. `payloadBatchCandidates` equaled N at every rung. N=1,700 rendered 6,814 pages in 1,704 batches, with at most four rendered files and 4,476,771 rendered bytes retained in a batch.
+
+In the original curve, memory and wall time were both super-linear. Recursive planning (135.3s) and page generation (129.6s) dominated at N=1,700, while RDF validation (128.5ms) and writes (118.1ms) were noise — so this was a planning-shape problem, not an I/O or parsing problem.
 
 Note that `generate` tracks weave closely (3.74 GiB). Batching weave alone therefore does not make the *sequence* safe; page generation needs its own look before any headroom claim covers extract→weave→generate end to end.
 
 ## Acceptance Criteria
 
-- An untargeted candidate set that classifies wholly as `firstExtractedKnopWeave` plans and executes as one policy-validated `VersionPlan`, advancing the MeshInventory once, with canonical ordering independent of discovery order.
-- Mixed sets (extracted + first-payload + later-payload), recursive sets, and `overwrite` requests keep their current behavior; single-target and explicit multi-target behavior is unchanged.
-- At N=1,700 on the faithful nested-source shape, `payloadBatchCandidates` equals the candidate count (not 0), **weave peak RSS is under 1.5 GiB**, and growth from N=500 to N=1,700 is no worse than linear (RULED 2026-08-06).
-- Byte-stable same-timestamp regeneration is preserved: post-weave pending is zero, every term and Knop carries its canonical page claim, source facts and non-HTML artifact hashes are unchanged, and standalone `generate` creates 0 files and updates 0 pages.
-- A durable regression encodes the measured curve at a cardinality CI can actually afford.
+- [x] An untargeted candidate set that classifies wholly as `firstExtractedKnopWeave` plans and executes as one policy-validated `VersionPlan`, advancing the MeshInventory once, with canonical ordering independent of discovery order.
+- [x] Mixed sets (extracted + first-payload + later-payload), recursive sets, and `overwrite` requests keep their current behavior; single-target and explicit multi-target behavior is unchanged.
+- [x] At N=1,700 on the faithful nested-source shape, `payloadBatchCandidates` equals the candidate count (not 0), **weave peak RSS is under 1.5 GiB**, and growth from N=500 to N=1,700 is no worse than linear (RULED 2026-08-06).
+- [x] Byte-stable same-timestamp regeneration is preserved: post-weave pending is zero, every term and Knop carries its canonical page claim, source facts and non-HTML artifact hashes are unchanged, and standalone `generate` creates 0 files and updates 0 pages.
+- [x] A durable regression encodes the measured curve at a cardinality CI can actually afford.
 
 ## Open Issues
 
@@ -57,8 +69,8 @@ Note that `generate` tracks weave closely (3.74 GiB). Batching weave alone there
   3. the result — `readonly PlannedFile[]` containing **every page's full rendered bytes** — returned to the caller before anything is written (`page_generation.ts:148`).
 
   Good news: no link graph means no ordering constraint forcing whole-corpus residency. The fix shape is streaming — render, write, discard — with bounded concurrency, rather than an algorithmic redesign. The unbounded `Promise.all` is the cheap half; the materialized `PlannedFile[]` return type is the structural half and will drive the interface change.
-- **What cardinality can CI afford?** The N=1,700 run is ~5 minutes of weave plus ~2.5 minutes of generate. The durable regression likely runs at a much smaller N with the curve asserted rather than the endpoint, or runs nightly rather than per-PR.
-- Only current-only history was measured. No versioned comparison exists, and the generator exposes no `--generated-at` (the probe applied fixed timestamps to the measured operations only).
+- **RESOLVED 2026-08-21:** per-PR CI uses N=40 and N=120. It asserts a four-file maximum render batch, rendered-batch byte growth no faster than cardinality, and RSS growth no faster than cardinality. Existing PR #41 tests assert non-zero all-extracted batching and mixed/recursive sequential routing.
+- Only current-only history was measured, matching the ruled acceptance substrate. No versioned comparison was required for closure; the generator still exposes no `--generated-at`, so the probe applied the fixed timestamp to measured weave/generate operations.
 
 ## Decisions
 
@@ -75,20 +87,22 @@ None intended. This is an internal planning-path change: the same weave outcomes
 - Instrumented assertion that `payloadBatchCandidates` is non-zero for an all-extracted set — the probe's smoking gun becomes the test.
 - A cardinality run under `WEAVE_MEMORY_STATS=1` recording peak RSS and candidate-cache hits, at whatever N is affordable.
 
+Final N=1,700 byte-stability receipt: zero pending candidates; zero missing term claims; zero missing Knop claims; first/middle/last term pages contained their source names; `catalog/_knop` remained absent; the working and exact historical source hashes matched; all 5,108 non-HTML file hashes were identical before and after standalone generate; standalone generate created 0 files and updated 0 pages.
+
 ## Non-Goals
 
 - Retiring Stagecraft's claim-synthesis workaround. That still gates on a real-corpus replay or their own confirmation, exactly as [[wd.consumer-feedback.0.5.1.reply]] §2 promises. A synthetic pass is not a retirement authorization.
 - Changing extraction's non-publication-bearing lifecycle, or any `hasResourcePage` emission in `src/core/extract`.
 - MeshInventory history-index rendering from actual progression (separate residual).
-- Page-generation memory work — RULED 2026-08-06 as in scope for the epic but as its OWN carve, not this bite. This bite may not claim extract→weave→generate viability on its own.
+- Page-generation memory work inside the weave batch-path implementation bite. It was delivered separately on [[wa.completed.2026.2026-08-21_1111-generate-streaming-memory]], and the end-to-end claim relies on both completed lanes.
 
 ## Implementation Plan
 
 - [x] Headroom target and generate scope RULED 2026-08-06 — see Open Issues.
-- [ ] Carve the generate-side memory work as its own note, with the no-premature-victory dependency stated.
-- [ ] Locate the batch gate in `src/runtime/weave/version_execution.ts` (~913 at the time of the probe) and the classifier boundary that separates `firstExtractedKnopWeave` from `firstPayloadWeave`.
-- [ ] Determine whether extracted candidates can join the existing coherent payload-batch planner as-is, or need a sibling planner — the probe says the per-candidate recursion is the cost, not the classification itself.
-- [ ] Implement, with the fail-on-old tests above recorded before the fix.
-- [ ] Re-run the probe's evidence sequence at N=1,700 and record the new curve against the table in Discussion.
-- [ ] Board the durable regression at the affordable cardinality.
-- [ ] Update `wd.todo` and the release notes' Known Limitations when the headroom claim actually changes.
+- [x] Carve the generate-side memory work as its own note, with the no-premature-victory dependency stated.
+- [x] Locate the batch gate in `src/runtime/weave/version_execution.ts` (~913 at the time of the probe) and the classifier boundary that separates `firstExtractedKnopWeave` from `firstPayloadWeave`.
+- [x] Determine whether extracted candidates can join the existing coherent payload-batch planner as-is, or need a sibling planner — PR #41 shipped the sibling planner.
+- [x] Implement, with the fail-on-old tests above recorded before the fix.
+- [x] Re-run the probe's evidence sequence at N=1,700 and record the new curve against the table in Discussion.
+- [x] Board the durable regression at the affordable cardinality.
+- [x] Update `wd.todo` and board the Known Limitations change for the next release notes.
