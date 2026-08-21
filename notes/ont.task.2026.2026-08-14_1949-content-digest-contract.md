@@ -252,8 +252,10 @@ Across active repositories:
 
 - SFLO: `936bf8b6` — `feat(ontology): define the SHA-256 content-digest contract`
 - Semantic Flow Framework: `144db3d` — `docs(spec): define portable content-digest behavior`
-- Weave: implementation and `deno task ci` are complete in the working tree; the approved `fix(provenance): separate expected and observed digests` commit remains pending because the current session mounts the root `.git` index read-only
-- weave-dev-archive: this task-note commit uses `docs(task): record content-digest contract delivery`
+- Weave: `c0daa57e` — `fix(provenance): separate expected and observed digests`
+- weave-dev-archive: `0d9e78d` — `docs(task): record content-digest contract delivery`
+
+Stagecraft confirmed all four questions in [[ont.disc.2026-08-21_0923-response-to-stagecraft-requirements]] on 2026-08-21: the two-bearer scope, existing attestation property-path, separate DCAT media profile, and `v0.4.0` release-notice boundary are acceptable.
 
 ## Non-Goals
 
