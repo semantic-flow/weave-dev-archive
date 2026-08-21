@@ -166,17 +166,25 @@ No SFLO release should proceed when engines disagree on conforming status or sev
 - Proving that all engines serialize identical validation reports.
 - Designing the separate DCAT media-type/byte-size profile.
 
+## Implementation Progress
+
+- SFLO commit `7d4933a9` extracts the eleven canonical cases, adds normalized receipt runners for PySHACL 0.40.0, public `shacl-engine` 1.1.2, and pinned Apache Jena SHACL 6.2.0, and adds the public JavaScript runner to ordinary CI.
+- The private Stagecraft adapter ran at Stagecraft commit `b83fcf6e`, using its exact `createPopulationValidator` boundary with `shacl-engine` 1.1.2 and an Oxigraph 0.5.9 data round-trip. No Stagecraft files changed.
+- The source shapes now avoid the measured one-`sh:sparql`-per-shape engine defect and attach advisory severity to dedicated node shapes where SHACL processors agree it applies.
+- [[ont.report.2026-08-21-v0.4.0-shacl-conformance]] records the execution profile, engine versions, exact commands, receipt digests, adjudications, and eleven-case matrix at SFLO commit `7d4933a939ae33492dfc0e5e54503f31b8ccd2a9`.
+- All four engines produced identical normalized semantic receipts. No conformance or severity disagreement remains.
+
 ## Implementation Plan
 
-- [ ] Re-read [[ont.dev.guidance]], [[ont.dev.release-runbook]], [[sf.spec.2026-08-21-content-digest]], [[wa.review.2026-08-21_1022-content-digest-contract-claude]], and this task before editing.
-- [ ] Extract the eleven embedded PySHACL cases into the canonical Turtle fixture tree and expectation manifest.
-- [ ] Define and test the normalized JSON receipt contract.
-- [ ] Refactor the PySHACL runner to consume the manifest and emit one receipt per case.
-- [ ] Spike `shacl-engine` core over a minimal RDF/JS dataset without Oxigraph; record dependency size, Deno behavior, and SPARQL-hook requirements.
-- [ ] Implement or adapt the JavaScript runner against the canonical manifest.
-- [ ] Pin and implement the Jena SHACL runner; keep Riot syntax validation as a separate preflight.
-- [ ] Compare all receipts and adjudicate every semantic disagreement.
-- [ ] Add the proven PR/release-gate commands to SFLO CI and [[ont.dev.release-runbook]] at the scoped frequencies above.
-- [ ] Create an `ont.report.*` release-candidate receipt naming SFLO commit, engine versions, commands, and case results.
-- [ ] Run SFLO CI and cross-engine release gates from clean worktrees.
-- [ ] Prepare separate semantic commit messages for SFLO and weave-dev-archive; external consumers own any private adapter commits.
+- [x] Re-read [[ont.dev.guidance]], [[ont.dev.release-runbook]], [[sf.spec.2026-08-21-content-digest]], [[wa.review.2026-08-21_1022-content-digest-contract-claude]], and this task before editing.
+- [x] Extract the eleven embedded PySHACL cases into the canonical Turtle fixture tree and expectation manifest.
+- [x] Define and test the normalized JSON receipt contract.
+- [x] Refactor the PySHACL runner to consume the manifest and emit one receipt per case.
+- [x] Spike `shacl-engine` core over a minimal RDF/JS dataset without Oxigraph; record dependency size, Deno behavior, and SPARQL-hook requirements.
+- [x] Implement or adapt the JavaScript runner against the canonical manifest.
+- [x] Pin and implement the Jena SHACL runner; keep Riot syntax validation as a separate preflight.
+- [x] Compare all receipts and adjudicate every semantic disagreement.
+- [x] Add the proven PR/release-gate commands to SFLO CI and [[ont.dev.release-runbook]] at the scoped frequencies above.
+- [x] Create an `ont.report.*` release-candidate receipt naming SFLO commit, engine versions, commands, and case results.
+- [x] Run SFLO CI and cross-engine release gates from clean worktrees.
+- [x] Prepare separate semantic commit messages for SFLO and weave-dev-archive; external consumers own any private adapter commits.
