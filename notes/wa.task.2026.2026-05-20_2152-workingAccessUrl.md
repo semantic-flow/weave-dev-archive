@@ -8,87 +8,195 @@ created: 1779339180859
 
 ## Goals
 
-- Add Weave runtime support for `sflo:workingAccessUrl` as a current-byte locator for `sflo:DigitalArtifact` payloads.
-- Support the common public-repository workflow where a source artifact is available through a raw HTTP(S) URL, especially mutable branch URLs such as GitHub `raw.githubusercontent.com/.../main/...`.
-- Keep remote access explicit and fail-closed: mesh RDF may name a `workingAccessUrl`, but commands should only fetch it when the active operational policy permits that locator kind, scheme, and origin.
-- Preserve the distinction between mutable working-source locators and immutable historical evidence. A branch raw URL can mean "usually latest"; a historical state should still capture the bytes and digest observed at weave/version time.
-- Document how `workingAccessUrl` relates to local working files and the repo-floating source locator covered in [[wa.completed.2026.2026-05-19_2349-branch-based-workingfile-fix]].
+- Add Weave runtime support for `sflo:workingAccessUrl` as the active current-byte locator for a `sflo:DigitalArtifact` whose working bytes intentionally remain remote.
+- Preserve the no-copy distinction: ordinary current-byte resolution fetches the remote URL under active policy, while versioning captures the exact bytes observed in the normal historical manifestation files.
+- Keep remote access explicit and fail closed. Mesh RDF may name a `workingAccessUrl`, but it cannot grant the host permission to contact that URL.
+- Support public HTTP(S) sources such as raw repository files without making mutable branch URLs appear immutable or authoritative.
+- Reuse the bounded acquisition and host-local origin policy established by [[wa.task.2026.2026-08-21_1810-import-refresh]] rather than growing a second network stack.
+- Keep local working files, repository-floating locators, imported local copies, and remote working URLs as distinct source modes with clear operator-facing diagnostics.
 
 ## Summary
 
-`sflo:workingAccessUrl` is already present in the SFLO core ontology as the remote/external current-byte hook for a `DigitalArtifact`. Weave currently treats it as model vocabulary only: local commands read source bytes from filesystem paths, `file:` URLs, mesh-local `hasWorkingLocatedFile`, `workingLocalRelativePath`, or the newer repository-floating locator, but they do not fetch HTTP(S) working bytes.
+`sflo:workingAccessUrl` remains valid core vocabulary for the case where remote bytes themselves are the active working surface. The feature is still technically feasible, but it is no longer the default answer to “this ontology lives somewhere else.”
 
-The repository-floating locator is portable in the mesh, but operationally it still depends on a local checkout and on the user or CI process keeping the intended branch checked out. A raw URL is simpler for public sources: it can identify "the current source bytes over there" without a local checkout. For a URL pinned to a commit or tag, it is strong provenance. For a URL pinned to a branch such as `main`, it is intentionally mutable: caveat ingestor, but also a useful representation of "usually the latest source artifact."
+Weave now has explicit HTTP(S) `import`, governed local working copies, `sflo:ImportSource` provenance, canonical expected/observed digest behavior, floating repository locators, and a shared artifact-resolution service. When a local copy is acceptable, the preferred workflow is initial import followed by explicit `weave import --refresh`; see [[wa.task.2026.2026-08-21_1810-import-refresh]]. That workflow keeps ordinary weave/version/generate offline and makes each network acquisition an explicit operator action.
 
-This task should implement the first explicit remote-current-source slice in Weave, centered on HTTP(S) `workingAccessUrl`, with remote-access policy in operational config and digest-based fail-closed behavior when exactness is requested.
+This task is the distinct no-copy mode. It should be activated when a real consumer requires one or more of the following:
+
+- no durable local working copy
+- versioning whatever bytes a remote current URL returns at operation time
+- a remote working source that cannot or should not be materialized into the local workspace
+- current-byte semantics where explicit import refresh would be the wrong lifecycle boundary
+
+The task should not be implemented merely to record an upstream or primary URL. `ImportSource.targetAccessUrl`, repository source metadata, ordinary provenance, and manifestation/file locations can describe where bytes came from without making the remote URL the active runtime locator.
+
+## Current State
+
+- The SFLO core ontology defines `sflo:workingAccessUrl` as a remote/external current-byte hook whose use remains an operational-policy question.
+- Weave inventory/page-model code can parse and display `workingAccessUrl` metadata, but current payload loading still requires a local path or floating repository locator and does not fetch the URL.
+- The shared artifact resolver parses direct `sflo:targetAccessUrl` but deliberately rejects ambient URL fetching.
+- `weave import` already has bounded HTTP(S) acquisition, timeout/size limits, digest calculation, and injected fetch tests, but the helper is import-private and follows redirects automatically.
+- `sflo:expectsContentDigest` on `sflo:ArtifactResolutionSpec` and `sflo:observedContentDigest` on `sflo:ArtifactResolutionObservation` settle the expected/observed digest model. No new digest property is needed for remote resolution.
+- Portable `sfcfg:RemoteAccessRule` vocabulary was removed from the live config ontology. Host-local path and remote trust belong to implementation- or service-specific runtime configuration. Do not restore machine trust to portable mesh config as part of this task.
+- Weave's packaged in-process API is intentionally subprocess/network-clean. Remote resolution needs an injected capability so CLI/daemon runtime paths can opt in without making `versionPayloads` ambiently network-active.
+- Compiled binary permissions currently need auditing because explicit HTTP acquisition requires network capability while application policy supplies the finer-grained authorization.
 
 ## Discussion
 
-We currently have three useful current-source models:
+### Import Refresh Is The Default Remote-Origin Workflow
 
-- Local mesh/source files: `sflo:hasWorkingLocatedFile` and `sflo:workingLocalRelativePath` work well when the current bytes live inside the mesh root or in an explicitly allowed local path.
-- Repository-floating files: `sflo:hasRepositorySourceFloatingLocator` plus `sflo:sourceRepositoryUrl` and `sflo:sourceRepositoryPathFromRoot` work well when the mesh should record repository identity and repo-root path without persisting the local checkout path, branch, ref, commit, or digest.
-- Remote working files: `sflo:workingAccessUrl` should work well when the current bytes are directly fetchable by URL and the runtime is allowed to use the network.
+When duplication is acceptable, a governed local copy has substantial operational advantages:
 
-The raw GitHub URL case is likely to be attractive because it is a one-value locator that works from any machine. For example, a mesh can point at a raw `main` URL for the source ontology and then a release command can fetch whatever bytes are currently published there. That does introduce a real race: the URL can change between validation and versioning, or between two release attempts. That should be treated as a property of mutable working locators, not as a reason to reject the workflow. Users who need immutable evidence can use commit/tag URLs or a digest expectation.
+- ordinary weave/version/generate can run offline
+- the source bytes under review are stable until an explicit acquisition changes them
+- network trust is exercised only by `weave import` or `weave import --refresh`
+- the source registry retains origin and observation evidence
+- a remote change cannot race two phases of one ordinary weave operation
 
-`workingAccessUrl` should not behave like import. Following it should not create or require a mesh-local working copy. The URL remains the current working locator; the historical state captures the bytes observed at the moment Weave versions or releases the artifact.
+This task therefore should not absorb import refresh or serve as an optimization for avoiding one working copy. Historical versioning already creates settled local manifestation files, so the no-copy benefit applies only to the mutable working surface.
 
-The config ontology already contains the right policy direction: `sfcfg:RemoteAccessRule`, `sfcfg:hasRemoteLocatorKind`, `sfcfg:remoteLocatorKind_workingAccessUrl`, allowed schemes, and allowed origins. Weave needs the runtime side of that model.
+### Current Payload Resolution Needs A Real Locator Model
+
+Weave currently threads `workingLocalRelativePath` through inventory state, candidate models, manifestation naming, source rendering, page links, and payload loading. Some code carries `workingAccessUrl` alongside that required path only as display metadata. A remote-only payload cannot honestly supply the path.
+
+Do not synthesize a fake local path from the URL merely to satisfy these interfaces. Refactor payload current-source state into a discriminated locator model, for example local `LocatedFile`, allowed local relative path, floating repository locator, or remote working URL, and separate locator identity from the filename/content-kind hint used for historical manifestation layout.
+
+The ontology already has `sflo:preferredPayloadFileSlug`, but the exact filename/media hint contract should be chosen deliberately. A URL pathname can provide a default only when it ends in an unambiguous file name; redirects and content negotiation must not silently change artifact naming.
+
+### Runtime Policy
+
+Remote trust must be host-local and deny-by-default. The policy should match at least:
+
+- operation/locator kind: `workingAccessUrl`, distinct from replaying `ImportSource.targetAccessUrl`
+- scheme
+- exact origin, including normalized default ports
+
+The reusable Weave-local policy/fetch layer should come from [[wa.task.2026.2026-08-21_1810-import-refresh]]. Every redirect hop must be authorized before the next request. Private/authenticated access, cookies, arbitrary headers, and credential-bearing URLs stay out of the first slice.
+
+### Operation-Scoped Byte Snapshot
+
+A mutable URL can change between requests. A composed weave must fetch a selected remote working source once per operation and reuse the resulting bytes across validation, planning, versioning, and any explicit current-source consumers in that operation. It must not validate one response and version a later response.
+
+Across separate operations, a mutable URL is intentionally allowed to yield new bytes. A caller-supplied digest expectation fails closed if those new bytes do not match. A commit/tag URL may be stable by convention, but the runtime should rely on URL/digest policy rather than infer immutability from GitHub path syntax.
+
+### Multiple Current Locators
+
+SFLO says coexisting current locators should identify the same bytes. The first remote slice should avoid implicit precedence. If `workingAccessUrl` coexists with a local or repository working locator, reject the source as ambiguous unless an explicit profile selects an agreement-check mode. A later agreement mode may resolve both and compare digests, but ordinary resolution should not silently choose one.
+
+### Historical Evidence
+
+Successful versioning must copy the exact operation-scoped remote bytes into the normal historical manifestation file. A stored `sflo:expectsContentDigest`, when present on the applicable resolution/source binding, is checked before any state is minted.
+
+Persisting `sflo:hasContentDigest` on the new manifestation or LocatedFile would also advance the separate fingerprint/integrity line. If that standing digest is required for acceptance, make the overlap with [[wa.task.2026.2026-05-04-fingerprint-verification]] explicit rather than implying that current version rendering already writes it. Failed fetch or mismatch evidence must not be persisted as a successful observation.
+
+### Authoring Surface
+
+Runtime support alone is not friendly enough for the product vision, but an authoring command should follow rather than distort the resolver design. Do not make a plain HTTP positional argument silently switch `integrate` into remote-current semantics.
+
+The likely surface is an explicit remote working-source option on `integrate` or a narrow source-binding command. It must:
+
+- fetch once under policy when bytes are needed to validate content/type
+- record `sflo:workingAccessUrl` on the payload artifact
+- record an `sflo:IntegrationSource` with `sflo:targetAccessUrl`, working resolution mode, optional expected digest, and acquisition observation when an intentional fetch occurred
+- record an honest filename/content-kind hint without inventing `workingLocalRelativePath`
+- avoid writing a governed local working copy
+
+The exact CLI spelling remains open until the locator-model refactor exposes the clean request type.
 
 ## Open Issues
 
-- What exact operational-config surface should Weave accept first: a mesh-carried `sfcfg:RemoteAccessRule`, a host-local config file, CLI flags, or a narrow built-in option such as `--allow-working-access-url-origin`?
-- Should `weave integrate https://... artifact/path` record the URL directly as `sflo:workingAccessUrl`, or should the first implementation require an explicit flag such as `--working-access-url` to avoid accidental remote-source semantics?
-- Should integrate fetch the URL immediately to parse/validate the source and compute an observed digest, or should it only record the locator and leave fetching to `weave` / `version`? Recommendation: fetch during integrate when the command needs source semantics, but avoid writing a historical-state digest until a state is actually minted.
-- Which digest property should carry an expected remote-byte digest for fail-closed exactness? If no existing SFLO term fits cleanly, add one deliberately rather than overloading a historical-state digest.
-- Redirect policy needs a decision. GitHub raw URLs may redirect; the first implementation should either allow safe HTTPS redirects and record the final URL in diagnostics, or fail unless the final origin is also permitted.
-- Size, timeout, and content-type limits need conservative defaults. Turtle parsing should still be based on the bytes and extension/media hints Weave already uses, but remote fetches should not be unbounded.
-- If multiple current locators are present for the same artifact (`workingLocalRelativePath`, `hasWorkingLocatedFile`, `hasRepositorySourceFloatingLocator`, `workingAccessUrl`), should Weave choose by explicit precedence or require agreement? The SFLO decision log says mismatch should fail closed in operational profiles that rely on multiple locators; Weave should make that concrete.
-- Private/authenticated URLs are valuable later, but they raise credential-storage and logging questions. They should probably be deferred from the first slice.
+- What real consumer requires no-copy remote working resolution after `weave import --refresh` exists? Capture that workflow before admitting implementation to the active queue.
+- What is the smallest honest filename/media hint required for remote-only payload version layout: URL basename, `preferredPayloadFileSlug` plus media type/extension, or an explicit authoring option?
+- Should the first runtime slice support only payload versioning, or also extraction from a remote-current source within the same operation-scoped byte snapshot? Prefer payload versioning first unless the motivating consumer requires extraction.
+- What explicit authoring syntax should record `workingAccessUrl` without conflating it with ordinary import or local integrate?
+- Should validation report policy denial as an operational resolvability finding only under an explicit profile, or whenever a selected operation needs current bytes?
+- Is standing historical manifestation digest output part of this task or a coordinated fingerprint slice?
 
 ## Decisions
 
-- `workingAccessUrl` is a mutable current-source locator unless paired with commit/tag URL structure or an expected digest. Branch raw URLs are allowed but should be described as "latest-ish" rather than stable evidence.
-- First implementation should support HTTP(S) only. Reject other schemes until a concrete use case and policy shape exist.
-- Remote access remains deny-by-default. A command must have an applicable operational allowance before fetching `sflo:workingAccessUrl`.
-- Versioning/release commands should fetch remote working bytes at the moment they mint the historical state; the historical state should then capture the observed bytes in the normal manifestation files and digest/provenance trail.
-- A digest expectation, when supplied, must fail closed if the fetched bytes do not match.
-- `workingAccessUrl` should be documented next to repo-floating source locators in [[wu.cli-reference.integrate]] because users will choose between those two models for public repositories.
+- Keep this task open as the live no-copy remote-current mode; do not treat it as the ordinary upstream-location/import workflow.
+- Prefer `weave import --refresh` when a governed local copy is acceptable.
+- First implementation supports HTTP(S) only and remains deny-by-default.
+- Host-local Weave policy, not portable `sfcfg` mesh config, grants remote access.
+- Reuse one bounded remote acquisition implementation and one policy matcher across import refresh and `workingAccessUrl`, while retaining distinct locator-kind grants.
+- Fetch remote working bytes once per operation and reuse that byte snapshot throughout the operation.
+- Do not invent a local path for remote-only sources.
+- Reject ambiguous multiple current locators in the first slice rather than defining silent precedence.
+- A mutable branch URL is “latest-ish” working input, not immutable evidence. Exactness comes from pinned coordinates and/or a caller-supplied expected digest.
+- Versioning captures the observed bytes in normal historical manifestation files. Standing digest serialization, if required, must be scoped explicitly.
+- Resource page generation may display `workingAccessUrl` metadata but must not fetch merely to render a page unless an explicit working-source consumer requires the bytes.
+- Private/authenticated remote sources remain out of scope.
+- Generic `targetAccessUrl` fetching remains out of scope.
 
 ## Contract Changes
 
-- `weave integrate` may accept an HTTP(S) source URL once remote access has been explicitly allowed. It should record the URL as `sflo:workingAccessUrl` on the payload artifact rather than converting it into a local path.
-- Current-byte resolution for weave/version/release flows should include a remote resolver path: read `sflo:workingAccessUrl`, check the active remote policy, fetch bytes, validate/parse as needed, and surface clear diagnostics on policy denial, network failure, parse failure, or digest mismatch.
-- `weave validate` should report unsupported or disallowed `workingAccessUrl` locators when the active validation profile asks it to validate operational resolvability.
-- Existing local-path behavior should not change. Mesh-local files, sidecar local files, and repository-floating locators remain valid and should keep using their existing predicates.
-- Resource page generation should continue preferring settled historical-state content when available. `workingAccessUrl` may be displayed as current locator metadata, but generation should not fetch the network merely to render current resource pages unless an explicit working-resolution mode requires it.
+- Introduce a locator-discriminated payload working-source model instead of requiring `workingLocalRelativePath` for every payload.
+- Add an optional injected remote-byte capability to the runtime resolution context. Absence of that capability or applicable policy fails closed without touching the network.
+- Resolve `sflo:workingAccessUrl` for selected payload current-byte operations under exact origin/scheme policy and operation-scoped byte reuse.
+- Keep the packaged in-process API network-clean unless a future public API deliberately accepts an injected acquisition capability.
+- Extend version/weave execution so remote bytes flow through the same historical manifestation planning as local payload bytes without fabricating local locator RDF.
+- Add clear diagnostics for malformed URL, missing policy, denied origin/scheme, redirect denial, timeout, size limit, HTTP failure, ambiguous locators, content/type failure, and digest mismatch.
+- Add an explicit authoring surface only after the locator model and runtime resolver support it honestly.
+- Update [[sf.spec.2026-05-18-publication-source-binding]], [[sf.spec.2026-04-03-weave-behavior]], [[wu.cli-reference.integrate]], [[wu.cli-reference.weave]], [[wu.cli-reference.version]], [[wd.runtime]], and [[wd.codebase-overview]] when the corresponding behavior ships.
 
 ## Testing
 
-- Add unit tests for remote-access policy matching: locator kind, scheme, origin, denied-by-default behavior, and malformed URL failures.
-- Add an integration test with a local HTTP server standing in for a raw public URL. Verify `integrate` records `sflo:workingAccessUrl` and does not persist a host-local filesystem path.
-- Add weave/version tests proving that the fetched remote bytes become the historical-state manifestation bytes.
-- Add a mutable-URL test where the server changes bytes between two runs. Without an expected digest, the later run should capture the later bytes; with an expected digest, it should fail closed.
-- Add denial tests proving that a disallowed URL fails before or at fetch resolution with a clear diagnostic.
-- Add redirect tests once redirect behavior is chosen.
-- Add documentation examples for raw GitHub `main` URLs and pinned commit URLs.
+- Unit-test remote policy selection for the `workingAccessUrl` locator kind, including absence of capability/policy, malformed URL, scheme/origin normalization, and denied redirects before the next request.
+- Unit-test payload locator parsing for remote-only, each existing local/repository mode, and ambiguous combinations.
+- Unit-test filename/content-kind hint validation without fake local paths.
+- Integration-test remote-only payload versioning through a local HTTP server and prove the historical manifestation bytes equal the fetched bytes.
+- Integration-test operation-scoped byte reuse by changing the server response between possible phases and proving one operation captures one response.
+- Integration-test separate operations against a mutable URL: unchanged/no-op behavior when bytes are unchanged and a later state when bytes change.
+- Integration-test expected-digest success and mismatch with no historical writes on mismatch.
+- Regression-test local mesh, sidecar local, floating repository, import-refresh, page generation, and packaged API behavior.
+- Test ambiguous multiple locators, redirect loops, timeout, maximum size, HTTP errors, malformed content, and no local path leakage.
+- Add authoring CLI/e2e coverage only when that slice is admitted.
+- Use injected/local HTTP servers in CI rather than public network dependencies.
+- Run focused artifact-resolution and weave/version tests, followed by `deno task fmt`, `deno task lint`, `deno task check`, and `deno task test`.
 
 ## Non-Goals
 
-- Do not implement authenticated/private URL fetching in the first slice.
-- Do not make `workingAccessUrl` an import/copy mechanism. It resolves current bytes; it does not create a mesh-local working source.
-- Do not implement `sflo:targetAccessUrl` page-source fetching as part of this task unless the remote resolver abstraction makes it trivial and separately tested.
-- Do not make mutable branch URLs appear immutable. Users who need immutability should use commit/tag URLs or digest expectations.
-- Do not add general URL-root-relative filesystem abstractions. The useful concrete cases are repository-floating locators and direct remote access URLs.
+- Importing or refreshing a governed local copy; see [[wa.task.2026.2026-08-21_1810-import-refresh]].
+- Avoiding historical manifestation copies. Versioning still materializes settled bytes inside the mesh.
+- Generic remote `sflo:targetAccessUrl` resolution for config, pages, references, or extraction.
+- Authenticated/private URLs, secrets, cookies, credential storage, or arbitrary request shaping.
+- Persistent HTTP caching or offline success for a remote-only working source.
+- Inferring that a URL is canonical/authoritative merely because it is the active working locator.
+- Automatically remapping an upstream ontology namespace to a different mesh base; alternate namespace/base support is a separate ontology and extraction concern.
+- General URL-root-relative filesystem abstractions.
 
 ## Implementation Plan
 
-- [ ] Inspect the current `sfcfg:RemoteAccessRule` ontology shape and choose the smallest runtime config surface Weave can support without painting itself into a corner.
-- [ ] Add a remote-access policy parser/matcher for `remoteLocatorKind_workingAccessUrl`, allowed scheme, and allowed origin.
-- [ ] Add a bounded HTTP(S) fetch helper with timeout, maximum byte size, redirect policy, final-URL diagnostics, and digest calculation.
-- [ ] Extend integrate source resolution so an explicitly allowed HTTP(S) source can be recorded as `sflo:workingAccessUrl`.
-- [ ] Extend payload current-byte resolution to fetch `sflo:workingAccessUrl` when no local/repository current locator is selected, or when policy/precedence explicitly selects the URL locator.
-- [ ] Decide and implement multiple-locator precedence/agreement checks.
-- [ ] Add tests for policy denial, successful fetch, mutable URL behavior, digest mismatch, and no local path leakage.
-- [ ] Update [[wu.cli-reference.integrate]] and any relevant release/runbook notes with examples for raw `main` URLs and pinned commit URLs.
+### Phase 0: Confirm The No-Copy Consumer
+
+- [ ] Record the concrete consumer workflow that cannot use a governed local import plus `weave import --refresh`.
+- [ ] Decide whether the first slice needs payload versioning only or also extraction/current-source reading.
+- [ ] Decide the remote-only filename/content-kind hint contract.
+- [ ] Refine the portable behavior specs before implementation.
+
+### Phase 1: Reuse Remote Acquisition Policy
+
+- [ ] Land or reuse the host-local remote-origin policy and bounded per-hop-authorized fetch layer from [[wa.task.2026.2026-08-21_1810-import-refresh]].
+- [ ] Add the distinct `workingAccessUrl` locator-kind policy match and injected runtime capability.
+- [ ] Audit compiled CLI permissions and preserve the network-clean packaged API boundary.
+
+### Phase 2: Generalize Payload Current Sources
+
+- [ ] Replace required-local-path payload source state with a discriminated locator model and separate filename/content-kind hint.
+- [ ] Preserve all existing local, sidecar, repository-floating, binary, RDF, and page behavior through focused regression tests.
+- [ ] Reject ambiguous multiple locators in the first slice.
+
+### Phase 3: Resolve And Version Remote Bytes
+
+- [ ] Add operation-scoped fetch/snapshot reuse for selected remote payloads.
+- [ ] Verify stored/caller digest expectations before successful use or historical writes.
+- [ ] Thread the acquired bytes through weave/version planning and historical manifestation writes.
+- [ ] Add policy, network, redirect, mutable-source, digest, and no-path-leakage tests.
+
+### Phase 4: Add Authoring UX And Documentation
+
+- [ ] Choose and implement an explicit remote-current source-binding surface without overloading ordinary import or local integrate syntax.
+- [ ] Record `workingAccessUrl`, `IntegrationSource` coordinates, and honest observation evidence without a local working path.
+- [ ] Update user/developer documentation, behavior specs, and relevant release notes.
+- [ ] Run `deno task fmt`, `deno task lint`, `deno task check`, and `deno task test`.
+- [ ] Provide a semantic commit message with a summary line and detailed developer-facing bullets.
