@@ -82,4 +82,3 @@ The aggregate byte work is quadratic, but a nested existing-Knop/quad scan makes
 **GO WITH CHANGES.**
 
 All four r0 blockers are genuinely closed. Nothing found requires redesign. Resolve the five major contract/coverage points and the named advisories before implementation.
-

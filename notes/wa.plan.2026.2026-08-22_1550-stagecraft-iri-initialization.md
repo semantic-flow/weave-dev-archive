@@ -144,6 +144,8 @@ Final-review update: [[wa.review.2026-08-22_2032-stagecraft-phase1-final-claude]
 
 Suffix-proof update: the carried-blank-node defect, fallback/failure coverage, and E2E parser isolation are fixed with 861 green tests. The N=552 observation improved from 3.22 s to 2.06 s while retaining self-contained directives. Governing notes are staged for commit; G1 awaits one final review of the committed result.
 
+Final status: **G1 PASSED.** [[wa.review.2026-08-22_2303-stagecraft-phase1-g1-claude]] returned GO against committed Weave/archive state. Phase 2 Weave runtime work is unblocked. Suffix-only proof is the required Phase 3 baseline; directives and physical full-file replacement remain quantified residuals, not batch evidence.
+
 ### G2 — Founding Capability Landed
 
 Passes when [[wa.task.2026.2026-08-22_1112-founding-referent-data]] meets its ontology, behavior, runtime, Accord, validation, preservation, and documentation exit criteria.
@@ -209,7 +211,7 @@ No batch target is invented before this evidence. Before running the receipt, St
 ## Plan Checklist
 
 - [x] Establish [[wd.plans-and-tasks]], [[template.plan]], schema support, and the queue boundary.
-- [ ] Capture the legacy N=552 baseline, deliver the `knop.create` append-planner/indexed-read-model bite, and record the identical post-change receipt under [[wa.task.2026.2026-05-17-append-onlyish-inventory]].
+- [x] Capture the legacy N=552 baseline, deliver the `knop.create` append-planner/indexed-read-model plus suffix-proof bite, record like-for-like receipts, and pass final G1 review under [[wa.task.2026.2026-05-17-append-onlyish-inventory]].
 - [ ] Deliver [[wa.task.2026.2026-08-22_1112-founding-referent-data]] on the migrated writer.
 - [ ] Record the 552-entry and no-founding baseline receipts.
 - [ ] Rule Gate G3 and, only if selected, cut and deliver the batch child task.

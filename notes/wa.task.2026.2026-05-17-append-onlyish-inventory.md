@@ -200,6 +200,20 @@ Suffix-proof N=552 observation: 552/552 creates; 1,104 created files; 552 update
 
 **Final review request:** verify N1–N3, committed governance N4, full gates, suffix-proof soundness, and the retained directive/physical-write residual. Gate G1 remains open until that review returns GO.
 
+### Stagecraft Phase 1 Gate G1 closure — 2026-08-22
+
+[[wa.review.2026-08-22_2303-stagecraft-phase1-g1-claude]] returned **GO** against Weave `8dfc7f3` and archive `c474401`. N1–N4 are closed, all earlier B1/M1–M4 fixes remain intact, and Gate G1 is complete.
+
+Owned residuals:
+
+- retain self-contained append directives until effective trailing base/prefix state can be proved safely
+- retain physical full-file read/parse/replacement for singular create; batch remains evidence-triggered at G3
+- board latent prepared/plan mispair hardening for the shared renderer
+- fix stateful multi-file N3 parser reuse in import/integrate/version/payload-update validators separately
+- regenerate stale create fixture ladders in the next deliberate broad fixture pass
+
+Phase 1 does not close the broader append-onlyish task; remaining writers and progression separation stay owned here. The Weave FoundingReferentData runtime may now proceed under the parent plan.
+
 ### Fresh-Conversation Implementation Brief — Phase 1 Review Follow-Up
 
 ```text

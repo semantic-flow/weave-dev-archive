@@ -103,4 +103,3 @@ Do not remove repeated directives naively: that fails the no-prefix/different-ba
 ## Verdict
 
 **GO WITH CHANGES.** Gate G1 may pass after N1–N4. Phase 3 measurement must not use the inflated review-safe path; land the suffix-proof optimization first and decide directive amortization through an evidence-backed, base-safe design.
-

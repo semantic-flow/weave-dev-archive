@@ -153,4 +153,3 @@ B1 and B2 each defeat the task's stated purpose, B3 makes the digest contract un
 The reviewer judged the core idea defensible: a narrow, Knop-owned, create-only slice is distinct from `KnopMetadata`, `ReferenceCatalog`, and `PayloadArtifact`; the exact-subject/no-blank-node profile is a real constraint rather than `ReferentMetadata` respelled; the SHACL/file-membership analysis is correct; and deferring batch create is tenable.
 
 Re-review after resolving the four blockers, ruling M1/M2/M4/M5, implementing or withdrawing M3, and explicitly scoping M6/M8. The expected next verdict would be GO WITH CHANGES.
-
