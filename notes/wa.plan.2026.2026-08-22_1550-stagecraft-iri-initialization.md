@@ -7,7 +7,7 @@ created: 1787439044000
 
 ## Status
 
-Active coordination plan. This plan never enters [[wd.queues]]; its fireable child tasks do.
+Ready for closure after Dave selected the singular release path on 2026-08-23. This plan never entered [[wd.queues]]; its fireable child tasks did when needed.
 
 ## Goals
 
@@ -163,6 +163,8 @@ After the 552 receipt, Dave rules one of:
 
 No batch target is invented before this evidence. Before running the receipt, Stagecraft should state the operational budget it cares about; otherwise the receipt remains descriptive and Dave makes the product judgment directly.
 
+Final status: **SINGULAR ACCEPTED.** Dave's 2026-08-23 instruction to release the reviewed capability selects the current singular implementation for v0.9.0. The recorded N=552 founding-plus-settlement observation is 4.62 s wall and 246,144 KiB peak RSS, with 552/552 digests verified and zero founding pages. No batch task is owed; future batching requires a new workload or explicit budget and a new task.
+
 ## Decisions
 
 - Use one formal `plan` genre; "epic" is an informal size label.
@@ -175,10 +177,11 @@ No batch target is invented before this evidence. Before running the receipt, St
 - SFLO/framework founding-contract work may proceed in parallel after ruling; Weave runtime ordering remains strict.
 - Measure singular create after the append migration and founding capability both land.
 - Do not create speculative batch work; Gate G3 owns that branch.
+- Gate G3 selected singular accepted for v0.9.0; the conditional batch branch is ruled off for this plan.
 
 ## Open Issues
 
-- What wall-clock and peak-memory budget does Stagecraft require for a 552-entry press on its representative host? Record it before Gate G3 if available.
+- Resolved for this release: Dave accepted the measured singular path without supplying a stricter Stagecraft budget. Future requirements may reopen batching as a new task, not this plan.
 - Should Phase 1 be carved into its own child task note before implementation, or remain a clearly bounded bite and receipt inside [[wa.task.2026.2026-05-17-append-onlyish-inventory]]? Lean: keep it in the existing task unless queue/review independence requires a carve.
 
 ## Testing And Receipts
@@ -294,5 +297,5 @@ At handoff report decisions applied, files/commits per repo, review dispositions
 - [x] Capture the legacy N=552 baseline, deliver the `knop.create` append-planner/indexed-read-model plus suffix-proof bite, record like-for-like receipts, and pass final G1 review under [[wa.task.2026.2026-05-17-append-onlyish-inventory]].
 - [x] Deliver [[wa.task.2026.2026-08-22_1112-founding-referent-data]] on the migrated writer.
 - [x] Record the 552-entry and no-founding baseline receipts.
-- [ ] Rule Gate G3 and, only if selected, cut and deliver the batch child task.
+- [x] Rule Gate G3 and, only if selected, cut and deliver the batch child task. Singular accepted; the batch branch was not selected.
 - [ ] Reconcile durable docs/backlog/decision receipts and close this plan under [[wd.plans-and-tasks]].
