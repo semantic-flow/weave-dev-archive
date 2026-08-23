@@ -14,7 +14,7 @@ Active coordination plan. This plan never enters [[wd.queues]]; its fireable chi
 - Give Stagecraft a Semantic Flow-conformant initialization path for approximately 552 public IRIs in a Waystation press.
 - Measure the unchanged singular `knop.create` path before Phase 1 and rerun the identical probe afterward so the append/indexing improvement has a real before/after receipt.
 - Migrate `knop.create` onto the shared append/no-op/conflict inventory primitive before adding another Knop-owned artifact to that operation.
-- Add optional, locally carried `FoundingReferentData` without inventing a competing inventory writer or broadening KnopMetadata.
+- Add optional, locally carried `FoundingReferentData`, writing its additional settled facts through the shared inventory append planner while keeping `KnopMetadata` support-object-only.
 - Make settled founding data correctable after publication by creating a later ordinary artifact state, never by rewriting an already published state.
 - Measure the real singular-create path at press scale after both changes land.
 - Add a batch initializer only when the receipt or a larger committed workload demonstrates that singular create is not acceptable.
@@ -207,6 +207,82 @@ No batch target is invented before this evidence. Before running the receipt, St
 - Gate G3 is ruled, with either no batch task owed or a concrete batch child task created and completed/cancelled.
 - No actionable work remains only in this plan.
 - Backlog, roadmap, decision log, child links, and durable guidance reflect the final outcome.
+
+## Phase 2 Fresh-Conversation Handoff
+
+### Starting State
+
+All four repositories are clean at handoff:
+
+- Weave: `187fd19` (`8dfc7f3` is the reviewed suffix-proof code commit; later commits are planning disposition only)
+- weave-dev-archive: `b7cba0e`
+- SFLO: `6720f9d2`
+- Semantic Flow Framework: `3ae7b0f`
+
+These local branches are ahead of some remote tips. The next session must use the local state as authoritative and must not pull, reset, rebase, or check out remote files over it. Nothing from this plan has been pushed or released.
+
+Gate G1 passed through [[wa.review.2026-08-22_2303-stagecraft-phase1-g1-claude]]. First and later `knop.create` now use prepared inventory input, the shared append planner/renderer, indexed membership validation, and suffix-only semantic proof. N=552 suffix-proof create is the Phase 3 no-founding comparator: 2.06 s wall, 1,919.791 ms create loop, 220,817-byte MeshInventory, 222,432 KiB peak RSS.
+
+### Settled Phase 2 Contract
+
+- `D/_knop/_meta/meta.ttl` remains SF machinery about the Knop; it does not carry referent assertions.
+- A Knop may have at most one `FoundingReferentData` artifact at `D/_knop/_founding`, with working Turtle at `D/_knop/_founding/data.ttl`.
+- The artifact is `DigitalArtifact` plus `RdfDocument`, not yet `SemanticFlowResource`; no founding-data page is generated.
+- The founding document is flat and base-independent: non-empty Turtle, no `@base`, exactly absolute public `D` as every subject, no blank nodes/named graphs/RDF-star/generalized RDF, IRI or literal objects, no SFLO/SFCFG predicates, and no SFLO/SFCFG `rdf:type` objects. First profile limits: 64 KiB and 256 triples. Root founding data is refused.
+- Stagecraft vocabulary (`incarnationOf`, origin, byte-bearing classification, owner, graph) remains downstream; SFLO defines only the artifact/discovery contract.
+- `knop.create <D> --founding-data <path>` admission-copies exact bytes, validates before writes, creates the working artifact/file, and adds its settled inventory facts through `planInventoryAppend`. It creates no history, pages, payload, references, sources, or network activity.
+- The mutable working file carries no standing digest. Digests belong on immutable historical manifestations/snapshot files.
+- A press must settle the initial founding file before landing: `weave version <D> --artifact-role founding-referent-data` creates state 1 without pages.
+- Post-publication correction never rewrites a landed state. `weave version <D> --artifact-role founding-referent-data --source <path>` admission-copies and validates corrected bytes, plans working replacement plus the next HistoricalState together, and publishes through a later press.
+- Programmatic `versionFoundingReferentData({ meshRoot, designatorPath, bytes? })` provides equivalent optional-bytes behavior. `versionPayloads` remains payload-only. No standalone founding-data update command ships in slice one.
+- Press/publication validation reports unsettled founding working data when no matching latest state exists. Ordinary authoring treats changed working data as pending, not corrupt. Snapshot digest mismatch remains corruption.
+- Reset-and-replay is only a pre-landing repair. A landed press is corrected by a later HistoricalState/new press.
+- Additional KnopInventory/history/state/manifestation/snapshot facts use the shared append writer. Mutable progression follows the existing append-onlyish inventory/metadata split.
+
+### Execution Order
+
+1. **SFLO contract:** ontology, SHACL, summary/reference guidance, and dated decision-log amendment. Do not add Stagecraft predicates or revive generic `ReferentMetadata`.
+2. **Framework contract:** portable behavior spec, `knop.create`/version contract amendments, glossary, and three Accord transitions: founding-created, founding-versioned, founding-corrected.
+3. **Independent contract review:** run a read-only Claude review over SFLO/framework and fold blockers before Weave runtime code.
+4. **Weave initialization:** binary founding input, flat-document validation, path policy, atomic create plan, inventory append facts, content-free diagnostics, preservation through weave/add-reference.
+5. **Weave version/correction:** narrow artifact-role target, optional source overlay, standard artifact history/state/manifestation/snapshot planning, immutable snapshot digests, no pages, and `versionFoundingReferentData`.
+6. **Validation and acceptance:** unsettled-working/publication finding, snapshot digest verification, three carried transitions, update/version atomicity, no-network/no-page/log-redaction coverage, and full gates.
+7. **Scale:** run migrated no-founding comparator and the 552 founding initialization-plus-first-settlement workload. Isolate founding overhead. Gate G3 decides singular versus batch from Stagecraft's budget; do not pre-create batch work.
+8. **Final independent review:** close G2 only after read-only review returns GO and every affected repository is clean/committed locally.
+
+### Do Not Reopen Or Absorb
+
+- Do not broaden `KnopMetadata` or place referent triples in `meta.ttl`.
+- Do not introduce another inventory mutation abstraction; use prepared inventory plus `planInventoryAppend`/`renderInventoryAppendPlan`.
+- Do not remove self-contained append directives without a proved trailing base/prefix-state design. Physical full-file replacement is an accepted Phase 1 residual.
+- Do not absorb the separate parser-state hygiene, prepared/plan-pair hardening, broad fixture regeneration, other append-onlyish writers, page generation, remote fetching, root founding data, retraction, or batch initialization.
+- Do not change ontology version metadata, release/tag/publish, push commits, or send consumer replies.
+
+### Paste-Ready Prompt
+
+```text
+Implement Phase 2 of [[wa.plan.2026.2026-08-22_1550-stagecraft-iri-initialization]]: the complete FoundingReferentData contract and first implementation.
+
+Work from /home/djradon/hub/semantic-flow/weave. Treat local commits as authoritative: Weave 187fd19, weave-dev-archive b7cba0e, SFLO 6720f9d2, Semantic Flow Framework 3ae7b0f. All worktrees are clean and some local branches are ahead of origin. Do not pull, reset, rebase, or overwrite local state; do not push or release.
+
+Read AGENTS.md, product vision, wd.general-guidance, [[wd.plans-and-tasks]], this plan completely, [[wa.task.2026.2026-08-22_1112-founding-referent-data]] completely, [[wa.review.2026-08-22_2303-stagecraft-phase1-g1-claude]], ont.summary.core, ont.reference-links, ont.dev.decision-log, the live SFLO ontology/SHACL, the Semantic Flow knop.create/version specs, and the current Weave create/append/version/candidate/preservation/validation/public-API code before editing.
+
+Follow the “Settled Phase 2 Contract,” “Execution Order,” and “Do Not Reopen Or Absorb” sections in the parent plan as authoritative. Use the Founding task for detailed tests, limits, atomicity, path-policy, logging, and cross-repository contract requirements.
+
+Work in explicit slices: SFLO → Framework/Accord → read-only Claude contract review → Weave initialization → Weave version/correction → validation/acceptance/scale → final review. Keep each repository independently green and make one detailed semantic commit per coherent repo slice. Local commits are allowed; do not push.
+
+Key public surfaces are ruled:
+- weave knop create <D> --founding-data <path>
+- weave version <D> --artifact-role founding-referent-data [--source <path>]
+- versionFoundingReferentData({ meshRoot, designatorPath, bytes? })
+- versionPayloads remains payload-only
+
+No page generation, no remote fetch, no generic ReferentMetadata, no Stagecraft predicates in SFLO, no standalone founding update command, no batch work before G3.
+
+Run focused tests during each slice and the affected repository's full CI before its commit. Run cross-engine SFLO SHACL receipts, paired/triple Accord transitions, Weave full CI, git diff --check, and the N=552 founding receipt. Preserve exact historical state bytes across correction.
+
+At handoff report decisions applied, files/commits per repo, review dispositions, complete gate receipts, scale comparison, retained residuals, and whether G2/G3 may advance. Do not rename the task/plan, push, release, or send consumer replies.
+```
 
 ## Plan Checklist
 
