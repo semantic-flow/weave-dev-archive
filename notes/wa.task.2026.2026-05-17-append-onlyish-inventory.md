@@ -65,22 +65,24 @@ This is the durable baseline gate. Production create edits may begin only after 
 
 The migrated paths were run with the identical wrapper, command, count, Deno cache, temp-storage class, fresh-mesh setup, and host as the baseline. `git rev-parse HEAD` remained `279f86b26fc94340a00bc3c9a38a38e1506624e8`; each after state was the same commit plus its recorded Phase 1 working tree. No known environmental condition changed. Each arm is one observation with no variance estimate, so the values are descriptive and do not support a precise regression percentage or causal performance claim.
 
-| Metric | Legacy baseline | First append/index after | Post-review final |
-| --- | ---: | ---: | ---: |
-| Successful creates | 552 | 552 | 552 |
-| Created files | 1,104 | 1,104 | 1,104 |
-| Updated-file writes | 552 | 552 | 552 |
-| `/usr/bin/time` wall clock | 1.71 s | 1.82 s | 3.22 s |
-| Probe total | 1,623.733 ms | 1,736.860 ms | 3,130.525 ms |
-| Create loop | 1,557.654 ms | 1,672.435 ms | 3,066.352 ms |
-| Maximum RSS | 222,048 KiB | 230,076 KiB | 230,072 KiB |
-| Final MeshInventory | 150,713 bytes | 154,577 bytes | 220,817 bytes |
+| Metric | Legacy baseline | First append/index after | Post-review exact-union | Suffix-proof final |
+| --- | ---: | ---: | ---: | ---: |
+| Successful creates | 552 | 552 | 552 | 552 |
+| Created files | 1,104 | 1,104 | 1,104 | 1,104 |
+| Updated-file writes | 552 | 552 | 552 | 552 |
+| `/usr/bin/time` wall clock | 1.71 s | 1.82 s | 3.22 s | 2.06 s |
+| Probe total | 1,623.733 ms | 1,736.860 ms | 3,130.525 ms | 1,982.976 ms |
+| Create loop | 1,557.654 ms | 1,672.435 ms | 3,066.352 ms | 1,919.791 ms |
+| Maximum RSS | 222,048 KiB | 230,076 KiB | 230,072 KiB | 222,432 KiB |
+| Final MeshInventory | 150,713 bytes | 154,577 bytes | 220,817 bytes | 220,817 bytes |
 
 Exact first-after command: `/usr/bin/time -v env DENO_DIR=/tmp/weave-stagecraft-phase1-deno-dir deno run --allow-read --allow-write --allow-env scripts/probe-knop-create-scale.ts --count 552`. It exited 0; `/usr/bin/time -v` reported 0 filesystem input and 0 filesystem output units on tmpfs. Aggregate MeshInventory bytes read/written remain uninstrumented.
 
 Exact post-review command: `/usr/bin/time -v env DENO_DIR=/tmp/weave-stagecraft-phase1-deno-dir deno run --allow-read --allow-write --allow-env scripts/probe-knop-create-scale.ts --count 552`. It exited 0; `/usr/bin/time -v` reported 0 filesystem input and 0 filesystem output units on tmpfs. The probe now excludes its final inventory `stat` from `createElapsedMs`. Aggregate MeshInventory bytes read/written remain uninstrumented.
 
-The observations do not demonstrate a wall-clock or memory improvement at N=552. The implementation removes the old per-existing-Knop full-quad membership scans and gives singular create indexed validation over one prepared parse, but repeated singular creates still parse the growing inventory, parse each complete rendered candidate to prove exact RDF-set equality, and physically rewrite the complete file. The post-review renderer also adds self-contained base/prefix directives to every compact suffix. These known work differences plausibly contribute to the observed values, but one sample per arm is not evidence for a precise effect size. The semantic preservation/conflict guarantees and improved membership-validation asymptotics land without a speedup claim; further pass reduction and physical append stay deferred.
+Exact suffix-proof command: `/usr/bin/time -v env DENO_DIR=/tmp/weave-stagecraft-phase1-deno-dir deno run --allow-read --allow-write --allow-env scripts/probe-knop-create-scale.ts --count 552`. It exited 0; `/usr/bin/time -v` reported 0 filesystem input and 0 filesystem output units on tmpfs. Aggregate MeshInventory bytes read/written remain uninstrumented.
+
+The observations do not demonstrate a wall-clock improvement over legacy at N=552. Suffix-only proof recovers most of the review-safe full-candidate reparse cost and returns peak RSS to the baseline range, while preserving the exact prefix and adversarial fail-closed behavior. Repeated singular creates still parse the growing inventory and physically rewrite the complete file, and self-contained base/prefix directives remain in each append chunk, retaining the 220,817-byte final inventory. Each arm remains one recorded observation in the durable table; the final Claude review's temporary repeated runs independently corroborate the direction without turning these rows into a statistical benchmark. Further directive amortization, pass reduction, and physical append remain deferred; do not claim a speedup.
 
 ### Stagecraft Phase 1 implementation and gate receipt — 2026-08-22
 
@@ -165,6 +167,38 @@ Final validation receipts:
 Post-review N=552 receipt: `/usr/bin/time -v env DENO_DIR=/tmp/weave-stagecraft-phase1-deno-dir deno run --allow-read --allow-write --allow-env scripts/probe-knop-create-scale.ts --count 552` — exit 0; 552/552 successful creates; 1,104 created files; 552 updated-file writes; 220,817 final MeshInventory bytes; 3,130.525 ms probe total; 3,066.352 ms create loop; 3.22 s wall clock; 230,072 KiB maximum RSS; 0 reported filesystem input/output units on tmpfs. The host, runtime, cache, wrapper, flags, temp-storage class, and workload match the earlier observations; aggregate MeshInventory bytes read/written remain uninstrumented.
 
 **Review request:** perform one final read-only review against B1, M1–M4, the advisory dispositions above, and the new exact E2E/measurement receipts. Do not mark Gate G1 complete before that review returns GO.
+
+### Stagecraft Phase 1 final Claude review — 2026-08-22
+
+[[wa.review.2026-08-22_2032-stagecraft-phase1-final-claude]] returned **GO WITH CHANGES**. Every r0 B1/M1–M4 finding is closed, but G1 remains open for four new items:
+
+- carried blank nodes fail the complete-output quad-key equality check because independent N3 parses allocate different blank-node labels
+- absolute fallback/terminal failure safety branches lack direct tests
+- the exact E2E oracle reuses a stateful parser whose base can leak between documents
+- governing plan/review/founding notes referenced by the committed receipt are not yet committed
+
+Repeated reviewer measurements reproduced the 1.9× observation and attributed about 92% of it to removable full-candidate reparse plus repeated directives. Suffix-only proof is ruled sound for the self-contained, no-blank-node append chunk and fixes the carried-blank-node failure. It must land before the Phase 3 founding receipt. Directive removal is not safe without proving trailing base/prefix state; keep directives unless that proof is implemented.
+
+Do not infer a batch requirement from this receipt. All singular arms remain quadratic, the legacy arm also scales quadratically, and Stagecraft's budget remains the G3 input.
+
+### Stagecraft Phase 1 suffix-proof follow-up — 2026-08-22
+
+The bounded final-review follow-up is implemented:
+
+- **N1 fixed.** `renderInventoryAppendPlan` proves only the self-contained rendered suffix against `plan.missing`; prepared current Turtle remains the exact output prefix. Carried blank nodes no longer participate in a second parser-local label allocation, and a dedicated regression passes.
+- **N2 fixed.** Scheme-relative-looking and dot-segment edge IRIs prove the absolute fallback; a deliberately inconsistent append plan proves the terminal fail-closed branch.
+- **N3 fixed.** The E2E exact RDF oracle now constructs a fresh N3 parser for actual, expected, and carried documents, preventing base leakage.
+- **N4 ready for closure.** The plan, reviews, Founding task, plan template/schemas, and related guidance are staged for the planning-seat archive commit alongside this receipt.
+
+Directive amortization is deliberately not included. Every compact suffix remains self-contained because naive directive removal fails the no-prefix/different-base adversarial cases. A later optimization must prove effective trailing base/prefix state before omitting directives. OS-level append and batch creation remain outside G1.
+
+Focused receipt: 43 passed, 0 failed across append planner, ReferenceCatalog renderer, create index/core/runtime/probe, and create E2E tests.
+
+Full gates: `deno task fmt`, `deno task lint`, `deno task check`, and `deno task ci` green; CI reports 861 passed, 0 failed and generated LCOV. Both repositories pass `git diff --check`.
+
+Suffix-proof N=552 observation: 552/552 creates; 1,104 created files; 552 updated-file writes; 220,817 final MeshInventory bytes; 1,982.976 ms probe total; 1,919.791 ms create loop; 2.06 s wall; 222,432 KiB peak RSS. This recovers most of the full-candidate reparse cost while retaining self-contained directives and the physical full-file rewrite residual. The matching CSV row is `stagecraft-phase1-knop-create-scale-suffix-proof-n552`.
+
+**Final review request:** verify N1–N3, committed governance N4, full gates, suffix-proof soundness, and the retained directive/physical-write residual. Gate G1 remains open until that review returns GO.
 
 ### Fresh-Conversation Implementation Brief — Phase 1 Review Follow-Up
 

@@ -14,4 +14,4 @@ This note is Dave's court: open decision cards only, one card per decision, each
 
 **At ruling time, in this order:** update the owning note → append one line to the [[wd.decision-log]] ledger → sweep the card. The card leaves; nothing about the ruling stays here.
 
-*(No open cards. Everything ruled 2026-08-06 was swept to its owning task note and [[wd.decision-log]].)*
+*(No open cards. The FoundingReferentData correction surface was ruled 2026-08-22 and swept to [[wa.task.2026.2026-08-22_1112-founding-referent-data]] and [[wd.decision-log]].)*
