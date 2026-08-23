@@ -150,6 +150,8 @@ Final status: **G1 PASSED.** [[wa.review.2026-08-22_2303-stagecraft-phase1-g1-cl
 
 Passes when [[wa.task.2026.2026-08-22_1112-founding-referent-data]] meets its ontology, behavior, runtime, Accord, validation, preservation, and documentation exit criteria.
 
+Current status: **AWAITING FINAL REVIEW.** SFLO `cf7e79a5`, Framework `e6d8bdd`/`f391813`, and Weave `1b2f080`/`54f7f7c` contain the committed contract, runtime, acceptance, documentation, and N=552 receipt. Full gates are green; [[wa.review.2026-08-23_0007-stagecraft-phase2-contract-claude]] dispositions are folded. G2 closes only after the final committed-state review returns GO.
+
 ### G3 — Batch Decision
 
 After the 552 receipt, Dave rules one of:
@@ -288,7 +290,7 @@ At handoff report decisions applied, files/commits per repo, review dispositions
 
 - [x] Establish [[wd.plans-and-tasks]], [[template.plan]], schema support, and the queue boundary.
 - [x] Capture the legacy N=552 baseline, deliver the `knop.create` append-planner/indexed-read-model plus suffix-proof bite, record like-for-like receipts, and pass final G1 review under [[wa.task.2026.2026-05-17-append-onlyish-inventory]].
-- [ ] Deliver [[wa.task.2026.2026-08-22_1112-founding-referent-data]] on the migrated writer.
-- [ ] Record the 552-entry and no-founding baseline receipts.
+- [x] Deliver [[wa.task.2026.2026-08-22_1112-founding-referent-data]] on the migrated writer.
+- [x] Record the 552-entry and no-founding baseline receipts.
 - [ ] Rule Gate G3 and, only if selected, cut and deliver the batch child task.
 - [ ] Reconcile durable docs/backlog/decision receipts and close this plan under [[wd.plans-and-tasks]].

@@ -356,20 +356,57 @@ In Weave:
 
 ## Implementation Plan
 
-- [ ] Amend the active ontology decision and guidance notes so the bounded exception is explicit before adding vocabulary.
-- [ ] Add the SFLO ontology and SHACL contract plus executed cross-engine positive/negative fixtures.
+- [x] Amend the active ontology decision and guidance notes so the bounded exception is explicit before adding vocabulary.
+- [x] Add the SFLO ontology and SHACL contract plus executed cross-engine positive/negative fixtures.
 - [x] Rule the exact working-update and support-artifact version CLI/API surfaces while retaining ordinary artifact history semantics and the payload-only `versionPayloads` contract: narrow `weave version --artifact-role founding-referent-data [--source]` plus `versionFoundingReferentData`.
-- [ ] Add the portable behavior spec, update the current `knop.create`/version specs, and add founding-created/founding-versioned/founding-corrected Accord fixture transitions.
-- [ ] Extract one shared exact-byte SHA-256 helper for immutable founding snapshots rather than adding another operation-local implementation.
-- [ ] Add failing Weave core tests for binary optional planning, the absolute flat-document profile, exact bytes/digest, root refusal, and unchanged no-input output.
-- [ ] Implement `Uint8Array` founding-data planning, conventional-path helpers, binary writes, and inventory rendering.
-- [ ] Implement CLI local-path policy and atomic create plus composed update/version execution with fixed, content-free failure diagnostics.
-- [ ] Implement FoundingReferentData support-artifact version planning for initial and corrected states without page generation.
-- [ ] Extend validation with unsettled-working and immutable-snapshot-digest findings and extend inventory preservation with version/correction → weave round trips.
-- [ ] Add integration, CLI/API, correction, no-network, initialization/version-no-page, rollback, log-redaction, and 552-entry functional coverage plus the separate Linux scale receipt.
-- [ ] Update [[wu.cli-reference.knop.create]], [[wd.codebase-overview]], API documentation, [[wd.todo]], and [[wd.queues]] when the task is ruled and admitted.
-- [ ] Run per-repository focused checks, then each affected repository's full CI and SFLO cross-engine conformance comparison.
-- [ ] Provide one reasonably detailed semantic commit message per affected repository.
+- [x] Add the portable behavior spec, update the current `knop.create`/version specs, and add founding-created/founding-versioned/founding-corrected Accord fixture transitions.
+- [x] Extract one shared exact-byte SHA-256 helper for immutable founding snapshots rather than adding another operation-local implementation.
+- [x] Add failing Weave core tests for binary optional planning, the absolute flat-document profile, exact bytes/digest, root refusal, and unchanged no-input output.
+- [x] Implement `Uint8Array` founding-data planning, conventional-path helpers, binary writes, and inventory rendering.
+- [x] Implement CLI local-path policy and atomic create plus composed update/version execution with fixed, content-free failure diagnostics.
+- [x] Implement FoundingReferentData support-artifact version planning for initial and corrected states without page generation.
+- [x] Extend validation with unsettled-working and immutable-snapshot-digest findings and extend inventory preservation with version/correction → weave round trips.
+- [x] Add integration, CLI/API, correction, no-network, initialization/version-no-page, rollback, log-redaction, and 552-entry functional coverage plus the separate Linux scale receipt.
+- [x] Update [[wu.cli-reference.knop.create]], [[wd.codebase-overview]], API documentation, [[wd.todo]], and [[wd.queues]] when the task is ruled and admitted. The task was executed by direct Phase 2 instruction and never occupied READY, so no queue mutation was owed.
+- [x] Run per-repository focused checks, then each affected repository's full CI and SFLO cross-engine conformance comparison.
+- [x] Provide one reasonably detailed semantic commit message per affected repository.
+
+## Implementation Receipt
+
+### Committed Slices
+
+- SFLO `cf7e79a5`: ontology, SHACL, decision amendment, summary/reference guidance, guardrails, and 14-case cross-engine suite.
+- Semantic Flow Framework `e6d8bdd` plus executable-ASK follow-up `f391813`: portable behavior, payload-only version boundary, glossary, and the created/versioned/corrected Accord sequence.
+- Weave `1b2f080` plus backlog disposition `54f7f7c`: binary initialization, flat profile, append-planned discovery/state facts, atomic create/correction, public CLI/API, validation, preservation, inline Accord replay, documentation, tests, and scale probes.
+- Contract review: [[wa.review.2026-08-23_0007-stagecraft-phase2-contract-claude]] returned GO WITH CHANGES. Its manifest findings were fixed or explicitly ruled; inline replay materialization landed before founding runtime code.
+
+### Gate Receipts
+
+- SFLO full CI: 33 tests and release validation green. PySHACL 0.40.0, shacl-engine 1.1.2, and Apache Jena SHACL 6.2.0 produced identical normalized results across 14 cases at `cf7e79a5`.
+- Framework: all three new manifests and the scenario index are Accord-SHACL conformant.
+- Executed Accord transitions against an isolated temporary Git fixture: founding-created 16 pass / 0 fail / 0 error; founding-versioned 9/0/0; founding-corrected 11/0/0. The real mesh fixture repository and refs were not modified.
+- Weave focused profile/create/version/validation/preservation/CLI/fixture tests green; repository-wide `deno task test` passed 882/882.
+- Weave full `deno task ci` passed format, lint, check, 882/882 coverage tests, and LCOV generation.
+- `git diff --check` passed before each local commit.
+
+### N=552 Receipt
+
+Commands ran on Linux 7.0.0-29-generic x86_64 with Deno 2.9.2 under `/usr/bin/time -v`. Both tasks intentionally omit `--allow-net`; the founding run also reported zero socket messages.
+
+| Observation | Wall | Probe total | Create loop | Settlement | Peak RSS | Created / updated | MeshInventory read / write | Final inventory |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Phase 1 suffix-proof comparator | 2.06 s | 1,982.976 ms | 1,919.791 ms | — | 222,432 KiB | 1,104 / 552 | not instrumented | 220,817 B |
+| Phase 2 current no-founding | 2.59 s | 2,463.535 ms | 2,392.355 ms | — | 230,216 KiB | 1,104 / 552 | 61,145,040 / 61,364,736 B | 220,817 B |
+| Phase 2 founding + state 1 | 4.62 s | 4,507.340 ms | 2,141.542 ms | 2,300.591 ms | 246,144 KiB | 2,208 / 1,104 | 61,145,040 / 61,364,736 B | 220,817 B |
+
+The current founding workflow added 2.03 s wall and 15,928 KiB peak RSS over the same-session no-founding observation while verifying 552/552 snapshot digests and creating zero founding pages. The create-loop difference runs in the opposite direction and is ordinary single-observation noise; founding overhead is therefore represented by total and settlement time, not by subtracting the two create-loop numbers.
+
+The Phase 2 task adds the required atomic create path and byte accounting, and these runs did not pin the Phase 1 `DENO_DIR`; the 2.06 s historical row is retained but is not treated as an exact same-environment ratio. Semantic comparison instrumentation is not retained. Singular create still parses and physically replaces a growing MeshInventory, so aggregate byte work remains quadratic.
+
+### Gate Disposition Before Final Review
+
+- G2 implementation evidence is complete and awaits the required final read-only review of committed state.
+- G3 is not ruled. Stagecraft supplied no wall-clock or peak-memory budget, and one descriptive N=552 receipt does not justify inventing a batch task. Dave must select singular accepted or batch required against the consumer budget.
 
 ## Deep Review R0 — Disposition
 
