@@ -56,9 +56,13 @@ Current status: **PASSED.** npm and GitHub expose Weave/`weave-lib` v0.8.0 as la
 
 Passes when reviewed pre-release source/spec/archive commits are pushed and their normal remote CI gates are green.
 
+Current status: **PASSED.** SFLO contract CI `32653914874`, Weave source/npm-lib CI `32653918584`, and Weave CodeQL `32653917839` passed after the reviewed commits reached canonical `main`; the Framework repository has no configured Actions workflow.
+
 ### R2 — SFLO v0.5.0 Published
 
 Passes when the source tag, immutable raw bytes, cross-engine 14-case conformance, live Pages release payloads/current pages, and publication branch receipts are green.
+
+Current status: **PASSED.** SFLO source/tag `cf10917e`, source CI `32654106737`, Pages `cc416147`, deployment `32654532757`, three-engine 14-case agreement, immutable raw bytes, live payload byte identity, and the three founding vocabulary pages are recorded in [[ont.report.2026-08-23-v0.5.0-release]].
 
 ### R3 — Weave Candidate And Library Parity
 
@@ -115,7 +119,7 @@ Passes when the identical rehearsed commit is published and every tag, release, 
 ## Plan Checklist
 
 - [x] Rule G3 singular accepted and establish release ordering/version scope.
-- [ ] Complete [[ont.task.2026.2026-08-23_0950-sflo-v0.5.0-release]].
-- [ ] Push and verify the Framework contract commits.
+- [x] Complete [[ont.task.2026.2026-08-23_0950-sflo-v0.5.0-release]].
+- [x] Push and verify the Framework contract commits.
 - [ ] Complete [[wa.task.2026.2026-08-23_0950-weave-v0.9.0-release]].
 - [ ] Record cross-release receipts and close the plan.
