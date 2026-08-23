@@ -150,7 +150,9 @@ Final status: **G1 PASSED.** [[wa.review.2026-08-22_2303-stagecraft-phase1-g1-cl
 
 Passes when [[wa.task.2026.2026-08-22_1112-founding-referent-data]] meets its ontology, behavior, runtime, Accord, validation, preservation, and documentation exit criteria.
 
-Current status: **AWAITING FINAL REVIEW.** SFLO `cf7e79a5`, Framework `e6d8bdd`/`f391813`, and Weave `1b2f080`/`54f7f7c` contain the committed contract, runtime, acceptance, documentation, and N=552 receipt. Full gates are green; [[wa.review.2026-08-23_0007-stagecraft-phase2-contract-claude]] dispositions are folded. G2 closes only after the final committed-state review returns GO.
+Final status: **G2 PASSED.** [[wa.review.2026-08-23_0939-stagecraft-phase2-final-claude]] records the recovered final implementation review, Weave hardening commit `06da19c`, 887/887 full CI, and the follow-up committed-state GO with no blocker or major. SFLO `cf7e79a5`, Framework `e6d8bdd`/`f391813`, and Weave `1b2f080`/`54f7f7c`/`06da19c` contain the reviewed contract, runtime, acceptance, documentation, N=552 receipt, and final correctness/API/rollback/coverage fixes.
+
+The compact-spelling regex used for FoundingReferentData history progression remains an accepted non-landing representation-hardening residual and is boarded in [[wd.todo]]. Cross-file crash atomicity and concurrent-writer coordination remain explicit non-claims; the follow-up review's test-precision and TOCTOU advisories do not reopen G2.
 
 ### G3 — Batch Decision
 

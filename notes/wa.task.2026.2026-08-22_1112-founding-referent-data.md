@@ -377,16 +377,17 @@ In Weave:
 
 - SFLO `cf7e79a5`: ontology, SHACL, decision amendment, summary/reference guidance, guardrails, and 14-case cross-engine suite.
 - Semantic Flow Framework `e6d8bdd` plus executable-ASK follow-up `f391813`: portable behavior, payload-only version boundary, glossary, and the created/versioned/corrected Accord sequence.
-- Weave `1b2f080` plus backlog disposition `54f7f7c`: binary initialization, flat profile, append-planned discovery/state facts, atomic create/correction, public CLI/API, validation, preservation, inline Accord replay, documentation, tests, and scale probes.
+- Weave `1b2f080` plus backlog disposition `54f7f7c` and final-review hardening `06da19c`: binary initialization, flat profile, append-planned discovery/state facts, atomic create/correction, public CLI/API, validation, preservation, inline Accord replay, documentation, tests, scale probes, fail-closed registered-inventory validation, stable public error mapping, directory-safe rollback, test-seam export hygiene, and source-policy coverage.
 - Contract review: [[wa.review.2026-08-23_0007-stagecraft-phase2-contract-claude]] returned GO WITH CHANGES. Its manifest findings were fixed or explicitly ruled; inline replay materialization landed before founding runtime code.
+- Final implementation review: [[wa.review.2026-08-23_0939-stagecraft-phase2-final-claude]] records the initial GO, the five bounded hardening fixes, and the follow-up committed-state GO with no blocker or major.
 
 ### Gate Receipts
 
 - SFLO full CI: 33 tests and release validation green. PySHACL 0.40.0, shacl-engine 1.1.2, and Apache Jena SHACL 6.2.0 produced identical normalized results across 14 cases at `cf7e79a5`.
 - Framework: all three new manifests and the scenario index are Accord-SHACL conformant.
 - Executed Accord transitions against an isolated temporary Git fixture: founding-created 16 pass / 0 fail / 0 error; founding-versioned 9/0/0; founding-corrected 11/0/0. The real mesh fixture repository and refs were not modified.
-- Weave focused profile/create/version/validation/preservation/CLI/fixture tests green; repository-wide `deno task test` passed 882/882.
-- Weave full `deno task ci` passed format, lint, check, 882/882 coverage tests, and LCOV generation.
+- Weave focused profile/create/version/validation/preservation/CLI/fixture tests green; the final hardening focus passed 19/19.
+- Weave full `deno task ci` passed format, lint, check, 887/887 coverage tests, and LCOV generation at `06da19c`.
 - `git diff --check` passed before each local commit.
 
 ### N=552 Receipt
@@ -403,9 +404,9 @@ The current founding workflow added 2.03 s wall and 15,928 KiB peak RSS over the
 
 The Phase 2 task adds the required atomic create path and byte accounting, and these runs did not pin the Phase 1 `DENO_DIR`; the 2.06 s historical row is retained but is not treated as an exact same-environment ratio. Semantic comparison instrumentation is not retained. Singular create still parses and physically replaces a growing MeshInventory, so aggregate byte work remains quadratic.
 
-### Gate Disposition Before Final Review
+### Gate Disposition
 
-- G2 implementation evidence is complete and awaits the required final read-only review of committed state.
+- G2 passed after [[wa.review.2026-08-23_0939-stagecraft-phase2-final-claude]] returned final committed-state GO with no blocker or major.
 - G3 is not ruled. Stagecraft supplied no wall-clock or peak-memory budget, and one descriptive N=552 receipt does not justify inventing a batch task. Dave must select singular accepted or batch required against the consumer budget.
 
 ## Deep Review R0 — Disposition
