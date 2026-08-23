@@ -8,7 +8,7 @@ created: 1779079677519
 
 ## Parent Plan
 
-[[wa.plan.2026.2026-08-22_1550-stagecraft-iri-initialization]] — owns the bounded Phase 1 `knop.create` append-planner/indexed-read-model bite. The plan does not wait for every remaining writer in this broader task.
+[[wa.completed-plan.2026.2026-08-22_1550-stagecraft-iri-initialization]] — owns the bounded Phase 1 `knop.create` append-planner/indexed-read-model bite. The plan does not wait for every remaining writer in this broader task.
 
 ## Goals
 
@@ -35,7 +35,7 @@ This task supersedes the older TODO wording about "subject-level canonical rewri
 
 ### Stagecraft Phase 1 Before/After Receipt
 
-[[wa.plan.2026.2026-08-22_1550-stagecraft-iri-initialization]] requires the bounded `knop.create` migration to be measured before and after rather than justified only by asymptotic inspection.
+[[wa.completed-plan.2026.2026-08-22_1550-stagecraft-iri-initialization]] requires the bounded `knop.create` migration to be measured before and after rather than justified only by asymptotic inspection.
 
 Before changing production create code:
 
@@ -219,7 +219,7 @@ Phase 1 does not close the broader append-onlyish task; remaining writers and pr
 ```text
 Address the Claude Phase 1 review findings that are ruled in scope in [[wa.task.2026.2026-05-17-append-onlyish-inventory]]. Work only on the Stagecraft Phase 1 follow-up; do not implement FoundingReferentData.
 
-Work in /home/djradon/hub/semantic-flow/weave. Read AGENTS.md, product vision, wd.general-guidance, [[wa.plan.2026.2026-08-22_1550-stagecraft-iri-initialization]], this task's Phase 1 brief/receipts/follow-up scope, and [[wa.review.2026-08-22_1711-stagecraft-phase1-claude]] completely. Inspect the current uncommitted diff before editing. Preserve all unrelated planning/documentation changes; do not reset, discard, commit, push, or rename them. Use apply_patch for edits.
+Work in /home/djradon/hub/semantic-flow/weave. Read AGENTS.md, product vision, wd.general-guidance, [[wa.completed-plan.2026.2026-08-22_1550-stagecraft-iri-initialization]], this task's Phase 1 brief/receipts/follow-up scope, and [[wa.review.2026-08-22_1711-stagecraft-phase1-claude]] completely. Inspect the current uncommitted diff before editing. Preserve all unrelated planning/documentation changes; do not reset, discard, commit, push, or rename them. Use apply_patch for edits.
 
 REQUIRED CORRECTNESS FIXES
 
@@ -269,7 +269,7 @@ The residual physical cost is unchanged in kind: each singular create parses the
 ### Fresh-Conversation Implementation Brief — Stagecraft Phase 1
 
 ```text
-Implement Phase 1 of [[wa.plan.2026.2026-08-22_1550-stagecraft-iri-initialization]] only: measure the current singular knop.create path at N=552, migrate the non-legacy MeshInventory create path to planInventoryAppend plus indexed membership validation, and rerun the identical measurement. Do not implement FoundingReferentData in this conversation.
+Implement Phase 1 of [[wa.completed-plan.2026.2026-08-22_1550-stagecraft-iri-initialization]] only: measure the current singular knop.create path at N=552, migrate the non-legacy MeshInventory create path to planInventoryAppend plus indexed membership validation, and rerun the identical measurement. Do not implement FoundingReferentData in this conversation.
 
 Work in /home/djradon/hub/semantic-flow/weave. Read AGENTS.md, documentation/notes/product-vision.md, documentation/notes/wd.general-guidance.md, this append-onlyish task note, the parent plan, and src/core/knop/create.ts / src/runtime/knop/create.ts / src/core/weave/inventory_append_planner.ts plus their tests before editing. Preserve every existing uncommitted planning/documentation change; do not discard, rewrite, commit, push, or rename unrelated work.
 

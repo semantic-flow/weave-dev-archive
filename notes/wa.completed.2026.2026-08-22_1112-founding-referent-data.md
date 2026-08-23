@@ -7,7 +7,11 @@ created: 1787422320000
 
 ## Parent Plan
 
-[[wa.plan.2026.2026-08-22_1550-stagecraft-iri-initialization]] — this task owns Phases 2 and 3. SFLO/framework work may proceed after ruling; Weave runtime implementation waits for the Phase 1 migrated `knop.create` writer.
+[[wa.completed-plan.2026.2026-08-22_1550-stagecraft-iri-initialization]] — this task owns Phases 2 and 3. SFLO/framework work may proceed after ruling; Weave runtime implementation waits for the Phase 1 migrated `knop.create` writer.
+
+## Status
+
+Completed 2026-08-23. The capability passed committed-state G2 review and Dave selected the measured singular path at G3; no batch child was owed.
 
 ## Goals
 
@@ -204,7 +208,7 @@ Stagecraft can mint a reference-style identifier by providing one flat founding 
 
 At Waystation press 100 scale, the acceptance corpus contains approximately 552 new Knops with small founding documents. Initialization must perform no HTTP requests, repository resolution, reference-source resolution, page rendering, history materialization, or source-data copying beyond the explicitly supplied founding bytes. The later press-settlement phase versions the founding artifacts but still performs no page generation or external resolution.
 
-The first task does not redesign singular `knop.create` as a batch API. Before this task's Weave runtime lands, Phase 1 of [[wa.plan.2026.2026-08-22_1550-stagecraft-iri-initialization]] migrates create onto `planInventoryAppend` and removes the repeated per-Knop quad scans. Repeated singular creates will still parse and write a growing MeshInventory, so aggregate byte work may remain quadratic even after the cubic comparison defect is removed. The receipt measures the migrated implementation rather than treating the legacy renderer's cost as permanent.
+The first task does not redesign singular `knop.create` as a batch API. Before this task's Weave runtime lands, Phase 1 of [[wa.completed-plan.2026.2026-08-22_1550-stagecraft-iri-initialization]] migrates create onto `planInventoryAppend` and removes the repeated per-Knop quad scans. Repeated singular creates will still parse and write a growing MeshInventory, so aggregate byte work may remain quadratic even after the cubic comparison defect is removed. The receipt measures the migrated implementation rather than treating the legacy renderer's cost as permanent.
 
 A small representative multi-create regression runs in ordinary CI. Phase 1 of the parent plan records like-for-like N=552 measurements before and after the `knop.create` append/indexing improvement. The full Stagecraft-shaped founding probe then measures migrated create plus founding initialization and first-state settlement through an explicit scale-test task/environment gate, not ordinary CI. Its Linux receipt records wall-clock time and peak RSS using an external process harness; no unstable timing threshold enters ordinary CI. If the migrated singular workflow is materially costly, carve a batch-initialization/version task before recommending larger presses rather than hiding the result behind a timeout increase.
 

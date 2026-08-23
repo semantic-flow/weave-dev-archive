@@ -7,7 +7,7 @@ created: 1787503800000
 
 ## Status
 
-Active coordination plan. Dave instructed immediate release on 2026-08-23. The child tasks execute directly under that instruction and do not enter [[wd.queues]].
+Completed 2026-08-23. SFLO v0.5.0 source/Pages, the Framework contract, and Weave/`weave-lib` v0.9.0 were published and independently verified. The child tasks executed directly under Dave's instruction and never entered [[wd.queues]].
 
 ## Goals
 
@@ -19,7 +19,7 @@ Active coordination plan. Dave instructed immediate release on 2026-08-23. The c
 
 ## Summary
 
-The capability is committed and passed Gate G2 under [[wa.plan.2026.2026-08-22_1550-stagecraft-iri-initialization]]. Dave's instruction to release the measured singular implementation rules Gate G3 as singular accepted; no batch task is owed for this release.
+The capability is committed and passed Gate G2 under [[wa.completed-plan.2026.2026-08-22_1550-stagecraft-iri-initialization]]. Dave's instruction to release the measured singular implementation rules Gate G3 as singular accepted; no batch task is owed for this release.
 
 Release ordering is contractual, not cosmetic. Weave now emits `sflo:FoundingReferentData` and `sflo:hasFoundingReferentData`, while published SFLO v0.4.0 and the current Pages mesh do not define or dereference those terms. SFLO v0.5.0 source and Pages publication therefore gate Weave v0.9.0. The Framework repository has no package release line, but its contract commits must reach canonical `main` before publication.
 
@@ -29,9 +29,9 @@ Release ordering is contractual, not cosmetic. Weave now emits `sflo:FoundingRef
 
 | Order | Owning artifact | Role |
 | --- | --- | --- |
-| 1 | [[ont.task.2026.2026-08-23_0950-sflo-v0.5.0-release]] | Prepare, validate, tag, and publish the additive FoundingReferentData ontology/SHACL release and Pages surface. |
+| 1 | [[ont.completed.2026.2026-08-23_0950-sflo-v0.5.0-release]] | Prepare, validate, tag, and publish the additive FoundingReferentData ontology/SHACL release and Pages surface. |
 | 2 | Semantic Flow Framework `e6d8bdd`/`f391813` | Push the reviewed portable spec and executable Accord transitions to canonical `main`; no independent package release is defined. |
-| 3 | [[wa.task.2026.2026-08-23_0950-weave-v0.9.0-release]] | Prove library parity, prepare the minor release, rehearse all artifacts, publish, and verify consumers. |
+| 3 | [[wa.completed.2026.2026-08-23_0950-weave-v0.9.0-release]] | Prove library parity, prepare the minor release, rehearse all artifacts, publish, and verify consumers. |
 
 ## Sequence
 
@@ -68,13 +68,19 @@ Current status: **PASSED.** SFLO source/tag `cf10917e`, source CI `32654106737`,
 
 Passes when full CI, package builds, npm dry-runs, native smoke, the exact `versionFoundingReferentData` named export, and off-tree Node/source byte-equivalent founding settlement/correction all pass from the versioned candidate.
 
+Final status: **PASSED.** Weave `398c6f8` added packed Node founding parity; release commit `727c4b2` passed 887/887 local CI, canonical CI `32654946339`, CodeQL `32654946260`, native/package dry-runs, exact exports, and byte-identical state-1/correction smoke.
+
 ### R4 — All-Platform Rehearsal
 
 Passes when Release Manual dry-runs every npm package, builds/smokes every native archive, builds/smokes `weave-lib`, and creates an inspected draft GitHub Release without publishing a tag or registry version.
 
+Final status: **PASSED.** Release Manual `32655150477` built/smoked all four platforms, dry-ran all six npm packages, passed the strengthened library founding smoke, and produced an inspected exact-body/eight-asset draft while tag/registries remained absent.
+
 ### R5 — Publication Verified
 
 Passes when the identical rehearsed commit is published and every tag, release, registry package, archive checksum, installed version receipt, library founding smoke, and Stagecraft consumer receipt is verified.
+
+Final status: **PASSED.** Release Manual `32655411689` published the identical commit. Tag/GitHub Release, all six npm `latest=0.9.0` packages, four archive checksums, installed CLI identity, and the installed library's exact state-1/correction lifecycle passed. Stagecraft had not wired the API, so the plan records the direct published-library receipt without claiming unavailable downstream coverage.
 
 ## Decisions
 
@@ -119,7 +125,7 @@ Passes when the identical rehearsed commit is published and every tag, release, 
 ## Plan Checklist
 
 - [x] Rule G3 singular accepted and establish release ordering/version scope.
-- [x] Complete [[ont.task.2026.2026-08-23_0950-sflo-v0.5.0-release]].
+- [x] Complete [[ont.completed.2026.2026-08-23_0950-sflo-v0.5.0-release]].
 - [x] Push and verify the Framework contract commits.
-- [ ] Complete [[wa.task.2026.2026-08-23_0950-weave-v0.9.0-release]].
-- [ ] Record cross-release receipts and close the plan.
+- [x] Complete [[wa.completed.2026.2026-08-23_0950-weave-v0.9.0-release]].
+- [x] Record cross-release receipts and close the plan.

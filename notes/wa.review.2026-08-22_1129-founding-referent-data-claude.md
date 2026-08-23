@@ -7,7 +7,7 @@ created: 1787423391000
 
 ## Scope
 
-Read-only Claude Opus review of [[wa.task.2026.2026-08-22_1112-founding-referent-data]] against the live SFLO ontology and SHACL, ontology guidance and the historical `ReferentMetadata` removal, the Semantic Flow `knop.create` behavior spec, and Weave's create, inventory-preservation, validation, digest, and test code. The requested lenses were semantic distinctness, vocabulary and RDF entailments, the exact-`D`/no-blank-node profile, exact-byte lifecycle, create/adopt boundaries, later operation interactions, 552-entry scale, and missing tests or scope traps. No files were edited by the reviewer.
+Read-only Claude Opus review of [[wa.completed.2026.2026-08-22_1112-founding-referent-data]] against the live SFLO ontology and SHACL, ontology guidance and the historical `ReferentMetadata` removal, the Semantic Flow `knop.create` behavior spec, and Weave's create, inventory-preservation, validation, digest, and test code. The requested lenses were semantic distinctness, vocabulary and RDF entailments, the exact-`D`/no-blank-node profile, exact-byte lifecycle, create/adopt boundaries, later operation interactions, 552-entry scale, and missing tests or scope traps. No files were edited by the reviewer.
 
 ## BLOCKING
 

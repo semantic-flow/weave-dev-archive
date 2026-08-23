@@ -7,7 +7,7 @@ created: 1787503185000
 
 ## Scope
 
-Final read-only Claude Opus review of the complete FoundingReferentData implementation for Gate G2 in [[wa.plan.2026.2026-08-22_1550-stagecraft-iri-initialization]], followed by a bounded committed-state verification after hardening. The reviewed contract/runtime state is SFLO `cf7e79a5`, Semantic Flow Framework `e6d8bdd`/`f391813`, and Weave `1b2f080`/`54f7f7c` plus hardening `06da19c`. Reviewers were not allowed to modify files, refs, configuration, or repository state.
+Final read-only Claude Opus review of the complete FoundingReferentData implementation for Gate G2 in [[wa.completed-plan.2026.2026-08-22_1550-stagecraft-iri-initialization]], followed by a bounded committed-state verification after hardening. The reviewed contract/runtime state is SFLO `cf7e79a5`, Semantic Flow Framework `e6d8bdd`/`f391813`, and Weave `1b2f080`/`54f7f7c` plus hardening `06da19c`. Reviewers were not allowed to modify files, refs, configuration, or repository state.
 
 The initial final review completed in the recovered Codex session after archive commit `ec3e5e2`. It returned GO with no blocker or major, found six non-landing minors, and ruled G2 eligible to pass. The interrupted implementation session had announced that it would fix minors 1–5 before recording closure but ended before any edit began. The resumed session implemented those five fixes as `06da19c`, ran full CI, and obtained a second read-only verification against the exact commit.
 

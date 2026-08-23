@@ -7,7 +7,7 @@ created: 1787455935000
 
 ## Scope
 
-Final read-only Claude Opus max-effort review of Weave `9a2ad7f` and archive receipt `0d0a4d6` for Phase 1 of [[wa.plan.2026.2026-08-22_1550-stagecraft-iri-initialization]]. The review verified closure of [[wa.review.2026-08-22_1711-stagecraft-phase1-claude]], independently reran focused/full gates and repeated scale measurements, probed adversarial RDF shapes, and evaluated whether the measured slowdown should trigger batching. No repository files were modified by the reviewer.
+Final read-only Claude Opus max-effort review of Weave `9a2ad7f` and archive receipt `0d0a4d6` for Phase 1 of [[wa.completed-plan.2026.2026-08-22_1550-stagecraft-iri-initialization]]. The review verified closure of [[wa.review.2026-08-22_1711-stagecraft-phase1-claude]], independently reran focused/full gates and repeated scale measurements, probed adversarial RDF shapes, and evaluated whether the measured slowdown should trigger batching. No repository files were modified by the reviewer.
 
 ## Reviewer Validation
 

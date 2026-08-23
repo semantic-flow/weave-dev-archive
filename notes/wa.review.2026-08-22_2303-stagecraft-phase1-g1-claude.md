@@ -7,7 +7,7 @@ created: 1787465010000
 
 ## Scope
 
-Final focused read-only Claude Opus review of Weave `8dfc7f3` and archive `c474401` for Gate G1 in [[wa.plan.2026.2026-08-22_1550-stagecraft-iri-initialization]]. The review checked only N1–N4 from [[wa.review.2026-08-22_2032-stagecraft-phase1-final-claude]], regression safety, committed governance, and the suffix-proof performance receipt. No files were modified by the reviewer.
+Final focused read-only Claude Opus review of Weave `8dfc7f3` and archive `c474401` for Gate G1 in [[wa.completed-plan.2026.2026-08-22_1550-stagecraft-iri-initialization]]. The review checked only N1–N4 from [[wa.review.2026-08-22_2032-stagecraft-phase1-final-claude]], regression safety, committed governance, and the suffix-proof performance receipt. No files were modified by the reviewer.
 
 ## Evidence
 

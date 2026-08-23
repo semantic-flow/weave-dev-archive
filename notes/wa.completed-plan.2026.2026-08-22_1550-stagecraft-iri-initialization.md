@@ -7,7 +7,7 @@ created: 1787439044000
 
 ## Status
 
-Ready for closure after Dave selected the singular release path on 2026-08-23. This plan never entered [[wd.queues]]; its fireable child tasks did when needed.
+Completed 2026-08-23 after Dave selected the measured singular release path and the coordinated implementation/receipts passed all three gates. This plan never entered [[wd.queues]]; its fireable child tasks did when needed.
 
 ## Goals
 
@@ -23,7 +23,7 @@ Ready for closure after Dave selected the singular release path on 2026-08-23. T
 
 This plan coordinates an existing correctness migration and a new identifier-initialization capability.
 
-The current `knop.create` implementation validates and reconstructs the whole MeshInventory for every new Knop. The shared `planInventoryAppend` primitive already exists, and [[wa.task.2026.2026-05-17-append-onlyish-inventory]] names later `knop.create` as a remaining whole-document writer. [[wa.task.2026.2026-08-22_1112-founding-referent-data]] adds a third created file and a new inventory subgraph. Implementing the founding artifact on the legacy writer would duplicate inventory-mutation logic and make the later migration harder.
+The current `knop.create` implementation validates and reconstructs the whole MeshInventory for every new Knop. The shared `planInventoryAppend` primitive already exists, and [[wa.task.2026.2026-05-17-append-onlyish-inventory]] names later `knop.create` as a remaining whole-document writer. [[wa.completed.2026.2026-08-22_1112-founding-referent-data]] adds a third created file and a new inventory subgraph. Implementing the founding artifact on the legacy writer would duplicate inventory-mutation logic and make the later migration harder.
 
 The delivery sequence is therefore:
 
@@ -51,8 +51,8 @@ SFLO ontology and framework-spec work for founding data may proceed after its co
 | --- | --- | --- |
 | 0 | [[wd.plans-and-tasks]] | Establish the plan genre, queue boundary, and closure rules used here. |
 | 1 | [[wa.task.2026.2026-05-17-append-onlyish-inventory]] | Capture the pre-change 552-create baseline, migrate the later/current `knop.create` MeshInventory path onto `planInventoryAppend`, remove repeated membership scans, and rerun the identical probe. |
-| 2 | [[wa.task.2026.2026-08-22_1112-founding-referent-data]] | Add the optional founding artifact and its ordinary support-artifact update/version correction lifecycle across SFLO, the framework contract, Accord, and Weave. |
-| 3 | [[wa.task.2026.2026-08-22_1112-founding-referent-data]] | Produce the opt-in 552-entry functional/performance receipt after Phase 2. |
+| 2 | [[wa.completed.2026.2026-08-22_1112-founding-referent-data]] | Add the optional founding artifact and its ordinary support-artifact update/version correction lifecycle across SFLO, the framework contract, Accord, and Weave. |
+| 3 | [[wa.completed.2026.2026-08-22_1112-founding-referent-data]] | Produce the opt-in 552-entry functional/performance receipt after Phase 2. |
 | 4 | Task cut only if Gate G3 selects it | Parse/validate once, plan many Knops, and commit one MeshInventory append for a true batch initialization path. |
 
 Phase 1 is a bounded bite within the broader append-onlyish task. This plan does not require that every remaining inventory writer migrate before founding-data work begins.
@@ -93,7 +93,7 @@ Required Phase 1 evidence:
 
 ### Phase 2 — Founding Referent Data
 
-Execute [[wa.task.2026.2026-08-22_1112-founding-referent-data]]. Its Weave inventory rendering must request settled facts through the migrated append planner rather than reintroducing subject-block rendering.
+Execute [[wa.completed.2026.2026-08-22_1112-founding-referent-data]]. Its Weave inventory rendering must request settled facts through the migrated append planner rather than reintroducing subject-block rendering.
 
 Initialization creates the validated working founding document. Before a press may land, `weave version <D> --artifact-role founding-referent-data` settles it into its first HistoricalState without page generation. A later correction uses the same narrow version arm with `--source <path>` to plan the working update and next state together, then lands a new press; no already published state is rewritten. Programmatic `versionFoundingReferentData` provides equivalent optional-bytes behavior, while `versionPayloads` remains payload-only.
 
@@ -148,7 +148,7 @@ Final status: **G1 PASSED.** [[wa.review.2026-08-22_2303-stagecraft-phase1-g1-cl
 
 ### G2 — Founding Capability Landed
 
-Passes when [[wa.task.2026.2026-08-22_1112-founding-referent-data]] meets its ontology, behavior, runtime, Accord, validation, preservation, and documentation exit criteria.
+Passes when [[wa.completed.2026.2026-08-22_1112-founding-referent-data]] meets its ontology, behavior, runtime, Accord, validation, preservation, and documentation exit criteria.
 
 Final status: **G2 PASSED.** [[wa.review.2026-08-23_0939-stagecraft-phase2-final-claude]] records the recovered final implementation review, Weave hardening commit `06da19c`, 887/887 full CI, and the follow-up committed-state GO with no blocker or major. SFLO `cf7e79a5`, Framework `e6d8bdd`/`f391813`, and Weave `1b2f080`/`54f7f7c`/`06da19c` contain the reviewed contract, runtime, acceptance, documentation, N=552 receipt, and final correctness/API/rollback/coverage fixes.
 
@@ -268,11 +268,11 @@ Gate G1 passed through [[wa.review.2026-08-22_2303-stagecraft-phase1-g1-claude]]
 ### Paste-Ready Prompt
 
 ```text
-Implement Phase 2 of [[wa.plan.2026.2026-08-22_1550-stagecraft-iri-initialization]]: the complete FoundingReferentData contract and first implementation.
+Implement Phase 2 of [[wa.completed-plan.2026.2026-08-22_1550-stagecraft-iri-initialization]]: the complete FoundingReferentData contract and first implementation.
 
 Work from /home/djradon/hub/semantic-flow/weave. Treat local commits as authoritative: Weave 187fd19, weave-dev-archive b7cba0e, SFLO 6720f9d2, Semantic Flow Framework 3ae7b0f. All worktrees are clean and some local branches are ahead of origin. Do not pull, reset, rebase, or overwrite local state; do not push or release.
 
-Read AGENTS.md, product vision, wd.general-guidance, [[wd.plans-and-tasks]], this plan completely, [[wa.task.2026.2026-08-22_1112-founding-referent-data]] completely, [[wa.review.2026-08-22_2303-stagecraft-phase1-g1-claude]], ont.summary.core, ont.reference-links, ont.dev.decision-log, the live SFLO ontology/SHACL, the Semantic Flow knop.create/version specs, and the current Weave create/append/version/candidate/preservation/validation/public-API code before editing.
+Read AGENTS.md, product vision, wd.general-guidance, [[wd.plans-and-tasks]], this plan completely, [[wa.completed.2026.2026-08-22_1112-founding-referent-data]] completely, [[wa.review.2026-08-22_2303-stagecraft-phase1-g1-claude]], ont.summary.core, ont.reference-links, ont.dev.decision-log, the live SFLO ontology/SHACL, the Semantic Flow knop.create/version specs, and the current Weave create/append/version/candidate/preservation/validation/public-API code before editing.
 
 Follow the “Settled Phase 2 Contract,” “Execution Order,” and “Do Not Reopen Or Absorb” sections in the parent plan as authoritative. Use the Founding task for detailed tests, limits, atomicity, path-policy, logging, and cross-repository contract requirements.
 
@@ -295,7 +295,7 @@ At handoff report decisions applied, files/commits per repo, review dispositions
 
 - [x] Establish [[wd.plans-and-tasks]], [[template.plan]], schema support, and the queue boundary.
 - [x] Capture the legacy N=552 baseline, deliver the `knop.create` append-planner/indexed-read-model plus suffix-proof bite, record like-for-like receipts, and pass final G1 review under [[wa.task.2026.2026-05-17-append-onlyish-inventory]].
-- [x] Deliver [[wa.task.2026.2026-08-22_1112-founding-referent-data]] on the migrated writer.
+- [x] Deliver [[wa.completed.2026.2026-08-22_1112-founding-referent-data]] on the migrated writer.
 - [x] Record the 552-entry and no-founding baseline receipts.
 - [x] Rule Gate G3 and, only if selected, cut and deliver the batch child task. Singular accepted; the batch branch was not selected.
-- [ ] Reconcile durable docs/backlog/decision receipts and close this plan under [[wd.plans-and-tasks]].
+- [x] Reconcile durable docs/backlog/decision receipts and close this plan under [[wd.plans-and-tasks]].

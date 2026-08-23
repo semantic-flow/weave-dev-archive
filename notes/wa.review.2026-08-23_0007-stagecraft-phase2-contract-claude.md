@@ -7,7 +7,7 @@ created: 1787468820000
 
 ## Scope
 
-Read-only Claude Opus review of committed SFLO `cf7e79a5` and the Semantic Flow Framework contract slice that became `e6d8bdd`, against [[wa.plan.2026.2026-08-22_1550-stagecraft-iri-initialization]] and [[wa.task.2026.2026-08-22_1112-founding-referent-data]]. No reviewer file, ref, or repository mutation was allowed.
+Read-only Claude Opus review of committed SFLO `cf7e79a5` and the Semantic Flow Framework contract slice that became `e6d8bdd`, against [[wa.completed-plan.2026.2026-08-22_1550-stagecraft-iri-initialization]] and [[wa.completed.2026.2026-08-22_1112-founding-referent-data]]. No reviewer file, ref, or repository mutation was allowed.
 
 The review checked ontology/SHACL structure, the bounded portable profile, initialization/settlement/correction lifecycle, payload-only `versionPayloads` boundary, prohibited scope, and the founding-created/founding-versioned/founding-corrected Accord sequence.
 

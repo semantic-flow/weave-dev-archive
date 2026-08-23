@@ -7,7 +7,11 @@ created: 1787503800000
 
 ## Parent Plan
 
-[[wa.plan.2026.2026-08-23_0950-founding-capability-releases]]
+[[wa.completed-plan.2026.2026-08-23_0950-founding-capability-releases]]
+
+## Status
+
+Completed 2026-08-23. Weave/`weave-lib` v0.9.0 were rehearsed, published from the identical commit, and independently verified.
 
 ## Goals
 
@@ -65,12 +69,24 @@ Release notes must be honest about the N=552 observations: current no-founding 2
 
 ## Implementation Plan
 
-- [ ] Push reviewed source/docs commits and require canonical CI green.
-- [ ] Extend the packed npm-library smoke and README for `versionFoundingReferentData` parity.
-- [ ] Inventory the v0.8.0..candidate delta and write `release-notes.v0.9.0` plus the release receipt skeleton.
-- [ ] Bump the shared version with `deno task bump:version -- --version 0.9.0` and inspect all generated metadata.
-- [ ] Run full source, packaging, npm dry-run, off-tree consumer, and whitespace gates.
-- [ ] Commit/push the release candidate and require canonical CI green.
-- [ ] Run and inspect the all-platform dry-run/draft Release Manual rehearsal.
-- [ ] Publish from the identical commit and verify all public artifacts and consumers.
-- [ ] Record receipts and close the task.
+- [x] Push reviewed source/docs commits and require canonical CI green.
+- [x] Extend the packed npm-library smoke and README for `versionFoundingReferentData` parity.
+- [x] Inventory the v0.8.0..candidate delta and write `release-notes.v0.9.0` plus the release receipt skeleton.
+- [x] Bump the shared version with `deno task bump:version -- --version 0.9.0` and inspect all generated metadata.
+- [x] Run full source, packaging, npm dry-run, off-tree consumer, and whitespace gates.
+- [x] Commit/push the release candidate and require canonical CI green.
+- [x] Run and inspect the all-platform dry-run/draft Release Manual rehearsal.
+- [x] Publish from the identical commit and verify all public artifacts and consumers.
+- [x] Record receipts and close the task.
+
+## Implementation Receipt
+
+- Library parity: `398c6f8` added the generated-package documentation and off-tree Node/source settlement/correction byte-parity gate.
+- Release commit/tag: `727c4b22c5307e9a0715de6e201a970b0b548e6c` / `v0.9.0`.
+- Source gates: 887/887 local CI; canonical CI `32654946339`; CodeQL `32654946260`.
+- Rehearsal: Release Manual `32655150477`, success with four native builds/install smokes, six npm dry-runs, enhanced library founding smoke, and inspected draft/eight assets.
+- Publication: Release Manual `32655411689`, success from the identical commit; published `2026-08-23T17:41:56Z`.
+- npm: wrapper, four platforms, and library all resolve `latest=0.9.0`.
+- Installed CLI: `{"version":"0.9.0","commit":"727c4b22c5307e9a0715de6e201a970b0b548e6c","built":"2026-08-23T17:37:14Z"}`.
+- Published library: exact four-symbol export set; state 1 and state 2 founding lifecycle/digests passed with state-1 preservation and zero founding page.
+- Full package, archive, checksum, dependency, and consumer-boundary evidence is in [[release-receipt.v0.9.0]].

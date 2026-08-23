@@ -7,7 +7,7 @@ created: 1787424504000
 
 ## Scope
 
-Second read-only Claude Opus max-effort review of [[wa.task.2026.2026-08-22_1112-founding-referent-data]] after the disposition of [[wa.review.2026-08-22_1129-founding-referent-data-claude]]. The review verified closure of the four r0 blockers and searched for contradictions introduced by the dispositions. No files were edited by the reviewer.
+Second read-only Claude Opus max-effort review of [[wa.completed.2026.2026-08-22_1112-founding-referent-data]] after the disposition of [[wa.review.2026-08-22_1129-founding-referent-data-claude]]. The review verified closure of the four r0 blockers and searched for contradictions introduced by the dispositions. No files were edited by the reviewer.
 
 ## Prior Blockers
 

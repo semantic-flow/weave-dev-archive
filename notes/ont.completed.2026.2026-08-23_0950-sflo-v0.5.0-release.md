@@ -7,7 +7,11 @@ created: 1787503800000
 
 ## Parent Plan
 
-[[wa.plan.2026.2026-08-23_0950-founding-capability-releases]]
+[[wa.completed-plan.2026.2026-08-23_0950-founding-capability-releases]]
+
+## Status
+
+Completed 2026-08-23. SFLO v0.5.0 source/tag and Pages were published and verified before Weave v0.9.0.
 
 ## Goals
 
