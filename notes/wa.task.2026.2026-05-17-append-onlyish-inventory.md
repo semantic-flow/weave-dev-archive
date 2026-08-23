@@ -6,6 +6,10 @@ updated: 1779080314278
 created: 1779079677519
 ---
 
+## Parent Plan
+
+[[wa.plan.2026.2026-08-22_1550-stagecraft-iri-initialization]] — owns the bounded Phase 1 `knop.create` append-planner/indexed-read-model bite. The plan does not wait for every remaining writer in this broader task.
+
 ## Goals
 
 - Make inventory writes append-onlyish: normal operations append new settled facts, no-op when those facts already exist, and fail closed on conflicting settled facts.
@@ -28,6 +32,229 @@ The desired write primitive is:
 - never silently remove unknown or older facts from inventory
 
 This task supersedes the older TODO wording about "subject-level canonical rewrites with graph-preserving updates". The replacement principle is simpler and stricter: normal inventory operations do not rewrite existing inventory facts at all.
+
+### Stagecraft Phase 1 Before/After Receipt
+
+[[wa.plan.2026.2026-08-22_1550-stagecraft-iri-initialization]] requires the bounded `knop.create` migration to be measured before and after rather than justified only by asymptotic inspection.
+
+Before changing production create code:
+
+- add a reusable opt-in N-create probe that calls the real `executeKnopCreate` path
+- run N=552 on the unchanged implementation
+- record commit/tree state, Deno version, broad host description, wall-clock time, peak RSS, final MeshInventory size, and successful create count
+- save the observation in `timings/weave-performance.csv` with a workload label that can be repeated exactly
+
+After the append-planner/indexed-membership change, rerun the identical command and record a before/after table in this task. Do not change N, fixture shape, runtime flags, temp-storage class, or measurement wrapper between runs. If an environmental difference is unavoidable, name it and do not present the ratio as like-for-like.
+
+The baseline probe may be added before measurement; production create behavior may not change until the baseline is captured. The full N=552 probe remains outside ordinary CI. A small representative regression belongs in CI so the probe path itself does not rot.
+
+### Stagecraft Phase 1 baseline receipt — 2026-08-22
+
+The unchanged production `knop.create` implementation was measured after adding only `scripts/probe-knop-create-scale.ts` and `tests/integration/knop_create_scale_probe_test.ts`. `git rev-parse HEAD` returned `279f86b26fc94340a00bc3c9a38a38e1506624e8`; `git status --short -- src scripts tests` listed only those two untracked probe files, and `git diff -- src scripts tests` was empty because neither new file was tracked. No production create file had been edited.
+
+- Runtime/host: Deno 2.9.2, V8 14.9.207.2-rusty, TypeScript 6.0.3; Linux 7.0.0-29-generic x86_64; Intel Core Ultra 7 265KF, 20 logical CPUs; `/tmp` on tmpfs.
+- Fixed cache/environment: `DENO_DIR=/tmp/weave-stagecraft-phase1-deno-dir`; the warm-up populated that cache and the measured run reused it.
+- Warm-up command: `env DENO_DIR=/tmp/weave-stagecraft-phase1-deno-dir deno run --allow-read --allow-write --allow-env scripts/probe-knop-create-scale.ts --count 3` — 3/3 successful creates, 1,934 final MeshInventory bytes.
+- Measured command: `/usr/bin/time -v env DENO_DIR=/tmp/weave-stagecraft-phase1-deno-dir deno run --allow-read --allow-write --allow-env scripts/probe-knop-create-scale.ts --count 552`.
+- Result: exit 0; 552/552 successful creates; 1,104 created files; 552 updated-file writes; 150,713 final MeshInventory bytes; 1,623.733 ms probe total and 1,557.654 ms inside the create loop; 1.71 s `/usr/bin/time` wall clock; 222,048 KiB maximum RSS.
+- `/usr/bin/time -v` reported 48 filesystem input units and 0 filesystem output units on tmpfs. Aggregate MeshInventory bytes read/written were not instrumented, so no stronger byte-I/O claim is made.
+
+This is the durable baseline gate. Production create edits may begin only after this receipt and its matching `stagecraft-phase1-knop-create-scale-legacy-n552` CSV row are present.
+
+### Stagecraft Phase 1 single-run observations — 2026-08-22
+
+The migrated paths were run with the identical wrapper, command, count, Deno cache, temp-storage class, fresh-mesh setup, and host as the baseline. `git rev-parse HEAD` remained `279f86b26fc94340a00bc3c9a38a38e1506624e8`; each after state was the same commit plus its recorded Phase 1 working tree. No known environmental condition changed. Each arm is one observation with no variance estimate, so the values are descriptive and do not support a precise regression percentage or causal performance claim.
+
+| Metric | Legacy baseline | First append/index after | Post-review final |
+| --- | ---: | ---: | ---: |
+| Successful creates | 552 | 552 | 552 |
+| Created files | 1,104 | 1,104 | 1,104 |
+| Updated-file writes | 552 | 552 | 552 |
+| `/usr/bin/time` wall clock | 1.71 s | 1.82 s | 3.22 s |
+| Probe total | 1,623.733 ms | 1,736.860 ms | 3,130.525 ms |
+| Create loop | 1,557.654 ms | 1,672.435 ms | 3,066.352 ms |
+| Maximum RSS | 222,048 KiB | 230,076 KiB | 230,072 KiB |
+| Final MeshInventory | 150,713 bytes | 154,577 bytes | 220,817 bytes |
+
+Exact first-after command: `/usr/bin/time -v env DENO_DIR=/tmp/weave-stagecraft-phase1-deno-dir deno run --allow-read --allow-write --allow-env scripts/probe-knop-create-scale.ts --count 552`. It exited 0; `/usr/bin/time -v` reported 0 filesystem input and 0 filesystem output units on tmpfs. Aggregate MeshInventory bytes read/written remain uninstrumented.
+
+Exact post-review command: `/usr/bin/time -v env DENO_DIR=/tmp/weave-stagecraft-phase1-deno-dir deno run --allow-read --allow-write --allow-env scripts/probe-knop-create-scale.ts --count 552`. It exited 0; `/usr/bin/time -v` reported 0 filesystem input and 0 filesystem output units on tmpfs. The probe now excludes its final inventory `stat` from `createElapsedMs`. Aggregate MeshInventory bytes read/written remain uninstrumented.
+
+The observations do not demonstrate a wall-clock or memory improvement at N=552. The implementation removes the old per-existing-Knop full-quad membership scans and gives singular create indexed validation over one prepared parse, but repeated singular creates still parse the growing inventory, parse each complete rendered candidate to prove exact RDF-set equality, and physically rewrite the complete file. The post-review renderer also adds self-contained base/prefix directives to every compact suffix. These known work differences plausibly contribute to the observed values, but one sample per arm is not evidence for a precise effect size. The semantic preservation/conflict guarantees and improved membership-validation asymptotics land without a speedup claim; further pass reduction and physical append stay deferred.
+
+### Stagecraft Phase 1 implementation and gate receipt — 2026-08-22
+
+Fail-on-old was captured before implementation: the legacy path failed `planKnopCreate preserves carried MeshInventory bytes and appends only missing facts` because it rewrote the carried prefix, and failed `planKnopCreate names conflicting carried and requested working inventory locators` because it silently replaced the carried locator instead of throwing.
+
+The later/current create path now requests `_mesh hasKnop D/_knop`, the new Knop type and working-inventory link, and the inventory file `LocatedFile` / `RdfDocument` types through `planInventoryAppend`. Only `hasWorkingKnopInventoryFile` is treated as single-valued. The legacy first-Knop renderer remains for its bootstrap shape. The carried-shape reader builds one `KnopCreateInventoryIndex` over the parsed graph; the append planner consumes the same pre-parsed quads, and the scale-index test proves that 552 membership lookups do not re-consume the quad iterable. `splitTurtleBlocks`, `replaceSubjectBlock`, and `upsertSubjectBlockAfter` are absent from `src/core/knop/create.ts`.
+
+### Stagecraft Phase 1 Claude review — 2026-08-22
+
+[[wa.review.2026-08-22_1711-stagecraft-phase1-claude]] returned **GO WITH CHANGES**. Gate G1 remains open.
+
+- **Blocking:** the bespoke compact suffix renderer can emit undefined `sflo:` prefixes or resolve mesh-relative appended terms against an unrelated carried `@base`, so written RDF may disagree with the append plan. Fix and add the two reproduced adversarial cases before merge.
+- **Major:** name the legacy first-Knop template deletion as a residual and scope Gate G1 to the later/current path; restore an exact RDF acceptance oracle rather than indefinite containment; test/document the pre-parsed planner invariant; and consolidate compact suffix rendering or use planner output.
+- **Advisory:** rule duplicate/graph semantics, add runtime no-write-on-conflict coverage, keep single-run timing claims modest, reconcile docs, and address or re-board probe/newline nits.
+
+Do not mark Phase 1 or parent-plan Gate G1 complete from the pre-review receipt. Implementation follow-up and review disposition remain owed.
+
+### Claude review follow-up scope — ruled 2026-08-22
+
+Take now:
+
+- B1 compact-renderer plan/output equivalence and adversarial base/prefix coverage
+- M1 first-Knop settled-fact preservation, because it is live data loss on every fresh mesh
+- M2 exact RDF equality with deliberately carried facts, while boarding fixture regeneration explicitly
+- M3 a consistency-by-construction prepared-current-inventory input plus direct planner tests
+- M4 one fact-preserving shared append renderer driven by `plan.appendTurtle`, not a second hand reconstruction
+- exact duplicate consistency for named-node and literal objects, default-graph enforcement, runtime zero-write conflict coverage, conservative single-run timing wording, probe cleanup/help/timing fixes, and current developer/backlog documentation
+
+Defer but name:
+
+- further reduction of the remaining linear planner/index passes unless the final repeated measurement demonstrates value
+- OS-level physical append; semantic append with a byte-stable prefix remains the contract
+- unconditional runtime write avoidance for the public-create no-op, because public create refuses an already registered Knop and the no-op is currently helper-only
+- a source-text guard forbidding future imports of block helpers; behavioral exactness tests are the durable guard
+- broad fixture-ladder regeneration beyond the minimum acceptance correction needed for this slice
+
+The trailing-newline residual must either be fixed by the shared renderer or remain explicitly boarded with evidence after the follow-up.
+
+### Stagecraft Phase 1 review follow-up disposition — 2026-08-22
+
+Gate G1 remains **OPEN**. The ruled follow-up is implemented and green, but a final read-only review is requested before the planning seat marks the gate complete or allows the Weave FoundingReferentData runtime slice to proceed.
+
+Fail-on-current evidence was captured before production follow-up edits:
+
+- `deno test --allow-read --allow-write --allow-env --allow-run=git src/core/knop/create_test.ts --filter='/(no sflo prefix|carried base differs|complete Alice first-Knop)/'` — 0 passed, 3 failed. The no-prefix case produced undefined `sflo:`, the different-base case denoted `elsewhere.example` appended resources, and the first-Knop case failed exact-prefix preservation.
+- `deno test --allow-read --allow-write --allow-env --allow-run=git,deno tests/e2e/knop_create_cli_test.ts --filter=alice-bio` — 0 passed, 1 failed because the legacy first-Knop template did not preserve the carried Alice config graph required by the restored exact oracle.
+
+Review findings:
+
+- **B1 — FIXED.** `renderInventoryAppendPlan` parses only `plan.appendTurtle`, renders one self-contained compact chunk with its own `@base` and `sflo:` declaration, parses the complete candidate, and checks exact RDF-set equality against prepared current quads union every `plan.missing` key. A compact mismatch falls back only to the planner's absolute-IRI output after the same exact check; otherwise it fails closed. Both Claude adversarial cases and a literal/datatype/language coverage-drift case pass.
+- **M1 — FIXED.** First and later Knop creation now share the same append/no-op/conflict path. The fixed first-Knop MeshInventory template was deleted. The complete carried Alice `a.03` MeshInventory—including `_mesh/_config`, histories, pages, comments, prefixes, and unknown facts—remains the exact output prefix.
+- **M2 — FIXED WITH NAMED FIXTURE RESIDUAL.** Alice and sidecar E2E MeshInventory checks are exact RDF equality against the old expected target graph union the explicitly selected carried `_mesh/_config` graph; indefinite containment is gone. The stale Alice `a.04` and sidecar `a.10` fixture branches, plus affected downstream rungs, still need deliberate broad-ladder regeneration and are boarded in [[wd.codebase-overview]] and [[wd.todo]]. No fixture topology changed here.
+- **M3 — FIXED.** `prepareCurrentInventory` is the only producer of the opaque `PreparedCurrentInventory`; its byte string and frozen parsed quads cannot be supplied independently through the public planner input type. `planKnopCreate` feeds the same prepared quads to `KnopCreateInventoryIndex` and `planInventoryAppend`. The raw-Turtle convenience arm remains for other callers. Direct prepared append/no-op/conflict tests pass, and preparation rejects non-default-graph facts.
+- **M4 — FIXED.** The create-specific fact reconstruction and ReferenceCatalog post-processing compactor are gone. Both consumers use `renderInventoryAppendPlan`, whose compact output is derived generically from parsed `plan.appendTurtle` and checked exactly before return.
+
+Advisories taken:
+
+- Exact duplicate named-node and literal objects now both dedupe by RDF term identity before singleton checks; datatype and language remain part of literal identity. Create-level and index-level duplicate tests pass.
+- Prepared current inventories reject named graphs, so the index and planner share default-graph semantics.
+- Runtime conflict coverage proves zero created directories/files and byte-identical MeshInventory after refusal.
+- Timing text now treats all three N=552 arms as single observations and makes no precise regression or causal claim.
+- The probe uses shared test-temp setup plus `try/finally`, excludes final `stat` time from `createElapsedMs`, and exposes tested `-h` / `--help` output.
+- Shared appended output ends in one newline; the ReferenceCatalog append and generic renderer tests prove no `\n\n` EOF. Semantic no-op deliberately retains the input's original trailing bytes.
+- The create append helper is private rather than an unenforced exported `@internal`; the test-only `indexedQuadCount` property was removed while iterable-consumption instrumentation remains.
+- [[wd.codebase-overview]] and [[wd.todo]] describe prepared append input, shared exact rendering, both migrated create paths, final-review status, and fixture residuals.
+
+Retained residuals:
+
+- The planner/index still perform multiple linear passes, and the exact renderer adds a complete-output parse per append. The post-review receipt demonstrates no reason to claim a speedup; further pass reduction is deferred until owned by measured work.
+- Runtime still reads/parses and physically replaces the complete growing MeshInventory for every singular create. Semantic byte-prefix preservation is not an OS-level append, so repeated singular creates retain quadratic aggregate parse/write bytes.
+- Public create refuses already registered Knops, so unconditional runtime write avoidance for helper-only semantic no-op remains deferred.
+- Broad fixture-ladder regeneration and a source-text import guard against future block helpers remain deferred as ruled. Behavioral exactness tests are the current durable guard.
+
+Final validation receipts:
+
+- Focused: `deno test --allow-read --allow-write --allow-env --allow-run=git src/core/weave/inventory_append_planner_test.ts src/core/weave/knop_inventory_renderers_test.ts src/core/knop/create_inventory_index_test.ts src/core/knop/create_test.ts tests/integration/knop_create_test.ts tests/integration/knop_create_scale_probe_test.ts` — 35 passed, 0 failed.
+- E2E/Accord: `deno test --allow-read --allow-write --allow-env --allow-run=git,deno tests/e2e/knop_create_cli_test.ts` — 4 passed, 0 failed.
+- Probe help: `deno run --allow-read --allow-write --allow-env scripts/probe-knop-create-scale.ts --help` — exit 0 with usage, count, preserve, and help options.
+- Full gates: `deno task fmt` — 257 files checked; `deno task lint` — 256 files checked; `deno task check` — all modules checked; `deno task ci` — 857 passed, 0 failed, LCOV generated. Coverage emitted only the known deleted-temporary-source skip messages.
+- Whitespace: `git diff --check` in Weave and `git -C dependencies/github.com/semantic-flow/weave-dev-archive diff --check` — exit 0.
+
+Post-review N=552 receipt: `/usr/bin/time -v env DENO_DIR=/tmp/weave-stagecraft-phase1-deno-dir deno run --allow-read --allow-write --allow-env scripts/probe-knop-create-scale.ts --count 552` — exit 0; 552/552 successful creates; 1,104 created files; 552 updated-file writes; 220,817 final MeshInventory bytes; 3,130.525 ms probe total; 3,066.352 ms create loop; 3.22 s wall clock; 230,072 KiB maximum RSS; 0 reported filesystem input/output units on tmpfs. The host, runtime, cache, wrapper, flags, temp-storage class, and workload match the earlier observations; aggregate MeshInventory bytes read/written remain uninstrumented.
+
+**Review request:** perform one final read-only review against B1, M1–M4, the advisory dispositions above, and the new exact E2E/measurement receipts. Do not mark Gate G1 complete before that review returns GO.
+
+### Fresh-Conversation Implementation Brief — Phase 1 Review Follow-Up
+
+```text
+Address the Claude Phase 1 review findings that are ruled in scope in [[wa.task.2026.2026-05-17-append-onlyish-inventory]]. Work only on the Stagecraft Phase 1 follow-up; do not implement FoundingReferentData.
+
+Work in /home/djradon/hub/semantic-flow/weave. Read AGENTS.md, product vision, wd.general-guidance, [[wa.plan.2026.2026-08-22_1550-stagecraft-iri-initialization]], this task's Phase 1 brief/receipts/follow-up scope, and [[wa.review.2026-08-22_1711-stagecraft-phase1-claude]] completely. Inspect the current uncommitted diff before editing. Preserve all unrelated planning/documentation changes; do not reset, discard, commit, push, or rename them. Use apply_patch for edits.
+
+REQUIRED CORRECTNESS FIXES
+
+1. Eliminate the plan/output mismatch in the create append renderer. Do not reconstruct requested facts independently from plan.missing. Build compact output only from plan.appendTurtle through one fact-preserving shared renderer, or use plan.outputTurtle's absolute-IRI suffix. Any compact chunk must be self-contained with respect to base/prefix directives.
+2. After rendering, parse the complete output and prove its semantic quad set is exactly currentInventoryQuads union plan.missing. A mismatch must fail closed or use the known-correct absolute planner output; never silently write a different graph.
+3. Add fail-on-current tests for both Claude reproductions: a carried inventory using full SFLO IRIs with no sflo prefix, and a carried inventory whose @base differs from meshBase. Add a coverage-drift case proving every planner-approved requested fact survives, including a literal-valued fact through the shared rendering helper.
+4. Replace the second bespoke compactor with one shared append-rendering helper. Migrate the current-only ReferenceCatalog append consumer onto it when necessary to prove sharing, while preserving that consumer's semantics and focused tests. Do not broaden into a general Turtle rewrite.
+
+FIRST-KNOP DATA-LOSS FIX
+
+5. Migrate the first/legacy Knop creation path onto append/no-op/conflict semantics as well. Preserve all carried mesh config, unknown facts, histories, pages, comments, and prefixes as an exact input prefix. Delete the fixed first-Knop inventory template only if it becomes dead; retain any genuinely required bootstrap behavior through requested facts, not whole-document replacement.
+6. Add a fail-on-current test based on the real Alice a.03 shape proving the first Knop preserves the complete _mesh/_config support graph. Scope Gate G1 truthfully after this change.
+7. Restore an exact RDF acceptance oracle in the E2E test. Compare actual with expected union explicitly carried facts; do not use indefinite containment. Record stale fixture-branch regeneration as a named residual if updating the whole ladder is disproportionate, but do not weaken semantic equality.
+
+PREPARED INVENTORY INVARIANT
+
+8. Replace the independently supplied currentInventoryTurtle/currentInventoryQuads pair with a consistency-by-construction prepared-current-inventory value produced by the append-planner module from base IRI plus Turtle. A branded/opaque prepared type is acceptable. The same prepared quads must feed KnopCreateInventoryIndex and planInventoryAppend.
+9. Preserve the existing string-only convenience path for other callers if useful, but document both arms and add direct planner tests for prepared-input append/no-op/conflict behavior. Make inconsistent string/quads input unrepresentable through the public TypeScript contract rather than trusting callers.
+10. Reject non-default-graph current inventory input at preparation, matching the append contract. Make exact duplicate statements semantically consistent: named-node and literal object listing should both dedupe identical RDF terms before singleton cardinality checks. Add tests for duplicates, datatypes/languages, and named-graph refusal.
+
+RUNTIME/PROBE/DOC TESTS
+
+11. Add a runtime integration test proving a single-valued conflict creates zero files/directories and leaves MeshInventory byte-identical.
+12. Fix scale-probe test cleanup with try/finally and the shared temp harness where applicable. Exclude final Deno.stat from createElapsedMs. Add --help and focused tests.
+13. Reword timing receipts as single-run observations: no demonstrated speedup, with observed values reported but no precise regression claim. Do not erase the original numbers.
+14. Update wd.codebase-overview and wd.todo to reflect the migrated create paths, prepared append input/shared renderer, and any named fixture/newline residual.
+15. Keep these deferred: speculative extra pass optimization, OS-level append, helper-only no-op write avoidance, broad fixture-ladder regeneration, and source-text import guards.
+
+VALIDATION AND FINAL RECEIPT
+
+16. Run focused fail-on-current tests first, then all existing append-planner/create/index/probe unit, integration, and E2E tests. Run deno task fmt, lint, check, and ci; run git diff --check in Weave and weave-dev-archive.
+17. Rerun the identical N=552 command/wrapper/environment once after the review fixes. Append a post-review-final CSV row and extend the task table without rewriting the prior baseline or first-after observations. State any comparability issue and retain the honest physical full-file parse/write residual.
+18. Update this task with a point-by-point disposition of B1 and M1-M4 plus advisories taken/deferred. Do not mark Gate G1 complete; request a final read-only review first.
+
+HANDOFF
+
+Report files changed, exact test/gate receipts, final N=552 observation, fixture/newline/physical-write residuals, and detailed suggested semantic commit messages per repo. Do not commit or push. End with READ-IN/QUEUE DELTA: none | <what belongs where>.
+```
+
+- Focused command: `deno test --allow-read --allow-write --allow-env --allow-run=git src/core/weave/inventory_append_planner_test.ts src/core/knop/create_inventory_index_test.ts src/core/knop/create_test.ts tests/integration/knop_create_test.ts tests/integration/knop_create_scale_probe_test.ts` — 22 passed, 0 failed.
+- CLI/Accord command: `deno test --allow-read --allow-write --allow-env --allow-run=git,deno tests/e2e/knop_create_cli_test.ts` — 4 passed, 0 failed. The sidecar MeshInventory assertion now requires the exact carried input prefix plus every prior target-fixture RDF fact because the old exact target omitted the carried config fact that block replacement deleted; no fixture topology changed.
+- Full commands: `deno task fmt` — 257 files checked; `deno task lint` — 256 files checked; `deno task check` — all script/source/test modules checked; `deno task ci` — 847 passed, 0 failed, LCOV generated. Coverage reported only the existing deleted-temporary-source skips.
+- Whitespace commands: `git diff --check` in Weave and `git -C dependencies/github.com/semantic-flow/weave-dev-archive diff --check` — both exited 0.
+
+The residual physical cost is unchanged in kind: each singular create parses the complete growing MeshInventory once and `writeUpdatedFiles` still calls `Deno.writeTextFile` with the complete planner output. Existing bytes are a byte-stable logical prefix, but this phase does not perform an OS-level append and still incurs N complete-file replacement writes for N singular creates.
+
+### Fresh-Conversation Implementation Brief — Stagecraft Phase 1
+
+```text
+Implement Phase 1 of [[wa.plan.2026.2026-08-22_1550-stagecraft-iri-initialization]] only: measure the current singular knop.create path at N=552, migrate the non-legacy MeshInventory create path to planInventoryAppend plus indexed membership validation, and rerun the identical measurement. Do not implement FoundingReferentData in this conversation.
+
+Work in /home/djradon/hub/semantic-flow/weave. Read AGENTS.md, documentation/notes/product-vision.md, documentation/notes/wd.general-guidance.md, this append-onlyish task note, the parent plan, and src/core/knop/create.ts / src/runtime/knop/create.ts / src/core/weave/inventory_append_planner.ts plus their tests before editing. Preserve every existing uncommitted planning/documentation change; do not discard, rewrite, commit, push, or rename unrelated work.
+
+BASELINE FIRST
+
+1. Before changing production create code, add a reusable opt-in probe (prefer scripts/probe-knop-create-scale.ts) that creates a fresh minimal mesh in a temp directory and invokes the real executeKnopCreate path N times. It must accept a count, default to a small safe value, emit machine-readable totals, and clean up its own temp workspace unless an explicit preserve flag is supplied.
+2. Add a small ordinary-CI test proving the probe/helper path works without running N=552 in CI.
+3. Record git rev-parse HEAD, prove git diff -- src scripts tests contains no pre-existing production change other than the new probe/test, record Deno version and a broad non-secret host label, warm up at a small N, then run N=552 under /usr/bin/time -v (or an equivalently explicit Linux wrapper). Record wall-clock, max RSS, successful create count, and final MeshInventory bytes. Use the same DENO_DIR, command, flags, filesystem class, and workload for the after run.
+4. Append the baseline observation to dependencies/github.com/semantic-flow/weave-dev-archive/timings/weave-performance.csv and add a dated Phase 1 receipt subsection to this task. Do not edit production create code until the baseline is durably recorded.
+
+IMPLEMENTATION
+
+5. Keep the legacy/first-Knop renderer only where its distinct bootstrap shape is genuinely required. Migrate the later/current knop.create MeshInventory growth path away from splitTurtleBlocks / replaceSubjectBlock / upsertSubjectBlockAfter and onto planInventoryAppend.
+6. Request only the new settled facts: _mesh hasKnop D/_knop; D/_knop rdf:type Knop; D/_knop hasWorkingKnopInventoryFile its inventory file; and the inventory file rdf:type LocatedFile plus RdfDocument. hasKnop and rdf:type are multi-valued; hasWorkingKnopInventoryFile is single-valued.
+7. Preserve the entire current MeshInventory byte-for-byte as the output prefix, append only missing facts, return exact input bytes for planner-level semantic no-op, and fail before writes with requested/existing facts named on a single-valued conflict. Existing executeKnopCreate behavior still refuses an already registered Knop; do not silently turn the public operation into an idempotent create.
+8. Replace the carried-shape loop that calls a full quads.some scan for every existing Knop with indexes built from the one parsed graph. Preserve all current fail-closed shape checks and diagnostics unless a condition-specific improvement is required by the new tests.
+9. Reuse the shared append planner. Do not add another inventory mutation abstraction. If compact suffix rendering needs extraction because this is now another consumer, keep it narrowly shared and preserve the planner's semantic behavior; never fall back to subject-block replacement.
+10. Do not change page generation, FoundingReferentData, other MeshInventory writers, add-reference, extract/integrate, payload/support histories, progression placement, remote access, or fixture topology in this slice.
+
+FAIL-ON-OLD AND REGRESSION TESTS
+
+11. Add focused tests proving: an unknown predicate/comment remains an exact byte prefix; only missing facts append; a single-valued working-inventory locator conflict refuses with both facts named; requested duplicate facts no-op at the helper/planner boundary; no non-legacy create path calls block replacement; and membership validation performs one indexed pass rather than one full quad scan per existing Knop.
+12. Keep existing knop.create core, integration, e2e/CLI, root, semantically equivalent Turtle, and already-registered refusal behavior green.
+
+AFTER MEASUREMENT
+
+13. Run the identical N=552 command with the same wrapper and environment. Record the same fields in weave-performance.csv and this task, with a before/after table. If anything is not comparable, say so and do not report a misleading ratio.
+14. Run focused tests, deno task fmt, deno task lint, deno task check, and deno task ci. Run git diff --check in Weave and weave-dev-archive.
+
+HANDOFF
+
+Report the implementation outcome, exact test/gate receipts, before/after measurements, files changed, any residual physical full-file-write cost, and a detailed suggested semantic commit message per affected repo. Do not commit or push. End with READ-IN/QUEUE DELTA: none | <what belongs where>.
+```
 
 ## Discussion
 
@@ -231,4 +458,3 @@ rough order of risk:
 3. **Later `knop create`** (`src/core/knop/create.ts:780`) — replaces the `_mesh` block wholesale.
 
 Each wants the `planInventoryAppend` treatment. Sequence them by exposure: `add-reference` first.
-
