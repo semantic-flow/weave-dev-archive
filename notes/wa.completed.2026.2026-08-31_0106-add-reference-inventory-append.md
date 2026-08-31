@@ -21,7 +21,7 @@ Audit against Weave `main` at `6643ae1` found that `renderUpdatedKnopInventoryTu
 
 The shared `planInventoryAppend` / `renderInventoryAppendPlan` path already provides semantic duplicate detection, single-valued conflict reporting, exact current-byte preservation, compact self-contained suffixes, and render-vs-plan proof. This bite must route the first ReferenceCatalog addition through that shared path from the original current KnopInventory rather than treating a canonical replacement document as the output.
 
-Implemented on `lane/add-reference-inventory-append` at `58a8b54` in Weave PR #50; awaiting Dave's landing decision. The original current KnopInventory is prepared once, existing shape/support-family validation remains active, the shape-specific renderer supplies only the requested fact graph, and `renderInventoryAppendPlan` writes the exact carried prefix plus planner-approved missing facts. The redundant operation-local Turtle parser is removed.
+Completed 2026-08-31. Implemented at `58a8b54` and merged through Weave PR #50 as `b8678d0`. The original current KnopInventory is prepared once, existing shape/support-family validation remains active, the shape-specific renderer supplies only the requested fact graph, and `renderInventoryAppendPlan` writes the exact carried prefix plus planner-approved missing facts. The redundant operation-local Turtle parser is removed.
 
 ## Discussion
 

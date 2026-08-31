@@ -8,7 +8,7 @@ created: 1779079677519
 
 ## Status
 
-Active. Reclassified from a legacy oversized task to a coordination plan on 2026-08-31. The first remaining executable child is [[wa.task.2026.2026-08-31_0106-add-reference-inventory-append]].
+Active. Reclassified from a legacy oversized task to a coordination plan on 2026-08-31. [[wa.completed.2026.2026-08-31_0106-add-reference-inventory-append]] closed G1; the next executable child is [[wa.task.2026.2026-08-31_0845-batched-extracted-mesh-inventory-append]].
 
 ## Origin
 
@@ -60,8 +60,8 @@ Remaining mutation paths, in execution order rather than file order:
 
 ## Child Tasks
 
-- [[wa.task.2026.2026-08-31_0106-add-reference-inventory-append]] — preserve the current KnopInventory as the exact prefix and append only planner-approved ReferenceCatalog facts.
-- MeshInventory weave migration — cut after the first child's review establishes whether full desired-output Turtle is a safe requested-fact source; begin with the batched extracted path.
+- [[wa.completed.2026.2026-08-31_0106-add-reference-inventory-append]] — preserve the current KnopInventory as the exact prefix and append only planner-approved ReferenceCatalog facts.
+- [[wa.task.2026.2026-08-31_0845-batched-extracted-mesh-inventory-append]] — migrate the highest-risk MeshInventory weave renderer after the first child proved full desired-output Turtle is a safe requested-fact source.
 - Remaining KnopInventory/PageDefinition migration — cut after the MeshInventory seam is stable so shared progression and page-fact behavior are not duplicated.
 - Extract/integrate and mesh-support migration — cut after the core weave writers prove the shared pattern.
 - Progression-storage and fixture/documentation closure — cut only after the plan-level ownership rulings are resolved.
@@ -76,7 +76,7 @@ Remaining mutation paths, in execution order rather than file order:
 
 ## Gates
 
-- G1 — `knop add-reference` preserves arbitrary carried facts/comments as an exact prefix, appends only missing planned facts, and refuses single-valued conflicts before writes. Implementation, GitHub gates, and CodeRabbit review are green at `58a8b54` / Weave PR #50; Dave's landing decision remains before G1 closes.
+- G1 — CLOSED 2026-08-31. `knop add-reference` preserves arbitrary carried facts/comments as an exact prefix, appends only missing planned facts, and refuses single-valued conflicts before writes. Weave PR #50 merged as `b8678d0` after green GitHub gates and a no-action CodeRabbit review.
 - G2 — every migrated writer has fail-on-old append/no-op/conflict or carried-fact preservation evidence plus focused integration coverage.
 - G3 — Dave rules the exact Knop-local progression document and whether append-onlyish is initially a Weave invariant or portable Semantic Flow contract before the storage split.
 - G4 — fixture regeneration is deliberate and exact; no compatibility shim is added for stale pre-v1 shapes.
@@ -481,7 +481,8 @@ For CI/CD, rerunning publication should be safe because the command either sees 
 - [x] Add and harden the shared RDF-aware inventory append planner and renderer.
 - [x] Migrate current-only ReferenceCatalog weave, first/later `knop.create`, FoundingReferentData settlement, and import source-registry insertion.
 - [x] Stop routine ResourcePage generation from deleting settled inventory facts.
-- [ ] Deliver [[wa.task.2026.2026-08-31_0106-add-reference-inventory-append]].
+- [x] Deliver [[wa.completed.2026.2026-08-31_0106-add-reference-inventory-append]].
+- [ ] Deliver [[wa.task.2026.2026-08-31_0845-batched-extracted-mesh-inventory-append]].
 - [ ] Cut and deliver the MeshInventory weave child tasks.
 - [ ] Cut and deliver remaining KnopInventory/PageDefinition and operation-specific writer tasks.
 - [ ] Resolve and implement the progression-storage contract.
