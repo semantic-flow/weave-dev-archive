@@ -21,6 +21,8 @@ Audit against Weave `main` at `6643ae1` found that `renderUpdatedKnopInventoryTu
 
 The shared `planInventoryAppend` / `renderInventoryAppendPlan` path already provides semantic duplicate detection, single-valued conflict reporting, exact current-byte preservation, compact self-contained suffixes, and render-vs-plan proof. This bite must route the first ReferenceCatalog addition through that shared path from the original current KnopInventory rather than treating a canonical replacement document as the output.
 
+Implemented on `lane/add-reference-inventory-append` at `58a8b54`; awaiting review and landing. The original current KnopInventory is prepared once, existing shape/support-family validation remains active, the shape-specific renderer supplies only the requested fact graph, and `renderInventoryAppendPlan` writes the exact carried prefix plus planner-approved missing facts. The redundant operation-local Turtle parser is removed.
+
 ## Discussion
 
 The existing shape-specific renderers remain useful as a bounded source of the facts required for each supported unwoven/current-only/versioned shape. The implementation may parse their desired output as requested facts, but the append plan must be prepared against the original current bytes and must return only the original graph union planner-approved missing facts. It must not write the canonical renderer's replacement bytes.
@@ -52,6 +54,17 @@ This bite deliberately preserves the current placement of any mutable progressio
 - Keep existing root, exact-state/working reference, semantically equivalent Turtle, success logging, and atomic write tests green.
 - Run focused tests first, then `deno task fmt:check`, `deno task lint`, `deno task check`, and `deno task test`; run `deno task ci` before landing.
 
+Fail-on-old receipt: the exact-prefix core test, conflicting-locator core test, and runtime zero-write conflict test produced 0 passed / 3 failed on unchanged production code. The old path dropped the carried comment/prefix/opaque fact and accepted the contradictory ReferenceCatalog locator.
+
+Implementation receipts at `58a8b54`:
+
+- focused core/runtime suite: 23 passed / 0 failed;
+- `deno task test`: 890 passed / 0 failed;
+- `deno task fmt:check`, `deno task lint`, and `deno task check`: green;
+- `deno task ci`: 890 passed / 0 failed, LCOV generated; only the known deleted-temporary-source coverage notices appeared.
+
+The semantic-union oracles cover unwoven, current-only, and versioned inputs. Exact-prefix coverage carries a nonstandard prefix, operator comment, opaque predicate, and carried blank node. Runtime conflict coverage proves the KnopInventory remains byte-identical and no `_references` directory is created.
+
 ## Non-Goals
 
 - No MeshInventory, PageDefinition, extract, integrate, ResourcePage generation, fixture-topology, or ontology change.
@@ -61,9 +74,9 @@ This bite deliberately preserves the current placement of any mutable progressio
 
 ## Implementation Plan
 
-- [ ] Record the carried-fact and single-valued-conflict tests failing on current `main` before production edits.
-- [ ] Prepare the original KnopInventory once and derive the supported shape's requested ReferenceCatalog facts.
-- [ ] Plan and render the append through the shared planner/renderer, mapping conflicts to `KnopAddReferenceInputError` without writes.
-- [ ] Add graph-union coverage across unwoven/current-only/versioned shapes and runtime zero-write conflict coverage.
-- [ ] Update developer guidance and the next release notes for the intentional prefix-preserving byte change.
-- [ ] Run focused and full validation, record receipts, and return any plan-level delta.
+- [x] Record the carried-fact and single-valued-conflict tests failing on current `main` before production edits.
+- [x] Prepare the original KnopInventory once and derive the supported shape's requested ReferenceCatalog facts.
+- [x] Plan and render the append through the shared planner/renderer, mapping conflicts to `KnopAddReferenceInputError` without writes.
+- [x] Add graph-union coverage across unwoven/current-only/versioned shapes and runtime zero-write conflict coverage.
+- [x] Update developer guidance and board the intentional prefix-preserving byte change here for the next release notes; no next-release stub exists yet.
+- [x] Run focused and full validation, record receipts, and return the plan-level delta: G1 implementation is green; review/landing remains.

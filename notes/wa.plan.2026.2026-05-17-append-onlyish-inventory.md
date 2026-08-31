@@ -76,7 +76,7 @@ Remaining mutation paths, in execution order rather than file order:
 
 ## Gates
 
-- G1 — `knop add-reference` preserves arbitrary carried facts/comments as an exact prefix, appends only missing planned facts, and refuses single-valued conflicts before writes.
+- G1 — `knop add-reference` preserves arbitrary carried facts/comments as an exact prefix, appends only missing planned facts, and refuses single-valued conflicts before writes. Implementation and full gates are green at `58a8b54`; review and landing remain before G1 closes.
 - G2 — every migrated writer has fail-on-old append/no-op/conflict or carried-fact preservation evidence plus focused integration coverage.
 - G3 — Dave rules the exact Knop-local progression document and whether append-onlyish is initially a Weave invariant or portable Semantic Flow contract before the storage split.
 - G4 — fixture regeneration is deliberate and exact; no compatibility shim is added for stale pre-v1 shapes.
