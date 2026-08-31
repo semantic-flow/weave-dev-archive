@@ -14,5 +14,5 @@ This note is Dave's court: open decision cards only, one card per decision, each
 
 **At ruling time, in this order:** update the owning note → append one line to the [[wd.decision-log]] ledger → sweep the card. The card leaves; nothing about the ruling stays here.
 
-- **Repository floating-locator identity:** keep generated blank nodes, mint deterministic named locator resources, or retain a split legacy writer. Lean: named resources; do not weaken append-request constraints. Owning note: [[wa.plan.2026.2026-05-17-append-onlyish-inventory]].
+- **Repository floating-locator IRI:** named resources are ruled; use an owner-bound `_knop/_sources` fragment or an artifact-local name. Lean: `<D/_knop/_sources#payload-source-repository-locator>`; `_references` owns semantic links, not source resolution. Owning note: [[wa.plan.2026.2026-05-17-append-onlyish-inventory]].
 - **Legacy MeshInventory progression migration:** let ordinary first-Knop weave remove stale mutable pointers, fail old shapes pending explicit repair after fixing producers, or grandfather duplicates. Lean: fix producers then fail closed/repair explicitly. Owning note: [[wa.plan.2026.2026-05-17-append-onlyish-inventory]].

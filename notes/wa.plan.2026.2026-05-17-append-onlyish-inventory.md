@@ -8,7 +8,7 @@ created: 1779079677519
 
 ## Status
 
-Active but ruling-bound. Reclassified from a legacy oversized task to a coordination plan on 2026-08-31. Add-reference, extracted/current-only MeshInventory, current-only PageDefinition, current-shape extract, and mesh-support page-only children are complete. The remaining evident writers cross one of the two open rulings: legacy/initial/versioned progression ownership, or named repository-locator identity for integrate and source-bearing payload facts.
+Active but ruling-bound. Reclassified from a legacy oversized task to a coordination plan on 2026-08-31. Add-reference, extracted/current-only MeshInventory, current-only PageDefinition, current-shape extract, and mesh-support page-only children are complete. The remaining evident writers cross legacy/initial/versioned progression ownership or the still-open exact IRI convention for the now-ruled named repository locator.
 
 ## Origin
 
@@ -411,7 +411,7 @@ For CI/CD, rerunning publication should be safe because the command either sees 
 
 ## Open Issues
 
-- **OPEN 2026-08-31 — repository floating-locator identity blocks versioned first-payload append.** `renderCurrentWorkingFileLocator` currently emits `sflo:hasRepositorySourceFloatingLocator [ ... ]` as an intentionally generated blank-node subgraph. The append planner correctly rejects blank nodes in newly requested facts, and Dave's product preference is to avoid blank nodes wherever practical. The choices are: (A) mint a deterministic named locator resource and update SFLO/Weave/docs/fixtures; (B) expand the append planner to admit and prove bounded blank-node request subgraphs; or (C) keep a split legacy rewrite only for floating repository payloads. Lean: A. Dave must rule the portable locator identity/path contract before the versioned first-payload renderer migrates; do not silently choose an identifier shape or weaken the append planner.
+- **PARTIALLY RULED 2026-08-31 — repository floating locators are named resources; exact IRI remains open.** Dave selected (A): replace generated blank-node locator subgraphs with deterministic named resources. Do not expand append requests to blank nodes and do not retain a split legacy writer. `_knop/_references` is the wrong owner because it is a ReferenceCatalog for semantic `ReferenceLink`s, not source-resolution/provenance machinery. The natural owner is the existing Knop source registry: an illustrative locator is `<D/_knop/_sources#payload-source-repository-locator>`—no slash before `#`, matching existing `_sources#payload-source` / `_sources#extraction-source` style and using hyphens rather than underscores. The exact fragment convention remains open because a generic `#repository-source` could collide if a Knop gains multiple source bindings; lean: bind the locator name to its owning source identity as illustrated. Once ruled, update SFLO/Weave/docs/fixtures and migrate integrate plus source-bearing payload writers through the append planner.
 - **OPEN 2026-08-31 — first-Knop exposes legacy progression migration versus exact append.** The accepted pre-weave MeshInventory still carries mutable `currentArtifactHistory`, `nextHistoryOrdinal`, `latestHistoricalState`, and `nextStateOrdinal`; the old renderer deletes them while writing their authoritative successors to MeshMetadata. Exact-prefix append would preserve them and violate the storage split. Choices: (A) name ordinary first-Knop weave as an explicit one-time migration/removal; (B) fix producers/fixtures and fail old shapes pending explicit repair/regeneration; or (C) grandfather the duplicate pointers until a repair surface exists. Lean: B, consistent with pre-v1 fail-closed/no-shim policy, but only after current producers stop creating the stale shape.
 
 - Which exact metadata document owns current/progression facts for Knop-owned payload and support histories? The likely target is `D/_knop/_meta/meta.ttl` for Knop-local artifact progression and `_mesh/_meta/meta.ttl` for MeshInventory progression.
@@ -423,6 +423,7 @@ For CI/CD, rerunning publication should be safe because the command either sees 
 ## Decisions
 
 - Normal inventory operations append facts, no-op duplicate facts, and fail closed on conflicting facts.
+- Repository floating locators use deterministic named resources, not generated blank nodes or a legacy writer; the exact source-registry fragment convention remains to be ruled.
 - "Graph-preserving update" is not the desired endpoint; it is still too permissive because it allows silently replacing known subject blocks.
 - Current/progression predicates belong in metadata/progression documents, even when their RDF subjects are inventory artifacts, payload artifacts, or ArtifactHistory resources.
 - Inventory history/state membership facts are settled facts and may remain in inventory.
