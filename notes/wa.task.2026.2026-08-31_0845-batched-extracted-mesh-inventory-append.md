@@ -21,6 +21,8 @@ created: 1788191100000
 
 The completed add-reference child proved the migration pattern: retain existing shape validation, render the supported desired graph as a bounded requested-fact source, prepare the original current inventory, and let `planInventoryAppend` / `renderInventoryAppendPlan` produce the exact original prefix plus only missing facts. This child applies that pattern only to the homogeneous batched extracted-term renderer used by PR #41's scale path.
 
+Implemented on `lane/batched-extracted-mesh-inventory-append` at `1770767`; awaiting review and landing. The renderer now constructs only its owned term, Knop, page, and optional MeshInventory history/state facts, prepares the original current inventory, and returns the shared planner's exact-prefix append/no-op/conflict result. The old target-block filter, reconstruction helpers, and anchor-based insertion path are removed.
+
 ## Discussion
 
 The existing replacement renderer may be extracted as a private desired-graph builder for this bite. Its bytes must never become the returned inventory. Parse its facts as the request, plan them against the original current MeshInventory, and render the append through the shared proof-checked renderer.
@@ -52,6 +54,19 @@ For a versioned MeshInventory, the requested graph includes settled history/stat
 - Runtime/integration zero-write conflict coverage and the existing N=40/120 extracted batch/memory regression.
 - Run focused tests first, then `deno task fmt:check`, `deno task lint`, `deno task check`, `deno task test`, and `deno task ci` before landing.
 
+Fail-on-old receipt: exact-prefix append, exact semantic no-op, conflicting Knop inventory locator, and versioned graph-union tests produced 0 passed / 4 failed against unchanged production code. The old renderer removed/reordered target blocks, normalized away a carried prefix, accepted the contradictory locator, and rewrote versioned subjects.
+
+Implementation receipts at `1770767`:
+
+- new renderer tests: 4 passed / 0 failed;
+- pending-heavy batch/memory suite: 12 passed / 0 failed, including N=40/120 retained-growth coverage and runtime zero-write conflict refusal;
+- focused reverse-order core batch regression: 1 passed / 0 failed;
+- `deno task test`: 895 passed / 0 failed;
+- `deno task fmt:check`, `deno task lint`, and `deno task check`: green;
+- `deno task ci`: 895 passed / 0 failed, LCOV generated; only the known deleted-temporary-source coverage notices appeared.
+
+Exact-prefix coverage carries a nonstandard prefix, target-local comments, opaque predicates, repeated subject blocks, and blank-node subgraphs. Semantic-union coverage spans current-only and versioned policy, asserts one next MeshInventory state membership, and confirms mutable progression predicates remain outside inventory.
+
 ## Non-Goals
 
 - No sequential extracted, first/later payload, first-Knop, PageDefinition, extract, integrate, or mesh-support renderer migration.
@@ -60,9 +75,9 @@ For a versioned MeshInventory, the requested graph includes settled history/stat
 
 ## Implementation Plan
 
-- [ ] Record exact-prefix, conflict, no-op, and graph-union tests failing on current `main` before production edits.
-- [ ] Separate the current desired-graph construction from returned output without changing its RDF semantics.
-- [ ] Prepare the original MeshInventory and plan/render requested facts through the shared append path.
-- [ ] Cover current-only and versioned batches plus runtime zero-write conflict and existing scale regressions.
-- [ ] Update developer guidance and board the intentional byte-shape change for the next release notes.
-- [ ] Run focused/full validation and return any plan-level sequencing delta.
+- [x] Record exact-prefix, conflict, no-op, and graph-union tests failing on current `main` before production edits.
+- [x] Replace whole-document desired rendering with a bounded requested-fact graph without changing owned RDF semantics.
+- [x] Prepare the original MeshInventory and plan/render requested facts through the shared append path.
+- [x] Cover current-only and versioned batches plus runtime zero-write conflict and existing scale regressions.
+- [x] Update developer guidance and board the intentional byte-shape change here for the next release notes; no next-release stub exists yet.
+- [x] Run focused/full validation and return the plan-level delta: implementation is green; review/landing remains before the next child is cut.
