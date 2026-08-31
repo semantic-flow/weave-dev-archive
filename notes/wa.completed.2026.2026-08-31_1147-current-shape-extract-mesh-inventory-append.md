@@ -19,7 +19,7 @@ created: 1788202020000
 
 Normal current-shape extract already appends three named-node fact groups, but it trims the current file and concatenates Turtle without semantic duplicate/conflict handling: `_mesh hasKnop`, target Knop type/working-inventory locator, and inventory-file types. The separate `renderLegacyExtractMeshInventoryTurtle` reconstructs a complete historical fixture shape and is outside this child.
 
-Implemented in Weave commit `6b48c73`. The current-shape arm now prepares the original MeshInventory and routes those same three named-node fact groups through the shared append planner/renderer. Existing bytes—including comments, opaque facts, trailing whitespace, and carried blank-node source-locator data—remain the exact output prefix. Semantic duplicates no-op at the helper boundary, and a contradictory target Knop inventory locator refuses before runtime writes. Legacy-shape dispatch and rendering are unchanged.
+Completed 2026-08-31. Implemented in Weave commit `6b48c73` and merged through PR #60 as `e473b83`. The current-shape arm now prepares the original MeshInventory and routes those same three named-node fact groups through the shared append planner/renderer. Existing bytes—including comments, opaque facts, trailing whitespace, and carried blank-node source-locator data—remain the exact output prefix. Semantic duplicates no-op at the helper boundary, and a contradictory target Knop inventory locator refuses before runtime writes. Legacy-shape dispatch and rendering are unchanged.
 
 ## Discussion
 
@@ -64,6 +64,7 @@ Implementation receipts at `6b48c73`:
 - `deno task test`: 909 passed / 0 failed;
 - `deno task ci`: 909 passed / 0 failed, LCOV generated; only the known deleted-temporary-source coverage notices appeared;
 - `git diff --check`: green.
+- GitHub PR #60: CI, npm-lib, CodeQL, and CodeRabbit's review-rate-limit acceptance passed with no findings.
 
 The migrated output is intentionally not byte-identical to the old appended suffix: the shared renderer emits a self-contained compact suffix. Tests require exact carried-prefix bytes and exact RDF graph equality with the settled fixture, while retaining byte-for-byte fixture assertions for every unaffected file. This byte/no-op change is boarded here for the next release notes because no next-release stub exists yet.
 
