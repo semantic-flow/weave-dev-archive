@@ -136,6 +136,18 @@ Status output should be designed separately from structured logging. The current
 - Add regression coverage for the old single first-payload Alice Bio and later first-payload carried state so the generalization does not break current fixtures.
 - Run at least `deno task test` for this change; run `deno task lint` as required after the significant code change.
 
+## Residuals Transferred From Planner Generalization — 2026-08-31
+
+[[wa.completed.2026.2026-07-03_1332-stagecraft-weave-planner-generalization]] closed after delivering the Stagecraft later-payload, multi-target, untargeted first-payload, and condition-specific diagnostic slices. This task retains the work that was never part of that closure:
+
+- support current-mode extracted-term weave without rewriting the source contract as pinned;
+- replace the remaining generic exactly-one-candidate refusal with a condition-specific outcome for candidate sets that are intentionally ineligible for the existing homogeneous batch paths;
+- decide and diagnose, rather than silently fixture-gate, the first-payload MeshInventory requirement that the latest manifestation path be exactly `<state>/ttl`;
+- decide and diagnose the legacy fallback that accepts a missing latest manifestation only when the latest MeshInventory state ordinal is 2;
+- complete the separately scoped minimal progress-output work if it is still wanted.
+
+The `/ttl` and ordinal-2 gates currently live in `resolveCurrentMeshInventoryProgressionForFirstPayloadWeave`; they were classified as fixture-shaped debt in PR #42 and deliberately did not widen acceptance behavior there. Treat each semantic relaxation as its own tested decision rather than bundling it into message cleanup.
+
 ## Non-Goals
 
 - Rewriting all of `src/core/weave/weave.ts` into a generic transaction engine in this task.

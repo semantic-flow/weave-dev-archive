@@ -16,6 +16,10 @@ created: 1783110720000
 
 ## Summary
 
+Completed 2026-08-31 after an audit against Weave `main` at `6643ae1`. The Stagecraft blocker and every implementation slice this note coordinated are delivered: RDF-fact-derived later-payload advancement (`6e4068f`/`e7029ab`), deterministic explicit multi-target payload batches (`3be8859`), untargeted multi-pending first-payload batching (`d6f87ca`), condition-specific payload-planner diagnostics (`24a5a6a`), and the approved `malformed-knop-metadata` finding code (`ec1f35d`). The original Stagecraft `a.11` → `a.12` replay and Accord scenario passed with all 72 prior historical files byte-stable.
+
+The 2026-08-31 closure audit found no remaining Stagecraft planner-generalization deliverable. It transferred the first-payload resolver's three deliberately deferred fixture-shaped gates and the already-owned current-mode extracted/progress work to [[wa.task.2026.2026-05-04-refactor-planFirstPayloadWeave]]. Broader inventory mutation semantics remain with [[wa.task.2026.2026-05-17-append-onlyish-inventory]].
+
 Stagecraft is exposing the same weakness that earlier Alice, Fantasy Rules, SFLO, and URPX work exposed in smaller pieces: parts of the Weave planner still validate exact carried fixture shapes instead of deriving valid progression from RDF facts. The current reported failure names the second-payload weave shape, but the broader smell is the same family as the first-payload and extracted-term blockers tracked in [[wa.task.2026.2026-05-04-refactor-planFirstPayloadWeave]] and [[wa.task.2026.2026-04-13_0910-weave-shape-generalization-for-later-carried-states]].
 
 The right response is not to tell Stagecraft to run `weave generate` unless the target checkout already has the payload histories and ResourcePage claims it needs. If the rung is expected to create or advance payload histories, update current/latest state, and then render `index.html` pages, the correct operation is full `weave`. A failure in that path means Weave's planner is too narrow for the model it claims to support.
@@ -78,8 +82,8 @@ The first Weave fix should therefore support appending `_sNNNN` from the current
 
 ### Task 2: Inventory Fixture-Shaped Payload Gates
 
-- [ ] List every payload-weave path that still throws "current local weave slice only supports..." for a settled shape.
-- [ ] Classify each gate as a true invariant, a malformed-state diagnostic, or fixture-shaped implementation debt.
+- [x] List every payload-weave path that still throws "current local weave slice only supports..." for a settled shape — PR #42 audited 17 gates.
+- [x] Classify each gate as a true invariant, a malformed-state diagnostic, fixture-shaped implementation debt, or unreachable by construction.
 - [x] For the Stagecraft blocker, write down the exact facts that should be required: payload artifact type, current artifact history, latest historical state, KnopInventory relationship, MeshInventory progression, ResourcePage eligibility, and working-source resolution.
 - [x] Replace one broad fixture-shaped assertion with a smaller read model that reports missing or conflicting facts.
 
@@ -92,10 +96,10 @@ The first Weave fix should therefore support appending `_sNNNN` from the current
 
 ### Task 4: Unify Payload-Weave Diagnostics And Candidate Selection
 
-- [ ] Replace "settled first/second payload weave shape" messages with condition-specific diagnostics.
+- [x] Replace the true-invariant and malformed-state "settled first/second payload weave shape" messages with condition-specific diagnostics; the three fixture-shaped gates deliberately left by PR #42 are transferred at closure.
 - [x] Revisit the one-candidate limit in `planWeave` only where a concrete Stagecraft or existing ladder case needs multi-target payload advancement.
 - [x] Keep exact targets narrow: `weave --target designatorPath=x` should not silently advance unrelated pending payloads.
-- [ ] Keep untargeted behavior deterministic if multiple selected candidates become supported.
+- [x] Keep untargeted behavior deterministic if multiple selected candidates become supported.
 
 ### Task 5: Align Inventory Progression With Append-Onlyish Behavior
 
@@ -113,11 +117,13 @@ The first Weave fix should therefore support appending `_sNNNN` from the current
 
 ### Task 7: Document The Operational Rule
 
-- [ ] Update developer docs if the implementation changes the boundary between `weave`, `weave version`, and `weave generate`.
-- [ ] Update user docs only if the externally visible CLI behavior or recommended Stagecraft workflow changes.
+- [x] Update developer docs for the delivered planner contract; the boundary between `weave`, `weave version`, and `weave generate` did not change.
+- [x] Update user docs for repeated targets, `--generated-at`, and the condition-specific SFLO/URPX diagnostic wording.
 - [x] Add a decision-log entry if this generalization changes the planner contract beyond removing a bug.
 
 ## Open Issues
+
+Resolved for closure 2026-08-31: the focused Weave-native test landed with the first later-payload slice; explicit multi-target advancement landed as its own completed task; current-only support artifacts are accepted; prior historical bytes were replay-verified; append-only inventory was not a prerequisite; and generalization stopped at the concrete later-payload and first-payload batch seams. The three PR #42 fixture-shaped gates remain real but are not Stagecraft blockers and are now explicitly owned by [[wa.task.2026.2026-05-04-refactor-planFirstPayloadWeave]].
 
 - For the first slice, the triggering rung and designators are captured above. Are there smaller Weave-native fixtures that reproduce the same current-only support plus later-ordinal payload shape without carrying the full Stagecraft fixture repo?
 - For the first slice, the failing rung attempts a multi-target payload advancement, with generated pages as a consequence. Should multi-target selected payload advancement land in the same fix as the later-ordinal read model, or be split immediately after the single-target fix?

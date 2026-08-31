@@ -10,7 +10,7 @@ created: 1783741200000
 - Let one full `weave` invocation advance multiple selected payload targets in a single deterministic plan.
 - Keep atomicity at the application boundary: the requesting service serializes coherent state and requests the weave; Weave validates and fails closed but does not provide transactional write guarantees.
 - Make shared support-artifact progression (especially MeshInventory) merge coherently when several targets advance in one plan, instead of last-write-wins.
-- Keep single-target behavior, diagnostics style, and byte-stability guarantees from [[wa.task.2026.2026-07-03_1332-stagecraft-weave-planner-generalization]] unchanged.
+- Keep single-target behavior, diagnostics style, and byte-stability guarantees from [[wa.completed.2026.2026-07-03_1332-stagecraft-weave-planner-generalization]] unchanged.
 
 ## Summary
 
@@ -127,7 +127,7 @@ Added explicit payload-batch input snapshot verification with the scoped current
 - [x] Add the shared support-artifact merge step to the later-payload read model path, deciding how much append-onlyish inventory behavior this requires.
 - [x] Define and implement re-run semantics for already-advanced targets.
 - [x] Add the test coverage listed above, including the sequential-equivalence check against the temporal-rung replay shape.
-- [x] Update [[wd.decision-log]] (app-owned atomicity boundary) and tick the epic's multi-target follow-up in [[wa.task.2026.2026-07-03_1332-stagecraft-weave-planner-generalization]].
+- [x] Update [[wd.decision-log]] (app-owned atomicity boundary) and tick the epic's multi-target follow-up in [[wa.completed.2026.2026-07-03_1332-stagecraft-weave-planner-generalization]].
 - [x] Snapshot verification: hash the batch's input files (sha256) before content capture and verify after capture completes; mismatch refuses the whole plan pre-write with a diagnostic naming the changed file.
 - [x] Snapshot verification: decide the hash scope (working payload files vs all plan-read inputs) and record it here.
 - [x] Snapshot verification: add the capture-window mutation test and the post-capture mutation test, then update user docs.
