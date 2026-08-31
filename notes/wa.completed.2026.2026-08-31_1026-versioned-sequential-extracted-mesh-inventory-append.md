@@ -21,7 +21,7 @@ created: 1788197160000
 
 The function currently lacks a `meshBase` argument because its legacy block renderer never parsed RDF. This child should pass the already-known mesh base from `planFirstExtractedKnopWeave`, construct only the facts the sequential versioned path owns, and plan/render them against the original current inventory through `planInventoryAppend` / `renderInventoryAppendPlan`.
 
-Implemented on `lane/versioned-sequential-extracted-mesh-inventory-append` at `85343c6`; awaiting review and landing. The internal renderer now receives `meshBase`, reuses the bounded extracted-term requested-fact builder for one target, and returns the shared planner's exact-prefix append/no-op/conflict result. Parent/page anchors, target/Knop/history replacement, and the now-dead parent-designator helper are removed from this path.
+Completed 2026-08-31. Implemented at `85343c6` and merged through Weave PR #53 as `12233bc`. The internal renderer now receives `meshBase`, reuses the bounded extracted-term requested-fact builder for one target, and returns the shared planner's exact-prefix append/no-op/conflict result. Parent/page anchors, target/Knop/history replacement, and the now-dead parent-designator helper are removed from this path.
 
 ## Discussion
 
@@ -65,6 +65,7 @@ Implementation receipts at `85343c6`:
 - `deno task test`: 899 passed / 0 failed;
 - `deno task fmt:check`, `deno task lint`, and `deno task check`: green;
 - `deno task ci`: 899 passed / 0 failed, LCOV generated; only the known deleted-temporary-source coverage notices appeared.
+- GitHub PR #53: CI, npm-lib, CodeQL, and patch coverage passed; CodeRabbit accepted the lane under its review-rate-limit path with no findings.
 
 Three serialization-shaped core assertions and one integration fixture were converted to exact-prefix plus RDF-semantic acceptance. Sequential selection, mixed/recursive routing, history-index regeneration, source evidence, root/nested targets, and prior snapshot behavior remain green.
 

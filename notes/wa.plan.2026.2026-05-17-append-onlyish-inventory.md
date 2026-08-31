@@ -8,7 +8,7 @@ created: 1779079677519
 
 ## Status
 
-Active. Reclassified from a legacy oversized task to a coordination plan on 2026-08-31. The add-reference and batched extracted MeshInventory children are complete; the next executable child is [[wa.task.2026.2026-08-31_1026-versioned-sequential-extracted-mesh-inventory-append]].
+Active. Reclassified from a legacy oversized task to a coordination plan on 2026-08-31. Add-reference plus batched and versioned-sequential extracted MeshInventory children are complete; the next executable child is [[wa.task.2026.2026-08-31_1050-current-only-payload-like-mesh-inventory-append]].
 
 ## Origin
 
@@ -62,7 +62,8 @@ Remaining mutation paths, in execution order rather than file order:
 
 - [[wa.completed.2026.2026-08-31_0106-add-reference-inventory-append]] — preserve the current KnopInventory as the exact prefix and append only planner-approved ReferenceCatalog facts.
 - [[wa.completed.2026.2026-08-31_0845-batched-extracted-mesh-inventory-append]] — migrate the highest-risk MeshInventory weave renderer using a bounded owned-fact request rather than whole desired-output Turtle.
-- [[wa.task.2026.2026-08-31_1026-versioned-sequential-extracted-mesh-inventory-append]] — migrate the remaining versioned extracted-term MeshInventory renderer before current-mode extracted planner work revisits the same seam.
+- [[wa.completed.2026.2026-08-31_1026-versioned-sequential-extracted-mesh-inventory-append]] — migrate the remaining versioned extracted-term MeshInventory renderer before current-mode extracted planner work revisits the same seam.
+- [[wa.task.2026.2026-08-31_1050-current-only-payload-like-mesh-inventory-append]] — migrate the shared current-only first-payload/extracted page-claim renderer to exact append/no-op semantics.
 - Remaining KnopInventory/PageDefinition migration — cut after the MeshInventory seam is stable so shared progression and page-fact behavior are not duplicated.
 - Extract/integrate and mesh-support migration — cut after the core weave writers prove the shared pattern.
 - Progression-storage and fixture/documentation closure — cut only after the plan-level ownership rulings are resolved.
@@ -484,7 +485,8 @@ For CI/CD, rerunning publication should be safe because the command either sees 
 - [x] Stop routine ResourcePage generation from deleting settled inventory facts.
 - [x] Deliver [[wa.completed.2026.2026-08-31_0106-add-reference-inventory-append]].
 - [x] Deliver [[wa.completed.2026.2026-08-31_0845-batched-extracted-mesh-inventory-append]].
-- [ ] Deliver [[wa.task.2026.2026-08-31_1026-versioned-sequential-extracted-mesh-inventory-append]].
+- [x] Deliver [[wa.completed.2026.2026-08-31_1026-versioned-sequential-extracted-mesh-inventory-append]].
+- [ ] Deliver [[wa.task.2026.2026-08-31_1050-current-only-payload-like-mesh-inventory-append]].
 - [ ] Cut and deliver the MeshInventory weave child tasks.
 - [ ] Cut and deliver remaining KnopInventory/PageDefinition and operation-specific writer tasks.
 - [ ] Resolve and implement the progression-storage contract.
