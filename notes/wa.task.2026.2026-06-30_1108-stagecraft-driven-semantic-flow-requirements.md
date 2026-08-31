@@ -101,7 +101,7 @@ Classification rule: “stated” means directly reported by the Stagecraft cons
 
 1. **Checkpoint batch persistence.** A Stagecraft service serializes game and session payloads together at a service/user checkpoint and requests one explicit multi-target weave. Weave must validate the entire plan and captured payload snapshot before writes, order targets deterministically, merge shared support artifacts once, and converge safely on rerun. The application owns single-writer serialization and transactional business semantics; Weave does not promise filesystem transactions. Evidence: this note’s Accord Sequencing update and [[wa.completed.2026.2026-07-05-multi-target-payload-advancement]]. Status: landed for the evidenced shape.
 
-2. **Later-ordinal history advancement with current-only support.** Existing payload histories must advance beyond `_s0002` while coherent current-only KnopInventory/KnopMetadata support remains valid. Prior historical payload files remain byte-identical; the operation adds the requested new state and advances only the owned inventory/progression/page outputs. Evidence: [[wa.completed.2026.2026-07-03_1332-stagecraft-weave-planner-generalization]] and [[ac.product-ideas.runner-neutral-test-spec]] temporal addition 4. Status: the Stagecraft temporal-rung case landed; broader inventory semantics remain with [[wa.task.2026.2026-05-17-append-onlyish-inventory]].
+2. **Later-ordinal history advancement with current-only support.** Existing payload histories must advance beyond `_s0002` while coherent current-only KnopInventory/KnopMetadata support remains valid. Prior historical payload files remain byte-identical; the operation adds the requested new state and advances only the owned inventory/progression/page outputs. Evidence: [[wa.completed.2026.2026-07-03_1332-stagecraft-weave-planner-generalization]] and [[ac.product-ideas.runner-neutral-test-spec]] temporal addition 4. Status: the Stagecraft temporal-rung case landed; broader inventory semantics remain with [[wa.plan.2026.2026-05-17-append-onlyish-inventory]].
 
 3. **In-process payload persistence for product paths.** Product code must be able to record caller-supplied payload bytes through a stable API without spawning the CLI or requiring caller-managed temporary files. The mesh remains file-backed. Evidence: [[wa.completed.2026.2026-07-21_1322-programmatic-version-api]]. Status: landed for UTF-8 text/RDF payloads.
 
@@ -124,7 +124,7 @@ Classification rule: “stated” means directly reported by the Stagecraft cons
 ### Inferred Shared Requirements
 
 - Stagecraft payloads require stable designator identity and addressable HistoricalState segments because the exercised workflows target exact designators and exact later ordinals. This does not prove that all roleplaying resources need public identifiers.
-- The exercised byte-stability and rerun requirements support the general append/no-op/fail-on-conflict inventory rule in [[wa.task.2026.2026-05-17-append-onlyish-inventory]].
+- The exercised byte-stability and rerun requirements support the general append/no-op/fail-on-conflict inventory rule in [[wa.plan.2026.2026-05-17-append-onlyish-inventory]].
 - Stagecraft must be able to persist and validate locally without publishing. Its current refusal to run `weave publish` supports that operation boundary, but does not yet settle privacy classes, mesh topology, public-ID policy, or later publication mechanics.
 
 ### Still Unevidenced — Do Not Promote To Requirements

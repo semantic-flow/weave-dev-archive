@@ -18,7 +18,7 @@ created: 1783110720000
 
 Completed 2026-08-31 after an audit against Weave `main` at `6643ae1`. The Stagecraft blocker and every implementation slice this note coordinated are delivered: RDF-fact-derived later-payload advancement (`6e4068f`/`e7029ab`), deterministic explicit multi-target payload batches (`3be8859`), untargeted multi-pending first-payload batching (`d6f87ca`), condition-specific payload-planner diagnostics (`24a5a6a`), and the approved `malformed-knop-metadata` finding code (`ec1f35d`). The original Stagecraft `a.11` → `a.12` replay and Accord scenario passed with all 72 prior historical files byte-stable.
 
-The 2026-08-31 closure audit found no remaining Stagecraft planner-generalization deliverable. It transferred the first-payload resolver's three deliberately deferred fixture-shaped gates and the already-owned current-mode extracted/progress work to [[wa.task.2026.2026-05-04-refactor-planFirstPayloadWeave]]. Broader inventory mutation semantics remain with [[wa.task.2026.2026-05-17-append-onlyish-inventory]].
+The 2026-08-31 closure audit found no remaining Stagecraft planner-generalization deliverable. It transferred the first-payload resolver's three deliberately deferred fixture-shaped gates and the already-owned current-mode extracted/progress work to [[wa.task.2026.2026-05-04-refactor-planFirstPayloadWeave]]. Broader inventory mutation semantics remain with [[wa.plan.2026.2026-05-17-append-onlyish-inventory]].
 
 Stagecraft is exposing the same weakness that earlier Alice, Fantasy Rules, SFLO, and URPX work exposed in smaller pieces: parts of the Weave planner still validate exact carried fixture shapes instead of deriving valid progression from RDF facts. The current reported failure names the second-payload weave shape, but the broader smell is the same family as the first-payload and extracted-term blockers tracked in [[wa.task.2026.2026-05-04-refactor-planFirstPayloadWeave]] and [[wa.task.2026.2026-04-13_0910-weave-shape-generalization-for-later-carried-states]].
 
@@ -43,7 +43,7 @@ The existing backlog already points in the right direction:
 
 - [[wa.task.2026.2026-05-04-refactor-planFirstPayloadWeave]] tracks first-payload and extracted-term blockers.
 - [[wa.task.2026.2026-04-13_0910-weave-shape-generalization-for-later-carried-states]] tracks later carried-state shape generalization.
-- [[wa.task.2026.2026-05-17-append-onlyish-inventory]] describes the inventory behavior Weave probably needs once it stops rewriting exact fixture shapes.
+- [[wa.plan.2026.2026-05-17-append-onlyish-inventory]] describes the inventory behavior Weave probably needs once it stops rewriting exact fixture shapes.
 - [[wa.task.2026.2026-06-30_1108-stagecraft-driven-semantic-flow-requirements]] makes Stagecraft the concrete consumer pressure.
 
 This note ties those together around a user-visible blocker. It should not delete or rename the older tasks. It should act as the epic that orders the slices and gives the first implementation pass a narrow repro.
@@ -103,7 +103,7 @@ The first Weave fix should therefore support appending `_sNNNN` from the current
 
 ### Task 5: Align Inventory Progression With Append-Onlyish Behavior
 
-- [x] Decide how much of [[wa.task.2026.2026-05-17-append-onlyish-inventory]] must land before the Stagecraft blocker can be fixed cleanly.
+- [x] Decide how much of [[wa.plan.2026.2026-05-17-append-onlyish-inventory]] must land before the Stagecraft blocker can be fixed cleanly.
 - [x] Prefer appending/no-oping settled inventory facts and failing on conflicts over regenerating exact subject blocks.
 - [x] Keep current/latest/next progression explicit and auditable.
 - [x] Avoid inventing a Stagecraft-only inventory path.
@@ -142,7 +142,7 @@ Resolved for closure 2026-08-31: the focused Weave-native test landed with the f
 - First implementation slice supports single-target later-ordinal payload advancement; multi-target advancement remains the immediate next planner slice.
 - The second slice supports explicit multi-target payload advancement for exact payload targets. It keeps recursive/mixed-slice target sets on the existing deterministic sequential planner, orders exact payload batches by canonical designator path, merges shared support-artifact progression once per batch, and no-ops already-current payloads on rerun.
 - Accord acceptance coverage for the triggering rung uses a focused one-step scenario index now that `accord check-scenario` exists. The full Stagecraft scenario index is not this slice's gate because unrelated later-rung conformance-file expectations still fail there.
-- Append-onlyish inventory is not a prerequisite for this narrow fix. This slice reuses current support-fact preservation and adds a fact-driven later-payload read model; broader append/no-op/conflict inventory writes remain in [[wa.task.2026.2026-05-17-append-onlyish-inventory]].
+- Append-onlyish inventory is not a prerequisite for this narrow fix. This slice reuses current support-fact preservation and adds a fact-driven later-payload read model; broader append/no-op/conflict inventory writes remain in [[wa.plan.2026.2026-05-17-append-onlyish-inventory]].
 - For later payload advancement, versioned/default support-history policy does not force creation of missing support histories. If the current KnopInventory/KnopMetadata facts are current-only, the later-payload path preserves that current-only support policy and advances only the payload history.
 
 ## Contract Changes
