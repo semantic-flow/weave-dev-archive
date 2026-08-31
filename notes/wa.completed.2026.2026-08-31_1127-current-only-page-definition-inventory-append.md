@@ -21,7 +21,7 @@ The current-only PageDefinition renderer still splits Turtle blocks, locates the
 
 This is independent of both blocked MeshInventory questions: it adds no progression facts, repository locators, or blank-node requests. Existing carried blank-node subgraphs remain untouched prefix bytes.
 
-Implemented on `lane/current-only-page-definition-inventory-append` at `34bac02`; awaiting review and landing. The helper prepares the original KnopInventory, verifies that the PageDefinition subject exists, requests the expected working locator plus page claim/types, and returns the shared planner's exact-prefix append/no-op/conflict result. The renderer module no longer imports any Turtle block-mutation helper.
+Completed 2026-08-31. Implemented at `34bac02` and merged through Weave PR #58 as `a8fb7fa`. The helper prepares the original KnopInventory, verifies that the PageDefinition subject exists, requests the expected working locator plus page claim/types, and returns the shared planner's exact-prefix append/no-op/conflict result. The renderer module no longer imports any Turtle block-mutation helper.
 
 ## Discussion
 
@@ -60,6 +60,7 @@ Implementation receipts at `34bac02`:
 - `deno task test`: 905 passed / 0 failed;
 - `deno task fmt:check`, `deno task lint`, and `deno task check`: green;
 - `deno task ci`: 905 passed / 0 failed, LCOV generated; only the known deleted-temporary-source coverage notices appeared.
+- GitHub PR #58: CI, npm-lib, CodeQL, and patch coverage passed; CodeRabbit accepted the lane under its review-rate-limit path with no findings.
 
 The requested graph contains only named-node/literal locator, page, and type facts. Existing opaque blank-node data remains untouched prefix bytes and is never submitted as an append request.
 
