@@ -8,7 +8,7 @@ created: 1779079677519
 
 ## Status
 
-Active. Reclassified from a legacy oversized task to a coordination plan on 2026-08-31. Add-reference, extracted/current-only MeshInventory, current-only PageDefinition, and current-shape extract children are complete. Two versioned writers wait on rulings; [[wa.task.2026.2026-08-31_1219-mesh-support-page-only-inventory-append]] proceeds independently without weakening either ruling boundary.
+Active but ruling-bound. Reclassified from a legacy oversized task to a coordination plan on 2026-08-31. Add-reference, extracted/current-only MeshInventory, current-only PageDefinition, current-shape extract, and mesh-support page-only children are complete. The remaining evident writers cross one of the two open rulings: legacy/initial/versioned progression ownership, or named repository-locator identity for integrate and source-bearing payload facts.
 
 ## Origin
 
@@ -68,7 +68,7 @@ Remaining mutation paths, in execution order rather than file order:
 - [[wa.task.2026.2026-08-31_1111-versioned-first-knop-mesh-inventory-append]] — blocked on how to remove legacy inventory-owned progression without disguising repair as append-only normal operation.
 - [[wa.completed.2026.2026-08-31_1127-current-only-page-definition-inventory-append]] — migrate current-only ResourcePageDefinition page claims while both MeshInventory rulings are open.
 - [[wa.completed.2026.2026-08-31_1147-current-shape-extract-mesh-inventory-append]] — migrated extract's current-shape MeshInventory append while retaining the separate legacy renderer pending later disposition.
-- [[wa.task.2026.2026-08-31_1219-mesh-support-page-only-inventory-append]] — migrate mesh-support page-only growth while the initial-history arm remains behind the progression ruling.
+- [[wa.completed.2026.2026-08-31_1219-mesh-support-page-only-inventory-append]] — migrated mesh-support page-only growth while the initial-history arm remains behind the progression ruling.
 - Remaining KnopInventory/PageDefinition migration — cut after the MeshInventory seam is stable so shared progression and page-fact behavior are not duplicated.
 - Extract/integrate and mesh-support migration — cut after the core weave writers prove the shared pattern.
 - Progression-storage and fixture/documentation closure — cut only after the plan-level ownership rulings are resolved.
@@ -498,7 +498,7 @@ For CI/CD, rerunning publication should be safe because the command either sees 
 - [ ] Deliver [[wa.task.2026.2026-08-31_1111-versioned-first-knop-mesh-inventory-append]].
 - [x] Deliver [[wa.completed.2026.2026-08-31_1127-current-only-page-definition-inventory-append]].
 - [x] Deliver [[wa.completed.2026.2026-08-31_1147-current-shape-extract-mesh-inventory-append]].
-- [ ] Deliver [[wa.task.2026.2026-08-31_1219-mesh-support-page-only-inventory-append]].
+- [x] Deliver [[wa.completed.2026.2026-08-31_1219-mesh-support-page-only-inventory-append]].
 - [ ] Cut and deliver the MeshInventory weave child tasks.
 - [ ] Cut and deliver remaining KnopInventory/PageDefinition and operation-specific writer tasks.
 - [ ] Resolve and implement the progression-storage contract.

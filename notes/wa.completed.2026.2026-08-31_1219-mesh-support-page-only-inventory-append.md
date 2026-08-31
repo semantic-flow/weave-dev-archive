@@ -21,7 +21,7 @@ When no mesh-support artifact needs initial history creation, `planMeshSupportRe
 
 This child is independent of both open MeshInventory rulings. It does not touch the initial-history arm, progression pointers, repository locators, integrate, or legacy extract. Its requested graph is named-node-only; carried blank-node subgraphs remain exact prefix bytes and are never submitted as requested facts.
 
-Implemented in Weave commit `4b9379f`. The no-initial-history arm now verifies support subjects from parsed RDF, prepares the original MeshInventory, requests only named support-page links/types, and returns the shared renderer's append/no-op result. A semantic no-op omits the inventory update from the `VersionPlan`; initial history construction remains unchanged.
+Completed 2026-08-31. Implemented in Weave commit `4b9379f` and merged through PR #62 as `4c5aece`. The no-initial-history arm now verifies support subjects from parsed RDF, prepares the original MeshInventory, requests only named support-page links/types, and returns the shared renderer's append/no-op result. A semantic no-op omits the inventory update from the `VersionPlan`; initial history construction remains unchanged.
 
 ## Discussion
 
@@ -64,6 +64,7 @@ Implementation receipts at `4b9379f`:
 - `deno task test`: 912 passed / 0 failed;
 - `deno task ci`: 912 passed / 0 failed, LCOV generated; only the known deleted-temporary-source coverage notices appeared;
 - `git diff --check`: green.
+- GitHub PR #62: CI, npm-lib, CodeQL, and CodeRabbit passed; CodeRabbit generated no actionable comments.
 
 The shared renderer's self-contained suffix intentionally changes byte layout from the old in-place semicolon edit. Tests require exact carried-prefix bytes and exact RDF union, and the output-byte/no-op change is boarded here for the next release notes because no next-release stub exists yet.
 
