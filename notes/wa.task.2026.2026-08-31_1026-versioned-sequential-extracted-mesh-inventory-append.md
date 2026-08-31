@@ -21,6 +21,8 @@ created: 1788197160000
 
 The function currently lacks a `meshBase` argument because its legacy block renderer never parsed RDF. This child should pass the already-known mesh base from `planFirstExtractedKnopWeave`, construct only the facts the sequential versioned path owns, and plan/render them against the original current inventory through `planInventoryAppend` / `renderInventoryAppendPlan`.
 
+Implemented on `lane/versioned-sequential-extracted-mesh-inventory-append` at `85343c6`; awaiting review and landing. The internal renderer now receives `meshBase`, reuses the bounded extracted-term requested-fact builder for one target, and returns the shared planner's exact-prefix append/no-op/conflict result. Parent/page anchors, target/Knop/history replacement, and the now-dead parent-designator helper are removed from this path.
+
 ## Discussion
 
 The owned target facts match the batched extracted child for one designator: target ResourcePage claim, Knop type/working-inventory/page facts, inventory LocatedFile types, and target/Knop page types. The versioned arm additionally owns the MeshInventory artifact/history membership, next state/manifestation/file/page facts, and previous-state link.
@@ -52,6 +54,20 @@ Parent-designator anchor selection is serialization machinery, not RDF behavior,
 - Runtime/integration zero-write conflict test using an explicit extracted target; retain mixed/recursive sequential-routing and history-index regressions.
 - Run focused tests first, then `deno task fmt:check`, `deno task lint`, `deno task check`, `deno task test`, and `deno task ci` before landing.
 
+Fail-on-old receipt: exact-prefix versioned union, exact semantic no-op, conflicting Knop inventory locator, and explicit-target runtime zero-write tests produced 0 passed / 4 failed against unchanged production code.
+
+Implementation receipts at `85343c6`:
+
+- sequential renderer tests: 3 passed / 0 failed;
+- combined extracted renderer plus pending-heavy suites: 20 passed / 0 failed;
+- complete core weave suite: 112 passed / 0 failed;
+- focused extracted-bob runtime fixture: 1 passed / 0 failed;
+- `deno task test`: 899 passed / 0 failed;
+- `deno task fmt:check`, `deno task lint`, and `deno task check`: green;
+- `deno task ci`: 899 passed / 0 failed, LCOV generated; only the known deleted-temporary-source coverage notices appeared.
+
+Three serialization-shaped core assertions and one integration fixture were converted to exact-prefix plus RDF-semantic acceptance. Sequential selection, mixed/recursive routing, history-index regeneration, source evidence, root/nested targets, and prior snapshot behavior remain green.
+
 ## Non-Goals
 
 - No current-only extracted, homogeneous batch, first-Knop, first/later payload, PageDefinition, extract, integrate, or mesh-support renderer migration.
@@ -60,9 +76,9 @@ Parent-designator anchor selection is serialization machinery, not RDF behavior,
 
 ## Implementation Plan
 
-- [ ] Record exact-prefix, conflict, no-op, and versioned-union tests failing on current `main` before production edits.
-- [ ] Add the internal mesh-base input and construct only sequential extracted owned facts.
-- [ ] Plan/render against the original current MeshInventory and delete obsolete anchor/block machinery when no longer used.
-- [ ] Add explicit-target runtime zero-write conflict coverage and retain sequential/history regressions.
-- [ ] Update developer guidance and board the byte-shape change for the next release notes.
-- [ ] Run focused/full validation and return any plan-level sequencing delta.
+- [x] Record exact-prefix, conflict, no-op, and versioned-union tests failing on current `main` before production edits.
+- [x] Add the internal mesh-base input and construct only sequential extracted owned facts.
+- [x] Plan/render against the original current MeshInventory and delete obsolete anchor/block machinery when no longer used.
+- [x] Add explicit-target runtime zero-write conflict coverage and retain sequential/history regressions.
+- [x] Update developer guidance and board the byte-shape change here for the next release notes; no next-release stub exists yet.
+- [x] Run focused/full validation and return the plan-level delta: implementation is green; review/landing remains before the next child is cut.
