@@ -21,7 +21,9 @@ The versioned first-Knop renderer still parses Turtle into blocks, reconstructs 
 
 All facts this path adds use named-node/literal terms: `_mesh hasKnop`, identifier and Knop page claims, Knop type/working-inventory locator, inventory/page file types, and the next MeshInventory state/manifestation membership. It has no repository locator dependency and can proceed while the plan's generated-blank-node ruling remains open.
 
-Paused 2026-08-31 before commit. The fail-on-old tests were implemented and the append path itself passed, but the real Alice `a.04` → `a.05` acceptance comparison exposed an incompatible responsibility: `a.04` carries `currentArtifactHistory`, `nextHistoryOrdinal`, `latestHistoricalState`, and `nextStateOrdinal` in MeshInventory, and the old first-Knop renderer intentionally deletes them while `_mesh/_meta` becomes authoritative. Exact-prefix preservation would retain forbidden mutable progression facts. WIP is preserved locally on `lane/versioned-first-knop-mesh-inventory-append` as stash `wip: first-Knop append blocked by progression migration ruling`; do not land it before the owning plan's migration policy is ruled.
+Paused 2026-08-31 before commit. The fail-on-old tests were implemented and the append path itself passed, but the real Alice `a.04` → `a.05` acceptance comparison exposed an incompatible responsibility: `a.04` carries `currentArtifactHistory`, `nextHistoryOrdinal`, `latestHistoricalState`, and `nextStateOrdinal` in MeshInventory, and the old first-Knop renderer intentionally deletes them while `_mesh/_meta` becomes authoritative. Exact-prefix preservation would retain forbidden mutable progression facts. WIP is preserved locally on `lane/versioned-first-knop-mesh-inventory-append` as stash `wip: first-Knop append blocked by progression migration ruling`.
+
+Dave ruled option (B) on 2026-08-31. This child resumes only after a producer/fixture correction stops Weave from creating the stale pointers. It will then reject any remaining old shape before writes instead of silently deleting or grandfathering those facts. Do not apply or land the WIP before that dependency is complete.
 
 ## Discussion
 
@@ -31,7 +33,7 @@ The existing first-Knop shape assertions and progression resolver remain the acc
 
 ## Open Issues
 
-- **BLOCKER:** may ordinary first-Knop weave perform the one-time removal of legacy inventory-owned progression facts, must it fail and require explicit repair/regeneration, or must those facts remain until a later repair surface exists? The first choice violates pure append-only normal operation; the second requires producer/fixture correction and a user-visible repair path; the third violates the plan's settled storage goal. Owned and carded on [[wa.plan.2026.2026-05-17-append-onlyish-inventory]].
+- **DEPENDENCY:** producer/fixture correction must stop emitting the stale inventory-owned progression pointers before this path becomes fail-closed. The product choice is settled; the prerequisite implementation is not.
 
 ## Decisions
 
@@ -62,6 +64,7 @@ The existing first-Knop shape assertions and progression resolver remain the acc
 ## Implementation Plan
 
 - [x] Record exact-prefix, conflict, no-op, and semantic-union tests failing on current `main` before production edits — 0 passed / 4 failed, then the fixture comparison exposed the blocker above.
+- [ ] Land the producer/fixture correction required by ruled option (B), then prove current Weave output reaches this child without stale inventory-owned progression.
 - [ ] Build only first-Knop owned requested facts and plan/render them against the original inventory.
 - [ ] Remove obsolete fallback/anchor/root reconstruction code proven dead for this path.
 - [ ] Add runtime zero-write conflict coverage and retain first-Knop progression/page regressions.

@@ -13,6 +13,3 @@ This note is Dave's court: open decision cards only, one card per decision, each
 **Cards stay short.** If a card has grown into an essay, its content belongs in the owning note. This was the failure mode on 2026-08-06, when cards ran to several paragraphs of evidence and rulings were left sitting here after being ruled, turning a status surface into a ledger.
 
 **At ruling time, in this order:** update the owning note → append one line to the [[wd.decision-log]] ledger → sweep the card. The card leaves; nothing about the ruling stays here.
-
-- **Repository floating-locator IRI:** named resources are ruled; use an owner-bound `_knop/_sources` fragment or an artifact-local name. Lean: `<D/_knop/_sources#payload-source-repository-locator>`; `_references` owns semantic links, not source resolution. Owning note: [[wa.plan.2026.2026-05-17-append-onlyish-inventory]].
-- **Legacy MeshInventory progression migration:** let ordinary first-Knop weave remove stale mutable pointers, fail old shapes pending explicit repair after fixing producers, or grandfather duplicates. Lean: fix producers then fail closed/repair explicitly. Owning note: [[wa.plan.2026.2026-05-17-append-onlyish-inventory]].

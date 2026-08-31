@@ -8,7 +8,7 @@ created: 1779079677519
 
 ## Status
 
-Active but ruling-bound. Reclassified from a legacy oversized task to a coordination plan on 2026-08-31. Add-reference, extracted/current-only MeshInventory, current-only PageDefinition, current-shape extract, and mesh-support page-only children are complete. The remaining evident writers cross legacy/initial/versioned progression ownership or the still-open exact IRI convention for the now-ruled named repository locator.
+Active. Reclassified from a legacy oversized task to a coordination plan on 2026-08-31. Add-reference, extracted/current-only MeshInventory, current-only PageDefinition, current-shape extract, and mesh-support page-only children are complete. Both 2026-08-31 rulings are settled: floating repository locators use the existing `_sources` fragment style at `<D/_knop/_sources#payload-source-repository-locator>`, and legacy progression follows producer correction then fail-closed handling of stale shapes. The first-Knop append child remains sequenced behind that producer/fixture correction; locator implementation can be cut independently.
 
 ## Origin
 
@@ -411,9 +411,6 @@ For CI/CD, rerunning publication should be safe because the command either sees 
 
 ## Open Issues
 
-- **PARTIALLY RULED 2026-08-31 — repository floating locators are named resources; exact IRI remains open.** Dave selected (A): replace generated blank-node locator subgraphs with deterministic named resources. Do not expand append requests to blank nodes and do not retain a split legacy writer. `_knop/_references` is the wrong owner because it is a ReferenceCatalog for semantic `ReferenceLink`s, not source-resolution/provenance machinery. The natural owner is the existing Knop source registry: an illustrative locator is `<D/_knop/_sources#payload-source-repository-locator>`—no slash before `#`, matching existing `_sources#payload-source` / `_sources#extraction-source` style and using hyphens rather than underscores. The exact fragment convention remains open because a generic `#repository-source` could collide if a Knop gains multiple source bindings; lean: bind the locator name to its owning source identity as illustrated. Once ruled, update SFLO/Weave/docs/fixtures and migrate integrate plus source-bearing payload writers through the append planner.
-- **OPEN 2026-08-31 — first-Knop exposes legacy progression migration versus exact append.** The accepted pre-weave MeshInventory still carries mutable `currentArtifactHistory`, `nextHistoryOrdinal`, `latestHistoricalState`, and `nextStateOrdinal`; the old renderer deletes them while writing their authoritative successors to MeshMetadata. Exact-prefix append would preserve them and violate the storage split. Choices: (A) name ordinary first-Knop weave as an explicit one-time migration/removal; (B) fix producers/fixtures and fail old shapes pending explicit repair/regeneration; or (C) grandfather the duplicate pointers until a repair surface exists. Lean: B, consistent with pre-v1 fail-closed/no-shim policy, but only after current producers stop creating the stale shape.
-
 - Which exact metadata document owns current/progression facts for Knop-owned payload and support histories? The likely target is `D/_knop/_meta/meta.ttl` for Knop-local artifact progression and `_mesh/_meta/meta.ttl` for MeshInventory progression.
 - Should the ontology or config vocabulary name an explicit inventory write policy such as append-only/current-projection/repair, or is this initially a Weave runtime invariant?
 - How should repair/retraction be exposed: CLI flags on existing commands, a separate `weave repair` surface, or an internal mode first?
@@ -423,7 +420,8 @@ For CI/CD, rerunning publication should be safe because the command either sees 
 ## Decisions
 
 - Normal inventory operations append facts, no-op duplicate facts, and fail closed on conflicting facts.
-- Repository floating locators use deterministic named resources, not generated blank nodes or a legacy writer; the exact source-registry fragment convention remains to be ruled.
+- Repository floating locators use deterministic named resources at `<D/_knop/_sources#payload-source-repository-locator>`, following existing `_sources#...` fragment style. Do not generate blank locators, weaken append-request constraints, or retain a split legacy writer. If implementation exposes a collision or ownership problem, report it rather than silently changing the IRI contract.
+- Legacy MeshInventory progression follows option (B): first fix producers and regenerate affected fixtures so normal output no longer carries stale mutable pointers, then fail closed on remaining old shapes pending explicit repair/regeneration. Ordinary first-Knop weave does not silently remove them, and duplicate pointers are not grandfathered.
 - "Graph-preserving update" is not the desired endpoint; it is still too permissive because it allows silently replacing known subject blocks.
 - Current/progression predicates belong in metadata/progression documents, even when their RDF subjects are inventory artifacts, payload artifacts, or ArtifactHistory resources.
 - Inventory history/state membership facts are settled facts and may remain in inventory.
