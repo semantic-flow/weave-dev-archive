@@ -47,16 +47,16 @@ Delivered substrate:
 - current-only ReferenceCatalog weave appends through the planner;
 - routine generation no longer deletes settled ResourcePage facts;
 - first/later `knop.create` and FoundingReferentData settlement append through the planner;
-- import's existing-payload source-registry insertion uses the planner.
+- import's existing-payload source-registry insertion uses the planner;
+- first `knop add-reference` ReferenceCatalog registration preserves the carried KnopInventory prefix and appends through the planner.
 
 Remaining mutation paths, in execution order rather than file order:
 
-1. `knop add-reference` still canonical-renders a replacement KnopInventory and then preserves only recognized source-registry, reference-catalog, and founding support facts. Unknown carried facts and comments can disappear. This is the first child because it is direct live data-loss exposure.
-2. `src/core/weave/mesh_inventory_renderers.ts` still uses subject-block replacement across first Knop, first payload, batched payload, and extracted-term paths. The batched extracted renderer explicitly filters target subject blocks before reconstruction.
-3. current-only ResourcePageDefinition weave still replaces its subject block in `knop_inventory_renderers.ts`; versioned KnopInventory/payload/support renderers remain whole-document producers.
-4. extract and integrate still build updated MeshInventory and KnopInventory documents through operation-specific append strings or canonical renderers rather than the shared planner.
-5. `mesh_support_pages.ts` retains a separate block-mutation implementation for initial support-page and versioned MeshInventory planning.
-6. mutable current/latest/next facts still require the storage-ownership ruling in Open Issues before the final inventory/metadata split.
+1. `src/core/weave/mesh_inventory_renderers.ts` still uses subject-block replacement across first Knop, first payload, batched payload, and extracted-term paths. The batched extracted renderer explicitly filters target subject blocks before reconstruction.
+2. current-only ResourcePageDefinition weave still replaces its subject block in `knop_inventory_renderers.ts`; versioned KnopInventory/payload/support renderers remain whole-document producers.
+3. extract and integrate still build updated MeshInventory and KnopInventory documents through operation-specific append strings or canonical renderers rather than the shared planner.
+4. `mesh_support_pages.ts` retains a separate block-mutation implementation for initial support-page and versioned MeshInventory planning.
+5. mutable current/latest/next facts still require the storage-ownership ruling in Open Issues before the final inventory/metadata split.
 
 ## Child Tasks
 
