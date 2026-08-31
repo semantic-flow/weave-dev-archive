@@ -21,7 +21,7 @@ The shared current-only renderer already avoids subject-block replacement, but i
 
 This function serves both current-only first-payload weave and current-only sequential/homogeneous extracted-term planning. Migrating it now closes the current-only counterpart to the two extracted versioned/batch children without changing candidate selection or extraction-source resolution.
 
-Implemented on `lane/current-only-payload-like-mesh-inventory-append` at `200b6e9`; awaiting review and landing. The helper now prepares the original MeshInventory, requests only mesh membership plus target/Knop page claims and page types, and returns the shared planner's exact-prefix append/no-op result. The bespoke quad-membership scan, unconditional page-block append, and `trimEnd` byte churn are removed.
+Completed 2026-08-31. Implemented at `200b6e9` and merged through Weave PR #55 as `00a3fae`. The helper now prepares the original MeshInventory, requests only mesh membership plus target/Knop page claims and page types, and returns the shared planner's exact-prefix append/no-op result. The bespoke quad-membership scan, unconditional page-block append, and `trimEnd` byte churn are removed.
 
 ## Discussion
 
@@ -63,6 +63,7 @@ Implementation receipts at `200b6e9`:
 - `deno task test`: 902 passed / 0 failed;
 - `deno task fmt:check`, `deno task lint`, and `deno task check`: green;
 - `deno task ci`: 902 passed / 0 failed, LCOV generated; only the known deleted-temporary-source coverage notices appeared.
+- GitHub PR #55: CI, npm-lib, CodeQL, and patch coverage passed; CodeRabbit accepted the lane under its review-rate-limit path with no findings.
 
 The requested suffix contains only named-node facts. The adversarial current input retains its opaque blank-node subgraphs solely through exact prefix preservation; no blank node is generated or submitted as a requested append fact.
 

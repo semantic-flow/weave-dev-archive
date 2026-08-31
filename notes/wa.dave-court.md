@@ -14,4 +14,4 @@ This note is Dave's court: open decision cards only, one card per decision, each
 
 **At ruling time, in this order:** update the owning note → append one line to the [[wd.decision-log]] ledger → sweep the card. The card leaves; nothing about the ruling stays here.
 
-*(No open cards. The FoundingReferentData correction surface was ruled 2026-08-22 and swept to [[wa.completed.2026.2026-08-22_1112-founding-referent-data]] and [[wd.decision-log]].)*
+- **Repository floating-locator identity:** keep generated blank nodes, mint deterministic named locator resources, or retain a split legacy writer. Lean: named resources; do not weaken append-request constraints. Owning note: [[wa.plan.2026.2026-05-17-append-onlyish-inventory]].

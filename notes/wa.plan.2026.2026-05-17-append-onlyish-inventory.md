@@ -8,7 +8,7 @@ created: 1779079677519
 
 ## Status
 
-Active. Reclassified from a legacy oversized task to a coordination plan on 2026-08-31. Add-reference plus batched and versioned-sequential extracted MeshInventory children are complete; the next executable child is [[wa.task.2026.2026-08-31_1050-current-only-payload-like-mesh-inventory-append]].
+Active. Reclassified from a legacy oversized task to a coordination plan on 2026-08-31. Add-reference plus extracted/current-only MeshInventory children are complete. Versioned first-payload migration is blocked on repository-locator identity; [[wa.task.2026.2026-08-31_1111-versioned-first-knop-mesh-inventory-append]] proceeds independently.
 
 ## Origin
 
@@ -49,6 +49,7 @@ Delivered substrate:
 - first/later `knop.create` and FoundingReferentData settlement append through the planner;
 - import's existing-payload source-registry insertion uses the planner;
 - first `knop add-reference` ReferenceCatalog registration preserves the carried KnopInventory prefix and appends through the planner.
+- homogeneous and versioned-sequential extracted MeshInventory growth plus shared current-only first-payload/extracted page claims append through the planner and emit no new blank nodes.
 
 Remaining mutation paths, in execution order rather than file order:
 
@@ -63,7 +64,8 @@ Remaining mutation paths, in execution order rather than file order:
 - [[wa.completed.2026.2026-08-31_0106-add-reference-inventory-append]] — preserve the current KnopInventory as the exact prefix and append only planner-approved ReferenceCatalog facts.
 - [[wa.completed.2026.2026-08-31_0845-batched-extracted-mesh-inventory-append]] — migrate the highest-risk MeshInventory weave renderer using a bounded owned-fact request rather than whole desired-output Turtle.
 - [[wa.completed.2026.2026-08-31_1026-versioned-sequential-extracted-mesh-inventory-append]] — migrate the remaining versioned extracted-term MeshInventory renderer before current-mode extracted planner work revisits the same seam.
-- [[wa.task.2026.2026-08-31_1050-current-only-payload-like-mesh-inventory-append]] — migrate the shared current-only first-payload/extracted page-claim renderer to exact append/no-op semantics.
+- [[wa.completed.2026.2026-08-31_1050-current-only-payload-like-mesh-inventory-append]] — migrate the shared current-only first-payload/extracted page-claim renderer to exact append/no-op semantics.
+- [[wa.task.2026.2026-08-31_1111-versioned-first-knop-mesh-inventory-append]] — migrate versioned first-Knop MeshInventory growth while the independent repository-locator identity ruling is open.
 - Remaining KnopInventory/PageDefinition migration — cut after the MeshInventory seam is stable so shared progression and page-fact behavior are not duplicated.
 - Extract/integrate and mesh-support migration — cut after the core weave writers prove the shared pattern.
 - Progression-storage and fixture/documentation closure — cut only after the plan-level ownership rulings are resolved.
@@ -406,6 +408,8 @@ For CI/CD, rerunning publication should be safe because the command either sees 
 
 ## Open Issues
 
+- **OPEN 2026-08-31 — repository floating-locator identity blocks versioned first-payload append.** `renderCurrentWorkingFileLocator` currently emits `sflo:hasRepositorySourceFloatingLocator [ ... ]` as an intentionally generated blank-node subgraph. The append planner correctly rejects blank nodes in newly requested facts, and Dave's product preference is to avoid blank nodes wherever practical. The choices are: (A) mint a deterministic named locator resource and update SFLO/Weave/docs/fixtures; (B) expand the append planner to admit and prove bounded blank-node request subgraphs; or (C) keep a split legacy rewrite only for floating repository payloads. Lean: A. Dave must rule the portable locator identity/path contract before the versioned first-payload renderer migrates; do not silently choose an identifier shape or weaken the append planner.
+
 - Which exact metadata document owns current/progression facts for Knop-owned payload and support histories? The likely target is `D/_knop/_meta/meta.ttl` for Knop-local artifact progression and `_mesh/_meta/meta.ttl` for MeshInventory progression.
 - Should the ontology or config vocabulary name an explicit inventory write policy such as append-only/current-projection/repair, or is this initially a Weave runtime invariant?
 - How should repair/retraction be exposed: CLI flags on existing commands, a separate `weave repair` surface, or an internal mode first?
@@ -486,7 +490,8 @@ For CI/CD, rerunning publication should be safe because the command either sees 
 - [x] Deliver [[wa.completed.2026.2026-08-31_0106-add-reference-inventory-append]].
 - [x] Deliver [[wa.completed.2026.2026-08-31_0845-batched-extracted-mesh-inventory-append]].
 - [x] Deliver [[wa.completed.2026.2026-08-31_1026-versioned-sequential-extracted-mesh-inventory-append]].
-- [ ] Deliver [[wa.task.2026.2026-08-31_1050-current-only-payload-like-mesh-inventory-append]].
+- [x] Deliver [[wa.completed.2026.2026-08-31_1050-current-only-payload-like-mesh-inventory-append]].
+- [ ] Deliver [[wa.task.2026.2026-08-31_1111-versioned-first-knop-mesh-inventory-append]].
 - [ ] Cut and deliver the MeshInventory weave child tasks.
 - [ ] Cut and deliver remaining KnopInventory/PageDefinition and operation-specific writer tasks.
 - [ ] Resolve and implement the progression-storage contract.
