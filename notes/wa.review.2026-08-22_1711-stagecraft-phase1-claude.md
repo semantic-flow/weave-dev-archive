@@ -7,7 +7,7 @@ created: 1787443907000
 
 ## Scope
 
-Read-only Claude Opus max-effort review of Phase 1 in [[wa.completed-plan.2026.2026-08-22_1550-stagecraft-iri-initialization]] against its brief and receipts in [[wa.task.2026.2026-05-17-append-onlyish-inventory]]. The review inspected the current uncommitted Weave/archive diff, append planner, create inventory index, compact rendering, unit/integration/e2e coverage, scale probe, CSV rows, and before/after claims. No files were modified by the reviewer.
+Read-only Claude Opus max-effort review of Phase 1 in [[wa.completed-plan.2026.2026-08-22_1550-stagecraft-iri-initialization]] against its brief and receipts in [[wa.plan.2026.2026-05-17-append-onlyish-inventory]]. The review inspected the current uncommitted Weave/archive diff, append planner, create inventory index, compact rendering, unit/integration/e2e coverage, scale probe, CSV rows, and before/after claims. No files were modified by the reviewer.
 
 ## Reviewer Validation
 

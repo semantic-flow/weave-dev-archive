@@ -1,12 +1,16 @@
 ---
 id: gx515t52uvyddqh14agkrhu
-title: 2026 05 17 Append Onlyish Inventory
+title: Append-Only Inventory Migration
 desc: ''
 updated: 1779080314278
 created: 1779079677519
 ---
 
-## Parent Plan
+## Status
+
+Active. Reclassified from a legacy oversized task to a coordination plan on 2026-08-31. [[wa.completed.2026.2026-08-31_0106-add-reference-inventory-append]] closed G1; the next executable child is [[wa.task.2026.2026-08-31_0845-batched-extracted-mesh-inventory-append]].
+
+## Origin
 
 [[wa.completed-plan.2026.2026-08-22_1550-stagecraft-iri-initialization]] — owns the bounded Phase 1 `knop.create` append-planner/indexed-read-model bite. The plan does not wait for every remaining writer in this broader task.
 
@@ -32,6 +36,51 @@ The desired write primitive is:
 - never silently remove unknown or older facts from inventory
 
 This task supersedes the older TODO wording about "subject-level canonical rewrites with graph-preserving updates". The replacement principle is simpler and stricter: normal inventory operations do not rewrite existing inventory facts at all.
+
+### Remaining-writer audit — 2026-08-31
+
+Audit substrate: Weave `main` at `6643ae1`.
+
+Delivered substrate:
+
+- `planInventoryAppend`, consistency-by-construction prepared input, and exact suffix rendering are shared production code;
+- current-only ReferenceCatalog weave appends through the planner;
+- routine generation no longer deletes settled ResourcePage facts;
+- first/later `knop.create` and FoundingReferentData settlement append through the planner;
+- import's existing-payload source-registry insertion uses the planner;
+- first `knop add-reference` ReferenceCatalog registration preserves the carried KnopInventory prefix and appends through the planner.
+
+Remaining mutation paths, in execution order rather than file order:
+
+1. `src/core/weave/mesh_inventory_renderers.ts` still uses subject-block replacement across first Knop, first payload, batched payload, and extracted-term paths. The batched extracted renderer explicitly filters target subject blocks before reconstruction.
+2. current-only ResourcePageDefinition weave still replaces its subject block in `knop_inventory_renderers.ts`; versioned KnopInventory/payload/support renderers remain whole-document producers.
+3. extract and integrate still build updated MeshInventory and KnopInventory documents through operation-specific append strings or canonical renderers rather than the shared planner.
+4. `mesh_support_pages.ts` retains a separate block-mutation implementation for initial support-page and versioned MeshInventory planning.
+5. mutable current/latest/next facts still require the storage-ownership ruling in Open Issues before the final inventory/metadata split.
+
+## Child Tasks
+
+- [[wa.completed.2026.2026-08-31_0106-add-reference-inventory-append]] — preserve the current KnopInventory as the exact prefix and append only planner-approved ReferenceCatalog facts.
+- [[wa.task.2026.2026-08-31_0845-batched-extracted-mesh-inventory-append]] — migrate the highest-risk MeshInventory weave renderer after the first child proved full desired-output Turtle is a safe requested-fact source.
+- Remaining KnopInventory/PageDefinition migration — cut after the MeshInventory seam is stable so shared progression and page-fact behavior are not duplicated.
+- Extract/integrate and mesh-support migration — cut after the core weave writers prove the shared pattern.
+- Progression-storage and fixture/documentation closure — cut only after the plan-level ownership rulings are resolved.
+
+## Sequence
+
+1. Deliver the `knop add-reference` data-loss fix independently.
+2. Migrate MeshInventory weave paths in small behavior-preserving children, starting with batched extracted-term weave before current-mode extracted-term planner work touches the same seam.
+3. Migrate remaining KnopInventory/PageDefinition and operation-specific extract/integrate writers. File-disjoint children may run in parallel only after the shared requested-fact/render pattern is proven.
+4. Resolve progression-document ownership and repair/retraction policy before moving mutable facts.
+5. Regenerate deliberately affected fixtures, update durable guidance/release notes, and close the plan only after a whole-repository writer audit finds no unowned normal-operation rewrite.
+
+## Gates
+
+- G1 — CLOSED 2026-08-31. `knop add-reference` preserves arbitrary carried facts/comments as an exact prefix, appends only missing planned facts, and refuses single-valued conflicts before writes. Weave PR #50 merged as `b8678d0` after green GitHub gates and a no-action CodeRabbit review.
+- G2 — every migrated writer has fail-on-old append/no-op/conflict or carried-fact preservation evidence plus focused integration coverage.
+- G3 — Dave rules the exact Knop-local progression document and whether append-onlyish is initially a Weave invariant or portable Semantic Flow contract before the storage split.
+- G4 — fixture regeneration is deliberate and exact; no compatibility shim is added for stale pre-v1 shapes.
+- G5 — full gates and a final source audit prove normal inventory paths no longer delete or canonical-rewrite settled facts.
 
 ### Stagecraft Phase 1 Before/After Receipt
 
@@ -217,7 +266,7 @@ Phase 1 does not close the broader append-onlyish task; remaining writers and pr
 ### Fresh-Conversation Implementation Brief — Phase 1 Review Follow-Up
 
 ```text
-Address the Claude Phase 1 review findings that are ruled in scope in [[wa.task.2026.2026-05-17-append-onlyish-inventory]]. Work only on the Stagecraft Phase 1 follow-up; do not implement FoundingReferentData.
+Address the Claude Phase 1 review findings that are ruled in scope in [[wa.plan.2026.2026-05-17-append-onlyish-inventory]]. Work only on the Stagecraft Phase 1 follow-up; do not implement FoundingReferentData.
 
 Work in /home/djradon/hub/semantic-flow/weave. Read AGENTS.md, product vision, wd.general-guidance, [[wa.completed-plan.2026.2026-08-22_1550-stagecraft-iri-initialization]], this task's Phase 1 brief/receipts/follow-up scope, and [[wa.review.2026-08-22_1711-stagecraft-phase1-claude]] completely. Inspect the current uncommitted diff before editing. Preserve all unrelated planning/documentation changes; do not reset, discard, commit, push, or rename them. Use apply_patch for edits.
 
@@ -380,7 +429,7 @@ For CI/CD, rerunning publication should be safe because the command either sees 
 - Historical state files and historical inventory snapshots remain immutable once written.
 - Metadata files may update mutable progression facts during ordinary runs, but those updates should be narrowly scoped to the predicates the operation owns.
 
-## Testing
+## Testing And Receipts
 
 - Add unit coverage for an inventory append planner: duplicate triples no-op, new triples append, conflicting settled triples fail, unknown existing triples are preserved byte-for-byte.
 - Add tests that normal `weave` over an already-settled workspace produces no inventory writes when source and config are unchanged.
@@ -417,19 +466,28 @@ For CI/CD, rerunning publication should be safe because the command either sees 
 - Update or add user-facing release automation guidance that says automated reruns should use composed mesh/source/publication operations, stable source refs/commits, and explicit `releases/<version>` targets, and that unchanged reruns must not rewrite inventory.
 - If the storage split becomes part of the portable Semantic Flow contract rather than only Weave runtime behavior, update the relevant SFLO ontology summary/spec notes to clarify settled inventory facts versus metadata-hosted progression facts.
 
-## Implementation Plan
+## Exit Criteria
 
-- [ ] Add focused tests for append/no-op/conflict inventory behavior before refactoring production writers.
-- [ ] Implement the shared RDF-aware inventory append planner.
-- [ ] Refactor MeshInventory writers to use append-only settled-fact writes and metadata-hosted progression only.
-- [ ] Refactor KnopInventory and payload/support history writers to append settled facts and move current/latest/next progression to metadata.
-- [ ] Refactor branch-published source-registry inventory updates to use the append planner.
-- [ ] Adjust ResourcePage fact handling so normal generation never removes settled inventory facts.
-- [ ] Update runtime current/latest readers to resolve from metadata and fail closed on conflicting current-pointer facts.
-- [ ] Regenerate or update fixture expectations for the new inventory/meta split.
-- [ ] Correct singular `release` examples/tests to `releases`.
-- [ ] Update developer/user documentation and decision log.
-- [ ] Run targeted tests, then `deno task fmt`, `deno task lint`, and the relevant CI gate before closing.
+- Every normal-operation inventory writer either uses `planInventoryAppend`/`renderInventoryAppendPlan` or proves an equivalent append/no-op/conflict contract through a single shared abstraction.
+- Existing bytes and unknown settled facts are retained; new settled facts append; conflicting single-valued facts refuse before writes.
+- Mutable progression ownership is ruled and implemented without leaving conflicting pointers in inventory and metadata.
+- ResourcePage generation policy never silently deletes settled facts; explicit repair/retraction remains a separate named mode.
+- Whole-command reruns and release-shaped fixtures prove byte-stable no-op behavior where no new settled fact exists.
+- Required fixture, developer, user, release-note, and decision-log updates land with full Weave gates green.
+- Every child task is completed/cancelled or an explicit ruled-off branch, and no actionable migration remains only in this plan's prose.
+
+## Plan Checklist
+
+- [x] Add and harden the shared RDF-aware inventory append planner and renderer.
+- [x] Migrate current-only ReferenceCatalog weave, first/later `knop.create`, FoundingReferentData settlement, and import source-registry insertion.
+- [x] Stop routine ResourcePage generation from deleting settled inventory facts.
+- [x] Deliver [[wa.completed.2026.2026-08-31_0106-add-reference-inventory-append]].
+- [ ] Deliver [[wa.task.2026.2026-08-31_0845-batched-extracted-mesh-inventory-append]].
+- [ ] Cut and deliver the MeshInventory weave child tasks.
+- [ ] Cut and deliver remaining KnopInventory/PageDefinition and operation-specific writer tasks.
+- [ ] Resolve and implement the progression-storage contract.
+- [ ] Regenerate affected fixtures and update durable documentation.
+- [ ] Run the final writer audit, full gates, and close this plan.
 
 ## Evidence audit + Kim brief — bite 1 (cut 2026-08-01, post-loop harvest)
 

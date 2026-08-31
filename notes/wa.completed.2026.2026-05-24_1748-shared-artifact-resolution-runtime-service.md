@@ -179,7 +179,7 @@ Raw source panels should eventually use the same resolver for display, but displ
 
 ### Relationship To Append-Onlyish Inventory
 
-This task is adjacent to [[wa.task.2026.2026-05-17-append-onlyish-inventory]], but it should not be bundled with that migration.
+This task is adjacent to [[wa.plan.2026.2026-05-17-append-onlyish-inventory]], but it should not be bundled with that migration.
 
 The resolver can initially read today's inventory/meta shape. The append-onlyish storage migration can later change where current/progression facts live, and the resolver should become the single runtime place that absorbs that storage split. That is another reason to create the service before or during the inventory migration, but not as a hidden part of config-source discovery.
 
@@ -233,7 +233,7 @@ The resolver can initially read today's inventory/meta shape. The append-onlyish
 - Do not refresh imports from their original URL through ordinary resolution. Use explicit acquisition instead; today that is repeated `weave import --replace-working`, and future integrate/refresh commands may define their own URL policy.
 - Do not inspect live git remotes or floating repository refs.
 - Do not redesign the ontology vocabulary in this task.
-- Do not move current/progression facts out of inventory; that belongs to [[wa.task.2026.2026-05-17-append-onlyish-inventory]].
+- Do not move current/progression facts out of inventory; that belongs to [[wa.plan.2026.2026-05-17-append-onlyish-inventory]].
 - Do not implement full config-source discovery; that belongs to [[wa.completed.2026.2026-05-27_1246-config-source-discovery-and-resolution]] and should consume this resolver.
 - Do not implement manifest-driven integrate; that belongs to [[wa.task.2026.2026-05-18_1846-integrate-manifest]].
 - Do not add a conformance fixture solely for the service abstraction. Fixtures should prove externally visible behavior, not internal factoring.

@@ -23,7 +23,7 @@ Completed 2026-08-23 after Dave selected the measured singular release path and 
 
 This plan coordinates an existing correctness migration and a new identifier-initialization capability.
 
-The current `knop.create` implementation validates and reconstructs the whole MeshInventory for every new Knop. The shared `planInventoryAppend` primitive already exists, and [[wa.task.2026.2026-05-17-append-onlyish-inventory]] names later `knop.create` as a remaining whole-document writer. [[wa.completed.2026.2026-08-22_1112-founding-referent-data]] adds a third created file and a new inventory subgraph. Implementing the founding artifact on the legacy writer would duplicate inventory-mutation logic and make the later migration harder.
+The current `knop.create` implementation validates and reconstructs the whole MeshInventory for every new Knop. The shared `planInventoryAppend` primitive already exists, and [[wa.plan.2026.2026-05-17-append-onlyish-inventory]] names later `knop.create` as a remaining whole-document writer. [[wa.completed.2026.2026-08-22_1112-founding-referent-data]] adds a third created file and a new inventory subgraph. Implementing the founding artifact on the legacy writer would duplicate inventory-mutation logic and make the later migration harder.
 
 The delivery sequence is therefore:
 
@@ -50,7 +50,7 @@ SFLO ontology and framework-spec work for founding data may proceed after its co
 | Phase | Owning artifact | Role |
 | --- | --- | --- |
 | 0 | [[wd.plans-and-tasks]] | Establish the plan genre, queue boundary, and closure rules used here. |
-| 1 | [[wa.task.2026.2026-05-17-append-onlyish-inventory]] | Capture the pre-change 552-create baseline, migrate the later/current `knop.create` MeshInventory path onto `planInventoryAppend`, remove repeated membership scans, and rerun the identical probe. |
+| 1 | [[wa.plan.2026.2026-05-17-append-onlyish-inventory]] | Capture the pre-change 552-create baseline, migrate the later/current `knop.create` MeshInventory path onto `planInventoryAppend`, remove repeated membership scans, and rerun the identical probe. |
 | 2 | [[wa.completed.2026.2026-08-22_1112-founding-referent-data]] | Add the optional founding artifact and its ordinary support-artifact update/version correction lifecycle across SFLO, the framework contract, Accord, and Weave. |
 | 3 | [[wa.completed.2026.2026-08-22_1112-founding-referent-data]] | Produce the opt-in 552-entry functional/performance receipt after Phase 2. |
 | 4 | Task cut only if Gate G3 selects it | Parse/validate once, plan many Knops, and commit one MeshInventory append for a true batch initialization path. |
@@ -182,7 +182,7 @@ Final status: **SINGULAR ACCEPTED.** Dave's 2026-08-23 instruction to release th
 ## Open Issues
 
 - Resolved for this release: Dave accepted the measured singular path without supplying a stricter Stagecraft budget. Future requirements may reopen batching as a new task, not this plan.
-- Should Phase 1 be carved into its own child task note before implementation, or remain a clearly bounded bite and receipt inside [[wa.task.2026.2026-05-17-append-onlyish-inventory]]? Lean: keep it in the existing task unless queue/review independence requires a carve.
+- Should Phase 1 be carved into its own child task note before implementation, or remain a clearly bounded bite and receipt inside [[wa.plan.2026.2026-05-17-append-onlyish-inventory]]? Lean: keep it in the existing note unless queue/review independence requires a carve.
 
 ## Testing And Receipts
 
@@ -294,7 +294,7 @@ At handoff report decisions applied, files/commits per repo, review dispositions
 ## Plan Checklist
 
 - [x] Establish [[wd.plans-and-tasks]], [[template.plan]], schema support, and the queue boundary.
-- [x] Capture the legacy N=552 baseline, deliver the `knop.create` append-planner/indexed-read-model plus suffix-proof bite, record like-for-like receipts, and pass final G1 review under [[wa.task.2026.2026-05-17-append-onlyish-inventory]].
+- [x] Capture the legacy N=552 baseline, deliver the `knop.create` append-planner/indexed-read-model plus suffix-proof bite, record like-for-like receipts, and pass final G1 review under [[wa.plan.2026.2026-05-17-append-onlyish-inventory]].
 - [x] Deliver [[wa.completed.2026.2026-08-22_1112-founding-referent-data]] on the migrated writer.
 - [x] Record the 552-entry and no-founding baseline receipts.
 - [x] Rule Gate G3 and, only if selected, cut and deliver the batch child task. Singular accepted; the batch branch was not selected.

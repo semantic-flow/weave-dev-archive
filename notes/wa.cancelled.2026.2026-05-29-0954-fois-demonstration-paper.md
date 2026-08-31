@@ -166,7 +166,7 @@ Limitations: v0.x implementation; daemon/web surfaces are not the current demo; 
 - Draft in Markdown or directly in LaTeX, then assemble the final PDFs in CEUR-ART LaTeX first. Use Overleaf or install a local TeX toolchain if needed. LibreOffice/ODT is now only the fallback path.
 - Do not claim daemon or browser app maturity. The current credible artifact is CLI/runtime plus generated static ResourcePages.
 - Do not promise network fetching or broad remote current-byte resolution. The current story is governed local/repository source resolution and explicit import.
-- Do not present append-onlyish inventory idempotence as completed until [[wa.task.2026.2026-05-17-append-onlyish-inventory]] lands.
+- Do not present append-onlyish inventory idempotence as completed until [[wa.plan.2026.2026-05-17-append-onlyish-inventory]] lands.
 
 ## Contract Changes
 

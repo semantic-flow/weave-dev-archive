@@ -10,7 +10,7 @@ created: 1783741200000
 - Let one full `weave` invocation advance multiple selected payload targets in a single deterministic plan.
 - Keep atomicity at the application boundary: the requesting service serializes coherent state and requests the weave; Weave validates and fails closed but does not provide transactional write guarantees.
 - Make shared support-artifact progression (especially MeshInventory) merge coherently when several targets advance in one plan, instead of last-write-wins.
-- Keep single-target behavior, diagnostics style, and byte-stability guarantees from [[wa.task.2026.2026-07-03_1332-stagecraft-weave-planner-generalization]] unchanged.
+- Keep single-target behavior, diagnostics style, and byte-stability guarantees from [[wa.completed.2026.2026-07-03_1332-stagecraft-weave-planner-generalization]] unchanged.
 
 ## Summary
 
@@ -33,7 +33,7 @@ Weave plans then writes files; filesystem writes are not transactional and prete
 
 ### Shared support-artifact convergence
 
-This is the real technical work of the slice. Multiple targets in one plan may progress the same MeshInventory, and in nested-Knop cases possibly the same KnopInventory or generated pages. The later-payload read model currently resolves progression per target; the multi-target plan needs a merge step so shared artifacts render once, with all targets' progression facts present and consistent. This is adjacent to [[wa.task.2026.2026-05-17-append-onlyish-inventory]]: appending/no-oping settled facts is exactly the behavior that makes a merged render and re-runnability cheap. Decide how much of that task this slice needs, and record it.
+This is the real technical work of the slice. Multiple targets in one plan may progress the same MeshInventory, and in nested-Knop cases possibly the same KnopInventory or generated pages. The later-payload read model currently resolves progression per target; the multi-target plan needs a merge step so shared artifacts render once, with all targets' progression facts present and consistent. This is adjacent to [[wa.plan.2026.2026-05-17-append-onlyish-inventory]]: appending/no-oping settled facts is exactly the behavior that makes a merged render and re-runnability cheap. Decide how much of that task this slice needs, and record it.
 
 ### Cross-target references
 
@@ -73,7 +73,7 @@ The epic already flags the one-candidate limit in `planWeave`. Multi-target sele
 - CLI syntax uses repeated `--target` flags. That is the existing target convention, already supported by the parser, and avoids inventing a second comma/list layer around a target spec that is itself comma-separated.
 - Explicit payload batch planning order is canonical designator-path order, not request order. This matches existing candidate discovery order, keeps output deterministic across equivalent CLI flag ordering, and prevents caller ordering from becoming semantic state.
 - MeshInventory advances once per explicit payload batch when batch members share it. The batch state represents the one support-artifact observation after coherent application serialization; recursive and mixed-slice planning keep the existing deterministic sequential behavior.
-- This slice uses only the append/no-op/conflict portion of [[wa.task.2026.2026-05-17-append-onlyish-inventory]] that is needed for deterministic support rendering and reruns. It does not land the broader append-onlyish inventory task.
+- This slice uses only the append/no-op/conflict portion of [[wa.plan.2026.2026-05-17-append-onlyish-inventory]] that is needed for deterministic support rendering and reruns. It does not land the broader append-onlyish inventory plan.
 - Re-running an already-applied exact payload batch no-ops already-current payload targets. This supports partial reruns without minting duplicate identical states; a caller that wants a new state must change the payload or request a new explicit state segment.
 - Runtime batching is scoped to multiple exact payload targets whose target-scoped planning policies are consistent. Recursive and mixed-slice target sets keep the existing deterministic sequential planner.
 - Input snapshot verification is fail-closed and pre-write: sha256 hashes of the batch's input files are taken before content capture and verified after capture completes; any mismatch refuses the whole plan with a diagnostic naming the changed file, before anything is written. Changes after capture are ignored by design — no lost-update warning, no post-write re-checks, no `--atomic-only` revert flag.
@@ -127,7 +127,7 @@ Added explicit payload-batch input snapshot verification with the scoped current
 - [x] Add the shared support-artifact merge step to the later-payload read model path, deciding how much append-onlyish inventory behavior this requires.
 - [x] Define and implement re-run semantics for already-advanced targets.
 - [x] Add the test coverage listed above, including the sequential-equivalence check against the temporal-rung replay shape.
-- [x] Update [[wd.decision-log]] (app-owned atomicity boundary) and tick the epic's multi-target follow-up in [[wa.task.2026.2026-07-03_1332-stagecraft-weave-planner-generalization]].
+- [x] Update [[wd.decision-log]] (app-owned atomicity boundary) and tick the epic's multi-target follow-up in [[wa.completed.2026.2026-07-03_1332-stagecraft-weave-planner-generalization]].
 - [x] Snapshot verification: hash the batch's input files (sha256) before content capture and verify after capture completes; mismatch refuses the whole plan pre-write with a diagnostic naming the changed file.
 - [x] Snapshot verification: decide the hash scope (working payload files vs all plan-read inputs) and record it here.
 - [x] Snapshot verification: add the capture-window mutation test and the post-capture mutation test, then update user docs.

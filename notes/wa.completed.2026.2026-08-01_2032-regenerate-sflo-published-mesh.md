@@ -729,6 +729,6 @@ A full rehearsal ran end to end on `lane/sflo-namespace-collision` (PR #35) with
 - Host controls: `.nojekyll` present, `CNAME` and `assets/` absent, `job`/`prov` excluded.
 - Vocabulary migration complete: no `hasTargetArtifact` / `hasRequestedTargetState` anywhere; no host paths leaked into any `.ttl` or `.html`.
 
-**Residual, boarded not fixed:** one generated file (`_knop/_inventory/inventory.ttl`) ends with a trailing blank line where the old renderer emitted a single newline — the append path's output hygiene. Cosmetic, valid Turtle, one file; boarded on [[wa.task.2026.2026-05-17-append-onlyish-inventory]] as a nit for whoever next touches the append planner.
+**Residual, boarded not fixed:** one generated file (`_knop/_inventory/inventory.ttl`) ends with a trailing blank line where the old renderer emitted a single newline — the append path's output hygiene. Cosmetic, valid Turtle, one file; boarded on [[wa.plan.2026.2026-05-17-append-onlyish-inventory]] as a nit for whoever next touches the append planner.
 
 **Deviation from the drafted recipe, recorded honestly:** the draft proposed replacing `_mesh/_config/config.ttl` with an invented policy-binding config. The published config had no such bindings, so the regenerated mesh uses the config `mesh create` emits — which is byte-identical to the one that was published. No invented policy was introduced.

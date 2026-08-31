@@ -38,6 +38,6 @@ Revive on either trigger: the SFLO runbook wanting a recurring integrity gate in
 
 Dave's reason is the decisive one, and it is stronger than the packaging argument: **states must be retractable.** PII exposure is the motivating case — a state containing personal data has to be correctable or removable, and a guarantee of historical immutability would make that impossible by design. Immutability was the wrong goal, not merely the harder option.
 
-This lands where [[wa.task.2026.2026-05-17-append-onlyish-inventory]] already pointed: that note lists "privacy or security retraction" among legitimate non-append modes and reserves explicit repair/retraction modes. Retraction is therefore an existing thread, not a new one, and whichever task implements it owns the digest behavior too.
+This lands where [[wa.plan.2026.2026-05-17-append-onlyish-inventory]] already pointed: that note lists "privacy or security retraction" among legitimate non-append modes and reserves explicit repair/retraction modes. Retraction is therefore an existing thread, not a new one, and whichever task implements it owns the digest behavior too.
 
 Full proposed surface (`weave validate mesh --integrity payload-history`), findings taxonomy, and ten acceptance tests are in the 2026-08-02 codex analysis, retained for revival.
