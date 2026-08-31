@@ -21,6 +21,8 @@ When no mesh-support artifact needs initial history creation, `planMeshSupportRe
 
 This child is independent of both open MeshInventory rulings. It does not touch the initial-history arm, progression pointers, repository locators, integrate, or legacy extract. Its requested graph is named-node-only; carried blank-node subgraphs remain exact prefix bytes and are never submitted as requested facts.
 
+Implemented in Weave commit `4b9379f`. The no-initial-history arm now verifies support subjects from parsed RDF, prepares the original MeshInventory, requests only named support-page links/types, and returns the shared renderer's append/no-op result. A semantic no-op omits the inventory update from the `VersionPlan`; initial history construction remains unchanged.
+
 ## Discussion
 
 Keep support-resource discovery and the `needsInitialSupportHistory` dispatch unchanged. In the false arm, verify that `_mesh`, `_mesh/_meta`, `_mesh/_inventory`, and optional `_mesh/_config` subjects exist, prepare the original MeshInventory, request each resource's page link plus the page's `ResourcePage` and `LocatedFile` types, and render through the shared proof-checked suffix path.
@@ -51,6 +53,20 @@ There is no single-valued predicate in the requested graph, so this child has no
 - Existing mesh-support planner/runtime integrations remain green.
 - Run focused tests first, then `deno task fmt:check`, `deno task lint`, `deno task check`, `deno task test`, and `deno task ci` before landing.
 
+Fail-on-old receipt: the focused file produced 1 passed / 2 failed against unchanged production code. The exact-prefix case failed before rendering because block discovery could not find `_mesh` behind a leading comment, and the missing-subject case consequently misdiagnosed `_mesh` instead of the actually absent `_mesh/_meta`; the existing semantic no-op passed.
+
+Implementation receipts at `4b9379f`:
+
+- direct page-only append/no-op/missing-subject tests: 3 passed / 0 failed;
+- existing mesh-support planner tests, including the untouched initial-history and suppressed-generation-policy arms: 3 passed / 0 failed;
+- current-only support-history runtime integration: 1 passed / 0 failed, with exact pre-weave MeshInventory prefix and semantic config-page registration;
+- `deno task fmt:check`, `deno task lint`, and `deno task check`: green;
+- `deno task test`: 912 passed / 0 failed;
+- `deno task ci`: 912 passed / 0 failed, LCOV generated; only the known deleted-temporary-source coverage notices appeared;
+- `git diff --check`: green.
+
+The shared renderer's self-contained suffix intentionally changes byte layout from the old in-place semicolon edit. Tests require exact carried-prefix bytes and exact RDF union, and the output-byte/no-op change is boarded here for the next release notes because no next-release stub exists yet.
+
 ## Non-Goals
 
 - No initial support history, metadata progression, versioned writer, integrate, extract, KnopInventory, ontology, CLI, public API, or fixture-topology change.
@@ -58,8 +74,8 @@ There is no single-valued predicate in the requested graph, so this child has no
 
 ## Implementation Plan
 
-- [ ] Record fail-on-old exact-prefix and semantic no-op evidence.
-- [ ] Replace only the page-only block-mutation arm with bounded append planning.
-- [ ] Retain missing-subject and generation-policy behavior.
-- [ ] Update developer guidance and board the byte/no-op change for the next release notes.
-- [ ] Run focused/full validation and return any plan-level sequencing delta.
+- [x] Record fail-on-old exact-prefix and semantic no-op evidence.
+- [x] Replace only the page-only block-mutation arm with bounded append planning.
+- [x] Retain missing-subject and generation-policy behavior.
+- [x] Update developer guidance and board the byte/no-op change here for the next release notes; no next-release stub exists yet.
+- [x] Run focused/full validation. Plan-level sequencing is unchanged: initial mesh-support history stays behind the progression ruling and integrate stays behind repository-locator identity.
