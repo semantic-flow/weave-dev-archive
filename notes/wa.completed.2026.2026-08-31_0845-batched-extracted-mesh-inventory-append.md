@@ -21,7 +21,7 @@ created: 1788191100000
 
 The completed add-reference child proved the migration pattern: retain existing shape validation, render the supported desired graph as a bounded requested-fact source, prepare the original current inventory, and let `planInventoryAppend` / `renderInventoryAppendPlan` produce the exact original prefix plus only missing facts. This child applies that pattern only to the homogeneous batched extracted-term renderer used by PR #41's scale path.
 
-Implemented on `lane/batched-extracted-mesh-inventory-append` at `1770767`; awaiting review and landing. The renderer now constructs only its owned term, Knop, page, and optional MeshInventory history/state facts, prepares the original current inventory, and returns the shared planner's exact-prefix append/no-op/conflict result. The old target-block filter, reconstruction helpers, and anchor-based insertion path are removed.
+Completed 2026-08-31. Implemented at `1770767` and merged through Weave PR #51 as `14090ba`. The renderer now constructs only its owned term, Knop, page, and optional MeshInventory history/state facts, prepares the original current inventory, and returns the shared planner's exact-prefix append/no-op/conflict result. The old target-block filter, reconstruction helpers, and anchor-based insertion path are removed.
 
 ## Discussion
 
@@ -64,6 +64,7 @@ Implementation receipts at `1770767`:
 - `deno task test`: 895 passed / 0 failed;
 - `deno task fmt:check`, `deno task lint`, and `deno task check`: green;
 - `deno task ci`: 895 passed / 0 failed, LCOV generated; only the known deleted-temporary-source coverage notices appeared.
+- GitHub PR #51: CI, npm-lib, CodeQL, and patch coverage passed; CodeRabbit completed with no actionable comments and low merge risk. Its generic private-helper docstring warning is not a repository gate and did not justify style-only comments.
 
 Exact-prefix coverage carries a nonstandard prefix, target-local comments, opaque predicates, repeated subject blocks, and blank-node subgraphs. Semantic-union coverage spans current-only and versioned policy, asserts one next MeshInventory state membership, and confirms mutable progression predicates remain outside inventory.
 
