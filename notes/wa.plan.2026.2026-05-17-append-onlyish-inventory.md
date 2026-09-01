@@ -8,7 +8,7 @@ created: 1779079677519
 
 ## Status
 
-Active. Reclassified from a legacy oversized task to a coordination plan on 2026-08-31. Add-reference, extracted/current-only MeshInventory, current-only PageDefinition, current-shape extract, mesh-support page-only growth, named floating locators, mesh-support progression producer correction, and versioned first-Knop MeshInventory append are complete. Run a fresh remaining-writer audit before cutting the next migration child; do not infer it from the legacy audit below.
+Active. Reclassified from a legacy oversized task to a coordination plan on 2026-08-31. Add-reference, extracted/current-only MeshInventory, current-only PageDefinition, current-shape extract, mesh-support page-only growth, named floating locators, mesh-support progression producer correction, and versioned first-Knop MeshInventory append are complete. A fresh audit selected [[wa.task.2026.2026-08-31_1905-versioned-first-payload-mesh-inventory-append]] next because its singular renderer still owns the remaining versioned first-payload block rewrite and its batched wrapper delegates to it.
 
 ## Origin
 
@@ -71,6 +71,7 @@ Remaining mutation paths, in execution order rather than file order:
 - [[wa.completed.2026.2026-08-31_1219-mesh-support-page-only-inventory-append]] — migrated mesh-support page-only growth while the initial-history arm remains behind the progression ruling.
 - [[wa.completed.2026.2026-08-31_1639-named-repository-floating-locators]] — implemented the ruled source-registry locator identity and unblocked integrate append planning.
 - [[wa.completed.2026.2026-08-31_1714-mesh-support-progression-producer-correction]] — stopped initial mesh-support weave from producing inventory-owned mutable pointers and regenerated every affected fixture tail.
+- [[wa.task.2026.2026-08-31_1905-versioned-first-payload-mesh-inventory-append]] — migrate singular and delegated batched versioned first-payload MeshInventory rendering from block replacement to exact-prefix append.
 - Remaining KnopInventory/PageDefinition migration — cut after the MeshInventory seam is stable so shared progression and page-fact behavior are not duplicated.
 - Extract/integrate and mesh-support migration — cut after the core weave writers prove the shared pattern.
 - Progression-storage and fixture/documentation closure — cut only after the plan-level ownership rulings are resolved.
@@ -502,6 +503,7 @@ For CI/CD, rerunning publication should be safe because the command either sees 
 - [x] Deliver [[wa.completed.2026.2026-08-31_1219-mesh-support-page-only-inventory-append]].
 - [x] Deliver [[wa.completed.2026.2026-08-31_1639-named-repository-floating-locators]].
 - [x] Deliver [[wa.completed.2026.2026-08-31_1714-mesh-support-progression-producer-correction]].
+- [ ] Deliver [[wa.task.2026.2026-08-31_1905-versioned-first-payload-mesh-inventory-append]].
 - [ ] Cut and deliver the MeshInventory weave child tasks.
 - [ ] Cut and deliver remaining KnopInventory/PageDefinition and operation-specific writer tasks.
 - [ ] Resolve and implement the progression-storage contract.
