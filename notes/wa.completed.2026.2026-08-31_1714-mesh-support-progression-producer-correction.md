@@ -34,7 +34,7 @@ After core behavior is green, identify every fixture scenario whose first suppor
 
 ## Open Issues
 
-- If moving metadata/config progression into MeshMetadata exposes a recursive snapshot inconsistency or a reader that assumes those pointers remain in inventory, report it before weakening the ruled ownership split.
+- Moving metadata/config progression exposed one ResourcePage reader that assumed those pointers remained in inventory. It was corrected to combine settled history structure from MeshInventory with mutable progression from MeshMetadata; the ownership split was not weakened.
 - Broad published SFLO/URPX release regeneration remains release-owned and is not implied by fixture reruns.
 
 ## Decisions
@@ -64,10 +64,22 @@ After core behavior is green, identify every fixture scenario whose first suppor
 
 - No first-Knop append WIP, named-locator work, Knop-owned progression migration, explicit repair command, release publication, ontology change, or general fixture topology redesign.
 
+## Closure Receipt
+
+Delivered 2026-08-31.
+
+- Weave PR #69 merged as `8392751`. Initial versioned mesh-support planning now keeps only settled artifact/history/state/manifestation membership in MeshInventory and writes current/latest/next progression for every versioned mesh support artifact into MeshMetadata.
+- ResourcePage history and raw-source assembly now reads mesh-support progression from MeshMetadata while retaining settled structure from MeshInventory. This closes the only reader dependency exposed by the ownership move.
+- Semantic Flow Framework PR #1 merged as `a748ac9`, aligning exact progression placement assertions, current workspace-rule vocabulary, the carried Alice MeshInventory ordinal, and the nondeterministic observation-time exception.
+- Regenerated and Accord-validated Alice `a.03` through `a.30`, sidecar `a.03` through `a.17`, and branch-published `a.02` through `a.15` excluding the independent source-lane rung `a.10`. Published every affected checkpoint ref; branch publication `gh-pages` was replaced under an exact old-SHA lease.
+- Merged accepted final rungs into non-branch fixture `main`: Alice `7bd589b` has the exact `a.30-founding-corrected` tree; sidecar `0832430` has the exact `a.17-all-remaining-terms-woven` tree. Branch-fantasy-rules `main` remains the source lane.
+- Full Weave `deno task ci` passed with 918 tests, zero failures, and LCOV generated. GitHub CI, npm-lib, CodeQL, and codecov/patch all passed before merge.
+- Current regenerated first-Knop inputs contain no MeshInventory-owned `currentArtifactHistory`, `nextHistoryOrdinal`, `latestHistoricalState`, or `nextStateOrdinal`; [[wa.task.2026.2026-08-31_1111-versioned-first-knop-mesh-inventory-append]] is unblocked and stale legacy shapes remain fail-closed rather than silently repaired.
+
 ## Implementation Plan
 
-- [ ] Record fail-on-old placement tests and exact affected fixture refs.
-- [ ] Split settled inventory facts from mesh-metadata progression in the initial support producer.
-- [ ] Run focused/full Weave validation before fixture writes.
-- [ ] Regenerate and validate every affected fixture tail deliberately.
-- [ ] Land receipts and unblock the preserved first-Knop append WIP.
+- [x] Record fail-on-old placement tests and exact affected fixture refs.
+- [x] Split settled inventory facts from mesh-metadata progression in the initial support producer.
+- [x] Run focused/full Weave validation before fixture writes.
+- [x] Regenerate and validate every affected fixture tail deliberately.
+- [x] Land receipts and unblock the preserved first-Knop append WIP.

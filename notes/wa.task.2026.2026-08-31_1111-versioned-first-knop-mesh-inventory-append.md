@@ -23,7 +23,7 @@ All facts this path adds use named-node/literal terms: `_mesh hasKnop`, identifi
 
 Paused 2026-08-31 before commit. The fail-on-old tests were implemented and the append path itself passed, but the real Alice `a.04` → `a.05` acceptance comparison exposed an incompatible responsibility: `a.04` carries `currentArtifactHistory`, `nextHistoryOrdinal`, `latestHistoricalState`, and `nextStateOrdinal` in MeshInventory, and the old first-Knop renderer intentionally deletes them while `_mesh/_meta` becomes authoritative. Exact-prefix preservation would retain forbidden mutable progression facts. WIP is preserved locally on `lane/versioned-first-knop-mesh-inventory-append` as stash `wip: first-Knop append blocked by progression migration ruling`.
 
-Dave ruled option (B) on 2026-08-31. This child resumes only after a producer/fixture correction stops Weave from creating the stale pointers. It will then reject any remaining old shape before writes instead of silently deleting or grandfathering those facts. Do not apply or land the WIP before that dependency is complete.
+Dave ruled option (B) on 2026-08-31. [[wa.completed.2026.2026-08-31_1714-mesh-support-progression-producer-correction]] has now stopped Weave from creating the stale pointers and regenerated every affected fixture tail. This child is unblocked; it must reject any remaining old shape before writes instead of silently deleting or grandfathering those facts.
 
 ## Discussion
 
@@ -33,7 +33,7 @@ The existing first-Knop shape assertions and progression resolver remain the acc
 
 ## Open Issues
 
-- **DEPENDENCY:** [[wa.task.2026.2026-08-31_1714-mesh-support-progression-producer-correction]] must stop emitting the stale inventory-owned progression pointers before this path becomes fail-closed. The product choice is settled; the prerequisite implementation is not.
+- **DEPENDENCY SATISFIED:** [[wa.completed.2026.2026-08-31_1714-mesh-support-progression-producer-correction]] stopped emitting the stale inventory-owned progression pointers and published the corrected fixture tails. Resume against current `main`; do not weaken the stale-shape refusal.
 
 ## Decisions
 
@@ -64,7 +64,7 @@ The existing first-Knop shape assertions and progression resolver remain the acc
 ## Implementation Plan
 
 - [x] Record exact-prefix, conflict, no-op, and semantic-union tests failing on current `main` before production edits — 0 passed / 4 failed, then the fixture comparison exposed the blocker above.
-- [ ] Land [[wa.task.2026.2026-08-31_1714-mesh-support-progression-producer-correction]], then prove current Weave output reaches this child without stale inventory-owned progression.
+- [x] Land [[wa.completed.2026.2026-08-31_1714-mesh-support-progression-producer-correction]], then prove current Weave output reaches this child without stale inventory-owned progression.
 - [ ] Build only first-Knop owned requested facts and plan/render them against the original inventory.
 - [ ] Remove obsolete fallback/anchor/root reconstruction code proven dead for this path.
 - [ ] Add runtime zero-write conflict coverage and retain first-Knop progression/page regressions.
