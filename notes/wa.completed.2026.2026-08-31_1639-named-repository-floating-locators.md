@@ -21,7 +21,7 @@ Dave ruled deterministic named floating locators on 2026-08-31 and accepted the 
 
 The canonical locator is the current payload's repository-working locator slot, not an arbitrary source-binding child. A custom `IntegrateSourceBinding.bindingId` therefore does not change the locator IRI: every payload has at most one `<D/_knop/_sources#payload-source-repository-locator>`. Different coordinates for that identity are a conflict/repair case, not a second current locator.
 
-Implemented in SFLO commit `a119eec6` and Weave commit `26b8ddf`. SFLO defines persisted floating locators as named and changes the binding SHACL object kind to IRI. Weave derives the ruled source-registry fragment centrally, emits and self-describes it across payload inventories and source registries, rejects anonymous/noncanonical current shapes, and routes integrate MeshInventory growth through exact-prefix append planning.
+Completed 2026-08-31. Implemented in SFLO commit `a119eec6` and merged through SFLO PR #5 as `ae1cf25`; implemented in Weave commit `26b8ddf` and merged through Weave PR #67 as `a2e1e22`. SFLO defines persisted floating locators as named and changes the binding SHACL object kind to IRI. Weave derives the ruled source-registry fragment centrally, emits and self-describes it across payload inventories and source registries, rejects anonymous/noncanonical current shapes, and routes integrate MeshInventory growth through exact-prefix append planning.
 
 ## Discussion
 
@@ -71,6 +71,7 @@ Implementation receipts:
 - SFLO full `deno task ci`: 34 passed / 0 failed; 16 PySHACL and 16 JavaScript SHACL fixtures passed; release validation passed for the current v0.5.0 source metadata.
 - Weave focused locator coverage includes named output in MeshInventory, KnopInventory, and source registry; exact carried-prefix preservation; coordinate conflict; custom binding-ID stability; canonical reader acceptance; anonymous/wrong-name refusal; and runtime zero-write conflict.
 - Weave full `deno task ci`: 917 passed / 0 failed, LCOV generated; only the known deleted-temporary-source coverage notices appeared.
+- SFLO PR #5 CI passed; Weave PR #67 CI, npm-lib, CodeQL, and patch coverage passed. CodeRabbit did not start a review on PR #67 under the current rate-limit window, so no review claim is made.
 - `git diff --check` is green in SFLO and Weave.
 - A complete remote-ref audit found no checked Alice, sidecar, or branch Fantasy Rules fixture branch containing `hasRepositorySourceFloatingLocator`; affected fixtures were inline/conformance fixtures only. Published release meshes remain untouched.
 
@@ -87,4 +88,4 @@ Residual reported as required: exact/ref-backed `RepositorySourceLocator` blocks
 - [x] Implement the named-locator ontology/SHACL contract and shared Weave path/render/read helpers.
 - [x] Migrate integrate MeshInventory through append/no-op/conflict planning and retain zero-write refusal.
 - [x] Update affected inline/conformance fixtures and docs without touching published release branches.
-- [x] Run cross-repo focused/full gates and record pre-landing receipts; land in dependency order next.
+- [x] Run cross-repo focused/full gates, land in dependency order, and record receipts.

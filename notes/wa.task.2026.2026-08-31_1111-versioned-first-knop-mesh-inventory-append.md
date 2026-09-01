@@ -33,7 +33,7 @@ The existing first-Knop shape assertions and progression resolver remain the acc
 
 ## Open Issues
 
-- **DEPENDENCY:** producer/fixture correction must stop emitting the stale inventory-owned progression pointers before this path becomes fail-closed. The product choice is settled; the prerequisite implementation is not.
+- **DEPENDENCY:** [[wa.task.2026.2026-08-31_1714-mesh-support-progression-producer-correction]] must stop emitting the stale inventory-owned progression pointers before this path becomes fail-closed. The product choice is settled; the prerequisite implementation is not.
 
 ## Decisions
 
@@ -64,7 +64,7 @@ The existing first-Knop shape assertions and progression resolver remain the acc
 ## Implementation Plan
 
 - [x] Record exact-prefix, conflict, no-op, and semantic-union tests failing on current `main` before production edits — 0 passed / 4 failed, then the fixture comparison exposed the blocker above.
-- [ ] Land the producer/fixture correction required by ruled option (B), then prove current Weave output reaches this child without stale inventory-owned progression.
+- [ ] Land [[wa.task.2026.2026-08-31_1714-mesh-support-progression-producer-correction]], then prove current Weave output reaches this child without stale inventory-owned progression.
 - [ ] Build only first-Knop owned requested facts and plan/render them against the original inventory.
 - [ ] Remove obsolete fallback/anchor/root reconstruction code proven dead for this path.
 - [ ] Add runtime zero-write conflict coverage and retain first-Knop progression/page regressions.
