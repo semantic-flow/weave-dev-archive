@@ -33,7 +33,7 @@ The existing first-Knop shape assertions and progression resolver remain the acc
 
 ## Open Issues
 
-- **DEPENDENCY SATISFIED:** [[wa.completed.2026.2026-08-31_1714-mesh-support-progression-producer-correction]] stopped emitting the stale inventory-owned progression pointers and published the corrected fixture tails. Resume against current `main`; do not weaken the stale-shape refusal.
+- **RESOLVED:** [[wa.completed.2026.2026-08-31_1714-mesh-support-progression-producer-correction]] stopped emitting stale inventory-owned progression. This child now rejects any remaining legacy pointers before append planning and runtime writes.
 
 ## Decisions
 
@@ -61,12 +61,24 @@ The existing first-Knop shape assertions and progression resolver remain the acc
 - No blank-node generation/acceptance change, candidate routing, fixture topology, ontology, CLI, or public API change.
 - No OS-level append or repair/retraction surface.
 
+## Closure Receipt
+
+Delivered 2026-08-31.
+
+- Weave PR #71 merged as `7382eeb` after green CI, npm-lib, CodeQL, codecov/patch, and a no-finding CodeRabbit review.
+- `renderFirstKnopWovenMeshInventoryTurtle` now prepares the original MeshInventory once, requests only first-Knop membership/page/next-state facts, and renders through the shared append planner. The legacy block/root reconstruction and complete fallback template are removed.
+- Exact-prefix and semantic-union tests carry comments, repeated subject blocks, opaque facts, and blank-node subgraphs without generating new blank nodes. Semantic no-op returns exact input bytes; conflicting working-inventory locators refuse.
+- A dedicated pre-planning guard rejects `currentArtifactHistory`, `nextHistoryOrdinal`, `latestHistoricalState`, or `nextStateOrdinal` anywhere in a first-Knop MeshInventory input. Runtime tests prove both locator conflict and legacy progression refusal leave the workspace byte-identical.
+- Regenerated, Accord-validated, and published the substantively affected Alice `a.05` through `a.30` tail. Alice fixture `main` merge `de53ab2` has the exact accepted `a.30-founding-corrected` tree. Sidecar and branch-published rehearsals changed only generated HTML timestamps and were deliberately discarded rather than published.
+- Full local `deno task ci` passed with 924 tests, zero failures, and LCOV generated; `deno task build:npm-lib` passed.
+- The first-Knop output-byte/graph change is boarded in [[wd.todo]] for the next release notes, and [[wd.codebase-overview]] records the new append/fail-closed behavior.
+
 ## Implementation Plan
 
 - [x] Record exact-prefix, conflict, no-op, and semantic-union tests failing on current `main` before production edits — 0 passed / 4 failed, then the fixture comparison exposed the blocker above.
 - [x] Land [[wa.completed.2026.2026-08-31_1714-mesh-support-progression-producer-correction]], then prove current Weave output reaches this child without stale inventory-owned progression.
-- [ ] Build only first-Knop owned requested facts and plan/render them against the original inventory.
-- [ ] Remove obsolete fallback/anchor/root reconstruction code proven dead for this path.
-- [ ] Add runtime zero-write conflict coverage and retain first-Knop progression/page regressions.
-- [ ] Update developer guidance and board the output-byte change for the next release notes.
-- [ ] Run focused/full validation and return any plan-level sequencing delta.
+- [x] Build only first-Knop owned requested facts and plan/render them against the original inventory.
+- [x] Remove obsolete fallback/anchor/root reconstruction code proven dead for this path.
+- [x] Add runtime zero-write conflict coverage and retain first-Knop progression/page regressions.
+- [x] Update developer guidance and board the output-byte change for the next release notes.
+- [x] Run focused/full validation and return any plan-level sequencing delta.

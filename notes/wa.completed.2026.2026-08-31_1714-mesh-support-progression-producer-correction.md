@@ -13,7 +13,7 @@ created: 1788221656764
 
 - Stop `planInitialMeshSupportResourcePageWeave` from emitting `currentArtifactHistory`, `nextHistoryOrdinal`, `latestHistoricalState`, and `nextStateOrdinal` into MeshInventory.
 - Keep settled mesh-support artifact/history/state/manifestation membership in MeshInventory while moving mutable progression for mesh metadata, inventory, and optional config into `_mesh/_meta/meta.ttl`.
-- Regenerate affected fixture ladders from their earliest initial-support weave rung and unblock [[wa.task.2026.2026-08-31_1111-versioned-first-knop-mesh-inventory-append]].
+- Regenerate affected fixture ladders from their earliest initial-support weave rung and unblock [[wa.completed.2026.2026-08-31_1111-versioned-first-knop-mesh-inventory-append]].
 
 ## Summary
 
@@ -74,7 +74,7 @@ Delivered 2026-08-31.
 - Regenerated and Accord-validated Alice `a.03` through `a.30`, sidecar `a.03` through `a.17`, and branch-published `a.02` through `a.15` excluding the independent source-lane rung `a.10`. Published every affected checkpoint ref; branch publication `gh-pages` was replaced under an exact old-SHA lease.
 - Merged accepted final rungs into non-branch fixture `main`: Alice `7bd589b` has the exact `a.30-founding-corrected` tree; sidecar `0832430` has the exact `a.17-all-remaining-terms-woven` tree. Branch-fantasy-rules `main` remains the source lane.
 - Full Weave `deno task ci` passed with 918 tests, zero failures, and LCOV generated. GitHub CI, npm-lib, CodeQL, and codecov/patch all passed before merge.
-- Current regenerated first-Knop inputs contain no MeshInventory-owned `currentArtifactHistory`, `nextHistoryOrdinal`, `latestHistoricalState`, or `nextStateOrdinal`; [[wa.task.2026.2026-08-31_1111-versioned-first-knop-mesh-inventory-append]] is unblocked and stale legacy shapes remain fail-closed rather than silently repaired.
+- Current regenerated first-Knop inputs contain no MeshInventory-owned `currentArtifactHistory`, `nextHistoryOrdinal`, `latestHistoricalState`, or `nextStateOrdinal`; [[wa.completed.2026.2026-08-31_1111-versioned-first-knop-mesh-inventory-append]] is unblocked and stale legacy shapes remain fail-closed rather than silently repaired.
 
 ## Implementation Plan
 
