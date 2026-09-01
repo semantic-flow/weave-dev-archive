@@ -17,9 +17,9 @@ created: 1788235271000
 
 ## Summary
 
-After versioned first-payload closure, `src/core/weave/mesh_support_pages.ts` contains the remaining current MeshInventory block mutation used by ordinary live fixtures. `planInitialMeshSupportResourcePageWeave` splits and normalizes the carried inventory, replaces `_mesh` and every support artifact block, and upserts initial history/page/file blocks. The 2026-08-31 producer correction removed mutable progression from those blocks, but unknown settled facts on `_mesh`, `_mesh/_meta`, `_mesh/_inventory`, or `_mesh/_config` can still be lost.
+Weave PR #75 merged as `34b97a3`. `planInitialMeshSupportResourcePageWeave` now prepares the carried MeshInventory once, builds one bounded named-node fact request for every applicable support policy, and delegates append/no-op/conflict behavior to the shared planner. The exact carried bytes remain the output prefix, including comments, repeated support-subject blocks, opaque facts, trailing bytes, and carried blank-node subgraphs.
 
-The no-initial-history page-only arm already uses `planInventoryAppend`; this child migrates only the initial history-bearing arm.
+The already-migrated page-only arm shares the same prepared value and stale-progression check. Initial-history detection now uses settled `hasArtifactHistory` relationships rather than the removed mutable pointer, so a second plan over the first plan's exact inventory and metadata outputs creates or updates nothing.
 
 ## Discussion
 
@@ -32,10 +32,11 @@ Build requested settled facts from the existing support-resource model:
 
 Do not put `currentArtifactHistory`, `nextHistoryOrdinal`, `latestHistoricalState`, or `nextStateOrdinal` back into MeshInventory. Continue rendering those pointers for every versioned support artifact in `_mesh/_meta/meta.ttl`, including the metadata self-snapshot behavior already covered by [[wa.completed.2026.2026-08-31_1714-mesh-support-progression-producer-correction]].
 
-## Open Issues
+## Resolved Issues
 
-- The metadata self-snapshot and inventory snapshot bytes must remain exactly the current planned bytes after append rendering. Report any actual recursion rather than weakening the ownership split.
-- If mixed versioned/current-only policy needs two append passes, preserve one prepared carried prefix and one final append plan; do not reintroduce subject-block mutation for convenience.
+- Metadata self-snapshot and inventory snapshot bytes equal the final planned current documents; no recursion was required.
+- Mixed versioned/current-only policy uses one fact document and one append plan. Current-only resources receive page facts, while only versioned resources receive history/state/manifestation/snapshot facts and MeshMetadata progression.
+- Review caught and closed the removed-pointer sentinel gap: settled `hasArtifactHistory` now selects the already-initialized path, while legacy inventory-owned mutable progression still refuses before branch selection.
 
 ## Decisions
 
@@ -65,9 +66,17 @@ Do not put `currentArtifactHistory`, `nextHistoryOrdinal`, `latestHistoricalStat
 
 ## Implementation Plan
 
-- [ ] Record fail-on-old prefix, no-op, conflict, stale-progression, and mixed-policy tests.
-- [ ] Build one bounded requested-fact document for initial settled support history/page membership.
-- [ ] Route the history-bearing arm through the shared prepared append path and remove dead local block mutation helpers.
-- [ ] Prove snapshot/self-snapshot bytes and runtime zero-write refusal behavior.
-- [ ] Regenerate/publish only substantive fixture changes and update durable guidance/release-note boarding.
-- [ ] Run full gates and return the remaining-writer delta.
+- [x] Record fail-on-old prefix, no-op, conflict, stale-progression, mixed-policy, and repeated-plan tests.
+- [x] Build one bounded requested-fact document for initial settled support history/page membership.
+- [x] Route the history-bearing arm through the shared prepared append path and remove dead local block mutation helpers.
+- [x] Prove snapshot/self-snapshot bytes and runtime zero-write refusal behavior.
+- [x] Regenerate/publish the substantively affected fixture tails and update durable guidance/release-note boarding.
+- [x] Run full gates and return the remaining-writer delta.
+
+## Completion Receipt
+
+- Weave: PR #75, merge `34b97a3`; implementation commits `db1d811` and `29e61cc`.
+- Verification: local and GitHub CI each passed 939 tests; format, lint, type-check, coverage, npm-library build, CodeQL, and codecov/patch passed.
+- Review: CodeRabbit's checklist-format nit and repeated-initialization finding were fixed; the review-fix rerun was rate-limited but all mandatory rerun gates passed.
+- Fixtures: Accord accepted and the fixture repos published Alice `a.03`–`a.30`, sidecar `a.03`–`a.17`, and branch-published `a.02`–`a.15` plus `gh-pages`. Alice and sidecar `main` exactly match their accepted final rung trees.
+- Remaining-writer delta: no current MeshInventory weave arm still block-rewrites the carried document. The parent plan now moves to separate legacy extract/raw import disposition, then the Knop-local progression ownership ruling before remaining versioned KnopInventory-family migration.
