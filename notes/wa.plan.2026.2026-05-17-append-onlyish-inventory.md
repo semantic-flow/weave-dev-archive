@@ -8,7 +8,7 @@ created: 1779079677519
 
 ## Status
 
-Active. Reclassified from a legacy oversized task to a coordination plan on 2026-08-31. Add-reference, extracted/current-only MeshInventory, current-only PageDefinition, current-shape extract, mesh-support page-only growth, named floating locators, mesh-support progression producer correction, and versioned first-Knop MeshInventory append are complete. A fresh audit selected [[wa.task.2026.2026-08-31_1905-versioned-first-payload-mesh-inventory-append]] next because its singular renderer still owns the remaining versioned first-payload block rewrite and its batched wrapper delegates to it.
+Active. Reclassified from a legacy oversized task to a coordination plan on 2026-08-31. Add-reference, extracted/current-only MeshInventory, current-only PageDefinition, current-shape extract, mesh-support page-only growth, named floating locators, mesh-support progression correction, versioned first-Knop, and versioned first-payload MeshInventory append are complete. [[wa.task.2026.2026-08-31_2101-initial-versioned-mesh-support-inventory-append]] now migrates the remaining current MeshInventory block mutation before legacy/raw disposition.
 
 ## Origin
 
@@ -26,7 +26,7 @@ Active. Reclassified from a legacy oversized task to a coordination plan on 2026
 
 Inventory is a ledger, not a freshly rendered report.
 
-The migration is now well past its substrate phase for MeshInventory: `_mesh/_inventory/inventory.ttl` keeps stable history and state membership while `_mesh/_meta/meta.ttl` owns MeshInventory current/latest/next progression; create, add-reference, current-shape extract/integrate, current-only page claims, extracted weave, and versioned first-Knop growth all use the shared append path. Remaining work is concentrated in versioned first-payload MeshInventory, initial versioned mesh-support mutation, legacy/raw operation-specific mutations, whole-output versioned KnopInventory families, and Knop-local progression ownership.
+The migration is now well past its substrate phase for MeshInventory: `_mesh/_inventory/inventory.ttl` keeps stable history and state membership while `_mesh/_meta/meta.ttl` owns MeshInventory current/latest/next progression; create, add-reference, current-shape extract/integrate, current-only page claims, extracted weave, versioned first-Knop, and singular/delegated-batch versioned first-payload growth all use the shared append path. Remaining work is concentrated in initial versioned mesh-support mutation, legacy/raw operation-specific mutations, whole-output versioned KnopInventory families, and Knop-local progression ownership.
 
 The desired write primitive is:
 
@@ -39,23 +39,22 @@ This task supersedes the older TODO wording about "subject-level canonical rewri
 
 ### Remaining-writer audit — 2026-08-31
 
-Audit substrate: Weave `main` at `acafa40`, after versioned first-Knop closure and its planning update.
+Audit substrate: Weave `main` at `eac9167`, after versioned first-payload closure.
 
 Delivered substrate and writers:
 
 - `prepareCurrentInventory`, `planInventoryAppend`, and `renderInventoryAppendPlan` provide consistency-by-construction prepared input, semantic append/no-op/conflict planning, exact carried-prefix preservation, and suffix-only output proof that does not reparse carried blank nodes.
-- MeshInventory append paths now cover first/later `knop.create`, current-shape integrate, current-shape extract, homogeneous and versioned-sequential extracted weave, shared current-only first-payload/extracted page claims, mesh-support page-only growth, and versioned first-Knop weave.
+- MeshInventory append paths now cover first/later `knop.create`, current-shape integrate, current-shape extract, homogeneous and versioned-sequential extracted weave, shared current-only first-payload/extracted page claims, mesh-support page-only growth, versioned first-Knop, and singular/delegated-batch versioned first-payload weave.
 - KnopInventory append paths now cover current-only ReferenceCatalog/PageDefinition page claims, first `knop add-reference` ReferenceCatalog registration, FoundingReferentData settlement, and import's existing-payload source-registry insertion.
 - Routine ResourcePage generation no longer deletes settled page facts. Named repository floating locators eliminate generated locator blank nodes; carried unrelated blank nodes remain opaque prefix data.
 - Mesh-owned support progression is corrected at the producer: settled membership stays in MeshInventory, while current/latest/next lives in MeshMetadata. Stale first-Knop MeshInventory progression fails closed pending explicit repair.
 
 Current residual mutations, in execution order rather than file order:
 
-1. **Versioned first-payload MeshInventory — active child.** `renderFirstPayloadWovenMeshInventoryTurtle` still block-replaces `_mesh`, payload, Knop, MeshInventory artifact/history, and page subjects and retains a complete legacy fallback. `renderBatchedFirstPayloadWovenMeshInventoryTurtle` delegates every versioned target to that singular renderer. Owned by [[wa.task.2026.2026-08-31_1905-versioned-first-payload-mesh-inventory-append]].
-2. **Initial versioned mesh-support MeshInventory.** `planInitialMeshSupportResourcePageWeave` in `mesh_support_pages.ts` still mutates carried blocks for the initial history-bearing arm. The page-only arm is migrated, and progression placement is correct, but settled membership/page/history creation still needs exact-prefix append planning.
-3. **Legacy/raw operation-specific MeshInventory mutations.** Current-shape extract and integrate are migrated. `renderLegacyExtractMeshInventoryTurtle` remains a whole-output compatibility path for an explicitly detected carried shape, and import's new-payload MeshInventory registration uses a raw text suffix rather than the shared semantic planner. Audit these separately: the legacy path may be retired fail-closed after fixture evidence, while raw import may already satisfy append semantics but lacks shared no-op/conflict proof.
-4. **Versioned KnopInventory weave families.** First Knop, first/later payload, versioned ReferenceCatalog, subsequent/versioned PageDefinition, and first extracted-Knop renderers still produce complete desired KnopInventory documents. `renderKnopInventoryWithPreservedSupportArtifacts` restores recognized source/reference/founding families onto those outputs, but it is not a general exact-prefix preservation contract for unknown carried facts.
-5. **Knop-local mutable progression.** Payload and support current/latest/next pointers remain co-resident with settled KnopInventory facts. The final Knop-local storage-ownership ruling and implementation must precede any claim that these whole-output families can become purely settled append writers. Founding progression is a separately ruled exception/residual and must not be silently generalized.
+1. **Initial versioned mesh-support MeshInventory — active child.** `planInitialMeshSupportResourcePageWeave` in `mesh_support_pages.ts` still mutates carried blocks for the initial history-bearing arm. The page-only arm is migrated, and progression placement is correct, but settled membership/page/history creation still needs exact-prefix append planning. Owned by [[wa.task.2026.2026-08-31_2101-initial-versioned-mesh-support-inventory-append]].
+2. **Legacy/raw operation-specific MeshInventory mutations.** Current-shape extract and integrate are migrated. `renderLegacyExtractMeshInventoryTurtle` remains a whole-output compatibility path for an explicitly detected carried shape, and import's new-payload MeshInventory registration uses a raw text suffix rather than the shared semantic planner. Audit these separately: the legacy path may be retired fail-closed after fixture evidence, while raw import may already satisfy append semantics but lacks shared no-op/conflict proof.
+3. **Versioned KnopInventory weave families.** First Knop, first/later payload, versioned ReferenceCatalog, subsequent/versioned PageDefinition, and first extracted-Knop renderers still produce complete desired KnopInventory documents. `renderKnopInventoryWithPreservedSupportArtifacts` restores recognized source/reference/founding families onto those outputs, but it is not a general exact-prefix preservation contract for unknown carried facts.
+4. **Knop-local mutable progression.** Payload and support current/latest/next pointers remain co-resident with settled KnopInventory facts. The final Knop-local storage-ownership ruling and implementation must precede any claim that these whole-output families can become purely settled append writers. Founding progression is a separately ruled exception/residual and must not be silently generalized.
 
 Whole-document renderers that create a brand-new inventory file from no carried input are not migration residuals merely because they render a complete document. This plan targets mutation of existing inventories; new-file creation needs shape correctness, not artificial append machinery.
 
@@ -71,16 +70,16 @@ Whole-document renderers that create a brand-new inventory file from no carried 
 - [[wa.completed.2026.2026-08-31_1219-mesh-support-page-only-inventory-append]] — migrated mesh-support page-only growth while the initial-history arm remains behind the progression ruling.
 - [[wa.completed.2026.2026-08-31_1639-named-repository-floating-locators]] — implemented the ruled source-registry locator identity and unblocked integrate append planning.
 - [[wa.completed.2026.2026-08-31_1714-mesh-support-progression-producer-correction]] — stopped initial mesh-support weave from producing inventory-owned mutable pointers and regenerated every affected fixture tail.
-- [[wa.task.2026.2026-08-31_1905-versioned-first-payload-mesh-inventory-append]] — migrate singular and delegated batched versioned first-payload MeshInventory rendering from block replacement to exact-prefix append.
-- Initial versioned mesh-support MeshInventory migration — cut after versioned first-payload MeshInventory so both remaining MeshInventory block writers share the proven requested-fact pattern.
+- [[wa.completed.2026.2026-08-31_1905-versioned-first-payload-mesh-inventory-append]] — migrated singular and delegated batched versioned first-payload MeshInventory rendering from block replacement to exact-prefix append.
+- [[wa.task.2026.2026-08-31_2101-initial-versioned-mesh-support-inventory-append]] — migrate initial settled support history/page membership from block mutation to exact-prefix append while preserving MeshMetadata progression.
 - Legacy extract/raw import disposition — audit as separate shapes after current MeshInventory weave writers land; do not conflate a removable compatibility renderer with an already-additive raw suffix.
 - Remaining versioned KnopInventory/PageDefinition/payload migration — cut only after the Knop-local progression owner is ruled so mutable pointers are not duplicated or silently retained.
 - Progression-storage and fixture/documentation closure — cut only after the remaining ownership ruling and final writer audit.
 
 ## Sequence
 
-1. Deliver [[wa.task.2026.2026-08-31_1905-versioned-first-payload-mesh-inventory-append]], covering its singular renderer and delegated versioned batch path.
-2. Migrate the initial versioned mesh-support MeshInventory arm, then disposition legacy extract and raw import mutation separately from new-file inventory creation.
+1. Deliver [[wa.task.2026.2026-08-31_2101-initial-versioned-mesh-support-inventory-append]].
+2. Disposition legacy extract and raw import mutation separately from new-file inventory creation.
 3. Resolve Knop-local progression-document ownership before migrating the remaining versioned KnopInventory/PageDefinition/payload families.
 4. Regenerate only substantively affected fixtures at each child; discard timestamp-only rehearsals and keep stale pre-v1 shapes fail-closed rather than shimmed.
 5. Update durable guidance/release notes and close the plan only after a final whole-repository audit finds no unowned normal-operation inventory rewrite.
@@ -504,7 +503,8 @@ For CI/CD, rerunning publication should be safe because the command either sees 
 - [x] Deliver [[wa.completed.2026.2026-08-31_1219-mesh-support-page-only-inventory-append]].
 - [x] Deliver [[wa.completed.2026.2026-08-31_1639-named-repository-floating-locators]].
 - [x] Deliver [[wa.completed.2026.2026-08-31_1714-mesh-support-progression-producer-correction]].
-- [ ] Deliver [[wa.task.2026.2026-08-31_1905-versioned-first-payload-mesh-inventory-append]].
+- [x] Deliver [[wa.completed.2026.2026-08-31_1905-versioned-first-payload-mesh-inventory-append]].
+- [ ] Deliver [[wa.task.2026.2026-08-31_2101-initial-versioned-mesh-support-inventory-append]].
 - [ ] Cut and deliver the MeshInventory weave child tasks.
 - [ ] Cut and deliver remaining KnopInventory/PageDefinition and operation-specific writer tasks.
 - [ ] Resolve and implement the progression-storage contract.

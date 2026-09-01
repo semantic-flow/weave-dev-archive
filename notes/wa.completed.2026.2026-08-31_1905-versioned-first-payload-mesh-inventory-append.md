@@ -35,8 +35,8 @@ MeshInventory progression remains authoritative in MeshMetadata. As with [[wa.co
 
 ## Open Issues
 
-- This child shares `mesh_inventory_renderers.ts` and some first-payload acceptance tests with [[wa.task.2026.2026-05-04-refactor-planFirstPayloadWeave]]. Keep this task limited to MeshInventory rendering and fixtures; do not alter candidate classification, current-mode extracted behavior, diagnostics, or batch selection.
-- If a live current fixture reaches the legacy fallback because required settled membership is absent, report the exact shape before deleting the fallback or broadening the append request.
+- **RESOLVED:** the implementation stayed inside MeshInventory rendering, fact/locator validation, tests, and fixtures; candidate classification, current-mode extracted behavior, diagnostics, and batch selection were unchanged.
+- **RESOLVED:** every live current fixture reached the bounded append path. The complete legacy fallback and its block/root reconstruction helpers were removed.
 
 ## Decisions
 
@@ -65,11 +65,22 @@ MeshInventory progression remains authoritative in MeshMetadata. As with [[wa.co
 - No payload/KnopInventory renderer migration, later-payload advancement, current-only first-payload changes, candidate routing, diagnostics, page-generation policy, ontology, CLI, or public API change.
 - No repair/retraction surface, compatibility shim, fixture topology redesign, OS-level append, or blank-node policy change.
 
+## Closure Receipt
+
+Delivered 2026-08-31.
+
+- Weave PR #73 merged as `eac9167` after 932-test CI, npm-lib, CodeQL, codecov/patch, and CodeRabbit review. Both review nitpicks landed: parsed-RDF negative assertions and shared locator-term derivation between rendering and compatibility validation.
+- `renderFirstPayloadWovenMeshInventoryTurtle` now prepares the carried MeshInventory once, requests only payload/Knop/page/locator/next-state facts, and renders through the shared append planner. The delegated versioned batch path accumulates targets on the same exact carried prefix and emits one MeshInventory progression graph.
+- The renderer returns exact input bytes for semantic no-op and rejects conflicting local/repository locator values, conflicting locator kinds, and stale inventory-owned progression before writes. Runtime tests prove locator/progression refusals leave the workspace byte-identical.
+- Local, extra-mesh literal, named floating-repository, RDF, non-RDF, binary, root, nested, singular, and batch paths retain their existing candidate/result behavior. The implementation generates no blank nodes; carried blank-node subgraphs remain untouched prefix data.
+- Regenerated, Accord-validated, and published the substantively affected Alice `a.07` through `a.30` tail. Alice fixture `main` merge `ef90916` has the exact accepted `a.30-founding-corrected` tree. Sidecar and branch-published rehearsals changed only generated HTML timestamps and were deliberately discarded.
+- Full local `deno task ci` passed with 932 tests, zero failures, and LCOV generated; `deno task build:npm-lib` passed. [[wd.codebase-overview]] and [[wd.todo]] carry durable behavior and release-note boarding.
+
 ## Implementation Plan
 
-- [ ] Record fail-on-old singular/batched prefix, no-op, conflict, and stale-progression tests.
-- [ ] Build bounded first-payload requested facts and route the singular renderer through the shared append planner.
-- [ ] Prove batched accumulation and remove dead block/fallback helpers only when no sibling renderer uses them.
-- [ ] Add runtime zero-write coverage and retain existing first-payload planning/fixture behavior.
-- [ ] Regenerate only substantively affected fixture tails and publish accepted refs.
-- [ ] Update durable guidance/release-note boarding and run full gates.
+- [x] Record fail-on-old singular/batched prefix, no-op, conflict, and stale-progression tests.
+- [x] Build bounded first-payload requested facts and route the singular renderer through the shared append planner.
+- [x] Prove batched accumulation and remove dead block/fallback helpers only when no sibling renderer uses them.
+- [x] Add runtime zero-write coverage and retain existing first-payload planning/fixture behavior.
+- [x] Regenerate only substantively affected fixture tails and publish accepted refs.
+- [x] Update durable guidance/release-note boarding and run full gates.
