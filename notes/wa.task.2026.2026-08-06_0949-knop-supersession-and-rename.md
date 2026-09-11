@@ -14,7 +14,7 @@ created: 1786034947000
 
 ## Summary
 
-Cut 2026-08-06 from the identity ruling on [[wa.task.2026.2026-08-06_0854-markdown-site-pipeline]]. **This is a mesh-level concern, not a Markdown one** — any Knop can be renamed, so it does not belong inside the Markdown pipeline note even though that is where the question surfaced.
+Cut 2026-08-06 from the identity ruling on [[wa.plan.2026.2026-08-06_0854-markdown-site-pipeline]]. **This is a mesh-level concern, not a Markdown one** — any Knop can be renamed, so it does not belong inside the Markdown pipeline plan even though that is where the question surfaced.
 
 **RULED 2026-08-06 (Dave): a rename is a SUPERSESSION, not a move.**
 

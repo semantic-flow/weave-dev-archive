@@ -19,6 +19,8 @@ None. Small ResourcePage presentation correction found while reviewing the publi
 
 The current ResourcePage renderer already suppresses Working File when a floating repository locator is present. Repository Source is rendered as a link to the repository, a visual slash, and a separate unlinked path. For GitHub sources this should be one file URL.
 
+Closed 2026-09-11 after PR #77 merged to Weave `main` as `226d819` with all CI, CodeQL, Codecov, and CodeRabbit checks green.
+
 ## Discussion
 
 The locator remains structured RDF. This task changes HTML presentation only. A floating locator has no ref, so `HEAD` is the honest GitHub browse coordinate. Exact release identity remains on the linked tag-named HistoricalState, not on the floating working-source row.
