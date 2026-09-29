@@ -85,7 +85,7 @@ The source release remains one version line across all five active Turtle files.
 
 - `mesh-sidecar-fantasy-rules` is clean at local `629a1364808a`, ahead 17 and behind 51 relative to canonical `ce91ac2c8918`. The reflog records `reset: moving to a.17-all-remaining-terms-woven` on 2026-05-19; canonical `main` was later regenerated and merged in August.
 - `mesh-alice-bio` is clean at local `1f36c41d042e`, ahead 25 and behind 138 relative to canonical `0dec826a368d`. The reflog records `reset: moving to a.25-root-page-customized-woven` on 2026-05-19; canonical `main` was later regenerated through additional ladder steps and merged in August.
-- The apparent ahead commits are obsolete local fixture-ladder histories, not current uncommitted work. Both branches remain untouched so their histories are recoverable. Reconciliation should first create an archive ref and only then repoint local `main` to `origin/main` under explicit authorization.
+- The apparent ahead commits were obsolete local fixture-ladder histories, not current uncommitted work. They were initially left untouched, then discarded under Dave's explicit authorization on 2026-09-28 by resetting both local `main` branches to the fetched `origin/main` commits. Both repositories now report 0 ahead and 0 behind; no archive refs were retained.
 
 ## Status
 
